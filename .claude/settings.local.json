@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "PowerShell($response = Invoke-WebRequest -Uri \"https://cosmofolio-archportfolio-generator.hf.space/health\" -UseBasicParsing; $response.StatusCode)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Phase 1.2: Create comprehensive database migrations and runner *)",
+      "Bash(git commit -m 'Phase 1.3: Implement Portfolio CRUD APIs *)",
+      "Bash(git commit -m 'Phase 1 Progress: 50% complete with 3 major subtasks done *)",
+      "Bash(git commit -m 'Phase 1 Summary: 60% Complete \\(6/10 Tasks\\) *)",
+      "Bash(mv \"E:\\\\Projects\\\\My Product\\\\BUILDING APP\\\\ArchPortfolio_Generator\\\\PHASE_1_SUMMARY.md\" \"E:\\\\Projects\\\\My Product\\\\BUILDING APP\\\\ArchPortfolio_Generator\\\\backend\\\\PHASE_1_SUMMARY.md\")",
+      "Bash(git commit *)",
+      "Bash(mv \"E:\\\\Projects\\\\My Product\\\\BUILDING APP\\\\ArchPortfolio_Generator\\\\PHASE_1_API_DOCUMENTATION.md\" \"E:\\\\Projects\\\\My Product\\\\BUILDING APP\\\\ArchPortfolio_Generator\\\\backend\\\\PHASE_1_API_DOCUMENTATION.md\")",
+      "Bash(mv \"E:\\\\Projects\\\\My Product\\\\BUILDING APP\\\\ArchPortfolio_Generator\\\\PHASE_1_TESTING_CHECKLIST.md\" \"E:\\\\Projects\\\\My Product\\\\BUILDING APP\\\\ArchPortfolio_Generator\\\\backend\\\\PHASE_1_TESTING_CHECKLIST.md\")",
+      "Bash(python test_replicate_token.py)",
+      "Bash(pip install *)",
+      "Bash(python test_replicate_simple.py)",
+      "Bash(python -c \"from main import app; print\\('✅ App imports successfully'\\)\")",
+      "Bash(python -c \"from main import app; print\\('✅ App imports successfully'\\); print\\('✅ Routes loaded'\\); print\\('✅ All integrations working'\\)\")",
+      "Bash(python -c \"from main import app; print\\('[OK] App imports successfully'\\)\")",
+      "Bash(python)",
+      "Bash(timeout 10 python -c \"from main import app; print\\('[OK] App imports successfully'\\); from fastapi.openapi.utils import get_openapi; spec = get_openapi\\(title='CosmoFolio', version='1.0.0', routes=app.routes\\); print\\(f'[OK] Found {len\\(app.routes\\)} routes'\\); print\\('[OK] All integrations working'\\)\")",
+      "Bash(timeout 15 python -c \"from main import app; print\\('[OK] App imports successfully'\\); print\\(f'[OK] Found {len\\(app.routes\\)} API routes'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(timeout 30 python -c \"from main import app; print\\('[OK] App loaded'\\); print\\(f'[OK] {len\\(app.routes\\)} routes registered'\\); print\\('[OK] All phases verified'\\)\")",
+      "Bash(bash scripts/verify-ready.sh)",
+      "Bash(bash scripts/deploy-with-credentials.sh)"
+    ]
+  }
+}
