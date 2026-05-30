@@ -24,7 +24,32 @@
       "Bash(python -c ' *)",
       "Bash(timeout 30 python -c \"from main import app; print\\('[OK] App loaded'\\); print\\(f'[OK] {len\\(app.routes\\)} routes registered'\\); print\\('[OK] All phases verified'\\)\")",
       "Bash(bash scripts/verify-ready.sh)",
-      "Bash(bash scripts/deploy-with-credentials.sh)"
+      "Bash(bash scripts/deploy-with-credentials.sh)",
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(railway login *)",
+      "Bash(railway up *)",
+      "Bash(export RAILWAY_API_TOKEN=\"35bab568-b7a6-4506-b421-053b77e05930\")",
+      "Bash(railway link *)",
+      "Bash(railway new *)",
+      "Bash(railway whoami *)",
+      "Bash(railway init *)",
+      "Bash(export RAILWAY_API_TOKEN=\"0c4cd6d7-dfec-42bb-a240-fd328e7e4a58\")",
+      "Bash(npm list *)",
+      "Bash(vercel auth *)",
+      "Bash(vercel login *)",
+      "Bash(npm run *)",
+      "Read(//tmp/**)",
+      "Bash(sed -i \"s|<Twitter|<MessageCircle|g\" src/components/ShareModal/ShareModal.tsx)",
+      "Bash(sed -i \"s|<Facebook|<Share2|g\" src/components/ShareModal/ShareModal.tsx)",
+      "Bash(vercel deploy *)",
+      "Bash(curl -s https://backend-1rydar8q3-cosmo-atelier-s-projects.vercel.app/health)",
+      "Bash(curl -s https://backend-1rydar8q3-cosmo-atelier-s-projects.vercel.app/api/portfolios -H \"Authorization: Bearer test\")",
+      "Bash(vercel env *)",
+      "Bash(vercel projects *)",
+      "Bash(railway projects *)",
+      "Bash(export RAILWAY_API_TOKEN=\"99b0fdcf-c428-4638-9325-07d7dbf348f5\")",
+      "Bash(railway logs *)"
     ]
   }
 }
