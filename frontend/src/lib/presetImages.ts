@@ -143,6 +143,40 @@ export function getAllStylePacks(): PresetImage[] {
 }
 
 /**
+ * Get preview image/icon for a layout
+ * Returns visual preview metadata for layout cards
+ */
+export function getLayoutPreview(layoutId: string): { previewUrl: string; icon: string; name: string } {
+  const layoutPreviews: Record<string, { previewUrl: string; icon: string; name: string }> = {
+    'cover-hero-full': { previewUrl: '', icon: '📐', name: 'Hero Full' },
+    'cover-split-image': { previewUrl: '', icon: '🖼️', name: 'Split Image' },
+    'cover-minimal-text': { previewUrl: '', icon: '📝', name: 'Minimal Text' },
+    'proj-hero-text': { previewUrl: '', icon: '🏗️', name: 'Hero Text' },
+    'proj-grid-2x2': { previewUrl: '', icon: '⊞', name: '2x2 Grid' },
+    'proj-grid-3x3': { previewUrl: '', icon: '⊟', name: '3x3 Grid' },
+    'proj-full-bleed': { previewUrl: '', icon: '◼', name: 'Full Bleed' },
+    'proj-side-by-side': { previewUrl: '', icon: '◫', name: 'Side by Side' },
+  }
+  return layoutPreviews[layoutId] || { previewUrl: '', icon: '📄', name: 'Layout' }
+}
+
+/**
+ * Get preview for an overlay type
+ * Returns visual preview for overlay options (color, gradient, pattern, etc.)
+ */
+export function getOverlayPreview(overlayType: string): { previewUrl: string; icon: string; name: string } {
+  const overlayPreviews: Record<string, { previewUrl: string; icon: string; name: string }> = {
+    'color': { previewUrl: '', icon: '🎨', name: 'Color Overlay' },
+    'gradient': { previewUrl: '', icon: '🌈', name: 'Gradient Overlay' },
+    'pattern': { previewUrl: '', icon: '◈', name: 'Pattern Overlay' },
+    'text': { previewUrl: '', icon: '📝', name: 'Text Overlay' },
+    'vignette': { previewUrl: '', icon: '⚫', name: 'Vignette' },
+    'blur': { previewUrl: '', icon: '🌫️', name: 'Blur Effect' },
+  }
+  return overlayPreviews[overlayType] || { previewUrl: '', icon: '◯', name: 'Overlay' }
+}
+
+/**
  * Export type for use in other modules
  */
 export type { PresetImage }
