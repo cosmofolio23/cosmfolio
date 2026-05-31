@@ -64,7 +64,12 @@ export interface FontToken {
 export interface ColorPalette {
   primary: string
   secondary: string
-  tertiary?: string
+  tertiary: string
+}
+
+export interface AccentPalette {
+  primary: string
+  secondary: string
 }
 
 export interface StylePackTokens {
@@ -82,7 +87,7 @@ export interface StylePackTokens {
     background: string
     surface: string
     text: ColorPalette
-    accent: ColorPalette
+    accent: AccentPalette
     border: string
     overlay: string
   }
