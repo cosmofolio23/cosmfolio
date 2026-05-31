@@ -85,7 +85,8 @@
       "Bash(curl -s -X GET https://api.replicate.com/v1/account -H 'Authorization: Token r8_ScjqMijvSfy7RbBmWCGC6SfF31vkRsH46EGF4')",
       "Bash(git tag *)",
       "Bash(curl -s https://cosmfolio-production.up.railway.app/docs -I)",
-      "Bash(curl -s https://frontend-fawn-kappa-36.vercel.app -I)"
+      "Bash(curl -s https://frontend-fawn-kappa-36.vercel.app -I)",
+      "Bash(\n# Remove the separate git repos from backend and frontend\nrm -rf backend/.git frontend/.git\n\n# Check that they're removed\necho \"✓ Removed backend/.git and frontend/.git\"\n\n# Add everything to main repo\ngit add backend/ frontend/\n\n# Show status\necho \"---\"\ngit status | head -20\n)"
     ]
   }
 }

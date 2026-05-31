@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: cosmfolio-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+
+    # Environment variables
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: FIREBASE_API_KEY
+        sync: false
+      - key: REPLICATE_API_TOKEN
+        sync: false
+
+    # Health check
+    healthCheckPath: /docs
+
+    # Auto-deploy on GitHub push
+    autoDeploy: true
+
+    # Build command (uses Dockerfile)
+    preDeployCommand: ""
+
+# Frontend can be deployed to Netlify separately
+# Netlify auto-detects Next.js and deploys automatically
