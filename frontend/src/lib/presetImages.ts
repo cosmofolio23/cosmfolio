@@ -9,6 +9,8 @@ interface PresetImage {
   category: string
   colors: string[]
   previewUrl?: string
+  sampleRender?: string
+  icon?: string
 }
 
 /**
