@@ -2,8 +2,12 @@ import { create } from 'zustand'
 import { BuilderState, ProjectPageConfig, DesignMode } from '@/types/portfolio'
 
 interface PortfolioBuilderStore extends BuilderState {
-  // Current step for navigation
+  // State properties (explicitly declare for component access)
   currentStep?: number
+  totalPages?: number
+  projectCount?: number
+  stylePackId?: string
+  frontPage?: BuilderState['frontPage']
 
   // Step navigation
   setStep: (step: number) => void
