@@ -301,12 +301,29 @@ async def list_assets(
 
         assets = response.data or []
 
+        # Fix file_url for assets that don't have a proper public URL
+        from services.storage import get_storage_client
+        storage_client = get_storage_client()
+        for asset in assets:
+            current_url = asset.get("file_url") or ""
+            storage_path = asset.get("storage_path", "")
+            # If file_url is missing or doesn't start with http, regenerate it
+            if storage_path and (not current_url or not current_url.startswith("http")):
+                try:
+                    public_url = await storage_client.get_public_url(storage_path)
+                    asset["file_url"] = public_url
+                except Exception as url_err:
+                    print(f"[WARNING] Could not generate URL for asset {asset.get('id')}: {url_err}")
+
         # Get tags for each asset
         for asset in assets:
-            tags_response = supabase.table("asset_tags").select("tag_name").eq(
-                "asset_id", asset["id"]
-            ).execute()
-            asset["tags"] = [t["tag_name"] for t in tags_response.data]
+            try:
+                tags_response = supabase.table("asset_tags").select("tag_name").eq(
+                    "asset_id", asset["id"]
+                ).execute()
+                asset["tags"] = [t["tag_name"] for t in tags_response.data]
+            except Exception:
+                asset["tags"] = []
 
         # Filter by tag if specified
         if tag:

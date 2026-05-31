@@ -396,28 +396,28 @@ class StorageClient:
             raise
 
     async def get_public_url(self, storage_path: str) -> str:
-        """Get public URL for asset (CDN)"""
+        """Get public URL for asset (CDN)
+        Always constructs the URL directly - more reliable than SDK methods.
+        """
         if self.s3_client:
             return f"{self.config.S3_CDN_URL}/{storage_path}"
-        elif self.supabase:
-            # supabase-py may return dict or string depending on version
-            result = self.supabase.storage.from_(
-                self.config.SUPABASE_BUCKET
-            ).get_public_url(storage_path)
-            # Handle both dict and string return types
-            if isinstance(result, dict):
-                return result.get("publicURL") or result.get("publicUrl") or result.get("public_url") or ""
-            elif isinstance(result, str):
-                return result
-            # Fallback: construct URL manually
-            return f"{self.config.SUPABASE_URL}/storage/v1/object/public/{self.config.SUPABASE_BUCKET}/{storage_path}"
-        else:
-            # Fallback: construct Supabase public URL from env
-            supabase_url = os.getenv("SUPABASE_URL", "")
-            bucket = os.getenv("SUPABASE_BUCKET", "assets")
-            if supabase_url:
-                return f"{supabase_url}/storage/v1/object/public/{bucket}/{storage_path}"
-            raise Exception("No storage client available")
+
+        # For Supabase: always construct the public URL directly
+        # Format: {SUPABASE_URL}/storage/v1/object/public/{bucket}/{path}
+        # This works regardless of supabase-py version differences
+        supabase_url = self.config.SUPABASE_URL or os.getenv("SUPABASE_URL", "")
+        bucket = self.config.SUPABASE_BUCKET or os.getenv("SUPABASE_BUCKET", "assets")
+
+        if supabase_url:
+            # Remove trailing slash if present
+            supabase_url = supabase_url.rstrip("/")
+            # Remove leading slash from storage_path if present
+            clean_path = storage_path.lstrip("/")
+            public_url = f"{supabase_url}/storage/v1/object/public/{bucket}/{clean_path}"
+            logger.info(f"Generated public URL: {public_url}")
+            return public_url
+
+        raise Exception("No SUPABASE_URL configured - cannot generate public URL")
 
     # ==================== DELETE OPERATIONS ====================
 
