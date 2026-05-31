@@ -3,7 +3,7 @@
 [build]
   base = "frontend"
   command = "npm run build"
-  # publish is auto-set by @netlify/plugin-nextjs plugin
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
