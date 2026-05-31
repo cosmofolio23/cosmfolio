@@ -1,7 +1,9 @@
+# Netlify Configuration for CosmoFolio Frontend
+
 [build]
   base = "frontend"
   command = "npm run build"
-  publish = ".next/static"
+  # Netlify auto-detects .next for Next.js apps
 
 [build.environment]
   NODE_VERSION = "18"
@@ -10,7 +12,8 @@
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "cosmo-folio-62c7f.firebaseapp.com"
   NEXT_PUBLIC_FIREBASE_PROJECT_ID = "cosmo-folio-62c7f"
 
+# Redirect all routes to Next.js for client-side routing
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/"
   status = 200
