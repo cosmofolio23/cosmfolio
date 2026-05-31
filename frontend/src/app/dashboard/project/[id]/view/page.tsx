@@ -20,7 +20,7 @@ export default function ProjectView() {
     if (!isAuthenticated) { router.push('/signin'); return }
     fetch(`${API_URL}/api/projects/${params.id}`, { headers: { 'Authorization': `Bearer ${savedToken}` } })
       .then(r => r.json()).then(setProject).catch(console.error)
-    fetch(`${API_URL}/api/assets/${params.id}/list`, { headers: { 'Authorization': `Bearer ${savedToken}` } })
+    fetch(`${API_URL}/api/projects/${params.id}/assets`, { headers: { 'Authorization': `Bearer ${savedToken}` } })
       .then(r => r.json()).then(setAssets).catch(console.error)
   }, [isAuthenticated])
 

@@ -208,7 +208,7 @@ export default function SheetPage() {
 
   const loadAssets = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/assets/${params.id}/list`, {
+      const res = await fetch(`${API_URL}/api/projects/${params.id}/assets`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
       if (res.ok) setAssets(await res.json())
@@ -221,7 +221,7 @@ export default function SheetPage() {
     const formData = new FormData()
     Array.from(files).forEach(f => formData.append('files', f))
     try {
-      const res = await fetch(`${API_URL}/api/assets/${params.id}/upload?asset_type=${activeUploadCat}`, {
+      const res = await fetch(`${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=${activeUploadCat}`, {
         method: 'POST', headers: { 'Authorization': `Bearer ${savedToken}` }, body: formData
       })
       if (res.ok) {

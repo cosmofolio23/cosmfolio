@@ -101,7 +101,7 @@ export class APIClient {
     return response.data
   }
 
-  // Assets endpoints
+  // Assets endpoints (use /api/projects/{id}/assets pattern)
   async uploadAssets(projectId: string, assetType: string, files: File[]) {
     const formData = new FormData()
     files.forEach((file) => {
@@ -109,7 +109,7 @@ export class APIClient {
     })
 
     const response = await this.client.post(
-      `/api/assets/${projectId}/upload?asset_type=${assetType}`,
+      `/api/projects/${projectId}/assets/bulk?asset_type=${assetType}`,
       formData,
       {
         headers: {
@@ -121,19 +121,19 @@ export class APIClient {
   }
 
   async getAssets(projectId: string) {
-    const response = await this.client.get(`/api/assets/${projectId}/list`)
+    const response = await this.client.get(`/api/projects/${projectId}/assets`)
     return response.data
   }
 
   async deleteAsset(projectId: string, assetId: string) {
     const response = await this.client.delete(
-      `/api/assets/${projectId}/assets/${assetId}`
+      `/api/projects/${projectId}/assets/${assetId}`
     )
     return response.data
   }
 
   async analyzeAssets(projectId: string) {
-    const response = await this.client.get(`/api/assets/${projectId}/analysis`)
+    const response = await this.client.get(`/api/projects/${projectId}/assets/analysis`)
     return response.data
   }
 

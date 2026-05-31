@@ -65,17 +65,20 @@ export default function ProjectPage() {
     try {
       setIsLoading(true)
       const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/assets/${params.id}/list`, {
+      const res = await fetch(`${API_URL}/api/projects/${params.id}/assets`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
       if (res.ok) {
         const data = await res.json()
-        setAssets({
-          render: data.render || [],
-          plan: data.plan || [],
-          section: data.section || [],
-          diagram: data.diagram || [],
+        // Backend returns { assets: [...] } - group by asset_type
+        const allAssets = data.assets || data.items || []
+        const grouped: any = { render: [], plan: [], section: [], diagram: [] }
+        allAssets.forEach((a: any) => {
+          const t = a.asset_type || 'render'
+          if (grouped[t]) grouped[t].push(a)
+          else grouped.render.push(a)
         })
+        setAssets(grouped)
       } else {
         console.error('Load assets failed:', await res.text())
       }
@@ -90,11 +93,12 @@ export default function ProjectPage() {
 
     const formData = new FormData()
     Array.from(files).forEach(f => formData.append('files', f))
+    formData.append('asset_type', activeTab)
 
     try {
       const savedToken = token || localStorage.getItem('auth_token')
       const res = await fetch(
-        `${API_URL}/api/assets/${params.id}/upload?asset_type=${activeTab}`,
+        `${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=${activeTab}`,
         {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${savedToken}` },
@@ -106,11 +110,13 @@ export default function ProjectPage() {
         await loadAssets()
         setTimeout(() => setUploadProgress(''), 2000)
       } else {
-        const err = await res.json()
-        setUploadProgress(`❌ Error: ${err.detail}`)
+        const err = await res.json().catch(() => ({ detail: 'Unknown error' }))
+        setUploadProgress(`❌ Error: ${err.detail || res.statusText}`)
+        console.error('Upload failed:', err)
       }
     } catch (e: any) {
       setUploadProgress(`❌ Upload failed: ${e.message}`)
+      console.error('Upload error:', e)
     } finally {
       setIsUploading(false)
     }
@@ -118,7 +124,7 @@ export default function ProjectPage() {
 
   const handleDeleteAsset = async (assetId: string) => {
     try {
-      await fetch(`${API_URL}/api/assets/${params.id}/assets/${assetId}`, {
+      await fetch(`${API_URL}/api/projects/${params.id}/assets/${assetId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })

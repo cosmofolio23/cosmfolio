@@ -57,12 +57,14 @@ export default function PortfolioPreviewPage() {
   const loadAssets = async () => {
     try {
       const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/assets/${params.id}/list`, {
+      const res = await fetch(`${API_URL}/api/projects/${params.id}/assets`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
       if (res.ok) {
         const data = await res.json()
-        const all = [
+        // Backend returns { assets: [...] } - flatten or group
+        const allAssets = data.assets || data.items || []
+        const all = allAssets.length > 0 ? allAssets : [
           ...(data.render || []),
           ...(data.plan || []),
           ...(data.section || []),
