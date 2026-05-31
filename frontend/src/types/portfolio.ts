@@ -212,6 +212,23 @@ export interface FrontCoverConfig {
   coverImageUrl: string  // optional uploaded image
 }
 
+/** One design project within the portfolio (a single architecture project) */
+export interface DesignProjectConfig {
+  id: string           // unique index/uuid
+  name: string         // e.g. "Museum Redesign"
+  location: string     // e.g. "Mumbai, India"
+  year: string         // e.g. "2025"
+  typology: string     // e.g. "Cultural"
+  pageCount: number    // how many pages this project gets in the portfolio
+  description: string  // short blurb
+  assets: {
+    renders: string[]   // image URLs
+    plans: string[]
+    sections: string[]
+    diagrams: string[]
+  }
+}
+
 /** About Me page contains multiple toggleable sections (NOT separate pages) */
 export interface AboutMePageConfig {
   enabled: boolean
@@ -266,6 +283,7 @@ export interface BuilderState {
   projectCount: number
   totalPages: number  // auto-calculated from sections + projects
   frontCover: FrontCoverConfig
+  designProjects: DesignProjectConfig[]  // per-project configuration with assets
   aboutPage: AboutMePageConfig
   contentsPageEnabled: boolean
   endPage: EndPageConfig

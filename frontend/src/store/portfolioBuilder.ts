@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { BuilderState, ProjectPageConfig, DesignMode, PortfolioType, FrontCoverConfig, AboutMePageConfig, EndPageConfig } from '@/types/portfolio'
+import { BuilderState, ProjectPageConfig, DesignMode, PortfolioType, FrontCoverConfig, AboutMePageConfig, EndPageConfig, DesignProjectConfig } from '@/types/portfolio'
 
 interface PortfolioBuilderStore extends BuilderState {
   // State properties (explicitly declare for component access)
@@ -11,6 +11,7 @@ interface PortfolioBuilderStore extends BuilderState {
   portfolioName: string
   portfolioType: PortfolioType
   frontCover: FrontCoverConfig
+  designProjects: DesignProjectConfig[]
   aboutPage: AboutMePageConfig
   contentsPageEnabled: boolean
   endPage: EndPageConfig
@@ -30,6 +31,12 @@ interface PortfolioBuilderStore extends BuilderState {
   setContentsPageEnabled: (enabled: boolean) => void
   toggleEndPage: () => void
   setEndPage: (end: Partial<EndPageConfig>) => void
+
+  // Design Projects (per-project config)
+  setDesignProject: (index: number, updates: Partial<DesignProjectConfig>) => void
+  addDesignProjectAsset: (index: number, category: keyof DesignProjectConfig['assets'], url: string) => void
+  removeDesignProjectAsset: (index: number, category: keyof DesignProjectConfig['assets'], url: string) => void
+  syncDesignProjectsWithCount: () => void
 
   // Step 1: Page count
   setTotalPages: (count: number) => void
@@ -84,6 +91,9 @@ const initialState: BuilderState = {
     studio: '',
     coverImageUrl: '',
   },
+  designProjects: [
+    // Auto-populated when projectCount changes
+  ],
   aboutPage: {
     enabled: true,
     sections: {
@@ -165,11 +175,65 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
     endPage: { ...s.endPage, ...end }
   })),
 
+  // Design Projects setters
+  setDesignProject: (index, updates) => set((s) => {
+    const projects = [...s.designProjects]
+    if (projects[index]) {
+      projects[index] = { ...projects[index], ...updates }
+    }
+    return { designProjects: projects }
+  }),
+
+  addDesignProjectAsset: (index, category, url) => set((s) => {
+    const projects = [...s.designProjects]
+    if (projects[index]) {
+      const assets = { ...projects[index].assets }
+      assets[category] = [...assets[category], url]
+      projects[index] = { ...projects[index], assets }
+    }
+    return { designProjects: projects }
+  }),
+
+  removeDesignProjectAsset: (index, category, url) => set((s) => {
+    const projects = [...s.designProjects]
+    if (projects[index]) {
+      const assets = { ...projects[index].assets }
+      assets[category] = assets[category].filter(u => u !== url)
+      projects[index] = { ...projects[index], assets }
+    }
+    return { designProjects: projects }
+  }),
+
+  // Keep designProjects array in sync with projectCount
+  syncDesignProjectsWithCount: () => set((s) => {
+    const count = s.projectCount
+    const current = s.designProjects
+    const newProjects: DesignProjectConfig[] = []
+    for (let i = 0; i < count; i++) {
+      if (current[i]) {
+        newProjects.push(current[i])
+      } else {
+        newProjects.push({
+          id: `project-${i + 1}-${Date.now()}`,
+          name: `Project ${i + 1}`,
+          location: '',
+          year: new Date().getFullYear().toString(),
+          typology: '',
+          pageCount: 2,
+          description: '',
+          assets: { renders: [], plans: [], sections: [], diagrams: [] },
+        })
+      }
+    }
+    return { designProjects: newProjects }
+  }),
+
   // Step 1
   setTotalPages: (count) => set({ totalPages: Math.max(4, Math.min(50, count)) }),
 
   // Step 2
   setProjectCount: (count) => set((s) => {
+    // Update legacy projectPages
     const projectPages: ProjectPageConfig[] = Array.from({ length: count }, (_, i) => ({
       projectId: s.projectPages[i]?.projectId || `project-${i + 1}`,
       projectName: s.projectPages[i]?.projectName || `Project ${i + 1}`,
@@ -181,7 +245,23 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
       },
       assets: s.projectPages[i]?.assets || { renders: [], plans: [], sections: [], diagrams: [] },
     }))
-    return { projectCount: count, projectPages: projectPages }
+
+    // Also sync the new designProjects array
+    const designProjects: DesignProjectConfig[] = Array.from({ length: count }, (_, i) => {
+      if (s.designProjects[i]) return s.designProjects[i]
+      return {
+        id: `dp-${i + 1}-${Date.now()}`,
+        name: `Project ${i + 1}`,
+        location: '',
+        year: new Date().getFullYear().toString(),
+        typology: '',
+        pageCount: 2,
+        description: '',
+        assets: { renders: [], plans: [], sections: [], diagrams: [] },
+      }
+    })
+
+    return { projectCount: count, projectPages: projectPages, designProjects: designProjects }
   }),
 
   // Step 3

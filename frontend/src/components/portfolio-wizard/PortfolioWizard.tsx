@@ -12,10 +12,10 @@
  *   Step 6: Review & Generate
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePortfolioBuilder } from '@/store/portfolioBuilder'
-import { PortfolioType, AboutMePageConfig } from '@/types/portfolio'
+import { PortfolioType, AboutMePageConfig, DesignProjectConfig } from '@/types/portfolio'
 
 interface PortfolioTypeOption {
   id: PortfolioType
@@ -44,7 +44,7 @@ const ABOUT_SECTIONS: { key: keyof AboutMePageConfig['sections']; label: string;
   { key: 'interests',    label: 'Interests',      emoji: '🎨',  desc: 'Personal interests' },
 ]
 
-const TOTAL_STEPS = 6
+const TOTAL_STEPS = 7
 
 interface Props {
   projectId: string
@@ -59,15 +59,23 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [uploadingCover, setUploadingCover] = useState(false)
 
-  // Auto-calculate total pages
+  // Auto-calculate total pages from per-project page counts
   const calculateTotalPages = () => {
     let pages = 1 // Front cover
     if (builder.aboutPage.enabled) pages += 1
     if (builder.contentsPageEnabled) pages += 1
-    pages += builder.projectCount * 2 // estimate 2 pages per project
+    // Sum each project's page count
+    pages += builder.designProjects.reduce((sum, p) => sum + (p.pageCount || 2), 0)
     if (builder.endPage.enabled) pages += 1
     return pages
   }
+
+  // Sync designProjects array when projectCount changes
+  useEffect(() => {
+    if (builder.designProjects.length !== builder.projectCount) {
+      builder.syncDesignProjectsWithCount()
+    }
+  }, [builder.projectCount])
 
   const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -122,6 +130,7 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
         project_count: builder.projectCount,
         total_pages: calculateTotalPages(),
         front_cover: builder.frontCover,
+        design_projects: builder.designProjects,  // NEW: per-project config with assets
         about_page: builder.aboutPage,
         contents_page_enabled: builder.contentsPageEnabled,
         end_page: builder.endPage,
@@ -189,10 +198,11 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
         <div className="flex justify-between mt-2 text-xs text-stone-light">
           <StepLabel active={step >= 1} label="Basics" />
           <StepLabel active={step >= 2} label="Cover" />
-          <StepLabel active={step >= 3} label="About" />
-          <StepLabel active={step >= 4} label="Contents" />
-          <StepLabel active={step >= 5} label="End Page" />
-          <StepLabel active={step >= 6} label="Review" />
+          <StepLabel active={step >= 3} label="Projects" />
+          <StepLabel active={step >= 4} label="About" />
+          <StepLabel active={step >= 5} label="Contents" />
+          <StepLabel active={step >= 6} label="End" />
+          <StepLabel active={step >= 7} label="Review" />
         </div>
       </div>
 
@@ -200,10 +210,11 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-border-light shadow-sm min-h-[400px]">
         {step === 1 && <Step1Basics builder={builder} />}
         {step === 2 && <Step2FrontCover builder={builder} onUpload={handleCoverImageUpload} uploading={uploadingCover} />}
-        {step === 3 && <Step3AboutPage builder={builder} />}
-        {step === 4 && <Step4ContentsPage builder={builder} />}
-        {step === 5 && <Step5EndPage builder={builder} />}
-        {step === 6 && <Step6Review builder={builder} totalPages={calculateTotalPages()} />}
+        {step === 3 && <Step3Projects builder={builder} projectId={projectId} />}
+        {step === 4 && <Step4AboutPage builder={builder} />}
+        {step === 5 && <Step5ContentsPage builder={builder} />}
+        {step === 6 && <Step6EndPage builder={builder} />}
+        {step === 7 && <Step7Review builder={builder} totalPages={calculateTotalPages()} />}
       </div>
 
       {error && (
@@ -427,10 +438,339 @@ function Step2FrontCover({ builder, onUpload, uploading }: { builder: any; onUpl
 }
 
 // ──────────────────────────────────────────────────────────────
-// STEP 3: About Me Page
+// STEP 3: Projects Configuration (NEW)
 // ──────────────────────────────────────────────────────────────
 
-function Step3AboutPage({ builder }: { builder: any }) {
+function Step3Projects({ builder, projectId }: { builder: any; projectId: string }) {
+  const [expandedIndex, setExpandedIndex] = useState<number>(0)
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-charcoal mb-1">🏗️ Configure Each Project</h2>
+      <p className="text-sm text-stone-light mb-6">
+        Set details and upload images for each of your {builder.designProjects.length} projects.
+        Click a project to expand.
+      </p>
+
+      <div className="space-y-3">
+        {builder.designProjects.map((proj: DesignProjectConfig, idx: number) => (
+          <ProjectCard
+            key={proj.id}
+            project={proj}
+            index={idx}
+            projectId={projectId}
+            builder={builder}
+            expanded={expandedIndex === idx}
+            onToggle={() => setExpandedIndex(expandedIndex === idx ? -1 : idx)}
+          />
+        ))}
+      </div>
+
+      {builder.designProjects.length === 0 && (
+        <div className="text-center py-12 text-stone-light">
+          <p>Set the project count in Step 1 first.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ProjectCard({
+  project, index, projectId, builder, expanded, onToggle,
+}: {
+  project: DesignProjectConfig
+  index: number
+  projectId: string
+  builder: any
+  expanded: boolean
+  onToggle: () => void
+}) {
+  const totalAssets =
+    project.assets.renders.length +
+    project.assets.plans.length +
+    project.assets.sections.length +
+    project.assets.diagrams.length
+
+  return (
+    <div className={`border-2 rounded-xl overflow-hidden transition-all ${
+      expanded ? 'border-primary shadow-md' : 'border-border-light'
+    }`}>
+      {/* Header (clickable) */}
+      <button
+        onClick={onToggle}
+        className="w-full text-left p-4 bg-white hover:bg-bg-subtle transition flex items-center gap-3"
+      >
+        <div className="w-10 h-10 rounded-full bg-blue-50 text-primary font-bold flex items-center justify-center flex-shrink-0">
+          {index + 1}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-charcoal truncate">{project.name || `Project ${index + 1}`}</div>
+          <div className="text-xs text-stone-light mt-0.5">
+            {project.pageCount} pages · {totalAssets} images
+            {project.location && ` · ${project.location}`}
+          </div>
+        </div>
+        <svg className={`w-5 h-5 text-stone transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Expanded body */}
+      {expanded && (
+        <div className="p-4 bg-bg-subtle border-t border-border-light space-y-4">
+          {/* Project metadata */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Project Name *" required>
+              <input
+                type="text"
+                value={project.name}
+                onChange={(e) => builder.setDesignProject(index, { name: e.target.value })}
+                placeholder="e.g. Mumbai Cultural Center"
+                className="input-field"
+              />
+            </Field>
+
+            <Field label="Pages for this project">
+              <NumberInput
+                value={project.pageCount}
+                onChange={(v) => builder.setDesignProject(index, { pageCount: v })}
+                min={1}
+                max={10}
+                hint="How many pages does this project need?"
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Field label="Location">
+              <input
+                type="text"
+                value={project.location}
+                onChange={(e) => builder.setDesignProject(index, { location: e.target.value })}
+                placeholder="Mumbai, India"
+                className="input-field"
+              />
+            </Field>
+
+            <Field label="Year">
+              <input
+                type="text"
+                value={project.year}
+                onChange={(e) => builder.setDesignProject(index, { year: e.target.value })}
+                placeholder="2025"
+                className="input-field"
+              />
+            </Field>
+
+            <Field label="Typology">
+              <input
+                type="text"
+                value={project.typology}
+                onChange={(e) => builder.setDesignProject(index, { typology: e.target.value })}
+                placeholder="Cultural / Residential"
+                className="input-field"
+              />
+            </Field>
+          </div>
+
+          <Field label="Short Description">
+            <textarea
+              value={project.description}
+              onChange={(e) => builder.setDesignProject(index, { description: e.target.value })}
+              placeholder="A brief overview of this project — concept, intent, scale..."
+              rows={3}
+              className="input-field resize-none"
+            />
+          </Field>
+
+          {/* Image uploads per category */}
+          <div>
+            <label className="block text-sm font-semibold text-charcoal mb-3">
+              📸 Upload Images for this Project
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <CategoryUploader
+                category="renders"
+                label="Renders"
+                emoji="🎨"
+                hint="Photo-realistic visuals"
+                project={project}
+                index={index}
+                projectId={projectId}
+                builder={builder}
+              />
+              <CategoryUploader
+                category="plans"
+                label="Plans"
+                emoji="📐"
+                hint="Floor plans"
+                project={project}
+                index={index}
+                projectId={projectId}
+                builder={builder}
+              />
+              <CategoryUploader
+                category="sections"
+                label="Sections"
+                emoji="📏"
+                hint="Sections / elevations"
+                project={project}
+                index={index}
+                projectId={projectId}
+                builder={builder}
+              />
+              <CategoryUploader
+                category="diagrams"
+                label="Diagrams"
+                emoji="📊"
+                hint="Concept diagrams"
+                project={project}
+                index={index}
+                projectId={projectId}
+                builder={builder}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CategoryUploader({
+  category, label, emoji, hint, project, index, projectId, builder,
+}: {
+  category: keyof DesignProjectConfig['assets']
+  label: string
+  emoji: string
+  hint: string
+  project: DesignProjectConfig
+  index: number
+  projectId: string
+  builder: any
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    setErr(null)
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const token = localStorage.getItem('auth_token')
+
+      const formData = new FormData()
+      Array.from(files).forEach(f => formData.append('files', f))
+      // Tag uploads with design project info so backend can group later
+      formData.append('design_project_index', index.toString())
+      formData.append('design_project_id', project.id)
+      formData.append('design_project_name', project.name)
+
+      const assetType = category === 'renders' ? 'render'
+                      : category === 'plans' ? 'plan'
+                      : category === 'sections' ? 'section'
+                      : 'diagram'
+
+      const res = await fetch(
+        `${API_URL}/api/projects/${projectId}/assets/bulk?asset_type=${assetType}&design_project_index=${index}`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        }
+      )
+
+      if (res.ok) {
+        const data = await res.json()
+        // Each uploaded asset → store its URL in this project's array
+        const assets = data.assets || []
+        assets.forEach((a: any) => {
+          if (a.file_url) {
+            builder.addDesignProjectAsset(index, category, a.file_url)
+          }
+        })
+      } else {
+        const errBody = await res.json().catch(() => ({}))
+        setErr(errBody.detail || 'Upload failed')
+      }
+    } catch (e: any) {
+      setErr(e.message || 'Upload error')
+    } finally {
+      setUploading(false)
+      // Reset input so same file can be selected again
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  const items = project.assets[category]
+
+  return (
+    <div className="bg-white border-2 border-border-light rounded-xl p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xl">{emoji}</span>
+        <div className="flex-1">
+          <div className="font-semibold text-sm text-charcoal">{label}</div>
+          <div className="text-xs text-stone-light">{hint}</div>
+        </div>
+        <span className="text-xs font-bold text-primary bg-blue-50 px-2 py-1 rounded">
+          {items.length}
+        </span>
+      </div>
+
+      {/* Thumbnails */}
+      {items.length > 0 && (
+        <div className="grid grid-cols-3 gap-1 mb-2">
+          {items.slice(0, 6).map((url, i) => (
+            <div key={i} className="relative aspect-square rounded overflow-hidden bg-bg-subtle group">
+              <img src={url} alt="" className="w-full h-full object-cover" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}} />
+              <button
+                onClick={() => builder.removeDesignProjectAsset(index, category, url)}
+                className="absolute top-0 right-0 bg-red-600 text-white text-xs w-5 h-5 rounded-bl flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                title="Remove"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          {items.length > 6 && (
+            <div className="aspect-square rounded bg-bg-subtle flex items-center justify-center text-xs text-stone font-bold">
+              +{items.length - 6}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Upload button */}
+      <label className={`block text-center text-xs py-2 rounded-lg border-2 border-dashed cursor-pointer transition ${
+        uploading
+          ? 'border-stone-light text-stone-light cursor-wait'
+          : 'border-border-light text-stone hover:border-primary hover:text-primary'
+      }`}>
+        {uploading ? 'Uploading...' : items.length > 0 ? '+ Add more' : '+ Upload images'}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFiles}
+          disabled={uploading}
+          className="hidden"
+        />
+      </label>
+
+      {err && <p className="text-xs text-red-600 mt-1">{err}</p>}
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────────────────────────
+// STEP 4: About Me Page
+// ──────────────────────────────────────────────────────────────
+
+function Step4AboutPage({ builder }: { builder: any }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-charcoal mb-1">👤 About Me Page</h2>
@@ -498,7 +838,7 @@ function Step3AboutPage({ builder }: { builder: any }) {
 // STEP 4: Contents Page
 // ──────────────────────────────────────────────────────────────
 
-function Step4ContentsPage({ builder }: { builder: any }) {
+function Step5ContentsPage({ builder }: { builder: any }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-charcoal mb-1">📋 Contents Page</h2>
@@ -552,7 +892,7 @@ function getProjectStartPage(builder: any) {
 // STEP 5: End Page (Contact)
 // ──────────────────────────────────────────────────────────────
 
-function Step5EndPage({ builder }: { builder: any }) {
+function Step6EndPage({ builder }: { builder: any }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-charcoal mb-1">📞 End Page (Contact)</h2>
@@ -653,7 +993,7 @@ function Step5EndPage({ builder }: { builder: any }) {
 // STEP 6: Review
 // ──────────────────────────────────────────────────────────────
 
-function Step6Review({ builder, totalPages }: { builder: any; totalPages: number }) {
+function Step7Review({ builder, totalPages }: { builder: any; totalPages: number }) {
   const enabledSections = Object.entries(builder.aboutPage.sections).filter(([_, v]) => v).map(([k]) => k)
   return (
     <div>
@@ -691,7 +1031,16 @@ function Step6Review({ builder, totalPages }: { builder: any; totalPages: number
         )}
 
         <ReviewRow icon="🏗️" label="Project pages">
-          <div className="text-xs text-stone-light">{builder.projectCount} projects · ~{builder.projectCount * 2} pages</div>
+          <div className="text-xs text-stone-light space-y-1">
+            {builder.designProjects.map((p: DesignProjectConfig, i: number) => {
+              const totalAssets = p.assets.renders.length + p.assets.plans.length + p.assets.sections.length + p.assets.diagrams.length
+              return (
+                <div key={p.id}>
+                  • {p.name || `Project ${i + 1}`} — {p.pageCount} pages, {totalAssets} images
+                </div>
+              )
+            })}
+          </div>
         </ReviewRow>
 
         {builder.endPage.enabled && (

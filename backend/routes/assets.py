@@ -153,6 +153,9 @@ async def bulk_upload_assets(
     portfolio_id: str,
     files: List[UploadFile] = File(...),
     asset_type: str = Form("render"),
+    design_project_index: Optional[int] = Form(None),
+    design_project_id: Optional[str] = Form(None),
+    design_project_name: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user)
 ):
     """Upload multiple assets at once"""
@@ -188,6 +191,24 @@ async def bulk_upload_assets(
             # Insert with ACTUAL schema columns only:
             # id, project_id, asset_type, file_url, file_name, file_size, upload_order, analysis, created_at
             try:
+                # Build analysis JSONB with image metadata + optional design project tagging
+                analysis_data = {
+                    "width": upload_result.get("width"),
+                    "height": upload_result.get("height"),
+                    "aspect_ratio": upload_result.get("aspect_ratio"),
+                    "mime_type": upload_result.get("mime_type"),
+                    "storage_path": upload_result.get("storage_path"),
+                    "thumb_path": upload_result.get("thumb_path"),
+                    "preview_path": upload_result.get("preview_path"),
+                }
+                # If this upload belongs to a specific design project, tag it
+                if design_project_index is not None:
+                    analysis_data["design_project_index"] = design_project_index
+                if design_project_id:
+                    analysis_data["design_project_id"] = design_project_id
+                if design_project_name:
+                    analysis_data["design_project_name"] = design_project_name
+
                 simple_data = {
                     "id": asset_id,
                     "project_id": portfolio_id,
@@ -195,20 +216,12 @@ async def bulk_upload_assets(
                     "file_url": file_url,
                     "file_name": file_name,
                     "file_size": upload_result.get("file_size", 0),
-                    "upload_order": 0,
-                    "analysis": {
-                        "width": upload_result.get("width"),
-                        "height": upload_result.get("height"),
-                        "aspect_ratio": upload_result.get("aspect_ratio"),
-                        "mime_type": upload_result.get("mime_type"),
-                        "storage_path": upload_result.get("storage_path"),
-                        "thumb_path": upload_result.get("thumb_path"),
-                        "preview_path": upload_result.get("preview_path"),
-                    },
+                    "upload_order": design_project_index if design_project_index is not None else 0,
+                    "analysis": analysis_data,
                     "created_at": datetime.utcnow().isoformat(),
                 }
                 result = supabase.table("assets").insert(simple_data).execute()
-                print(f"[OK] Asset inserted: {asset_id} - {result.data}")
+                print(f"[OK] Asset inserted: {asset_id} (design_project_index={design_project_index})")
             except Exception as db_err:
                 print(f"[WARNING] Simple schema insert failed: {db_err}")
                 # Try EXTENDED schema as fallback
@@ -337,6 +350,10 @@ async def list_assets(
                 asset["storage_path"] = analysis.get("storage_path")
                 asset["thumb_path"] = analysis.get("thumb_path")
                 asset["preview_path"] = analysis.get("preview_path")
+                # Per-project tagging (Batch 1.2)
+                asset["design_project_index"] = analysis.get("design_project_index")
+                asset["design_project_id"] = analysis.get("design_project_id")
+                asset["design_project_name"] = analysis.get("design_project_name")
 
             storage_path = asset.get("storage_path", "") or (analysis.get("storage_path", "") if isinstance(analysis, dict) else "")
             # If file_url is missing or doesn't start with http, regenerate it
