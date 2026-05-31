@@ -15,7 +15,7 @@ import {
   BarChart3,
   X,
 } from 'lucide-react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 import './ShareModal.css';
 
 interface ShareModalProps {
