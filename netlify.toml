@@ -3,7 +3,7 @@
 [build]
   base = "frontend"
   command = "npm run build"
-  publish = ".next"
+  # publish is auto-set by @netlify/plugin-nextjs plugin
 
 [build.environment]
   NODE_VERSION = "18"
@@ -12,8 +12,6 @@
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "cosmo-folio-62c7f.firebaseapp.com"
   NEXT_PUBLIC_FIREBASE_PROJECT_ID = "cosmo-folio-62c7f"
 
-# Redirect all routes to Next.js for client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/"
-  status = 200
+# Official Netlify Next.js plugin - handles routing, SSR, ISR, etc.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
