@@ -16,7 +16,7 @@ export interface LayoutDefinition {
 }
 
 // Overlay types
-export type OverlayType = 'color' | 'gradient' | 'pattern' | 'text'
+export type OverlayType = 'color' | 'gradient' | 'pattern' | 'text' | 'vignette'
 
 export interface OverlaySettings {
   color?: string
