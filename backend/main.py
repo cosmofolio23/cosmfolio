@@ -64,12 +64,12 @@ try:
     from routes import auth, projects, assets, portfolios, publication
     print("[OK] Core routes loaded")
 
-    # Include routers
-    app.include_router(auth.router, prefix="/api", tags=["auth"])
-    app.include_router(projects.router, prefix="/api", tags=["projects"])
-    app.include_router(assets.router, prefix="/api", tags=["assets"])
-    app.include_router(portfolios.router, prefix="/api", tags=["portfolios"])
-    app.include_router(publication.router, prefix="/api", tags=["publication"])
+    # Include routers - each prefix carefully chosen based on routes inside the file
+    app.include_router(auth.router, prefix="/api/auth", tags=["auth"])  # routes: /signup, /me, etc.
+    app.include_router(projects.router, prefix="/api/projects", tags=["projects"])  # routes: "", /{id}
+    app.include_router(assets.router, prefix="/api/projects", tags=["assets"])  # routes: /{portfolio_id}/assets/...
+    app.include_router(portfolios.router, prefix="/api/portfolios", tags=["portfolios"])  # routes: /{project_id}/generate
+    app.include_router(publication.router, prefix="/api/portfolios", tags=["publication"])  # routes: /{portfolio_id}/publish
 
 except Exception as e:
     print(f"[WARNING] Failed to load some routes: {type(e).__name__}: {e}")
@@ -79,11 +79,11 @@ except Exception as e:
 print("[STARTUP] Loading additional routes...")
 try:
     from routes import sheets, layouts, design_system, ai_generation, previews
-    app.include_router(sheets.router, prefix="/api", tags=["sheets"])
-    app.include_router(layouts.router, prefix="/api", tags=["layouts"])
-    app.include_router(design_system.router, prefix="/api", tags=["design"])
-    app.include_router(ai_generation.router, prefix="/api", tags=["ai"])
-    app.include_router(previews.router, prefix="/api", tags=["previews"])
+    app.include_router(sheets.router, tags=["sheets"])  # routes already have /api/... prefix
+    app.include_router(layouts.router, prefix="/api/layouts", tags=["layouts"])
+    app.include_router(design_system.router, prefix="/api/design", tags=["design"])
+    app.include_router(ai_generation.router, prefix="/api/ai", tags=["ai"])
+    app.include_router(previews.router, prefix="/api/previews", tags=["previews"])
     print("[OK] Additional routes loaded")
 except Exception as e:
     print(f"[WARNING] Some additional routes failed: {e}")
