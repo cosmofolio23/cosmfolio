@@ -38,7 +38,7 @@ class StorageConfig:
         or os.getenv("SUPABASE_KEY")
         or os.getenv("SUPABASE_ANON_KEY")
     )
-    SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "cosmfolio-assets")
+    SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "assets")  # default matches user's bucket
 
     # File Configuration
     MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
@@ -414,7 +414,7 @@ class StorageClient:
         else:
             # Fallback: construct Supabase public URL from env
             supabase_url = os.getenv("SUPABASE_URL", "")
-            bucket = os.getenv("SUPABASE_BUCKET", "cosmfolio-assets")
+            bucket = os.getenv("SUPABASE_BUCKET", "assets")
             if supabase_url:
                 return f"{supabase_url}/storage/v1/object/public/{bucket}/{storage_path}"
             raise Exception("No storage client available")
