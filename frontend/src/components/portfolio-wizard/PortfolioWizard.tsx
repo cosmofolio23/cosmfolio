@@ -325,111 +325,74 @@ function Step2FrontCover({ builder, onUpload, uploading }: { builder: any; onUpl
       <h2 className="text-xl font-bold text-charcoal mb-1">📕 Front Cover</h2>
       <p className="text-sm text-stone-light mb-6">The first page everyone sees</p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Text fields */}
-        <div>
-          <Field label="Title *" required>
+      <div className="max-w-2xl">
+        <Field label="Title *" required>
+          <input
+            type="text"
+            value={builder.frontCover.title}
+            onChange={(e) => builder.setFrontCover({ title: e.target.value })}
+            placeholder="PORTFOLIO"
+            className="input-field"
+            autoFocus
+          />
+        </Field>
+
+        <Field label="Subtitle">
+          <input
+            type="text"
+            value={builder.frontCover.subtitle}
+            onChange={(e) => builder.setFrontCover({ subtitle: e.target.value })}
+            placeholder="Architecture · Design · 2020–2026"
+            className="input-field"
+          />
+        </Field>
+
+        <Field label="Tagline / Description">
+          <input
+            type="text"
+            value={builder.frontCover.tagline}
+            onChange={(e) => builder.setFrontCover({ tagline: e.target.value })}
+            placeholder="Selected works & research"
+            className="input-field"
+          />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Author Name">
             <input
               type="text"
-              value={builder.frontCover.title}
-              onChange={(e) => builder.setFrontCover({ title: e.target.value })}
-              placeholder="PORTFOLIO"
+              value={builder.frontCover.authorName}
+              onChange={(e) => builder.setFrontCover({ authorName: e.target.value })}
+              placeholder="Jane Doe"
               className="input-field"
             />
           </Field>
 
-          <Field label="Subtitle">
+          <Field label="Year">
             <input
               type="text"
-              value={builder.frontCover.subtitle}
-              onChange={(e) => builder.setFrontCover({ subtitle: e.target.value })}
-              placeholder="Architecture · Design · 2020–2026"
-              className="input-field"
-            />
-          </Field>
-
-          <Field label="Tagline / Description">
-            <input
-              type="text"
-              value={builder.frontCover.tagline}
-              onChange={(e) => builder.setFrontCover({ tagline: e.target.value })}
-              placeholder="Selected works & research"
-              className="input-field"
-            />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Author Name">
-              <input
-                type="text"
-                value={builder.frontCover.authorName}
-                onChange={(e) => builder.setFrontCover({ authorName: e.target.value })}
-                placeholder="Jane Doe"
-                className="input-field"
-              />
-            </Field>
-
-            <Field label="Year">
-              <input
-                type="text"
-                value={builder.frontCover.year}
-                onChange={(e) => builder.setFrontCover({ year: e.target.value })}
-                placeholder="2026"
-                className="input-field"
-              />
-            </Field>
-          </div>
-
-          <Field label="Studio / Institution (optional)">
-            <input
-              type="text"
-              value={builder.frontCover.studio}
-              onChange={(e) => builder.setFrontCover({ studio: e.target.value })}
-              placeholder="e.g. School of Architecture"
+              value={builder.frontCover.year}
+              onChange={(e) => builder.setFrontCover({ year: e.target.value })}
+              placeholder="2026"
               className="input-field"
             />
           </Field>
         </div>
 
-        {/* Image upload */}
-        <div>
-          <Field label="Cover Image (optional)">
-            <div className="border-2 border-dashed border-border-light rounded-xl p-6 text-center hover:border-primary transition-colors">
-              {builder.frontCover.coverImageUrl ? (
-                <div className="space-y-3">
-                  <img
-                    src={builder.frontCover.coverImageUrl}
-                    alt="Cover preview"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => builder.setFrontCover({ coverImageUrl: '' })}
-                    className="text-sm text-red-600 hover:underline"
-                  >
-                    Remove image
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="text-5xl mb-3">🖼️</div>
-                  <p className="text-sm text-stone-light mb-3">PNG, JPG, or WebP</p>
-                  <label className="inline-block cursor-pointer px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-dark transition disabled:opacity-50">
-                    {uploading ? 'Uploading...' : 'Choose Image'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={onUpload}
-                      disabled={uploading}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-          </Field>
+        <Field label="Studio / Institution (optional)">
+          <input
+            type="text"
+            value={builder.frontCover.studio}
+            onChange={(e) => builder.setFrontCover({ studio: e.target.value })}
+            placeholder="e.g. School of Architecture"
+            className="input-field"
+          />
+        </Field>
 
-          <p className="text-xs text-stone-light mt-2">
-            💡 You can also use a render you've uploaded — pick it later in the editor.
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-sm text-charcoal">
+            🖼️ <strong>Cover image?</strong> You'll pick one from your project renders in the next step.
+            We'll show cover template options before generating.
           </p>
         </div>
       </div>

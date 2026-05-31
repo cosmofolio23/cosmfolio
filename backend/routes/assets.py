@@ -148,7 +148,7 @@ async def upload_asset(
 
 # ==================== BATCH UPLOAD ====================
 
-@router.post("/{portfolio_id}/assets/bulk", response_model=BulkAssetUploadResponse)
+@router.post("/{portfolio_id}/assets/bulk")
 async def bulk_upload_assets(
     portfolio_id: str,
     files: List[UploadFile] = File(...),
@@ -254,12 +254,14 @@ async def bulk_upload_assets(
                 except Exception as db_err2:
                     print(f"[ERROR] Both schema attempts failed for {asset_id}: {db_err2}")
 
-        return BulkAssetUploadResponse(
-            uploaded=results["uploaded"],
-            failed=results["failed"],
-            total=results["total"],
-            errors=results["errors"] if results["errors"] else None,
-        )
+        # Return raw dict so frontend can grab file_url for each uploaded asset
+        return {
+            "uploaded": results["uploaded"],
+            "failed": results["failed"],
+            "total": results["total"],
+            "errors": results["errors"] if results["errors"] else None,
+            "assets": results.get("assets", []),  # Each has file_url, asset_id, etc.
+        }
 
     except (ResourceNotFoundException, AuthorizationException):
         raise
