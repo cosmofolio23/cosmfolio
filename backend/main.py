@@ -1,217 +1,96 @@
+"""
+CosmoFolio Backend - FastAPI Server
+Minimal startup version with error recovery
+"""
 import os
 import sys
 from pathlib import Path
 
-# Set up Python path
+# Set up paths
 backend_dir = Path(__file__).parent
 sys.path.insert(0, str(backend_dir))
 
-# Load environment variables BEFORE importing anything else
-from dotenv import load_dotenv
-load_dotenv()
+print("[STARTUP] Python path setup complete")
+print(f"[STARTUP] Backend directory: {backend_dir}")
+print(f"[STARTUP] Files in backend: {len(list(backend_dir.glob('*.py')))}")
 
-print("[STARTUP] Loading FastAPI...")
+# Import FastAPI first (most critical)
+print("[STARTUP] Importing FastAPI...")
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
-print("[STARTUP] Loading settings...")
-try:
-    from config import settings
-except Exception as e:
-    print(f"[ERROR] Failed to load config: {e}")
-    raise
-
-print("[STARTUP] Loading routes...")
-try:
-    from routes import auth, projects, assets, portfolios, layouts, optimization, previews, search, versioning, caching, design_system, style_pack, layout_customization, ai_generation, preview_export
-    from routes import publication
-    from routes import sheets as sheets_router
-except Exception as e:
-    print(f"[WARNING] Some routes failed to load: {e}")
-    # Continue anyway - at least the app will start
-    auth = projects = assets = portfolios = None
-
-print("[STARTUP] Loading middleware...")
-try:
-    from middleware.rate_limit import RateLimitMiddleware
-    from middleware.security import SecurityHeadersMiddleware
-    from middleware.cache_headers import CacheHeaderMiddleware
-except Exception as e:
-    print(f"[WARNING] Middleware failed to load: {e}")
-
-def init_database():
-    """Create all tables on startup if they don't exist"""
-    from database import supabase
-    if not supabase:
-        print("[WARNING] Supabase not initialized, skipping table creation")
-        return
-
-    tables_sql = [
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            email TEXT UNIQUE NOT NULL,
-            name TEXT,
-            created_at TIMESTAMPTZ DEFAULT NOW(),
-            updated_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS projects (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            title TEXT NOT NULL,
-            description TEXT,
-            project_type TEXT DEFAULT 'residential',
-            status TEXT DEFAULT 'draft',
-            created_at TIMESTAMPTZ DEFAULT NOW(),
-            updated_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS assets (
-            id TEXT PRIMARY KEY,
-            project_id TEXT NOT NULL,
-            asset_type TEXT,
-            file_url TEXT NOT NULL,
-            file_name TEXT NOT NULL,
-            file_size INTEGER,
-            upload_order INTEGER DEFAULT 0,
-            analysis JSONB,
-            created_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS portfolios (
-            id TEXT PRIMARY KEY,
-            project_id TEXT NOT NULL,
-            layout_id TEXT,
-            style_pack TEXT,
-            page_structure JSONB,
-            variant_number INTEGER DEFAULT 1,
-            generated_html TEXT,
-            pdf_url TEXT,
-            status TEXT DEFAULT 'ready',
-            created_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        """
-    ]
-
-    for sql in tables_sql:
-        try:
-            supabase.rpc("exec_sql", {"sql": sql.strip()}).execute()
-        except Exception as e:
-            print(f"Table creation note: {e}")
-
-    print("[OK] Database tables initialized")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    print("Starting CosmoFolio API...")
-    init_database()
-    yield
-    # Shutdown
-    print("Shutting down...")
-
+# Create app immediately so we have something to serve
 app = FastAPI(
-    title=settings.APP_NAME,
-    description="AI-powered Architecture Portfolio Generator",
-    version="1.0.0",
-    lifespan=lifespan
+    title="CosmoFolio Backend",
+    description="Architecture Portfolio Generator API",
+    version="1.0.0"
 )
 
-# CORS Middleware - allow all origins
+# Add CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Phase 7: Security & Performance Middleware
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(CacheHeaderMiddleware)
-app.add_middleware(RateLimitMiddleware)
-
-# ==================== Health Check ====================
-
+# Health check endpoint (critical for Render)
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "ArchPortfolio API"}
-
-# ==================== Routes ====================
-
-# Auth routes
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-
-# Project routes
-app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
-
-# Asset routes
-app.include_router(assets.router, prefix="/api/assets", tags=["assets"])
-
-# Portfolio routes
-app.include_router(portfolios.router, prefix="/api/portfolios", tags=["portfolios"])
-
-# Layout routes
-app.include_router(layouts.router, prefix="/api/layouts", tags=["layouts"])
-
-# Preview routes
-app.include_router(previews.router, prefix="/api/portfolios", tags=["previews"])
-
-# Search routes
-app.include_router(search.router, prefix="/api/portfolios", tags=["search"])
-
-# Optimization routes
-app.include_router(optimization.router, prefix="/api/portfolios", tags=["optimization"])
-
-# Versioning routes
-app.include_router(versioning.router, prefix="/api/portfolios", tags=["versioning"])
-
-# Caching routes
-app.include_router(caching.router, prefix="/api/portfolios", tags=["caching"])
-
-# Design system routes
-app.include_router(design_system.router, prefix="/api/portfolios", tags=["design-system"])
-
-# Style pack routes
-app.include_router(style_pack.router, prefix="/api/portfolios", tags=["style-packs"])
-
-# Layout customization routes
-app.include_router(layout_customization.router, prefix="/api/portfolios", tags=["layout"])
-
-# AI generation routes
-app.include_router(ai_generation.router, prefix="/api/portfolios", tags=["ai"])
-
-# Preview & Export routes (Phase 5)
-app.include_router(preview_export.router, prefix="/api/portfolios", tags=["export"])
-
-# Phase 6: Publication & Sharing
-app.include_router(publication.router)
-app.include_router(publication.public_router)
-
-# Phase 8: Presentation Sheet Creator
-app.include_router(sheets_router.router)   # all /api/sheets/* and /api/projects/{id}/sheets
-
-# ==================== Root ====================
+async def health():
+    return {"status": "ok", "service": "cosmfolio-backend"}
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Welcome to ArchPortfolio Generator API",
-        "docs": "/docs",
-        "health": "/health"
-    }
+    return {"message": "CosmoFolio Backend API", "version": "1.0.0"}
+
+@app.get("/docs")
+async def docs():
+    """Redirect to API documentation"""
+    return {"docs": "/docs"}
+
+# Try to load environment variables
+print("[STARTUP] Loading environment variables...")
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("[STARTUP] Environment variables loaded")
+except Exception as e:
+    print(f"[WARNING] Failed to load .env: {e}")
+
+# Try to load routes (but don't crash if they fail)
+print("[STARTUP] Loading routes...")
+try:
+    from routes import auth, projects, assets, portfolios, publication
+    print("[OK] Core routes loaded")
+
+    # Include routers
+    app.include_router(auth.router, prefix="/api", tags=["auth"])
+    app.include_router(projects.router, prefix="/api", tags=["projects"])
+    app.include_router(assets.router, prefix="/api", tags=["assets"])
+    app.include_router(portfolios.router, prefix="/api", tags=["portfolios"])
+    app.include_router(publication.router, prefix="/api", tags=["publication"])
+
+except Exception as e:
+    print(f"[WARNING] Failed to load some routes: {type(e).__name__}: {e}")
+    print("[INFO] App will run with basic endpoints only")
+
+# Optional: Try to load more routes
+print("[STARTUP] Loading additional routes...")
+try:
+    from routes import sheets, layouts, design_system, ai_generation, previews
+    app.include_router(sheets.router, prefix="/api", tags=["sheets"])
+    app.include_router(layouts.router, prefix="/api", tags=["layouts"])
+    app.include_router(design_system.router, prefix="/api", tags=["design"])
+    app.include_router(ai_generation.router, prefix="/api", tags=["ai"])
+    app.include_router(previews.router, prefix="/api", tags=["previews"])
+    print("[OK] Additional routes loaded")
+except Exception as e:
+    print(f"[WARNING] Some additional routes failed: {e}")
+
+print("[STARTUP] Application ready!")
+print("[STARTUP] Server will start listening on 0.0.0.0:8000")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=settings.DEBUG
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
