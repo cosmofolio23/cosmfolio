@@ -1,9 +1,9 @@
-# Netlify Configuration for CosmoFolio Frontend
+# Netlify Configuration for CosmoFolio Frontend (Next.js)
 
 [build]
   base = "frontend"
   command = "npm run build"
-  # Netlify auto-detects .next for Next.js apps
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
