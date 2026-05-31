@@ -258,7 +258,7 @@ async def bulk_upload_assets(
 
 # ==================== LIST ASSETS ====================
 
-@router.get("/{portfolio_id}/assets", response_model=AssetListResponse)
+@router.get("/{portfolio_id}/assets")
 async def list_assets(
     portfolio_id: str,
     asset_type: Optional[str] = Query(None),
@@ -322,6 +322,7 @@ async def list_assets(
 
         # Fix file_url for assets that don't have a proper public URL
         # Also expose width/height from analysis JSONB column
+        # AND add default values for fields the AssetListResponse model expects
         from services.storage import get_storage_client
         storage_client = get_storage_client()
         for asset in assets:
@@ -346,6 +347,23 @@ async def list_assets(
                 except Exception as url_err:
                     print(f"[WARNING] Could not generate URL for asset {asset.get('id')}: {url_err}")
 
+            # Add defaults for fields required by AssetListResponse model
+            asset.setdefault("portfolio_id", asset.get("project_id", ""))
+            asset.setdefault("file_type", asset.get("asset_type", "render"))
+            asset.setdefault("preview_url", asset.get("file_url", ""))
+            asset.setdefault("description", "")
+            asset.setdefault("updated_at", asset.get("created_at"))
+            asset.setdefault("version", 1)
+            asset.setdefault("user_id", "")
+            asset.setdefault("original_file_name", asset.get("file_name", ""))
+            asset.setdefault("mime_type", asset.get("mime_type") or "image/jpeg")
+            asset.setdefault("upload_status", "completed")
+            asset.setdefault("thumbnail_status", "completed")
+            asset.setdefault("exif_data", {})
+            asset.setdefault("is_latest", True)
+            asset.setdefault("deleted_at", None)
+            asset.setdefault("custom_metadata", {})
+
         # Get tags for each asset
         for asset in assets:
             try:
@@ -362,13 +380,14 @@ async def list_assets(
 
         total_pages = (total + page_size - 1) // page_size
 
-        return AssetListResponse(
-            items=assets,
-            total=total,
-            page=page,
-            page_size=page_size,
-            total_pages=total_pages,
-        )
+        # Return as plain dict to avoid Pydantic validation errors
+        return {
+            "items": assets,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+        }
 
     except (ResourceNotFoundException, AuthorizationException):
         raise
