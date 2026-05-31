@@ -185,49 +185,49 @@ async def bulk_upload_assets(
             file_url = upload_result.get("file_url") or upload_result.get("storage_path", "")
             file_name = upload_result.get("file_name", "unknown")
 
-            # Try EXTENDED schema first (with portfolio_id, user_id, etc.)
+            # Try SIMPLE schema FIRST (matches actual DB: project_id only)
             try:
-                asset_data = {
+                simple_data = {
                     "id": asset_id,
-                    "user_id": current_user["user_id"],
-                    "portfolio_id": portfolio_id,
-                    "project_id": portfolio_id,  # same id used as both
-                    "file_name": file_name,
-                    "original_file_name": file_name,
-                    "file_size": upload_result.get("file_size", 0),
-                    "mime_type": upload_result.get("mime_type", "image/jpeg"),
+                    "project_id": portfolio_id,
                     "asset_type": asset_type,
-                    "storage_path": upload_result.get("storage_path", ""),
-                    "thumb_path": upload_result.get("thumb_path", ""),
-                    "preview_path": upload_result.get("preview_path", ""),
+                    "file_url": file_url,
+                    "file_name": file_name,
+                    "file_size": upload_result.get("file_size", 0),
                     "width": upload_result.get("width"),
                     "height": upload_result.get("height"),
-                    "aspect_ratio": upload_result.get("aspect_ratio"),
-                    "file_url": file_url,
-                    "upload_status": "completed",
-                    "thumbnail_status": "completed",
-                    "version": 1,
-                    "created_at": datetime.utcnow().isoformat(),
-                    "updated_at": datetime.utcnow().isoformat(),
                 }
-                supabase.table("assets").insert(asset_data).execute()
-                print(f"[OK] Asset inserted: {asset_id}")
+                supabase.table("assets").insert(simple_data).execute()
+                print(f"[OK] Asset inserted (simple schema): {asset_id}")
             except Exception as db_err:
-                print(f"[WARNING] Extended schema insert failed: {db_err}")
-                # Try SIMPLE schema (just essential fields)
+                print(f"[WARNING] Simple schema insert failed: {db_err}")
+                # Try EXTENDED schema as fallback
                 try:
-                    simple_data = {
+                    asset_data = {
                         "id": asset_id,
+                        "user_id": current_user["user_id"],
+                        "portfolio_id": portfolio_id,
                         "project_id": portfolio_id,
-                        "asset_type": asset_type,
-                        "file_url": file_url,
                         "file_name": file_name,
+                        "original_file_name": file_name,
                         "file_size": upload_result.get("file_size", 0),
+                        "mime_type": upload_result.get("mime_type", "image/jpeg"),
+                        "asset_type": asset_type,
+                        "storage_path": upload_result.get("storage_path", ""),
+                        "thumb_path": upload_result.get("thumb_path", ""),
+                        "preview_path": upload_result.get("preview_path", ""),
                         "width": upload_result.get("width"),
                         "height": upload_result.get("height"),
+                        "aspect_ratio": upload_result.get("aspect_ratio"),
+                        "file_url": file_url,
+                        "upload_status": "completed",
+                        "thumbnail_status": "completed",
+                        "version": 1,
+                        "created_at": datetime.utcnow().isoformat(),
+                        "updated_at": datetime.utcnow().isoformat(),
                     }
-                    supabase.table("assets").insert(simple_data).execute()
-                    print(f"[OK] Asset inserted (simple schema): {asset_id}")
+                    supabase.table("assets").insert(asset_data).execute()
+                    print(f"[OK] Asset inserted (extended schema): {asset_id}")
                 except Exception as db_err2:
                     print(f"[ERROR] Both schema attempts failed for {asset_id}: {db_err2}")
 
@@ -278,21 +278,30 @@ async def list_assets(
         if owner_id != current_user["user_id"]:
             raise AuthorizationException()
 
-        # Build query
-        query = supabase.table("assets").select("*").eq("portfolio_id", portfolio_id)
-
-        # Apply filters
-        if asset_type:
-            query = query.eq("asset_type", asset_type)
-
-        # Apply sorting
-        is_desc = sort_order == "desc"
-        query = query.order(sort_by, desc=is_desc)
-
-        # Get total count
-        count_response = supabase.table("assets").select("id", count="exact").eq(
-            "portfolio_id", portfolio_id
-        ).execute()
+        # Build query - use project_id (actual column name in DB)
+        # Try project_id first, fall back to portfolio_id if column doesn't exist
+        try:
+            query = supabase.table("assets").select("*").eq("project_id", portfolio_id)
+            # Apply filters
+            if asset_type:
+                query = query.eq("asset_type", asset_type)
+            # Apply sorting
+            is_desc = sort_order == "desc"
+            query = query.order(sort_by, desc=is_desc)
+            # Get total count
+            count_response = supabase.table("assets").select("id", count="exact").eq(
+                "project_id", portfolio_id
+            ).execute()
+        except Exception:
+            # Fallback to portfolio_id column (extended schema)
+            query = supabase.table("assets").select("*").eq("portfolio_id", portfolio_id)
+            if asset_type:
+                query = query.eq("asset_type", asset_type)
+            is_desc = sort_order == "desc"
+            query = query.order(sort_by, desc=is_desc)
+            count_response = supabase.table("assets").select("id", count="exact").eq(
+                "portfolio_id", portfolio_id
+            ).execute()
         total = count_response.count
 
         # Paginate
