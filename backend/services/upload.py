@@ -191,6 +191,7 @@ class UploadManager:
             return {
                 "asset_id": asset_id,
                 "upload_id": upload_id,
+                "file_name": upload_file.filename,  # ADDED: needed for DB insert
                 **upload_result,
                 "width": processing_result["width"],
                 "height": processing_result["height"],

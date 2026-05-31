@@ -174,9 +174,40 @@ async def bulk_upload_assets(
         if owner_id != current_user["user_id"]:
             raise AuthorizationException()
 
-        # Upload batch
+        # Upload batch (uploads to storage)
         upload_manager = get_upload_manager()
         results = await upload_manager.upload_batch(files, portfolio_id, asset_type)
+
+        # Insert DB records for each successfully uploaded asset
+        for upload_result in results.get("assets", []):
+            try:
+                # Find the matching file for this upload by index/filename
+                asset_data = {
+                    "id": upload_result["asset_id"],
+                    "user_id": current_user["user_id"],
+                    "portfolio_id": portfolio_id,
+                    "file_name": upload_result.get("file_name", "unknown"),
+                    "original_file_name": upload_result.get("file_name", "unknown"),
+                    "file_size": upload_result.get("file_size", 0),
+                    "mime_type": upload_result.get("mime_type", "image/jpeg"),
+                    "asset_type": asset_type,
+                    "storage_path": upload_result.get("storage_path", ""),
+                    "thumb_path": upload_result.get("thumb_path", ""),
+                    "preview_path": upload_result.get("preview_path", ""),
+                    "width": upload_result.get("width"),
+                    "height": upload_result.get("height"),
+                    "aspect_ratio": upload_result.get("aspect_ratio"),
+                    "file_url": upload_result.get("storage_path", ""),  # public URL
+                    "upload_status": "completed",
+                    "thumbnail_status": "completed",
+                    "version": 1,
+                    "created_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat(),
+                }
+                supabase.table("assets").insert(asset_data).execute()
+            except Exception as db_err:
+                # Log but don't fail the whole batch
+                print(f"[WARNING] DB insert failed for asset {upload_result.get('asset_id')}: {db_err}")
 
         return BulkAssetUploadResponse(
             uploaded=results["uploaded"],
