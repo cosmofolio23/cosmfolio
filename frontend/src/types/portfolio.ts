@@ -13,6 +13,15 @@ export interface LayoutDefinition {
   grid_mode?: string
   cols?: number
   rows?: number
+  minAssets?: number
+  maxAssets?: number
+  gridConfig?: {
+    columns: number
+    rows: number
+    gap?: string
+  }
+  tags?: string[]
+  requiredAssetTypes?: string[]
 }
 
 // Overlay types - all variants used in PageFrame.tsx switch cases

@@ -23,13 +23,15 @@ export function LayoutPreviewCard({ layout, isSelected, onSelect }: LayoutPrevie
       }`}
     >
       {/* Preview Image */}
-      <div className="relative w-full h-40 bg-gray-100 overflow-hidden">
-        {preview && (
+      <div className="relative w-full h-40 bg-gray-100 overflow-hidden flex items-center justify-center">
+        {preview && preview.previewUrl ? (
           <img
-            src={preview}
+            src={preview.previewUrl}
             alt={layout.name}
             className="w-full h-full object-cover"
           />
+        ) : (
+          <div className="text-6xl">{preview?.icon || '📄'}</div>
         )}
       </div>
 
@@ -40,25 +42,31 @@ export function LayoutPreviewCard({ layout, isSelected, onSelect }: LayoutPrevie
 
         {/* Layout Stats */}
         <div className="flex gap-2 flex-wrap mb-3">
-          <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-            {layout.minAssets}-{layout.maxAssets} assets
-          </span>
-          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-            {layout.gridConfig.columns}×{layout.gridConfig.rows} grid
-          </span>
+          {(layout.minAssets !== undefined && layout.maxAssets !== undefined) && (
+            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+              {layout.minAssets}-{layout.maxAssets} assets
+            </span>
+          )}
+          {layout.gridConfig && (
+            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+              {layout.gridConfig.columns}×{layout.gridConfig.rows} grid
+            </span>
+          )}
         </div>
 
         {/* Tags */}
-        <div className="flex gap-1 flex-wrap">
-          {layout.tags.slice(0, 2).map((tag) => (
-            <span key={tag} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
-              {tag}
-            </span>
-          ))}
-        </div>
+        {layout.tags && layout.tags.length > 0 && (
+          <div className="flex gap-1 flex-wrap">
+            {layout.tags.slice(0, 2).map((tag) => (
+              <span key={tag} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Asset Types */}
-        {layout.requiredAssetTypes.length > 0 && (
+        {layout.requiredAssetTypes && layout.requiredAssetTypes.length > 0 && (
           <div className="mt-3 pt-3 border-t text-xs text-gray-600">
             <strong>Assets:</strong> {layout.requiredAssetTypes.join(', ')}
           </div>
