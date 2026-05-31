@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-class APIClient {
+export class APIClient {
   private client: AxiosInstance
   private token: string | null = null
 
