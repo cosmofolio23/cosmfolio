@@ -83,7 +83,9 @@
       "Bash(curl -s https://frontend-fawn-kappa-36.vercel.app/dashboard)",
       "Bash(curl -s -X GET https://rjobifgysmovmcvhdlnd.supabase.co/rest/v1/users?limit=1 -H 'apikey: sb_publishable_IsZjamlpYF9KrkJ07-Cikg_Lgl_UFoB')",
       "Bash(curl -s -X GET https://api.replicate.com/v1/account -H 'Authorization: Token r8_ScjqMijvSfy7RbBmWCGC6SfF31vkRsH46EGF4')",
-      "Bash(git tag *)"
+      "Bash(git tag *)",
+      "Bash(curl -s https://cosmfolio-production.up.railway.app/docs -I)",
+      "Bash(curl -s https://frontend-fawn-kappa-36.vercel.app -I)"
     ]
   }
 }
