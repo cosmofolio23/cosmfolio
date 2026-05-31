@@ -185,7 +185,8 @@ async def bulk_upload_assets(
             file_url = upload_result.get("file_url") or upload_result.get("storage_path", "")
             file_name = upload_result.get("file_name", "unknown")
 
-            # Try SIMPLE schema FIRST (matches actual DB: project_id only)
+            # Insert with ACTUAL schema columns only:
+            # id, project_id, asset_type, file_url, file_name, file_size, upload_order, analysis, created_at
             try:
                 simple_data = {
                     "id": asset_id,
@@ -194,11 +195,20 @@ async def bulk_upload_assets(
                     "file_url": file_url,
                     "file_name": file_name,
                     "file_size": upload_result.get("file_size", 0),
-                    "width": upload_result.get("width"),
-                    "height": upload_result.get("height"),
+                    "upload_order": 0,
+                    "analysis": {
+                        "width": upload_result.get("width"),
+                        "height": upload_result.get("height"),
+                        "aspect_ratio": upload_result.get("aspect_ratio"),
+                        "mime_type": upload_result.get("mime_type"),
+                        "storage_path": upload_result.get("storage_path"),
+                        "thumb_path": upload_result.get("thumb_path"),
+                        "preview_path": upload_result.get("preview_path"),
+                    },
+                    "created_at": datetime.utcnow().isoformat(),
                 }
-                supabase.table("assets").insert(simple_data).execute()
-                print(f"[OK] Asset inserted (simple schema): {asset_id}")
+                result = supabase.table("assets").insert(simple_data).execute()
+                print(f"[OK] Asset inserted: {asset_id} - {result.data}")
             except Exception as db_err:
                 print(f"[WARNING] Simple schema insert failed: {db_err}")
                 # Try EXTENDED schema as fallback
@@ -311,11 +321,23 @@ async def list_assets(
         assets = response.data or []
 
         # Fix file_url for assets that don't have a proper public URL
+        # Also expose width/height from analysis JSONB column
         from services.storage import get_storage_client
         storage_client = get_storage_client()
         for asset in assets:
             current_url = asset.get("file_url") or ""
-            storage_path = asset.get("storage_path", "")
+            analysis = asset.get("analysis") or {}
+
+            # Expose analysis fields at top level for frontend
+            if isinstance(analysis, dict):
+                asset["width"] = analysis.get("width")
+                asset["height"] = analysis.get("height")
+                asset["mime_type"] = analysis.get("mime_type")
+                asset["storage_path"] = analysis.get("storage_path")
+                asset["thumb_path"] = analysis.get("thumb_path")
+                asset["preview_path"] = analysis.get("preview_path")
+
+            storage_path = asset.get("storage_path", "") or (analysis.get("storage_path", "") if isinstance(analysis, dict) else "")
             # If file_url is missing or doesn't start with http, regenerate it
             if storage_path and (not current_url or not current_url.startswith("http")):
                 try:
