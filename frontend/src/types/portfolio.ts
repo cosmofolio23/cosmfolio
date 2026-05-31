@@ -3,6 +3,39 @@
  * Defines all TypeScript types and interfaces used throughout the portfolio builder application
  */
 
+// Layout types
+export interface LayoutDefinition {
+  id: string
+  name: string
+  description: string
+  category: string
+  thumbnail_url?: string
+  grid_mode?: string
+  cols?: number
+  rows?: number
+}
+
+// Overlay types
+export type OverlayType = 'color' | 'gradient' | 'pattern' | 'text'
+
+export interface OverlaySettings {
+  color?: string
+  opacity?: number
+  gradientAngle?: number
+  gradientFrom?: string
+  gradientTo?: string
+  patternType?: 'dots' | 'lines' | 'grid'
+  textContent?: string
+  [key: string]: any
+}
+
+export interface OverlayConfig {
+  id: string
+  type: OverlayType
+  enabled: boolean
+  settings: OverlaySettings
+}
+
 // Design system types
 export interface FontToken {
   family: string
