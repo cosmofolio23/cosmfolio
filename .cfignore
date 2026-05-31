@@ -1,0 +1,9 @@
+# Cloudflare Pages should ignore these (only build frontend)
+backend/
+*.py
+requirements.txt
+Dockerfile
+render.yaml
+.python-version
+*.md
+PHASE*
