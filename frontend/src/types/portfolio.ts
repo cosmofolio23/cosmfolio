@@ -201,37 +201,74 @@ export type PortfolioType =
   | 'professional'  // For senior roles, polished + corporate
   | 'competition'   // For competitions, bold + striking
 
-/** Optional pages user can include in their portfolio */
-export interface PortfolioPagesConfig {
-  resume: boolean
-  about: boolean
-  contents: boolean
-  skills: boolean
-  software: boolean
-  experience: boolean
-  contact: boolean
-  awards: boolean
-  publications: boolean
+/** Front cover page content (editable by user) */
+export interface FrontCoverConfig {
+  title: string
+  subtitle: string
+  tagline: string
+  authorName: string
+  year: string
+  studio: string
+  coverImageUrl: string  // optional uploaded image
 }
 
-/** Complete config from Step 1 wizard */
+/** About Me page contains multiple toggleable sections (NOT separate pages) */
+export interface AboutMePageConfig {
+  enabled: boolean
+  sections: {
+    bio: boolean         // short bio paragraph
+    resume: boolean      // education + experience timeline
+    skills: boolean      // design skills
+    software: boolean    // tools (Rhino, AutoCAD, etc.)
+    experience: boolean  // work history
+    awards: boolean      // honors, competitions
+    publications: boolean // articles, papers
+    languages: boolean   // spoken languages
+    interests: boolean   // personal interests
+  }
+  // Content (filled in later, optional now)
+  content?: {
+    bio?: string
+    designation?: string
+    vision?: string
+    philosophy?: string
+  }
+}
+
+/** End page (last page) — contact + closing */
+export interface EndPageConfig {
+  enabled: boolean
+  email: string
+  website: string
+  phone: string
+  instagram: string
+  linkedin: string
+  includeQrCode: boolean
+}
+
+/** Complete config from wizard */
 export interface PortfolioWizardConfig {
   name: string
   type: PortfolioType
-  totalPages: number
   projectCount: number
-  pages: PortfolioPagesConfig
+  frontCover: FrontCoverConfig
+  aboutPage: AboutMePageConfig
+  contentsPage: { enabled: boolean }
+  endPage: EndPageConfig
 }
 
 // Builder state
 export interface BuilderState {
   currentStep: number
-  // Batch 1: Wizard fields
+  // Batch 1: Wizard fields (new structure)
   portfolioName: string
   portfolioType: PortfolioType
-  totalPages: number
   projectCount: number
-  pages: PortfolioPagesConfig
+  totalPages: number  // auto-calculated from sections + projects
+  frontCover: FrontCoverConfig
+  aboutPage: AboutMePageConfig
+  contentsPageEnabled: boolean
+  endPage: EndPageConfig
   // Existing fields (kept for backwards compat with old steps)
   frontPage: FrontPageConfig
   lastPage: LastPageConfig

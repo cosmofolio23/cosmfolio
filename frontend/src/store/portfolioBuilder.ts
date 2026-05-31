@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { BuilderState, ProjectPageConfig, DesignMode, PortfolioType, PortfolioPagesConfig } from '@/types/portfolio'
+import { BuilderState, ProjectPageConfig, DesignMode, PortfolioType, FrontCoverConfig, AboutMePageConfig, EndPageConfig } from '@/types/portfolio'
 
 interface PortfolioBuilderStore extends BuilderState {
   // State properties (explicitly declare for component access)
@@ -10,7 +10,10 @@ interface PortfolioBuilderStore extends BuilderState {
   frontPage: BuilderState['frontPage']
   portfolioName: string
   portfolioType: PortfolioType
-  pages: PortfolioPagesConfig
+  frontCover: FrontCoverConfig
+  aboutPage: AboutMePageConfig
+  contentsPageEnabled: boolean
+  endPage: EndPageConfig
 
   // Step navigation
   setStep: (step: number) => void
@@ -21,8 +24,12 @@ interface PortfolioBuilderStore extends BuilderState {
   // Batch 1: Wizard setters
   setPortfolioName: (name: string) => void
   setPortfolioType: (type: PortfolioType) => void
-  togglePage: (page: keyof PortfolioPagesConfig) => void
-  setPages: (pages: Partial<PortfolioPagesConfig>) => void
+  setFrontCover: (cover: Partial<FrontCoverConfig>) => void
+  toggleAboutPage: () => void
+  toggleAboutSection: (section: keyof AboutMePageConfig['sections']) => void
+  setContentsPageEnabled: (enabled: boolean) => void
+  toggleEndPage: () => void
+  setEndPage: (end: Partial<EndPageConfig>) => void
 
   // Step 1: Page count
   setTotalPages: (count: number) => void
@@ -68,16 +75,38 @@ const initialState: BuilderState = {
   portfolioType: 'professional',
   totalPages: 8,
   projectCount: 3,
-  pages: {
-    resume: false,
-    about: true,
-    contents: true,
-    skills: false,
-    software: false,
-    experience: false,
-    contact: true,
-    awards: false,
-    publications: false,
+  frontCover: {
+    title: '',
+    subtitle: '',
+    tagline: '',
+    authorName: '',
+    year: new Date().getFullYear().toString(),
+    studio: '',
+    coverImageUrl: '',
+  },
+  aboutPage: {
+    enabled: true,
+    sections: {
+      bio: true,
+      resume: true,
+      skills: true,
+      software: true,
+      experience: false,
+      awards: false,
+      publications: false,
+      languages: false,
+      interests: false,
+    },
+  },
+  contentsPageEnabled: true,
+  endPage: {
+    enabled: true,
+    email: '',
+    website: '',
+    phone: '',
+    instagram: '',
+    linkedin: '',
+    includeQrCode: true,
   },
   frontPage: {
     designMode: 'manual',
@@ -116,11 +145,24 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
   // Batch 1: Wizard setters
   setPortfolioName: (name) => set({ portfolioName: name }),
   setPortfolioType: (type) => set({ portfolioType: type }),
-  togglePage: (page) => set((s) => ({
-    pages: { ...s.pages, [page]: !s.pages[page] }
+  setFrontCover: (cover) => set((s) => ({
+    frontCover: { ...s.frontCover, ...cover }
   })),
-  setPages: (pages) => set((s) => ({
-    pages: { ...s.pages, ...pages }
+  toggleAboutPage: () => set((s) => ({
+    aboutPage: { ...s.aboutPage, enabled: !s.aboutPage.enabled }
+  })),
+  toggleAboutSection: (section) => set((s) => ({
+    aboutPage: {
+      ...s.aboutPage,
+      sections: { ...s.aboutPage.sections, [section]: !s.aboutPage.sections[section] }
+    }
+  })),
+  setContentsPageEnabled: (enabled) => set({ contentsPageEnabled: enabled }),
+  toggleEndPage: () => set((s) => ({
+    endPage: { ...s.endPage, enabled: !s.endPage.enabled }
+  })),
+  setEndPage: (end) => set((s) => ({
+    endPage: { ...s.endPage, ...end }
   })),
 
   // Step 1
