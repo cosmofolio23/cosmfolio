@@ -31,11 +31,11 @@ class StorageConfig:
     S3_BUCKET = os.getenv("S3_BUCKET", "cosmfolio-assets")
     S3_CDN_URL = os.getenv("S3_CDN_URL", f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com")
 
-    # Supabase Configuration - try multiple key name conventions
+    # Supabase Configuration - prefer SERVICE_ROLE_KEY for storage (bypasses RLS)
     SUPABASE_URL = os.getenv("SUPABASE_URL")
     SUPABASE_KEY = (
-        os.getenv("SUPABASE_KEY")
-        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY")  # PREFER service role for storage (bypasses RLS)
+        or os.getenv("SUPABASE_KEY")
         or os.getenv("SUPABASE_ANON_KEY")
     )
     SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "cosmfolio-assets")
@@ -313,19 +313,35 @@ class StorageClient:
     ) -> None:
         """Upload file to Supabase Storage"""
         try:
-            self.supabase.storage.from_(self.config.SUPABASE_BUCKET).upload(
-                file_path,
-                file_data,
-                {
-                    "contentType": mime_type,
-                    "cacheControl": "31536000" if "original" in file_path else "2592000",
-                },
-            )
+            # Use upsert to allow overwrites (in case of retry)
+            # Note: newer supabase-py uses file_options parameter
+            try:
+                self.supabase.storage.from_(self.config.SUPABASE_BUCKET).upload(
+                    path=file_path,
+                    file=file_data,
+                    file_options={
+                        "content-type": mime_type,
+                        "cache-control": "31536000" if "original" in file_path else "2592000",
+                        "upsert": "true",  # allow overwrite
+                    },
+                )
+            except TypeError:
+                # Fallback for older supabase-py versions
+                self.supabase.storage.from_(self.config.SUPABASE_BUCKET).upload(
+                    file_path,
+                    file_data,
+                    {
+                        "content-type": mime_type,
+                        "cache-control": "31536000" if "original" in file_path else "2592000",
+                        "upsert": "true",
+                    },
+                )
             logger.info(f"Uploaded to Supabase: {file_path}")
 
         except Exception as e:
-            logger.error(f"Supabase upload error: {str(e)}")
-            raise
+            logger.error(f"Supabase upload error for path {file_path}: {str(e)}")
+            # Re-raise with more context
+            raise Exception(f"Supabase upload failed at {file_path}: {str(e)}") from e
 
     # ==================== DOWNLOAD OPERATIONS ====================
 

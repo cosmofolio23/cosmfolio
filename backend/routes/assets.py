@@ -179,15 +179,21 @@ async def bulk_upload_assets(
         results = await upload_manager.upload_batch(files, portfolio_id, asset_type)
 
         # Insert DB records for each successfully uploaded asset
+        # Try multiple schema variations (older simple schema + newer extended schema)
         for upload_result in results.get("assets", []):
+            asset_id = upload_result.get("asset_id")
+            file_url = upload_result.get("file_url") or upload_result.get("storage_path", "")
+            file_name = upload_result.get("file_name", "unknown")
+
+            # Try EXTENDED schema first (with portfolio_id, user_id, etc.)
             try:
-                # Find the matching file for this upload by index/filename
                 asset_data = {
-                    "id": upload_result["asset_id"],
+                    "id": asset_id,
                     "user_id": current_user["user_id"],
                     "portfolio_id": portfolio_id,
-                    "file_name": upload_result.get("file_name", "unknown"),
-                    "original_file_name": upload_result.get("file_name", "unknown"),
+                    "project_id": portfolio_id,  # same id used as both
+                    "file_name": file_name,
+                    "original_file_name": file_name,
                     "file_size": upload_result.get("file_size", 0),
                     "mime_type": upload_result.get("mime_type", "image/jpeg"),
                     "asset_type": asset_type,
@@ -197,7 +203,7 @@ async def bulk_upload_assets(
                     "width": upload_result.get("width"),
                     "height": upload_result.get("height"),
                     "aspect_ratio": upload_result.get("aspect_ratio"),
-                    "file_url": upload_result.get("file_url") or upload_result.get("storage_path", ""),  # public URL
+                    "file_url": file_url,
                     "upload_status": "completed",
                     "thumbnail_status": "completed",
                     "version": 1,
@@ -205,9 +211,25 @@ async def bulk_upload_assets(
                     "updated_at": datetime.utcnow().isoformat(),
                 }
                 supabase.table("assets").insert(asset_data).execute()
+                print(f"[OK] Asset inserted: {asset_id}")
             except Exception as db_err:
-                # Log but don't fail the whole batch
-                print(f"[WARNING] DB insert failed for asset {upload_result.get('asset_id')}: {db_err}")
+                print(f"[WARNING] Extended schema insert failed: {db_err}")
+                # Try SIMPLE schema (just essential fields)
+                try:
+                    simple_data = {
+                        "id": asset_id,
+                        "project_id": portfolio_id,
+                        "asset_type": asset_type,
+                        "file_url": file_url,
+                        "file_name": file_name,
+                        "file_size": upload_result.get("file_size", 0),
+                        "width": upload_result.get("width"),
+                        "height": upload_result.get("height"),
+                    }
+                    supabase.table("assets").insert(simple_data).execute()
+                    print(f"[OK] Asset inserted (simple schema): {asset_id}")
+                except Exception as db_err2:
+                    print(f"[ERROR] Both schema attempts failed for {asset_id}: {db_err2}")
 
         return BulkAssetUploadResponse(
             uploaded=results["uploaded"],
