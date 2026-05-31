@@ -7,11 +7,9 @@ import { StylePackSelector } from '@/components/preview/StylePackSelector'
 import { Step1PageCount } from '@/components/portfolio-builder/steps/Step1PageCount'
 import { Step2ProjectCount } from '@/components/portfolio-builder/steps/Step2ProjectCount'
 import { Step3FrontPage } from '@/components/portfolio-builder/steps/Step3FrontPage'
-import { getStylePack } from '@/lib/stylePackDefinitions'
 
 export default function PortfolioBuilder() {
   const builder = usePortfolioBuilder()
-  const currentStylePack = getStylePack(builder.stylePackId)
 
   const renderStep = () => {
     switch (builder.currentStep) {
