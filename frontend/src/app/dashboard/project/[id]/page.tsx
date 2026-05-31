@@ -159,13 +159,11 @@ export default function ProjectPage() {
             <span className="text-stone-light font-medium">{totalAssets} assets uploaded</span>
             {totalAssets > 0 && (
               <Link
-                href={`/dashboard/project/${params.id}/generate`}
+                href={`/dashboard/project/${params.id}/portfolio`}
                 className="btn-primary flex items-center gap-2"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                </svg>
-                Generate Portfolio
+                <span>✨</span>
+                Create Portfolio
               </Link>
             )}
           </div>
@@ -305,15 +303,15 @@ export default function ProjectPage() {
         {/* Generate CTA */}
         {totalAssets > 0 && (
           <div className="mt-12 card-elevated bg-gradient-to-r from-primary to-primary-light rounded-2xl p-8 text-white text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Ready to generate your portfolio?</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Ready to build your portfolio?</h2>
             <p className="text-blue-100 mb-8 text-lg">
-              You have <span className="font-semibold">{totalAssets} assets</span> across <span className="font-semibold">{Object.values(assets).filter(a => a.length > 0).length} categories</span>. Let AI create stunning variations.
+              You have <span className="font-semibold">{totalAssets} assets</span> across <span className="font-semibold">{Object.values(assets).filter(a => a.length > 0).length} categories</span>. Configure your portfolio in the wizard.
             </p>
             <Link
-              href={`/dashboard/project/${params.id}/generate`}
+              href={`/dashboard/project/${params.id}/portfolio`}
               className="inline-block bg-white text-primary px-8 py-4 rounded-lg font-bold hover:bg-gray-50 transition-colors"
             >
-              Generate Portfolio Variants
+              ✨ Start Portfolio Wizard
             </Link>
           </div>
         )}

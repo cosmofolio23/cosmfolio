@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { BuilderState, ProjectPageConfig, DesignMode } from '@/types/portfolio'
+import { BuilderState, ProjectPageConfig, DesignMode, PortfolioType, PortfolioPagesConfig } from '@/types/portfolio'
 
 interface PortfolioBuilderStore extends BuilderState {
   // State properties (explicitly declare for component access)
@@ -8,12 +8,21 @@ interface PortfolioBuilderStore extends BuilderState {
   projectCount: number
   stylePackId: string
   frontPage: BuilderState['frontPage']
+  portfolioName: string
+  portfolioType: PortfolioType
+  pages: PortfolioPagesConfig
 
   // Step navigation
   setStep: (step: number) => void
   nextStep: () => void
   prevStep: () => void
   getTotalSteps: () => number
+
+  // Batch 1: Wizard setters
+  setPortfolioName: (name: string) => void
+  setPortfolioType: (type: PortfolioType) => void
+  togglePage: (page: keyof PortfolioPagesConfig) => void
+  setPages: (pages: Partial<PortfolioPagesConfig>) => void
 
   // Step 1: Page count
   setTotalPages: (count: number) => void
@@ -55,8 +64,21 @@ interface PortfolioBuilderStore extends BuilderState {
 
 const initialState: BuilderState = {
   currentStep: 1,
+  portfolioName: '',
+  portfolioType: 'professional',
   totalPages: 8,
   projectCount: 3,
+  pages: {
+    resume: false,
+    about: true,
+    contents: true,
+    skills: false,
+    software: false,
+    experience: false,
+    contact: true,
+    awards: false,
+    publications: false,
+  },
   frontPage: {
     designMode: 'manual',
     selectedLayoutId: 'cover-hero-full',
@@ -90,6 +112,16 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
   nextStep: () => set((s) => ({ currentStep: Math.min(s.currentStep + 1, get().getTotalSteps()) })),
   prevStep: () => set((s) => ({ currentStep: Math.max(s.currentStep - 1, 1) })),
   getTotalSteps: () => 7,
+
+  // Batch 1: Wizard setters
+  setPortfolioName: (name) => set({ portfolioName: name }),
+  setPortfolioType: (type) => set({ portfolioType: type }),
+  togglePage: (page) => set((s) => ({
+    pages: { ...s.pages, [page]: !s.pages[page] }
+  })),
+  setPages: (pages) => set((s) => ({
+    pages: { ...s.pages, ...pages }
+  })),
 
   // Step 1
   setTotalPages: (count) => set({ totalPages: Math.max(4, Math.min(50, count)) }),

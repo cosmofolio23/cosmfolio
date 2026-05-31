@@ -189,11 +189,50 @@ export interface ProjectPageConfig {
 // Design mode types
 export type DesignMode = 'auto' | 'manual'
 
+// ====================================================
+// BATCH 1: Portfolio Wizard Types
+// ====================================================
+
+/** Portfolio Type — defines the audience and feel of the portfolio */
+export type PortfolioType =
+  | 'internship'    // For job applications, modern + clean
+  | 'academic'      // For school submissions, thorough
+  | 'thesis'        // For thesis defense, deep research focus
+  | 'professional'  // For senior roles, polished + corporate
+  | 'competition'   // For competitions, bold + striking
+
+/** Optional pages user can include in their portfolio */
+export interface PortfolioPagesConfig {
+  resume: boolean
+  about: boolean
+  contents: boolean
+  skills: boolean
+  software: boolean
+  experience: boolean
+  contact: boolean
+  awards: boolean
+  publications: boolean
+}
+
+/** Complete config from Step 1 wizard */
+export interface PortfolioWizardConfig {
+  name: string
+  type: PortfolioType
+  totalPages: number
+  projectCount: number
+  pages: PortfolioPagesConfig
+}
+
 // Builder state
 export interface BuilderState {
   currentStep: number
+  // Batch 1: Wizard fields
+  portfolioName: string
+  portfolioType: PortfolioType
   totalPages: number
   projectCount: number
+  pages: PortfolioPagesConfig
+  // Existing fields (kept for backwards compat with old steps)
   frontPage: FrontPageConfig
   lastPage: LastPageConfig
   resumePage: ResumePageConfig
