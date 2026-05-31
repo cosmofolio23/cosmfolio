@@ -7,6 +7,10 @@ from enum import Enum
 # ==================== Enums ====================
 
 class ProjectTypeEnum(str, Enum):
+    # User-facing project categories (used by frontend)
+    portfolio = "portfolio"
+    sheet = "sheet"
+    # Architecture-specific project types
     cultural_center = "cultural_center"
     residential = "residential"
     office = "office"
