@@ -197,7 +197,7 @@ async def bulk_upload_assets(
                     "width": upload_result.get("width"),
                     "height": upload_result.get("height"),
                     "aspect_ratio": upload_result.get("aspect_ratio"),
-                    "file_url": upload_result.get("storage_path", ""),  # public URL
+                    "file_url": upload_result.get("file_url") or upload_result.get("storage_path", ""),  # public URL
                     "upload_status": "completed",
                     "thumbnail_status": "completed",
                     "version": 1,

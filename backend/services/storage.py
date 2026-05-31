@@ -31,9 +31,13 @@ class StorageConfig:
     S3_BUCKET = os.getenv("S3_BUCKET", "cosmfolio-assets")
     S3_CDN_URL = os.getenv("S3_CDN_URL", f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com")
 
-    # Supabase Configuration
+    # Supabase Configuration - try multiple key name conventions
     SUPABASE_URL = os.getenv("SUPABASE_URL")
-    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+    SUPABASE_KEY = (
+        os.getenv("SUPABASE_KEY")
+        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        or os.getenv("SUPABASE_ANON_KEY")
+    )
     SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "cosmfolio-assets")
 
     # File Configuration
@@ -380,10 +384,23 @@ class StorageClient:
         if self.s3_client:
             return f"{self.config.S3_CDN_URL}/{storage_path}"
         elif self.supabase:
-            return self.supabase.storage.from_(
+            # supabase-py may return dict or string depending on version
+            result = self.supabase.storage.from_(
                 self.config.SUPABASE_BUCKET
-            ).get_public_url(storage_path)["publicURL"]
+            ).get_public_url(storage_path)
+            # Handle both dict and string return types
+            if isinstance(result, dict):
+                return result.get("publicURL") or result.get("publicUrl") or result.get("public_url") or ""
+            elif isinstance(result, str):
+                return result
+            # Fallback: construct URL manually
+            return f"{self.config.SUPABASE_URL}/storage/v1/object/public/{self.config.SUPABASE_BUCKET}/{storage_path}"
         else:
+            # Fallback: construct Supabase public URL from env
+            supabase_url = os.getenv("SUPABASE_URL", "")
+            bucket = os.getenv("SUPABASE_BUCKET", "cosmfolio-assets")
+            if supabase_url:
+                return f"{supabase_url}/storage/v1/object/public/{bucket}/{storage_path}"
             raise Exception("No storage client available")
 
     # ==================== DELETE OPERATIONS ====================

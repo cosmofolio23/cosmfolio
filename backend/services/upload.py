@@ -184,6 +184,13 @@ class UploadManager:
                 processing_result["thumbnails"]
             )
 
+            # Generate public URL for the uploaded file
+            file_url = ""
+            try:
+                file_url = await self.storage_client.get_public_url(upload_result["storage_path"])
+            except Exception as url_err:
+                logger.warning(f"Could not get public URL: {url_err}")
+
             # Mark as completed
             progress.mark_completed()
             self.progress_sessions[upload_id] = progress
@@ -192,6 +199,7 @@ class UploadManager:
                 "asset_id": asset_id,
                 "upload_id": upload_id,
                 "file_name": upload_file.filename,  # ADDED: needed for DB insert
+                "file_url": file_url,  # ADDED: public URL for frontend display
                 **upload_result,
                 "width": processing_result["width"],
                 "height": processing_result["height"],
