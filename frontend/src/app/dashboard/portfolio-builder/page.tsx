@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { usePortfolioBuilder } from '@/store/portfolioBuilder'
 import { DesignTokenProvider } from '@/components/design-system/DesignTokenProvider'
 import { StylePackSelector } from '@/components/preview/StylePackSelector'
