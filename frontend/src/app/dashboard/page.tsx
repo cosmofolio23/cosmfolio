@@ -69,9 +69,16 @@ export default function Dashboard() {
         setNewProjectTitle('')
         setShowNewProject(false)
         setCreatingType(null)
+        // Redirect directly to the newly created project
+        router.push(`/dashboard/project/${newProject.id}`)
+      } else {
+        const errorData = await res.json().catch(() => ({}))
+        console.error('Failed to create project:', errorData)
+        alert(`Failed to create project: ${errorData.detail || res.statusText}`)
       }
     } catch (error) {
       console.error('Failed to create project:', error)
+      alert('Failed to create project. Please check your connection.')
     }
   }
 
