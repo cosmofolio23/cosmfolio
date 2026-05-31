@@ -15,8 +15,11 @@ export interface LayoutDefinition {
   rows?: number
 }
 
-// Overlay types
-export type OverlayType = 'color' | 'gradient' | 'pattern' | 'text' | 'vignette'
+// Overlay types - all variants used in PageFrame.tsx switch cases
+export type OverlayType = 'color' | 'gradient' | 'pattern' | 'text' | 'vignette' | 'blur'
+
+// Page numbering format types
+export type PageNumberFormat = 'numeric' | 'roman' | 'dash' | 'dot'
 
 export interface OverlaySettings {
   color?: string
@@ -26,6 +29,9 @@ export interface OverlaySettings {
   gradientTo?: string
   patternType?: 'dots' | 'lines' | 'grid'
   textContent?: string
+  blurAmount?: number
+  vignetteColor?: string
+  vignetteIntensity?: number
   [key: string]: any
 }
 
