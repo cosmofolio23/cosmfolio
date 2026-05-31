@@ -10,11 +10,11 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements from root
-COPY requirements.txt /
+# Copy requirements from backend folder (kept out of root so Cloudflare doesn't detect Python)
+COPY backend/requirements.txt /tmp/requirements.txt
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Copy entire backend directory
 COPY backend/ /backend/
