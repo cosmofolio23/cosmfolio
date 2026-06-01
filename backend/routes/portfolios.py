@@ -11,6 +11,38 @@ router = APIRouter()
 
 # ==================== Portfolio Generation ====================
 
+def get_style_pack_tokens(style_id: str) -> dict:
+    """
+    Get style pack tokens for a given style ID.
+    Looks up from preset packs or returns defaults.
+    """
+    from services.style_pack import get_style_pack_service
+    try:
+        service = get_style_pack_service()
+        presets = service.get_preset_packs()
+        for pack in presets:
+            if pack["id"] == style_id:
+                return pack
+    except Exception:
+        pass
+
+    # Default fallback (minimal white)
+    return {
+        "id": "preset-minimal-white",
+        "name": "Minimal White",
+        "colors": {
+            "primary": "#000000", "secondary": "#666666",
+            "accent": "#0066cc", "background": "#ffffff", "text": "#333333"
+        },
+        "typography": {
+            "heading_font": "sans-serif", "body_font": "sans-serif",
+            "heading_size": 36, "body_size": 16,
+            "heading_weight": 700, "body_weight": 400, "line_height": 1.6
+        },
+        "spacing": {"xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32}
+    }
+
+
 def generate_portfolio_structure(
     project_id: str,
     layout_id: str,
@@ -22,6 +54,9 @@ def generate_portfolio_structure(
     In production, this would call Llama 2 via Replicate.
     For now, use heuristic rules.
     """
+
+    # Get style pack tokens to embed in structure
+    style_pack = get_style_pack_tokens(style_id)
 
     # Simple heuristic page generation
     pages = []
@@ -115,7 +150,11 @@ def generate_portfolio_structure(
         })
         render_idx += 1
 
-    return {"pages": pages, "total_pages": len(pages)}
+    return {
+        "pages": pages,
+        "total_pages": len(pages),
+        "style_pack": style_pack,
+    }
 
 # ==================== Routes ====================
 
