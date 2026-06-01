@@ -221,12 +221,7 @@ export interface DesignProjectConfig {
   typology: string     // e.g. "Cultural"
   pageCount: number    // how many pages this project gets in the portfolio
   description: string  // short blurb
-  assets: {
-    renders: string[]   // image URLs
-    plans: string[]
-    sections: string[]
-    diagrams: string[]
-  }
+  // Images uploaded AFTER wizard in portfolio editor page
 }
 
 /** About Me page contains multiple toggleable sections (NOT separate pages) */
