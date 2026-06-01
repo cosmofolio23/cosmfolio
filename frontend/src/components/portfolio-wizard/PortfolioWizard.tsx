@@ -568,6 +568,9 @@ function ProjectCard({
             />
           </Field>
 
+          {/* Project Cover Image */}
+          <ProjectCoverUpload project={project} index={index} builder={builder} projectId={projectId} />
+
           {/* Image uploads */}
           <div>
             <label className="block text-sm font-semibold text-charcoal mb-3">
@@ -585,6 +588,126 @@ function ProjectCard({
         </div>
       )}
     </div>
+  )
+}
+
+function ProjectCoverUpload({ project, index, builder, projectId }: { project: DesignProjectConfig; index: number; builder: any; projectId: string }) {
+  const [uploading, setUploading] = useState(false)
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const token = localStorage.getItem('auth_token')
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const res = await fetch(
+        `${API_URL}/api/projects/${projectId}/assets/bulk?asset_type=render`,
+        { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData }
+      )
+
+      if (res.ok) {
+        const data = await res.json()
+        const uploadedUrl = data.assets?.[0]?.file_url || ''
+        if (uploadedUrl) {
+          builder.setDesignProject(index, { coverImageUrl: uploadedUrl })
+        }
+      } else {
+        console.error('Upload error:', res.status, res.statusText)
+      }
+    } catch (e) {
+      console.error('Upload failed:', e)
+    } finally {
+      setUploading(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  return (
+    <Field label="🖼️ Project Cover Image">
+      {project.coverImageUrl ? (
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden border-2 border-border-light">
+          <img src={project.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+          <button
+            onClick={() => builder.setDesignProject(index, { coverImageUrl: '' })}
+            className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-700"
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-border-light rounded-lg p-6 cursor-pointer hover:border-primary transition">
+          <div className="text-3xl mb-2">📸</div>
+          <p className="text-sm text-stone-light">Thumbnail for this project (displays in layout)</p>
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+          <span className="text-xs text-stone-light mt-2">{uploading ? 'Uploading...' : 'Click to upload'}</span>
+        </label>
+      )}
+    </Field>
+  )
+}
+
+function ProfilePhotoUpload({ builder, projectId }: { builder: any; projectId: string }) {
+  const [uploading, setUploading] = useState(false)
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const token = localStorage.getItem('auth_token')
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const res = await fetch(
+        `${API_URL}/api/projects/${projectId}/assets/bulk?asset_type=render`,
+        { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData }
+      )
+
+      if (res.ok) {
+        const data = await res.json()
+        const uploadedUrl = data.assets?.[0]?.file_url || ''
+        if (uploadedUrl) {
+          builder.setAboutPage({ profilePhotoUrl: uploadedUrl })
+        }
+      } else {
+        console.error('Upload error:', res.status, res.statusText)
+      }
+    } catch (e) {
+      console.error('Upload failed:', e)
+    } finally {
+      setUploading(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  return (
+    <Field label="📷 Profile Photo">
+      {builder.aboutPage.profilePhotoUrl ? (
+        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-primary mx-auto">
+          <img src={builder.aboutPage.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+          <button
+            onClick={() => builder.setAboutPage({ profilePhotoUrl: '' })}
+            className="absolute top-1 right-1 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold hover:bg-red-700"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-border-light rounded-lg p-6 cursor-pointer hover:border-primary transition">
+          <div className="text-3xl mb-2">👤</div>
+          <p className="text-sm text-stone-light">Your profile photo</p>
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+          <span className="text-xs text-stone-light mt-2">{uploading ? 'Uploading...' : 'Click to upload'}</span>
+        </label>
+      )}
+    </Field>
   )
 }
 
@@ -672,7 +795,9 @@ function Step4AboutPage({ builder }: { builder: any }) {
       {/* Sub-sections (only enabled when About Page enabled) */}
       {builder.aboutPage.enabled && (
         <>
-          <h3 className="text-sm font-bold text-stone uppercase tracking-wider mb-3">
+          <ProfilePhotoUpload builder={builder} projectId="" />
+
+          <h3 className="text-sm font-bold text-stone uppercase tracking-wider mb-3 mt-6">
             Sections to include
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

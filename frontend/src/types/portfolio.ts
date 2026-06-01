@@ -221,6 +221,7 @@ export interface DesignProjectConfig {
   typology: string     // e.g. "Cultural"
   pageCount: number    // how many pages this project gets in the portfolio
   description: string  // short blurb
+  coverImageUrl: string // project cover/thumbnail image (displays in layout)
   assets: {
     renders: string[]     // photo-realistic visuals
     plans: string[]       // floor plans
@@ -234,6 +235,7 @@ export interface DesignProjectConfig {
 /** About Me page contains multiple toggleable sections (NOT separate pages) */
 export interface AboutMePageConfig {
   enabled: boolean
+  profilePhotoUrl: string // user's profile photo (displays on about page)
   sections: {
     bio: boolean         // short bio paragraph
     resume: boolean      // education + experience timeline

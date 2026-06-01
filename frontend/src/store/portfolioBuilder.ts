@@ -26,6 +26,7 @@ interface PortfolioBuilderStore extends BuilderState {
   setPortfolioName: (name: string) => void
   setPortfolioType: (type: PortfolioType) => void
   setFrontCover: (cover: Partial<FrontCoverConfig>) => void
+  setAboutPage: (about: Partial<AboutMePageConfig>) => void
   toggleAboutPage: () => void
   toggleAboutSection: (section: keyof AboutMePageConfig['sections']) => void
   setContentsPageEnabled: (enabled: boolean) => void
@@ -96,6 +97,7 @@ const initialState: BuilderState = {
   ],
   aboutPage: {
     enabled: true,
+    profilePhotoUrl: '',
     sections: {
       bio: true,
       resume: true,
@@ -157,6 +159,9 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
   setPortfolioType: (type) => set({ portfolioType: type }),
   setFrontCover: (cover) => set((s) => ({
     frontCover: { ...s.frontCover, ...cover }
+  })),
+  setAboutPage: (about) => set((s) => ({
+    aboutPage: { ...s.aboutPage, ...about }
   })),
   toggleAboutPage: () => set((s) => ({
     aboutPage: { ...s.aboutPage, enabled: !s.aboutPage.enabled }
@@ -221,6 +226,7 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
           typology: '',
           pageCount: 2,
           description: '',
+          coverImageUrl: '',
           assets: { renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: [] },
         })
       }
@@ -257,6 +263,7 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
         typology: '',
         pageCount: 2,
         description: '',
+        coverImageUrl: '',
         assets: { renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: [] },
       }
     })
