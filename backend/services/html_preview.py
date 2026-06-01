@@ -25,74 +25,93 @@ class HTMLPreviewService:
     def __init__(self):
         """Initialize HTML preview service"""
 
-        # Design system tokens
-        self.design_tokens = {
-            "minimal_white": {
-                "primary": "#000000",
-                "secondary": "#ffffff",
-                "accent": "#f0f0f0",
-                "text_primary": "#1a1a1a",
-                "text_secondary": "#666666",
-                "border": "#e0e0e0",
-                "spacing": "16px",
-            },
-            "dark_studio": {
-                "primary": "#ffb81c",
-                "secondary": "#1a1a1a",
-                "accent": "#2a2a2a",
-                "text_primary": "#ffffff",
-                "text_secondary": "#cccccc",
-                "border": "#333333",
-                "spacing": "16px",
-            },
-            "scandinavian": {
-                "primary": "#8b6f47",
-                "secondary": "#f5f3f0",
-                "accent": "#e8dcc8",
-                "text_primary": "#3a3a3a",
-                "text_secondary": "#666666",
-                "border": "#d4c4b0",
-                "spacing": "18px",
-            },
-            "architectural_journal": {
-                "primary": "#d4a574",
-                "secondary": "#fafafa",
-                "accent": "#f0e6d2",
-                "text_primary": "#2a2a2a",
-                "text_secondary": "#555555",
-                "border": "#e0d0c0",
-                "spacing": "18px",
-            },
-            "competition_board": {
-                "primary": "#ff0000",
-                "secondary": "#ffffff",
-                "accent": "#f5f5f5",
-                "text_primary": "#000000",
-                "text_secondary": "#333333",
-                "border": "#cccccc",
-                "spacing": "16px",
-            },
-            "parametric": {
-                "primary": "#00ff00",
-                "secondary": "#0a0a0a",
-                "accent": "#1a1a1a",
-                "text_primary": "#00ff00",
-                "text_secondary": "#00cc00",
-                "border": "#00ff00",
-                "spacing": "14px",
-            },
-            "corporate": {
-                "primary": "#0056b3",
-                "secondary": "#f8f9fa",
-                "accent": "#e9ecef",
-                "text_primary": "#212529",
-                "text_secondary": "#495057",
-                "border": "#dee2e6",
-                "spacing": "16px",
-            },
-        }
+        # Design system tokens - now sourced from style_pack service to stay in sync
+        self.design_tokens = self._build_design_tokens_from_presets()
 
         logger.info("HTML Preview Service initialized")
+
+    def _build_design_tokens_from_presets(self) -> Dict[str, Dict[str, str]]:
+        """Build HTML-compatible design tokens from style_pack presets"""
+        tokens = {}
+        try:
+            from services.style_pack import get_style_pack_service
+            service = get_style_pack_service()
+            presets = service.get_preset_packs()
+
+            for pack in presets:
+                pack_id = pack["id"]
+                colors = pack.get("colors", {})
+                spacing = pack.get("spacing", {})
+                typography = pack.get("typography", {})
+
+                pack_tokens = {
+                    "primary": colors.get("primary", "#000000"),
+                    "secondary": colors.get("background", "#ffffff"),
+                    "accent": colors.get("accent", "#f0f0f0"),
+                    "text_primary": colors.get("text", "#1a1a1a"),
+                    "text_secondary": colors.get("secondary", "#666666"),
+                    "border": colors.get("secondary", "#e0e0e0") + "33",
+                    "spacing": f"{spacing.get('md', 16)}px",
+                    "heading_font": typography.get("heading_font", "sans-serif"),
+                    "body_font": typography.get("body_font", "sans-serif"),
+                    "heading_size": f"{typography.get('heading_size', 36)}px",
+                    "body_size": f"{typography.get('body_size', 16)}px",
+                    "heading_weight": str(typography.get("heading_weight", 700)),
+                    "body_weight": str(typography.get("body_weight", 400)),
+                    "line_height": str(typography.get("line_height", 1.6)),
+                }
+                tokens[pack_id] = pack_tokens
+
+                # Also register legacy keys for backwards compat
+                legacy_key = pack_id.replace("preset-", "").replace("-", "_")
+                tokens[legacy_key] = pack_tokens
+
+        except Exception as e:
+            logger.error(f"Error loading design tokens from presets: {e}")
+
+        # Always ensure fallback exists
+        if "minimal_white" not in tokens:
+            tokens["minimal_white"] = {
+                "primary": "#000000", "secondary": "#ffffff", "accent": "#f0f0f0",
+                "text_primary": "#1a1a1a", "text_secondary": "#666666",
+                "border": "#e0e0e0", "spacing": "16px",
+                "heading_font": "sans-serif", "body_font": "sans-serif",
+                "heading_size": "36px", "body_size": "16px",
+                "heading_weight": "700", "body_weight": "400", "line_height": "1.6",
+            }
+        return tokens
+
+    def get_tokens_for_pack(self, pack_or_id) -> Dict[str, str]:
+        """
+        Get rendering tokens for a pack ID or full pack object.
+
+        Supports:
+        - String ID (lookup in presets/legacy)
+        - Dict with full pack data (used directly, e.g. AI-generated packs)
+        """
+        if isinstance(pack_or_id, dict):
+            # Full pack object - convert to render tokens
+            colors = pack_or_id.get("colors", {})
+            spacing = pack_or_id.get("spacing", {})
+            typography = pack_or_id.get("typography", {})
+            return {
+                "primary": colors.get("primary", "#000000"),
+                "secondary": colors.get("background", "#ffffff"),
+                "accent": colors.get("accent", "#f0f0f0"),
+                "text_primary": colors.get("text", "#1a1a1a"),
+                "text_secondary": colors.get("secondary", "#666666"),
+                "border": colors.get("secondary", "#e0e0e0") + "33",
+                "spacing": f"{spacing.get('md', 16)}px",
+                "heading_font": typography.get("heading_font", "sans-serif"),
+                "body_font": typography.get("body_font", "sans-serif"),
+                "heading_size": f"{typography.get('heading_size', 36)}px",
+                "body_size": f"{typography.get('body_size', 16)}px",
+                "heading_weight": str(typography.get("heading_weight", 700)),
+                "body_weight": str(typography.get("body_weight", 400)),
+                "line_height": str(typography.get("line_height", 1.6)),
+            }
+        # String ID lookup
+        return self.design_tokens.get(pack_or_id, self.design_tokens.get("minimal_white"))
 
     async def generate_html_preview(
         self,
@@ -121,8 +140,12 @@ class HTMLPreviewService:
         try:
             logger.info(f"Generating HTML preview for portfolio {portfolio_id}")
 
-            # Get design tokens
-            tokens = self.design_tokens.get(style_pack, self.design_tokens["minimal_white"])
+            # Get design tokens — supports both pack ID string and full pack dict
+            full_pack = portfolio_data.get("style_pack_data")  # Full pack object if available
+            if full_pack and isinstance(full_pack, dict):
+                tokens = self.get_tokens_for_pack(full_pack)
+            else:
+                tokens = self.get_tokens_for_pack(style_pack)
 
             # Generate HTML
             html = self._build_html_document(
@@ -214,7 +237,7 @@ class HTMLPreviewService:
         return f"""<head>
     <title>{title}</title>
 {meta_tags}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Georgia:wght@400;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:wght@400;500;600;700;900&family=Lora:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 """
 
@@ -226,6 +249,10 @@ class HTMLPreviewService:
     ) -> str:
         """Generate responsive CSS with design tokens"""
 
+        # Resolve font-family stacks based on tokens
+        heading_family = "'Playfair Display', Georgia, serif" if "serif" in tokens.get("heading_font", "sans-serif") else "'Inter', 'Helvetica Neue', sans-serif"
+        body_family = "'Lora', Georgia, serif" if "serif" in tokens.get("body_font", "sans-serif") else "'Inter', 'Helvetica Neue', sans-serif"
+
         css = f"""
 <style>
 :root {{
@@ -236,6 +263,13 @@ class HTMLPreviewService:
     --text-secondary: {tokens['text_secondary']};
     --border: {tokens['border']};
     --spacing: {tokens['spacing']};
+    --heading-font: {heading_family};
+    --body-font: {body_family};
+    --heading-size: {tokens.get('heading_size', '36px')};
+    --body-size: {tokens.get('body_size', '16px')};
+    --heading-weight: {tokens.get('heading_weight', '700')};
+    --body-weight: {tokens.get('body_weight', '400')};
+    --line-height: {tokens.get('line_height', '1.6')};
 }}
 
 * {{
@@ -251,25 +285,31 @@ html {{
 body {{
     background-color: var(--secondary);
     color: var(--text-primary);
-    font-family: 'Inter', 'Helvetica Neue', sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
+    font-family: var(--body-font);
+    font-size: var(--body-size);
+    font-weight: var(--body-weight);
+    line-height: var(--line-height);
 }}
 
 /* Responsive Typography */
+h1, h2, h3, h4 {{
+    font-family: var(--heading-font);
+    font-weight: var(--heading-weight);
+}}
+
 h1 {{
-    font-size: 3em;
-    font-weight: 700;
+    font-size: calc(var(--heading-size) * 1.4);
     margin-bottom: var(--spacing);
     color: var(--primary);
     letter-spacing: -0.02em;
+    line-height: 1.1;
 }}
 
 h2 {{
-    font-size: 2.25em;
-    font-weight: 700;
+    font-size: var(--heading-size);
     margin-bottom: calc(var(--spacing) * 0.75);
     color: var(--primary);
+    line-height: 1.2;
 }}
 
 h3 {{

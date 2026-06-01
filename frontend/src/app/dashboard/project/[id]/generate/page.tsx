@@ -100,6 +100,7 @@ export default function GeneratePage() {
           body: JSON.stringify({
             layout_id: selectedLayout,
             style_pack: selectedStyle,
+            style_pack_data: selectedPack,  // Full pack data (Batch 2: custom/AI-generated)
             variant_number: v
           })
         })

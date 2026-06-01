@@ -200,6 +200,7 @@ class PortfolioPage(BaseModel):
 class GeneratePortfolioRequest(BaseModel):
     layout_id: str = "hero_render"
     style_pack: str = "minimal_white"
+    style_pack_data: Optional[Dict[str, Any]] = None  # Full pack data (Batch 2: for AI-generated/custom packs)
     grid_mode: str = "strict"
     font_pair: Optional[str] = None
     variant_count: int = Field(1, ge=1, le=10)

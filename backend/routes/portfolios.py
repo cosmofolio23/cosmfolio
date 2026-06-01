@@ -11,17 +11,28 @@ router = APIRouter()
 
 # ==================== Portfolio Generation ====================
 
-def get_style_pack_tokens(style_id: str) -> dict:
+def get_style_pack_tokens(style_id: str, style_pack_data: dict = None) -> dict:
     """
     Get style pack tokens for a given style ID.
-    Looks up from preset packs or returns defaults.
+    If style_pack_data is provided (e.g. AI-generated), uses it directly.
+    Otherwise looks up from preset packs or returns defaults.
     """
+    # If full pack data provided (custom/AI-generated), use it directly
+    if style_pack_data and isinstance(style_pack_data, dict):
+        # Ensure required fields exist
+        if "colors" in style_pack_data and "typography" in style_pack_data:
+            return style_pack_data
+
+    # Look up preset by ID
     from services.style_pack import get_style_pack_service
     try:
         service = get_style_pack_service()
         presets = service.get_preset_packs()
         for pack in presets:
             if pack["id"] == style_id:
+                return pack
+            # Also check legacy ID (e.g. "minimal_white" → "preset-minimal-white")
+            if pack["id"] == f"preset-{style_id.replace('_', '-')}":
                 return pack
     except Exception:
         pass
@@ -47,7 +58,8 @@ def generate_portfolio_structure(
     project_id: str,
     layout_id: str,
     style_id: str,
-    assets: dict
+    assets: dict,
+    style_pack_data: dict = None
 ) -> dict:
     """
     Generate portfolio structure (page layout and content assignment).
@@ -55,8 +67,8 @@ def generate_portfolio_structure(
     For now, use heuristic rules.
     """
 
-    # Get style pack tokens to embed in structure
-    style_pack = get_style_pack_tokens(style_id)
+    # Get style pack tokens to embed in structure (supports custom/AI-generated)
+    style_pack = get_style_pack_tokens(style_id, style_pack_data)
 
     # Simple heuristic page generation
     pages = []
@@ -210,12 +222,13 @@ async def generate_portfolio(
                 "created_at": datetime.utcnow().isoformat()
             }
 
-            # Generate page structure
+            # Generate page structure (Batch 2: pass full pack data for custom/AI packs)
             page_structure = generate_portfolio_structure(
                 project_id,
                 req.layout_id,
                 req.style_pack,
-                assets_by_type
+                assets_by_type,
+                style_pack_data=req.style_pack_data,
             )
 
             portfolio_data["page_structure"] = page_structure

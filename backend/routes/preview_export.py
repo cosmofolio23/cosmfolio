@@ -48,6 +48,11 @@ async def export_portfolio_as_pdf(
         projects = supabase.table("projects").select("*").eq("user_id", current_user["user_id"]).execute()
         assets = supabase.table("assets").select("*").eq("project_id", projects.data[0]["id"]).execute() if projects.data else None
 
+        # Extract embedded style pack from page_structure if present (Batch 2)
+        page_structure = portfolio_data.get("page_structure", {})
+        style_pack_data = page_structure.get("style_pack") if isinstance(page_structure, dict) else None
+        effective_style_pack = portfolio_data.get("style_pack") or style_pack
+
         # Generate HTML preview first
         html_service = get_html_preview_service()
         portfolio_html = await html_service.generate_html_preview(
@@ -56,6 +61,7 @@ async def export_portfolio_as_pdf(
                 "title": portfolio_data.get("title", "Portfolio"),
                 "author": portfolio_data.get("author", ""),
                 "description": portfolio_data.get("description", ""),
+                "style_pack_data": style_pack_data,  # Full pack data (Batch 2)
                 "assets": [
                     {
                         "title": asset.get("file_name", "Asset"),
@@ -65,7 +71,7 @@ async def export_portfolio_as_pdf(
                     for asset in (assets.data if assets else [])
                 ]
             },
-            style_pack=style_pack,
+            style_pack=effective_style_pack,
             responsive=True,
         )
 
@@ -124,6 +130,11 @@ async def export_portfolio_as_html(
         projects = supabase.table("projects").select("*").eq("user_id", current_user["user_id"]).execute()
         assets = supabase.table("assets").select("*").eq("project_id", projects.data[0]["id"]).execute() if projects.data else None
 
+        # Extract embedded style pack (Batch 2)
+        page_structure = portfolio_data.get("page_structure", {})
+        style_pack_data = page_structure.get("style_pack") if isinstance(page_structure, dict) else None
+        effective_style_pack = portfolio_data.get("style_pack") or style_pack
+
         # Generate HTML
         html_service = get_html_preview_service()
         html_content = await html_service.generate_html_preview(
@@ -132,6 +143,7 @@ async def export_portfolio_as_html(
                 "title": portfolio_data.get("title", "Portfolio"),
                 "author": portfolio_data.get("author", ""),
                 "description": portfolio_data.get("description", ""),
+                "style_pack_data": style_pack_data,
                 "assets": [
                     {
                         "title": asset.get("file_name", "Asset"),
@@ -141,7 +153,7 @@ async def export_portfolio_as_html(
                     for asset in (assets.data if assets else [])
                 ]
             },
-            style_pack=style_pack,
+            style_pack=effective_style_pack,
             responsive=responsive,
         )
 
@@ -151,7 +163,7 @@ async def export_portfolio_as_html(
             "status": "success",
             "portfolio_id": portfolio_id,
             "file_size_bytes": len(html_content.encode()),
-            "style_pack": style_pack,
+            "style_pack": effective_style_pack,
             "responsive": responsive,
             "preview_url": f"/api/portfolios/{portfolio_id}/preview",
         }
