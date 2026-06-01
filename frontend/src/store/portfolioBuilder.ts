@@ -7,6 +7,7 @@ interface PortfolioBuilderStore extends BuilderState {
   totalPages: number
   projectCount: number
   stylePackId: string
+  selectedStylePack: any | null  // Full pack data (preset or generated)
   frontPage: BuilderState['frontPage']
   portfolioName: string
   portfolioType: PortfolioType
@@ -69,6 +70,7 @@ interface PortfolioBuilderStore extends BuilderState {
 
   // Style
   setStylePack: (stylePackId: string) => void
+  setSelectedStylePack: (pack: any | null) => void
 
   // Portfolio
   setPortfolioId: (id: string) => void
@@ -141,7 +143,8 @@ const initialState: BuilderState = {
     style: 'minimal',
   },
   projectPages: [],
-  stylePackId: 'minimal-white',
+  stylePackId: 'preset-minimal-white',
+  selectedStylePack: null,
   portfolioId: null,
 }
 
@@ -303,6 +306,7 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
 
   // Style
   setStylePack: (stylePackId) => set({ stylePackId }),
+  setSelectedStylePack: (pack) => set({ selectedStylePack: pack, stylePackId: pack?.id || 'minimal-white' }),
 
   // Portfolio
   setPortfolioId: (id) => set({ portfolioId: id }),

@@ -4,18 +4,11 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import { StylePackGallery, StylePack, PRESET_PACKS } from '@/components/design-system/StylePackGallery'
+import { StylePackPreview } from '@/components/design-system/StylePackPreview'
+import { StylePackGenerator } from '@/components/design-system/StylePackGenerator'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-const STYLE_PACKS = [
-  { id: 'minimal_white', name: 'Minimal White', desc: 'Clean & academic', color: '#FFFFFF', text: '#000000', preview: '⬜' },
-  { id: 'dark_studio', name: 'Dark Studio', desc: 'Bold & dramatic', color: '#1a1a1a', text: '#FFFFFF', preview: '⬛' },
-  { id: 'scandinavian', name: 'Scandinavian', desc: 'Warm & natural', color: '#F5F0E8', text: '#2C2C2C', preview: '🟤' },
-  { id: 'architectural_journal', name: 'Arch Journal', desc: 'Magazine-like', color: '#F8F4EF', text: '#1C1C1C', preview: '📰' },
-  { id: 'competition_board', name: 'Competition Board', desc: 'Bold & graphic', color: '#0A0A2E', text: '#FFFFFF', preview: '🏆' },
-  { id: 'parametric', name: 'Parametric', desc: 'Geometric & tech', color: '#F0F4FF', text: '#1A1A3E', preview: '🔷' },
-  { id: 'corporate', name: 'Corporate', desc: 'Professional', color: '#FAFAFA', text: '#2D2D2D', preview: '🏢' },
-]
 
 const LAYOUTS = [
   { id: 'hero_render', name: 'Hero Render', desc: 'Full-page hero image + content', icon: '🖼️', category: 'Hero' },
@@ -44,7 +37,10 @@ export default function GeneratePage() {
   const router = useRouter()
   const { token, isAuthenticated } = useAuthStore()
 
-  const [selectedStyle, setSelectedStyle] = useState('minimal_white')
+  const [selectedStyle, setSelectedStyle] = useState('preset-minimal-white')
+  const [selectedPack, setSelectedPack] = useState<StylePack>(PRESET_PACKS[0])
+  const [previewPack, setPreviewPack] = useState<StylePack | null>(null)
+  const [showGenerator, setShowGenerator] = useState(false)
   const [selectedLayout, setSelectedLayout] = useState('hero_render')
   const [variantCount, setVariantCount] = useState(3)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -174,27 +170,27 @@ export default function GeneratePage() {
           </div>
         </div>
 
-        {/* Style Picker */}
+        {/* Design Pack Gallery */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold mb-4">🎨 Design System</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {STYLE_PACKS.map(style => (
-              <button
-                key={style.id}
-                onClick={() => setSelectedStyle(style.id)}
-                className={`p-3 rounded-xl border-2 transition text-left ${
-                  selectedStyle === style.id
-                    ? 'border-blue-600 shadow-md'
-                    : 'border-gray-200 hover:border-blue-300'
-                }`}
-                style={{ background: style.color, color: style.text }}
-              >
-                <div className="text-2xl mb-1">{style.preview}</div>
-                <div className="text-xs font-bold truncate">{style.name}</div>
-                <div className="text-xs opacity-70 truncate">{style.desc}</div>
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">🎨 Design Pack</h2>
+            <button
+              onClick={() => previewPack === null && selectedPack && setPreviewPack(selectedPack)}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Preview Selected →
+            </button>
           </div>
+          <StylePackGallery
+            selectedPackId={selectedStyle}
+            onSelect={(pack) => {
+              setSelectedStyle(pack.id)
+              setSelectedPack(pack)
+            }}
+            onGenerateClick={() => setShowGenerator(true)}
+            showCustomPacks={true}
+            portfolioId={params.id as string}
+          />
         </div>
 
         {/* Layout Picker */}
@@ -248,7 +244,7 @@ export default function GeneratePage() {
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 space-y-1 mb-4">
-                    <div>🎨 {STYLE_PACKS.find(s => s.id === portfolio.style_pack)?.name || portfolio.style_pack}</div>
+                    <div>🎨 {PRESET_PACKS.find(s => s.id === portfolio.style_pack)?.name || portfolio.style_pack}</div>
                     <div>📐 {LAYOUTS.find(l => l.id === portfolio.layout_id)?.name || portfolio.layout_id}</div>
                     <div>📅 {new Date(portfolio.created_at).toLocaleDateString()}</div>
                   </div>
@@ -282,7 +278,7 @@ export default function GeneratePage() {
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white text-center">
           <h2 className="text-2xl font-bold mb-2">Ready to generate?</h2>
           <p className="text-blue-100 mb-6">
-            Selected: <strong>{STYLE_PACKS.find(s => s.id === selectedStyle)?.name}</strong> style
+            Selected: <strong>{selectedPack.name}</strong> style
             with <strong>{LAYOUTS.find(l => l.id === selectedLayout)?.name}</strong> layout
           </p>
           <button
@@ -295,6 +291,31 @@ export default function GeneratePage() {
         </div>
 
       </main>
+
+      {/* Design Pack Preview Modal */}
+      {previewPack && (
+        <StylePackPreview
+          pack={previewPack}
+          onClose={() => setPreviewPack(null)}
+          onApply={() => {
+            setSelectedStyle(previewPack.id)
+            setSelectedPack(previewPack)
+            setPreviewPack(null)
+          }}
+        />
+      )}
+
+      {/* AI Generator Modal */}
+      {showGenerator && (
+        <StylePackGenerator
+          portfolioId={params.id as string}
+          onClose={() => setShowGenerator(false)}
+          onGenerated={(pack) => {
+            setSelectedStyle(pack.id)
+            setSelectedPack(pack)
+          }}
+        />
+      )}
     </div>
   )
 }

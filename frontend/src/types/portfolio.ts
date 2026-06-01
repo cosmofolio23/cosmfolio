@@ -298,6 +298,7 @@ export interface BuilderState {
   contentsPage: ContentsPageConfig
   projectPages: ProjectPageConfig[]
   stylePackId: string
+  selectedStylePack: any | null
   portfolioId: string | null
 }
 
