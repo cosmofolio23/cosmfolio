@@ -1,18 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
-
-interface Asset {
-  id: string
-  asset_type: string
-  file_name: string
-  file_url: string
-  file_size: number
-  created_at: string
-}
 
 interface Project {
   id: string
@@ -23,117 +14,41 @@ interface Project {
   created_at: string
 }
 
-const ASSET_CATEGORIES = [
-  { key: 'render', label: 'Renders', description: 'Exterior & interior renders', icon: '🖼️' },
-  { key: 'plan', label: 'Plans', description: 'Floor plans & site plans', icon: '📐' },
-  { key: 'section', label: 'Sections', description: 'Building sections & elevations', icon: '📏' },
-  { key: 'diagram', label: 'Diagrams', description: 'Concept & analysis diagrams', icon: '📊' },
-]
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export default function ProjectPage() {
   const params = useParams()
   const router = useRouter()
-  const { token, isAuthenticated } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const [project, setProject] = useState<Project | null>(null)
-  const [assets, setAssets] = useState<Record<string, Asset[]>>({
-    render: [], plan: [], section: [], diagram: []
-  })
-  const [activeTab, setActiveTab] = useState('render')
-  const [_isUploading, setIsUploading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [uploadProgress, setUploadProgress] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
     loadProject()
-    loadAssets()
   }, [isAuthenticated])
 
   const loadProject = async () => {
     try {
+      const savedToken = localStorage.getItem('auth_token')
       const res = await fetch(`${API_URL}/api/projects/${params.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${savedToken}` }
       })
       if (res.ok) setProject(await res.json())
     } catch (e) { console.error(e) }
-  }
-
-  const loadAssets = async () => {
-    try {
-      setIsLoading(true)
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/projects/${params.id}/assets`, {
-        headers: { 'Authorization': `Bearer ${savedToken}` }
-      })
-      if (res.ok) {
-        const data = await res.json()
-        // Backend returns { assets: [...] } - group by asset_type
-        const allAssets = data.assets || data.items || []
-        const grouped: any = { render: [], plan: [], section: [], diagram: [] }
-        allAssets.forEach((a: any) => {
-          const t = a.asset_type || 'render'
-          if (grouped[t]) grouped[t].push(a)
-          else grouped.render.push(a)
-        })
-        setAssets(grouped)
-      } else {
-        console.error('Load assets failed:', await res.text())
-      }
-    } catch (e) { console.error('Load assets error:', e) }
     finally { setIsLoading(false) }
   }
 
-  const handleUpload = async (files: FileList) => {
-    if (!files.length) return
-    setIsUploading(true)
-    setUploadProgress(`Uploading ${files.length} file(s)...`)
-
-    const formData = new FormData()
-    Array.from(files).forEach(f => formData.append('files', f))
-    formData.append('asset_type', activeTab)
-
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(
-        `${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=${activeTab}`,
-        {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${savedToken}` },
-          body: formData,
-        }
-      )
-      if (res.ok) {
-        setUploadProgress('✅ Uploaded successfully!')
-        await loadAssets()
-        setTimeout(() => setUploadProgress(''), 2000)
-      } else {
-        const err = await res.json().catch(() => ({ detail: 'Unknown error' }))
-        setUploadProgress(`❌ Error: ${err.detail || res.statusText}`)
-        console.error('Upload failed:', err)
-      }
-    } catch (e: any) {
-      setUploadProgress(`❌ Upload failed: ${e.message}`)
-      console.error('Upload error:', e)
-    } finally {
-      setIsUploading(false)
-    }
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-subtle">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-stone-light">Loading...</p>
+        </div>
+      </div>
+    )
   }
-
-  const handleDeleteAsset = async (assetId: string) => {
-    try {
-      await fetch(`${API_URL}/api/projects/${params.id}/assets/${assetId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      await loadAssets()
-    } catch (e) { console.error(e) }
-  }
-
-  const totalAssets = Object.values(assets).reduce((sum, arr) => sum + arr.length, 0)
-  const activeCategory = ASSET_CATEGORIES.find(c => c.key === activeTab)
 
   return (
     <div className="min-h-screen bg-bg-subtle">
@@ -155,164 +70,61 @@ export default function ProjectPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-charcoal">{project?.title || 'Loading...'}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-stone-light font-medium">{totalAssets} assets uploaded</span>
-            {totalAssets > 0 && (
-              <Link
-                href={`/dashboard/project/${params.id}/portfolio`}
-                className="btn-primary flex items-center gap-2"
-              >
-                <span>✨</span>
-                Create Portfolio
-              </Link>
-            )}
-          </div>
+          <Link
+            href={`/dashboard/project/${params.id}/portfolio`}
+            className="btn-primary flex items-center gap-2"
+          >
+            <span>✨</span>
+            Create Portfolio
+          </Link>
         </div>
       </header>
 
-      <main className="container-centered py-8 md:py-12">
-        {/* Category Tabs */}
-        <div className="mb-8">
-          <div className="flex gap-2 flex-wrap md:flex-nowrap">
-            {ASSET_CATEGORIES.map(cat => (
-              <button
-                key={cat.key}
-                onClick={() => setActiveTab(cat.key)}
-                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                  activeTab === cat.key
-                    ? 'bg-primary text-white shadow-elevation-2'
-                    : 'bg-white text-slate border border-border-light hover:shadow-elevation-1'
-                }`}
-              >
-                <span className="text-lg">{cat.icon}</span>
-                {cat.label}
-                {assets[cat.key]?.length > 0 && (
-                  <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    activeTab === cat.key
-                      ? 'bg-blue-400 text-white'
-                      : 'bg-gray-200 text-slate'
-                  }`}>
-                    {assets[cat.key].length}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-          {activeCategory && (
-            <p className="text-sm text-stone-light mt-3">{activeCategory.description}</p>
-          )}
-        </div>
-
-        {/* Upload Area */}
-        <div
-          className="card bg-white border-2 border-dashed border-border-light rounded-2xl p-12 text-center mb-8 hover:border-primary hover:shadow-elevation-2 transition-all duration-200 cursor-pointer"
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => {
-            e.preventDefault()
-            e.currentTarget.classList.add('border-primary', 'bg-blue-50')
-          }}
-          onDragLeave={(e) => {
-            e.currentTarget.classList.remove('border-primary', 'bg-blue-50')
-          }}
-          onDrop={(e) => {
-            e.preventDefault()
-            e.currentTarget.classList.remove('border-primary', 'bg-blue-50')
-            handleUpload(e.dataTransfer.files)
-          }}
-        >
-          <div className="text-6xl mb-4 opacity-50">{activeCategory?.icon}</div>
-          <h3 className="text-xl font-semibold text-charcoal mb-2">
-            Drop files here or click to upload
-          </h3>
-          <p className="text-stone-light mb-6">
-            Supports PNG, JPG, TIFF, PDF and other image formats
-          </p>
-          {uploadProgress && (
-            <div className="mb-6">
-              <p className={`text-sm font-medium ${
-                uploadProgress.includes('successfully')
-                  ? 'text-success'
-                  : uploadProgress.includes('Error')
-                  ? 'text-error'
-                  : 'text-info'
-              }`}>
-                {uploadProgress}
-              </p>
-            </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,.pdf"
-            className="hidden"
-            onChange={(e) => e.target.files && handleUpload(e.target.files)}
-          />
-        </div>
-
-        {/* Asset Grid */}
+      {/* Main Content */}
+      <main className="container-centered py-12 md:py-16">
         {isLoading ? (
           <div className="text-center py-16">
             <div className="inline-block">
               <div className="w-12 h-12 border-4 border-border-light border-t-primary rounded-full animate-spin mb-4"></div>
-              <p className="text-stone-light">Loading assets...</p>
+              <p className="text-stone-light">Loading project...</p>
             </div>
           </div>
-        ) : assets[activeTab]?.length === 0 ? (
-          <div className="card bg-white rounded-xl p-12 text-center">
-            <div className="text-6xl mb-4 opacity-20">📁</div>
-            <h3 className="text-xl font-semibold text-slate mb-2">No {activeTab}s uploaded yet</h3>
-            <p className="text-stone-light">Use the upload area above to add your files</p>
-          </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {assets[activeTab].map(asset => (
-              <div key={asset.id} className="card bg-white overflow-hidden group hover:shadow-elevation-2">
-                <div className="aspect-square bg-slate-100 flex items-center justify-center relative overflow-hidden">
-                  {asset.file_url && asset.file_url.startsWith('http') ? (
-                    <img
-                      src={asset.file_url}
-                      alt={asset.file_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display='none' }}
-                    />
-                  ) : (
-                    <div className="text-4xl opacity-40">📄</div>
-                  )}
-                  <button
-                    onClick={() => handleDeleteAsset(asset.id)}
-                    className="absolute top-2 right-2 bg-error text-white w-8 h-8 rounded-lg text-sm hidden group-hover:flex items-center justify-center hover:bg-red-700 transition-colors"
-                    title="Delete asset"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                    </svg>
-                  </button>
+          <div className="max-w-2xl mx-auto">
+            {/* Project Info Card */}
+            <div className="bg-white rounded-2xl p-8 shadow-elevation-1 mb-8">
+              <h2 className="text-2xl font-bold text-charcoal mb-4">📋 Project Overview</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-stone uppercase tracking-wide">Project Type</label>
+                  <p className="text-lg text-charcoal mt-1">{project?.project_type || 'N/A'}</p>
                 </div>
-                <div className="p-3">
-                  <p className="text-xs text-charcoal font-medium truncate" title={asset.file_name}>{asset.file_name}</p>
-                  <p className="text-xs text-stone-light">
-                    {asset.file_size ? `${(asset.file_size / 1024 / 1024).toFixed(2)} MB` : ''}
-                  </p>
+                {project?.description && (
+                  <div>
+                    <label className="text-sm font-semibold text-stone uppercase tracking-wide">Description</label>
+                    <p className="text-charcoal mt-1">{project.description}</p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-semibold text-stone uppercase tracking-wide">Created</label>
+                  <p className="text-charcoal mt-1">{new Date(project?.created_at || '').toLocaleDateString()}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* Generate CTA */}
-        {totalAssets > 0 && (
-          <div className="mt-12 card-elevated bg-gradient-to-r from-primary to-primary-light rounded-2xl p-8 text-white text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Ready to build your portfolio?</h2>
-            <p className="text-blue-100 mb-8 text-lg">
-              You have <span className="font-semibold">{totalAssets} assets</span> across <span className="font-semibold">{Object.values(assets).filter(a => a.length > 0).length} categories</span>. Configure your portfolio in the wizard.
-            </p>
-            <Link
-              href={`/dashboard/project/${params.id}/portfolio`}
-              className="inline-block bg-white text-primary px-8 py-4 rounded-lg font-bold hover:bg-gray-50 transition-colors"
-            >
-              ✨ Start Portfolio Wizard
-            </Link>
+            {/* CTA Section */}
+            <div className="bg-gradient-to-r from-primary to-primary-light rounded-2xl p-8 text-white text-center">
+              <h2 className="text-3xl font-bold mb-3">Ready to create your portfolio?</h2>
+              <p className="text-blue-100 mb-8">
+                Use the wizard to configure your portfolio, upload images, and customize pages.
+              </p>
+              <Link
+                href={`/dashboard/project/${params.id}/portfolio`}
+                className="inline-block bg-white text-primary px-8 py-4 rounded-lg font-bold hover:bg-gray-50 transition-colors"
+              >
+                ✨ Start Portfolio Wizard
+              </Link>
+            </div>
           </div>
         )}
       </main>
