@@ -572,12 +572,12 @@ function ProjectCard({
               📸 Upload Images
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-              <QuickUpload label="🎨 Renders" cat="renders" project={project} idx={index} builder={builder} />
-              <QuickUpload label="📐 Plans" cat="plans" project={project} idx={index} builder={builder} />
-              <QuickUpload label="📏 Sections" cat="sections" project={project} idx={index} builder={builder} />
-              <QuickUpload label="🏢 Elevations" cat="elevations" project={project} idx={index} builder={builder} />
-              <QuickUpload label="💡 Concepts" cat="concepts" project={project} idx={index} builder={builder} />
-              <QuickUpload label="📊 Diagrams" cat="diagrams" project={project} idx={index} builder={builder} />
+              <QuickUpload label="🎨 Renders" cat="renders" project={project} idx={index} builder={builder} projectId={projectId} />
+              <QuickUpload label="📐 Plans" cat="plans" project={project} idx={index} builder={builder} projectId={projectId} />
+              <QuickUpload label="📏 Sections" cat="sections" project={project} idx={index} builder={builder} projectId={projectId} />
+              <QuickUpload label="🏢 Elevations" cat="elevations" project={project} idx={index} builder={builder} projectId={projectId} />
+              <QuickUpload label="💡 Concepts" cat="concepts" project={project} idx={index} builder={builder} projectId={projectId} />
+              <QuickUpload label="📊 Diagrams" cat="diagrams" project={project} idx={index} builder={builder} projectId={projectId} />
             </div>
           </div>
         </div>
@@ -586,7 +586,7 @@ function ProjectCard({
   )
 }
 
-function QuickUpload({ label, cat, project, idx, builder }: { label: string; cat: keyof DesignProjectConfig['assets']; project: DesignProjectConfig; idx: number; builder: any }) {
+function QuickUpload({ label, cat, project, idx, builder, projectId }: { label: string; cat: keyof DesignProjectConfig['assets']; project: DesignProjectConfig; idx: number; builder: any; projectId: string }) {
   const [uploading, setUploading] = useState(false)
   const count = project.assets[cat].length
 
@@ -602,7 +602,7 @@ function QuickUpload({ label, cat, project, idx, builder }: { label: string; cat
       Array.from(files).forEach(f => formData.append('files', f))
 
       const res = await fetch(
-        `${API_URL}/api/projects/${project.id}/assets/bulk?asset_type=${cat}`,
+        `${API_URL}/api/projects/${projectId}/assets/bulk?asset_type=${cat}`,
         { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData }
       )
 
@@ -611,6 +611,8 @@ function QuickUpload({ label, cat, project, idx, builder }: { label: string; cat
         ;(data.assets || []).forEach((a: any) => {
           if (a.file_url) builder.addDesignProjectAsset(idx, cat, a.file_url)
         })
+      } else {
+        console.error('Upload error:', res.status, res.statusText)
       }
     } catch (e) {
       console.error('Upload failed:', e)
