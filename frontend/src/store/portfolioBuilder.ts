@@ -257,7 +257,7 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
         typology: '',
         pageCount: 2,
         description: '',
-        assets: { renders: [], plans: [], sections: [], diagrams: [] },
+        assets: { renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: [] },
       }
     })
 
