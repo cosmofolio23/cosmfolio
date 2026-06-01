@@ -449,6 +449,7 @@ function Step3Projects({ builder, projectId }: { builder: any; projectId: string
             project={proj}
             index={idx}
             builder={builder}
+            projectId={projectId}
             expanded={expandedIndex === idx}
             onToggle={() => setExpandedIndex(expandedIndex === idx ? -1 : idx)}
           />
@@ -465,11 +466,12 @@ function Step3Projects({ builder, projectId }: { builder: any; projectId: string
 }
 
 function ProjectCard({
-  project, index, builder, expanded, onToggle,
+  project, index, builder, projectId, expanded, onToggle,
 }: {
   project: DesignProjectConfig
   index: number
   builder: any
+  projectId: string
   expanded: boolean
   onToggle: () => void
 }) {
