@@ -366,6 +366,61 @@ async def list_preset_packs(
             detail=str(e)
         )
 
+# ==================== AI GENERATION ====================
+
+@router.post("/{portfolio_id}/style-packs/generate")
+async def generate_style_pack(
+    portfolio_id: str,
+    mode: str = Query(..., description="mood | color | assets"),
+    value: str = Query(..., description="mood name, hex color, or asset description"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate a style pack using AI from mood, color, or asset description
+
+    Args:
+        mode: "mood" (e.g., "bold", "minimal", "luxury") | "color" (hex code) | "assets" (description)
+        value: The input value based on mode
+    """
+    try:
+        # Verify portfolio ownership
+        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+
+        if not portfolio.data:
+            raise ResourceNotFoundException("Portfolio", portfolio_id)
+
+        if portfolio.data[0]["user_id"] != current_user["user_id"]:
+            raise AuthorizationException()
+
+        # Validate mode
+        if mode not in ["mood", "color", "assets"]:
+            raise ValueError("Mode must be 'mood', 'color', or 'assets'")
+
+        # Generate pack using AI
+        from services.ai_generation import get_ai_generation_service
+        ai_service = get_ai_generation_service()
+
+        generated_pack = await ai_service.generate_style_pack_from_prompt(
+            mode=mode,
+            value=value
+        )
+
+        return {
+            "portfolio_id": portfolio_id,
+            "mode": mode,
+            "input_value": value,
+            "generated_pack": generated_pack,
+            "message": f"Style pack generated from {mode}: {value}",
+        }
+
+    except (ResourceNotFoundException, AuthorizationException):
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
 # ==================== DUPLICATION ====================
 
 @router.post("/{portfolio_id}/style-packs/{pack_id}/duplicate")

@@ -521,6 +521,244 @@ Provide the improved version. Respond with only the improved text, no explanatio
             logger.error(f"Error improving text: {str(e)}")
             raise
 
+    # ==================== DESIGN PACK GENERATION ====================
+
+    async def generate_style_pack_from_prompt(
+        self,
+        mode: str = "mood",
+        value: str = "modern"
+    ) -> Dict[str, Any]:
+        """
+        Generate a complete style pack from mood, color, or asset description
+
+        Args:
+            mode: "mood" | "color" | "assets"
+            value: mood name / hex color / asset description
+
+        Returns:
+            Complete StylePackTokens object with colors, typography, spacing
+        """
+        try:
+            import json
+
+            if mode == "mood":
+                prompt = self._build_mood_pack_prompt(value)
+            elif mode == "color":
+                prompt = self._build_color_pack_prompt(value)
+            elif mode == "assets":
+                prompt = self._build_assets_pack_prompt(value)
+            else:
+                raise ValueError(f"Invalid mode: {mode}")
+
+            response = await self._call_llm(
+                prompt,
+                temperature=0.8,
+                max_tokens=1200
+            )
+
+            # Parse JSON response
+            try:
+                pack_data = json.loads(response)
+            except json.JSONDecodeError:
+                # Try to extract JSON from response
+                start = response.find('{')
+                end = response.rfind('}') + 1
+                if start >= 0 and end > start:
+                    pack_data = json.loads(response[start:end])
+                else:
+                    raise ValueError("Could not parse JSON from LLM response")
+
+            # Validate and normalize pack data
+            pack = self._normalize_style_pack(pack_data)
+
+            logger.info(f"Generated style pack from {mode}: {value}")
+            return pack
+
+        except Exception as e:
+            logger.error(f"Error generating style pack: {str(e)}")
+            raise
+
+    def _build_mood_pack_prompt(self, mood: str) -> str:
+        """Build prompt for mood-based style pack generation"""
+        return f"""Generate a complete design system for an architecture portfolio with mood: "{mood}"
+
+Return a JSON object with this exact structure (and ONLY this structure, no additional text):
+{{
+  "name": "Generated {mood.title()} Pack",
+  "description": "A design system with {mood} aesthetic",
+  "colors": {{
+    "primary": "#XXXXXX",
+    "secondary": "#XXXXXX",
+    "accent": "#XXXXXX",
+    "background": "#XXXXXX",
+    "text": "#XXXXXX"
+  }},
+  "typography": {{
+    "heading_font": "serif or sans-serif",
+    "body_font": "serif or sans-serif",
+    "heading_size": number between 30-50,
+    "body_size": number between 12-18,
+    "heading_weight": number (300, 400, 600, 700, 900),
+    "body_weight": number (300, 400, 600, 700),
+    "line_height": number between 1.4-2.0
+  }},
+  "spacing": {{
+    "xs": number,
+    "sm": number,
+    "md": number,
+    "lg": number,
+    "xl": number
+  }}
+}}
+
+Make the design reflect the mood: "{mood}". Return ONLY valid JSON."""
+
+    def _build_color_pack_prompt(self, hex_color: str) -> str:
+        """Build prompt for color-based style pack generation"""
+        return f"""Generate a complete design system based on base color: {hex_color}
+
+Create a harmonious color palette with this primary color and complementary colors.
+
+Return a JSON object with this exact structure (and ONLY this structure, no additional text):
+{{
+  "name": "Color-Generated Pack",
+  "description": "Design system based on {hex_color}",
+  "colors": {{
+    "primary": "{hex_color}",
+    "secondary": "#XXXXXX (complementary color)",
+    "accent": "#XXXXXX (contrasting accent)",
+    "background": "#XXXXXX (light background)",
+    "text": "#XXXXXX (dark text)"
+  }},
+  "typography": {{
+    "heading_font": "serif or sans-serif",
+    "body_font": "serif or sans-serif",
+    "heading_size": number between 30-50,
+    "body_size": number between 12-18,
+    "heading_weight": number (300, 400, 600, 700, 900),
+    "body_weight": number (300, 400, 600, 700),
+    "line_height": number between 1.4-2.0
+  }},
+  "spacing": {{
+    "xs": number,
+    "sm": number,
+    "md": number,
+    "lg": number,
+    "xl": number
+  }}
+}}
+
+Return ONLY valid JSON."""
+
+    def _build_assets_pack_prompt(self, asset_description: str) -> str:
+        """Build prompt for asset-based style pack generation"""
+        return f"""Generate a design system that complements these architecture assets: "{asset_description}"
+
+Create a visual identity that enhances the presentation of these types of images.
+
+Return a JSON object with this exact structure (and ONLY this structure, no additional text):
+{{
+  "name": "Asset-Based Pack",
+  "description": "Design system for {asset_description}",
+  "colors": {{
+    "primary": "#XXXXXX",
+    "secondary": "#XXXXXX",
+    "accent": "#XXXXXX",
+    "background": "#XXXXXX",
+    "text": "#XXXXXX"
+  }},
+  "typography": {{
+    "heading_font": "serif or sans-serif",
+    "body_font": "serif or sans-serif",
+    "heading_size": number between 30-50,
+    "body_size": number between 12-18,
+    "heading_weight": number (300, 400, 600, 700, 900),
+    "body_weight": number (300, 400, 600, 700),
+    "line_height": number between 1.4-2.0
+  }},
+  "spacing": {{
+    "xs": number,
+    "sm": number,
+    "md": number,
+    "lg": number,
+    "xl": number
+  }}
+}}
+
+Return ONLY valid JSON."""
+
+    def _normalize_style_pack(self, pack_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize and validate generated style pack data"""
+        # Ensure required fields exist
+        normalized = {
+            "name": pack_data.get("name", "Generated Pack"),
+            "description": pack_data.get("description", "AI-generated design system"),
+            "is_preset": False,
+            "is_custom": True,
+            "colors": self._normalize_colors(pack_data.get("colors", {})),
+            "typography": self._normalize_typography(pack_data.get("typography", {})),
+            "spacing": self._normalize_spacing(pack_data.get("spacing", {})),
+        }
+        return normalized
+
+    def _normalize_colors(self, colors: Dict[str, str]) -> Dict[str, str]:
+        """Normalize color values"""
+        defaults = {
+            "primary": "#000000",
+            "secondary": "#666666",
+            "accent": "#0066cc",
+            "background": "#ffffff",
+            "text": "#333333",
+        }
+        for key in defaults:
+            if key not in colors or not isinstance(colors.get(key), str):
+                colors[key] = defaults[key]
+        return {k: colors[k] for k in defaults}
+
+    def _normalize_typography(self, typo: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize typography values"""
+        defaults = {
+            "heading_font": "sans-serif",
+            "body_font": "sans-serif",
+            "heading_size": 36,
+            "body_size": 16,
+            "heading_weight": 700,
+            "body_weight": 400,
+            "line_height": 1.6,
+        }
+        normalized = {}
+        for key, default in defaults.items():
+            val = typo.get(key, default)
+            if key.endswith("_font"):
+                normalized[key] = "serif" if "serif" in str(val).lower() else "sans-serif"
+            elif key.endswith("_size"):
+                try:
+                    normalized[key] = max(12, min(60, int(val)))
+                except (ValueError, TypeError):
+                    normalized[key] = default
+            elif key.endswith("_weight"):
+                try:
+                    normalized[key] = int(val)
+                except (ValueError, TypeError):
+                    normalized[key] = default
+            elif key == "line_height":
+                try:
+                    normalized[key] = max(1.2, min(2.0, float(val)))
+                except (ValueError, TypeError):
+                    normalized[key] = default
+        return normalized
+
+    def _normalize_spacing(self, spacing: Dict[str, Any]) -> Dict[str, int]:
+        """Normalize spacing values"""
+        defaults = {"xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32}
+        normalized = {}
+        for key, default in defaults.items():
+            try:
+                normalized[key] = max(2, min(100, int(spacing.get(key, default))))
+            except (ValueError, TypeError):
+                normalized[key] = default
+        return normalized
+
 
 # ==================== SINGLETON INSTANCE ====================
 
