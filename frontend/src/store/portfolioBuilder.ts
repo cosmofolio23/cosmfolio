@@ -32,8 +32,10 @@ interface PortfolioBuilderStore extends BuilderState {
   toggleEndPage: () => void
   setEndPage: (end: Partial<EndPageConfig>) => void
 
-  // Design Projects (per-project config - text only, no assets)
+  // Design Projects (per-project config with assets)
   setDesignProject: (index: number, updates: Partial<DesignProjectConfig>) => void
+  addDesignProjectAsset: (index: number, category: keyof DesignProjectConfig['assets'], url: string) => void
+  removeDesignProjectAsset: (index: number, category: keyof DesignProjectConfig['assets'], url: string) => void
   syncDesignProjectsWithCount: () => void
 
   // Step 1: Page count
@@ -182,6 +184,26 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
     return { designProjects: projects }
   }),
 
+  addDesignProjectAsset: (index, category, url) => set((s) => {
+    const projects = [...s.designProjects]
+    if (projects[index]) {
+      const assets = { ...projects[index].assets }
+      assets[category] = [...assets[category], url]
+      projects[index] = { ...projects[index], assets }
+    }
+    return { designProjects: projects }
+  }),
+
+  removeDesignProjectAsset: (index, category, url) => set((s) => {
+    const projects = [...s.designProjects]
+    if (projects[index]) {
+      const assets = { ...projects[index].assets }
+      assets[category] = assets[category].filter(u => u !== url)
+      projects[index] = { ...projects[index], assets }
+    }
+    return { designProjects: projects }
+  }),
+
   // Keep designProjects array in sync with projectCount
   syncDesignProjectsWithCount: () => set((s) => {
     const count = s.projectCount
@@ -199,6 +221,7 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
           typology: '',
           pageCount: 2,
           description: '',
+          assets: { renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: [] },
         })
       }
     }

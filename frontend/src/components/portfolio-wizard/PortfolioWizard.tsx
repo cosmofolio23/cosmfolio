@@ -389,12 +389,40 @@ function Step2FrontCover({ builder, onUpload, uploading }: { builder: any; onUpl
           />
         </Field>
 
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-          <p className="text-sm text-charcoal">
-            🖼️ <strong>Cover image?</strong> You'll pick one from your project renders in the next step.
-            We'll show cover template options before generating.
-          </p>
-        </div>
+        <Field label="Cover Image (optional)">
+          <div className="border-2 border-dashed border-border-light rounded-xl p-6 text-center hover:border-primary transition-colors">
+            {builder.frontCover.coverImageUrl ? (
+              <div className="space-y-3">
+                <img
+                  src={builder.frontCover.coverImageUrl}
+                  alt="Cover"
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => builder.setFrontCover({ coverImageUrl: '' })}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Remove image
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-3">🖼️</div>
+                <p className="text-sm text-stone-light mb-3">PNG, JPG, or WebP</p>
+                <label className="inline-block cursor-pointer px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-dark transition disabled:opacity-50">
+                  {uploading ? 'Uploading...' : 'Choose Image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+        </Field>
       </div>
     </div>
   )
@@ -411,7 +439,7 @@ function Step3Projects({ builder, projectId }: { builder: any; projectId: string
     <div>
       <h2 className="text-xl font-bold text-charcoal mb-1">🏗️ Configure Each Project</h2>
       <p className="text-sm text-stone-light mb-6">
-        Set project details. Images will be uploaded later on the portfolio page.
+        Set details and upload images for each project.
       </p>
 
       <div className="space-y-3">
@@ -445,6 +473,8 @@ function ProjectCard({
   expanded: boolean
   onToggle: () => void
 }) {
+  const totalImages = project.assets.renders.length + project.assets.plans.length + project.assets.sections.length + project.assets.elevations.length + project.assets.concepts.length + project.assets.diagrams.length
+
   return (
     <div className={`border-2 rounded-xl overflow-hidden transition-all ${
       expanded ? 'border-primary shadow-md' : 'border-border-light'
@@ -460,7 +490,7 @@ function ProjectCard({
         <div className="flex-1 min-w-0">
           <div className="font-bold text-charcoal truncate">{project.name || `Project ${index + 1}`}</div>
           <div className="text-xs text-stone-light mt-0.5">
-            {project.pageCount} pages
+            {project.pageCount} pages · {totalImages} images
             {project.location && ` · ${project.location}`}
           </div>
         </div>
@@ -535,9 +565,69 @@ function ProjectCard({
               className="input-field resize-none"
             />
           </Field>
+
+          {/* Image uploads */}
+          <div>
+            <label className="block text-sm font-semibold text-charcoal mb-3">
+              📸 Upload Images
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <QuickUpload label="🎨 Renders" cat="renders" project={project} idx={index} builder={builder} />
+              <QuickUpload label="📐 Plans" cat="plans" project={project} idx={index} builder={builder} />
+              <QuickUpload label="📏 Sections" cat="sections" project={project} idx={index} builder={builder} />
+              <QuickUpload label="🏢 Elevations" cat="elevations" project={project} idx={index} builder={builder} />
+              <QuickUpload label="💡 Concepts" cat="concepts" project={project} idx={index} builder={builder} />
+              <QuickUpload label="📊 Diagrams" cat="diagrams" project={project} idx={index} builder={builder} />
+            </div>
+          </div>
         </div>
       )}
     </div>
+  )
+}
+
+function QuickUpload({ label, cat, project, idx, builder }: { label: string; cat: keyof DesignProjectConfig['assets']; project: DesignProjectConfig; idx: number; builder: any }) {
+  const [uploading, setUploading] = useState(false)
+  const count = project.assets[cat].length
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    setUploading(true)
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const token = localStorage.getItem('auth_token')
+      const formData = new FormData()
+      Array.from(files).forEach(f => formData.append('files', f))
+
+      const res = await fetch(
+        `${API_URL}/api/projects/${project.id}/assets/bulk?asset_type=${cat}`,
+        { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData }
+      )
+
+      if (res.ok) {
+        const data = await res.json()
+        ;(data.assets || []).forEach((a: any) => {
+          if (a.file_url) builder.addDesignProjectAsset(idx, cat, a.file_url)
+        })
+      }
+    } catch (e) {
+      console.error('Upload failed:', e)
+    } finally {
+      setUploading(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  return (
+    <label className={`p-2 rounded border-2 text-center cursor-pointer transition ${
+      uploading ? 'border-stone-light bg-stone-light/10' : 'border-dashed border-border-light hover:border-primary'
+    }`}>
+      <div>{label}</div>
+      <div className="text-[10px] text-stone-light">({count})</div>
+      <input type="file" multiple accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+    </label>
   )
 }
 
@@ -807,11 +897,14 @@ function Step7Review({ builder, totalPages }: { builder: any; totalPages: number
 
         <ReviewRow icon="🏗️" label="Project pages">
           <div className="text-xs text-stone-light space-y-1">
-            {builder.designProjects.map((p: DesignProjectConfig, i: number) => (
-              <div key={p.id}>
-                • {p.name || `Project ${i + 1}`} — {p.pageCount} pages
-              </div>
-            ))}
+            {builder.designProjects.map((p: DesignProjectConfig, i: number) => {
+              const imgs = p.assets.renders.length + p.assets.plans.length + p.assets.sections.length + p.assets.elevations.length + p.assets.concepts.length + p.assets.diagrams.length
+              return (
+                <div key={p.id}>
+                  • {p.name || `Project ${i + 1}`} — {p.pageCount} pages, {imgs} images
+                </div>
+              )
+            })}
           </div>
         </ReviewRow>
 
