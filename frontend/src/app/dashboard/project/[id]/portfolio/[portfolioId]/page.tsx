@@ -13,7 +13,17 @@ interface Page {
   type: string
   name: string
   html: string
+  current_layout?: string
+  available_layouts?: string[]
 }
+
+const LAYOUT_OPTIONS = [
+  { id: 'project-hero-image', name: 'Hero Image', icon: '🖼️', desc: 'Big image, text below' },
+  { id: 'project-grid-3col', name: '3-Column Grid', icon: '⊞', desc: 'Six images in grid' },
+  { id: 'project-plan-section', name: 'Plan + Sections', icon: '📐', desc: 'Floor plan focus' },
+  { id: 'project-asymmetric', name: 'Asymmetric', icon: '◱', desc: 'Magazine-style' },
+  { id: 'project-masonry', name: 'Masonry', icon: '▦', desc: 'Pinterest-style' },
+]
 
 export default function PortfolioFlipbookPage() {
   const params = useParams()
@@ -31,6 +41,8 @@ export default function PortfolioFlipbookPage() {
   const [isFlipping, setIsFlipping] = useState(false)
   const [showPacks, setShowPacks] = useState(false)
   const [showJump, setShowJump] = useState(false)
+  const [showLayoutPicker, setShowLayoutPicker] = useState<string | null>(null)  // page ID being edited
+  const [pageLayouts, setPageLayouts] = useState<Record<string, string>>({})  // pageId → layoutId
 
   // Total spreads: cover is single, then pairs, last might be single
   // Spread 0 = [cover, page-1]
@@ -133,6 +145,40 @@ export default function PortfolioFlipbookPage() {
     } finally { setIsLoading(false) }
   }
 
+  // Swap layout for a single page (preserve current pack + other page layouts)
+  const switchPageLayout = async (pageId: string, newLayoutId: string) => {
+    const nextLayouts = { ...pageLayouts, [pageId]: newLayoutId }
+    setPageLayouts(nextLayouts)
+    setShowLayoutPicker(null)
+    setIsRendering(true)
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          style_pack_data: selectedPack,
+          page_layouts: nextLayouts,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPages(data.pages || [])
+        setHeadHtml(data.head_html || '')
+      } else {
+        // Fallback: revert if server doesn't support per-page layouts yet
+        console.warn('Per-page layout not supported, keeping local state')
+      }
+    } catch (e) {
+      console.error('Layout switch failed:', e)
+    } finally {
+      setIsRendering(false)
+    }
+  }
+
   // Re-fetch pages with a new pack
   const switchPack = async (pack: StylePack) => {
     setSelectedPack(pack)
@@ -150,7 +196,7 @@ export default function PortfolioFlipbookPage() {
             'Authorization': `Bearer ${savedToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ style_pack_data: pack }),
+          body: JSON.stringify({ style_pack_data: pack, page_layouts: pageLayouts }),
         })
         if (res.ok) {
           const data = await res.json()
@@ -429,13 +475,23 @@ export default function PortfolioFlipbookPage() {
 
           {/* LEFT PAGE */}
           {left && (
-            <div style={{ width: '50%', height: '100%', background: 'white', overflow: 'hidden', borderRight: '1px solid rgba(0,0,0,0.1)' }}>
+            <div style={{ width: '50%', height: '100%', background: 'white', overflow: 'hidden', borderRight: '1px solid rgba(0,0,0,0.1)', position: 'relative' }}>
               <iframe
                 srcDoc={`<!DOCTYPE html><html>${headHtml}<body>${left.html}</body></html>`}
                 sandbox="allow-same-origin"
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title={left.name}
               />
+              {/* Layout button on project pages */}
+              {left.type === 'project' && (
+                <button
+                  onClick={() => setShowLayoutPicker(left.id)}
+                  className="absolute top-2 left-2 bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                  title="Change layout for this page"
+                >
+                  📐 Layout
+                </button>
+              )}
             </div>
           )}
 
@@ -446,6 +502,7 @@ export default function PortfolioFlipbookPage() {
               height: '100%',
               background: 'white',
               overflow: 'hidden',
+              position: 'relative',
             }}>
               <iframe
                 srcDoc={`<!DOCTYPE html><html>${headHtml}<body>${right.html}</body></html>`}
@@ -453,17 +510,82 @@ export default function PortfolioFlipbookPage() {
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title={right.name}
               />
+              {/* Layout button on project pages */}
+              {right.type === 'project' && (
+                <button
+                  onClick={() => setShowLayoutPicker(right.id)}
+                  className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                  title="Change layout for this page"
+                >
+                  📐 Layout
+                </button>
+              )}
             </div>
           )}
         </div>
+
+        {/* Layout Picker Overlay */}
+        {showLayoutPicker && (
+          <div
+            className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowLayoutPicker(null)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-charcoal">📐 Choose Layout for This Page</h3>
+                  <p className="text-xs text-stone-light mt-1">
+                    Each page can have a different layout — design style stays the same
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowLayoutPicker(null)}
+                  className="text-stone-light hover:text-charcoal p-2"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                {LAYOUT_OPTIONS.map((layout) => {
+                  const isActive = (pageLayouts[showLayoutPicker] || pages.find(p => p.id === showLayoutPicker)?.current_layout) === layout.id
+                  return (
+                    <button
+                      key={layout.id}
+                      onClick={() => switchPageLayout(showLayoutPicker, layout.id)}
+                      className={`text-left p-3 rounded-xl border-2 transition ${
+                        isActive
+                          ? 'border-primary bg-blue-50 ring-2 ring-primary/30'
+                          : 'border-border-light hover:border-stone-light hover:bg-bg-subtle'
+                      }`}
+                    >
+                      <div className="text-3xl mb-2">{layout.icon}</div>
+                      <div className="font-bold text-sm text-charcoal">{layout.name}</div>
+                      <div className="text-xs text-stone-light mt-1">{layout.desc}</div>
+                      {isActive && (
+                        <div className="text-xs text-primary font-semibold mt-2">✓ Current</div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-stone-light text-center mt-4">
+                💡 Tip: Mix different layouts across projects for visual variety
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom indicator */}
-      <div className="bg-black/40 backdrop-blur-lg border-t border-white/10 flex-shrink-0 px-4 py-2 flex items-center justify-center gap-2 text-white/60 text-xs">
-        <span>← →</span>
-        <span>Keyboard arrows to navigate</span>
-        <span className="mx-3">·</span>
-        <span>Click the edges to flip pages</span>
+      <div className="bg-black/40 backdrop-blur-lg border-t border-white/10 flex-shrink-0 px-4 py-2 flex items-center justify-center gap-4 text-white/60 text-xs flex-wrap">
+        <span><span className="text-white/90">← →</span> Flip pages</span>
+        <span className="mx-1">·</span>
+        <span><span className="text-white/90">📐 Layout</span> button on each project page</span>
+        <span className="mx-1">·</span>
+        <span><span className="text-white/90">🎨</span> Top right to change design pack</span>
       </div>
 
       {/* Backdrop for dropdowns */}

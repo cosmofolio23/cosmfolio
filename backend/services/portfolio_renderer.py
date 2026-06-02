@@ -551,6 +551,7 @@ def render_portfolio_pages(
     project: Dict[str, Any],
     assets: List[Dict[str, Any]],
     wizard_config: Optional[Dict[str, Any]] = None,
+    page_layouts: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """
     Render portfolio as a list of individual pages with metadata.
@@ -661,12 +662,27 @@ def render_portfolio_pages(
                 "concepts": dp_assets.get("concepts", []),
                 "diagrams": dp_assets.get("diagrams", []),
             }
-            layout_fn = project_layout_fn if i == 0 else project_layouts[i % len(project_layouts)]
+
+            page_id = f"project-{i}"
+            # Per-page layout override > global layout > rotation default
+            custom_layout_id = (page_layouts or {}).get(page_id)
+            if custom_layout_id:
+                layout_fn = get_layout_renderer(custom_layout_id)
+                used_layout = custom_layout_id
+            elif i == 0:
+                layout_fn = project_layout_fn
+                used_layout = layout_id
+            else:
+                layout_fn = project_layouts[i % len(project_layouts)]
+                used_layout = ["project-hero-image", "project-grid-3col", "project-plan-section", "project-asymmetric", "project-masonry"][i % 5]
+
             pages.append({
-                "id": f"project-{i}",
+                "id": page_id,
                 "type": "project",
                 "name": dp.get("name", f"Project {i+1}"),
-                "html": layout_fn(dp_data, tokens)
+                "html": layout_fn(dp_data, tokens),
+                "current_layout": used_layout,
+                "available_layouts": ["project-hero-image", "project-grid-3col", "project-plan-section", "project-asymmetric", "project-masonry"],
             })
     else:
         fallback_data = {
@@ -678,11 +694,16 @@ def render_portfolio_pages(
             "cover_image_url": assets_by_type["renders"][0] if assets_by_type["renders"] else "",
             **assets_by_type,
         }
+        page_id = "project-default"
+        custom_layout_id = (page_layouts or {}).get(page_id)
+        layout_fn = get_layout_renderer(custom_layout_id) if custom_layout_id else project_layout_fn
         pages.append({
-            "id": "project-default",
+            "id": page_id,
             "type": "project",
             "name": project.get("title", "Project"),
-            "html": project_layout_fn(fallback_data, tokens)
+            "html": layout_fn(fallback_data, tokens),
+            "current_layout": custom_layout_id or layout_id,
+            "available_layouts": ["project-hero-image", "project-grid-3col", "project-plan-section", "project-asymmetric", "project-masonry"],
         })
 
     # End

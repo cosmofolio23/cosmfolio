@@ -400,6 +400,7 @@ async def get_portfolio_pages(
         body = body or {}
         custom_pack = body.get("style_pack_data")
         custom_layout = body.get("layout_id")
+        page_layouts = body.get("page_layouts") or {}  # NEW: per-page layout overrides
 
         ps = portfolio.get("page_structure") or {}
         if isinstance(ps, str):
@@ -429,6 +430,7 @@ async def get_portfolio_pages(
             project=project,
             assets=assets,
             wizard_config=wizard_config,
+            page_layouts=page_layouts,
         )
         return result
 
