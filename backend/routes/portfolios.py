@@ -319,23 +319,96 @@ async def delete_portfolio(portfolio_id: str, current_user: dict = Depends(get_c
 
 @router.get("/{portfolio_id}/preview")
 async def get_portfolio_preview(portfolio_id: str, current_user: dict = Depends(get_current_user)):
-    """Get portfolio HTML preview"""
+    """Get portfolio HTML preview (Batch 3: renders with selected layouts + design pack)"""
     try:
+        from services.portfolio_renderer import render_full_portfolio_safe
+
         response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if response.data:
-            portfolio = response.data[0]
-            # Verify user ownership
-            project = supabase.table("projects").select("*").eq("id", portfolio["project_id"]).eq("user_id", current_user["user_id"]).execute()
-            if project.data:
-                return {
-                    "portfolio_id": portfolio_id,
-                    "html": portfolio.get("generated_html") or "<p>Portfolio HTML will be generated here</p>"
-                }
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        portfolio = response.data[0]
+        project_id = portfolio["project_id"]
+
+        # Verify user ownership
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your portfolio")
+        project = project_resp.data[0]
+
+        # Get all assets for this project
+        assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+        assets = assets_resp.data or []
+
+        # Get wizard config (saved as portfolio_configs row)
+        wizard_config = None
+        try:
+            cfg_resp = supabase.table("portfolio_configs").select("*").eq("project_id", project_id).execute()
+            if cfg_resp.data:
+                # The wizard config is stored in the row - may be in a config_data field or directly
+                cfg = cfg_resp.data[0]
+                wizard_config = cfg.get("config") or cfg.get("config_data") or cfg
+        except Exception as cfg_e:
+            print(f"[INFO] No wizard config found: {cfg_e}")
+
+        # Render the portfolio
+        html = render_full_portfolio_safe(
+            portfolio=portfolio,
+            project=project,
+            assets=assets,
+            wizard_config=wizard_config,
+        )
+
+        return {
+            "portfolio_id": portfolio_id,
+            "html": html,
+        }
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{type(e).__name__}: {str(e)}")
+
+
+@router.get("/{portfolio_id}/preview-html", response_class=None)
+async def get_portfolio_preview_html(portfolio_id: str):
+    """Return raw HTML for iframe preview (public, no auth — designed for iframe rendering)"""
+    from fastapi.responses import HTMLResponse
+    from services.portfolio_renderer import render_full_portfolio_safe
+
+    try:
+        response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+        if not response.data:
+            return HTMLResponse(content="<h1>Portfolio not found</h1>", status_code=404)
+
+        portfolio = response.data[0]
+        project_id = portfolio["project_id"]
+
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).execute()
+        project = project_resp.data[0] if project_resp.data else {}
+
+        assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+        assets = assets_resp.data or []
+
+        wizard_config = None
+        try:
+            cfg_resp = supabase.table("portfolio_configs").select("*").eq("project_id", project_id).execute()
+            if cfg_resp.data:
+                cfg = cfg_resp.data[0]
+                wizard_config = cfg.get("config") or cfg.get("config_data") or cfg
+        except Exception:
+            pass
+
+        html = render_full_portfolio_safe(
+            portfolio=portfolio,
+            project=project,
+            assets=assets,
+            wizard_config=wizard_config,
+        )
+        return HTMLResponse(content=html)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error</h1><pre>{type(e).__name__}: {str(e)}</pre>", status_code=500)
 
 
 # ==================== BATCH 1: Wizard Config ====================
