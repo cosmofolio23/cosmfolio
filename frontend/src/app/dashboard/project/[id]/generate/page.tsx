@@ -89,13 +89,15 @@ export default function GeneratePage() {
     }, 1500)
 
     try {
+      const savedToken = token || localStorage.getItem('auth_token')
+
       for (let v = 1; v <= variantCount; v++) {
         setGeneratingMsg(`✨ Creating variant ${v} of ${variantCount}...`)
-        await fetch(`${API_URL}/api/portfolios/${params.id}/generate`, {
+        const res = await fetch(`${API_URL}/api/portfolios/${params.id}/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${savedToken}`
           },
           body: JSON.stringify({
             layout_id: selectedLayout,
@@ -104,12 +106,20 @@ export default function GeneratePage() {
             variant_number: v
           })
         })
+
+        if (!res.ok) {
+          const errorBody = await res.text()
+          console.error(`Generate failed (${res.status}):`, errorBody)
+          throw new Error(`Server error ${res.status}: ${errorBody.slice(0, 200)}`)
+        }
       }
       await loadPortfolios()
       setGeneratingMsg('✅ Done! Portfolios generated!')
       setTimeout(() => setGeneratingMsg(''), 3000)
-    } catch (e) {
-      setGeneratingMsg('❌ Generation failed. Try again.')
+    } catch (e: any) {
+      console.error('Generation error:', e)
+      setGeneratingMsg(`❌ ${e.message || 'Generation failed. Try again.'}`)
+      setTimeout(() => setGeneratingMsg(''), 6000)
     } finally {
       clearInterval(interval)
       setIsGenerating(false)
