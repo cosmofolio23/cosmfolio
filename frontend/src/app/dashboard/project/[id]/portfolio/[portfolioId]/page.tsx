@@ -75,22 +75,58 @@ export default function PortfolioFlipbookPage() {
         setSelectedPack(currentPack)
       }
 
-      // Get paged data
-      const pagesRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${savedToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      })
-      if (pagesRes.ok) {
-        const data = await pagesRes.json()
-        setPages(data.pages || [])
-        setHeadHtml(data.head_html || '')
-      } else {
-        const errText = await pagesRes.text()
-        setError(`Failed to render: ${pagesRes.status} ${errText.slice(0, 200)}`)
+      // Get paged data (new endpoint - may not be deployed yet)
+      let gotPages = false
+      try {
+        const pagesRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${savedToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        })
+        if (pagesRes.ok) {
+          const data = await pagesRes.json()
+          setPages(data.pages || [])
+          setHeadHtml(data.head_html || '')
+          gotPages = true
+        }
+      } catch (e) { console.warn('Pages endpoint unavailable, falling back to preview') }
+
+      // FALLBACK: use /preview endpoint and parse pages client-side
+      if (!gotPages) {
+        const previewRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/preview`, {
+          headers: { 'Authorization': `Bearer ${savedToken}` }
+        })
+        if (previewRes.ok) {
+          const data = await previewRes.json()
+          const html = data.html || ''
+          // Parse pages from full HTML
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(html, 'text/html')
+          const sections = Array.from(doc.querySelectorAll('section.page'))
+          const head = doc.head?.innerHTML || ''
+          const parsedPages = sections.map((sec, idx) => {
+            const heading = sec.querySelector('h1, h2')?.textContent?.trim() || `Page ${idx + 1}`
+            const cls = sec.className || ''
+            const type = cls.includes('cover') ? 'cover'
+              : cls.includes('about') ? 'about'
+              : cls.includes('contents') ? 'contents'
+              : cls.includes('end') ? 'end'
+              : 'project'
+            return {
+              id: `${type}-${idx}`,
+              type,
+              name: heading.slice(0, 30),
+              html: sec.outerHTML,
+            }
+          })
+          setPages(parsedPages)
+          setHeadHtml(`<head>${head}<style>* {margin:0; padding:0; box-sizing:border-box;} body{background:white;} .page{width:100%;min-height:100vh;} img{display:block;max-width:100%;}</style></head>`)
+        } else {
+          setError(`Failed to render: ${previewRes.status}`)
+        }
       }
     } catch (e: any) {
       setError(e.message || 'Failed to load')
@@ -104,18 +140,61 @@ export default function PortfolioFlipbookPage() {
     setIsRendering(true)
     try {
       const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${savedToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ style_pack_data: pack }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setPages(data.pages || [])
-        setHeadHtml(data.head_html || '')
+
+      // Try new pages endpoint
+      let gotPages = false
+      try {
+        const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${savedToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ style_pack_data: pack }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setPages(data.pages || [])
+          setHeadHtml(data.head_html || '')
+          gotPages = true
+        }
+      } catch {}
+
+      // Fallback: render-with-pack returns full HTML, parse pages
+      if (!gotPages) {
+        const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/render-with-pack`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${savedToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ style_pack_data: pack }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const html = data.html || ''
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(html, 'text/html')
+          const sections = Array.from(doc.querySelectorAll('section.page'))
+          const head = doc.head?.innerHTML || ''
+          const parsedPages = sections.map((sec, idx) => {
+            const heading = sec.querySelector('h1, h2')?.textContent?.trim() || `Page ${idx + 1}`
+            const cls = sec.className || ''
+            const type = cls.includes('cover') ? 'cover'
+              : cls.includes('about') ? 'about'
+              : cls.includes('contents') ? 'contents'
+              : cls.includes('end') ? 'end'
+              : 'project'
+            return {
+              id: `${type}-${idx}`,
+              type,
+              name: heading.slice(0, 30),
+              html: sec.outerHTML,
+            }
+          })
+          setPages(parsedPages)
+          setHeadHtml(`<head>${head}<style>* {margin:0; padding:0; box-sizing:border-box;} body{background:white;} .page{width:100%;min-height:100vh;} img{display:block;max-width:100%;}</style></head>`)
+        }
       }
     } catch (e) {
       console.error('Switch pack failed:', e)

@@ -653,15 +653,27 @@ function ProjectCoverUpload({ project, index, builder, projectId }: { project: D
 
 function ProfilePhotoUpload({ builder, projectId }: { builder: any; projectId: string }) {
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!projectId) {
+      setUploadError('Project ID missing — refresh and try again')
+      return
+    }
     setUploading(true)
+    setUploadError(null)
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const token = localStorage.getItem('auth_token')
+      if (!token) {
+        setUploadError('Not logged in — refresh and log in')
+        setUploading(false)
+        return
+      }
+
       const formData = new FormData()
       formData.append('files', file)
 
@@ -675,12 +687,17 @@ function ProfilePhotoUpload({ builder, projectId }: { builder: any; projectId: s
         const uploadedUrl = data.assets?.[0]?.file_url || ''
         if (uploadedUrl) {
           builder.setAboutPage({ profilePhotoUrl: uploadedUrl })
+        } else {
+          setUploadError('Upload succeeded but no URL returned')
         }
       } else {
-        console.error('Upload error:', res.status, res.statusText)
+        const errBody = await res.text()
+        console.error('Profile upload error:', res.status, errBody)
+        setUploadError(`Server error ${res.status}: ${errBody.slice(0, 120)}`)
       }
-    } catch (e) {
-      console.error('Upload failed:', e)
+    } catch (err: any) {
+      console.error('Upload failed:', err)
+      setUploadError(`Network error: ${err.message}`)
     } finally {
       setUploading(false)
       if (e.target) e.target.value = ''
@@ -700,12 +717,19 @@ function ProfilePhotoUpload({ builder, projectId }: { builder: any; projectId: s
           </button>
         </div>
       ) : (
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-border-light rounded-lg p-6 cursor-pointer hover:border-primary transition">
-          <div className="text-3xl mb-2">👤</div>
-          <p className="text-sm text-stone-light">Your profile photo</p>
-          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
-          <span className="text-xs text-stone-light mt-2">{uploading ? 'Uploading...' : 'Click to upload'}</span>
-        </label>
+        <>
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-border-light rounded-lg p-6 cursor-pointer hover:border-primary transition">
+            <div className="text-3xl mb-2">👤</div>
+            <p className="text-sm text-stone-light">Your profile photo</p>
+            <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+            <span className="text-xs text-stone-light mt-2">{uploading ? '⏳ Uploading... (backend may be cold, takes 30-60s)' : 'Click to upload'}</span>
+          </label>
+          {uploadError && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+              ⚠️ {uploadError}
+            </div>
+          )}
+        </>
       )}
     </Field>
   )
