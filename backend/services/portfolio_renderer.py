@@ -544,3 +544,191 @@ def render_full_portfolio_safe(*args, **kwargs) -> str:
             <p style="color: #666;">Could not render this portfolio. Details:</p>
             <pre style="background: #f0f0f0; padding: 16px; overflow: auto; font-size: 13px;">{type(e).__name__}: {str(e)}</pre>
         </body></html>"""
+
+
+def render_portfolio_pages(
+    portfolio: Dict[str, Any],
+    project: Dict[str, Any],
+    assets: List[Dict[str, Any]],
+    wizard_config: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Render portfolio as a list of individual pages with metadata.
+    Used by the magazine flipbook editor.
+
+    Returns:
+        {
+            "pages": [
+                {"id": "cover-0", "type": "cover", "name": "Cover", "html": "..."},
+                {"id": "about-1", "type": "about", "name": "About", "html": "..."},
+                ...
+            ],
+            "style_pack": {...},
+            "head_html": "<...font links + base styles...>"
+        }
+    """
+    page_structure = portfolio.get("page_structure") or {}
+    if isinstance(page_structure, str):
+        try:
+            page_structure = json.loads(page_structure)
+        except Exception:
+            page_structure = {}
+
+    style_pack = page_structure.get("style_pack") or {}
+    tokens = _extract_tokens(style_pack)
+    layout_id = portfolio.get("layout_id", "project-hero-image")
+    project_layout_fn = get_layout_renderer(layout_id)
+
+    # Build assets_by_type
+    assets_by_type = {"renders": [], "plans": [], "sections": [], "elevations": [], "concepts": [], "diagrams": []}
+    type_map = {"render": "renders", "plan": "plans", "section": "sections", "elevation": "elevations", "concept": "concepts", "diagram": "diagrams"}
+    for a in assets:
+        t = a.get("asset_type", "render")
+        key = type_map.get(t, "renders")
+        if a.get("file_url"):
+            assets_by_type[key].append(a["file_url"])
+
+    wc = wizard_config or {}
+    front_cover = wc.get("front_cover", {})
+    design_projects = wc.get("design_projects", [])
+    about = wc.get("about_page", {})
+    end = wc.get("end_page", {})
+    contents_enabled = wc.get("contents_page_enabled", True)
+
+    pages = []
+
+    # Cover
+    cover_data = {
+        "title": front_cover.get("title") or project.get("title", "Portfolio"),
+        "subtitle": front_cover.get("subtitle", ""),
+        "author_name": front_cover.get("authorName", ""),
+        "year": front_cover.get("year", ""),
+        "studio": front_cover.get("studio", ""),
+        "cover_image_url": front_cover.get("coverImageUrl") or (assets_by_type["renders"][0] if assets_by_type["renders"] else ""),
+    }
+    pack_id = style_pack.get("id", "")
+    if "minimal" in pack_id or "luxury" in pack_id or "scandinavian" in pack_id:
+        cover_html = cover_minimal(cover_data, tokens)
+    elif "competition" in pack_id or "dark" in pack_id or "future" in pack_id:
+        cover_html = cover_hero_full(cover_data, tokens)
+    else:
+        cover_html = cover_split_image(cover_data, tokens)
+    pages.append({"id": "cover", "type": "cover", "name": "Cover", "html": cover_html})
+
+    # Contents
+    if contents_enabled:
+        contents_items = []
+        page_num = 2
+        if about.get("enabled"):
+            contents_items.append({"title": "About", "page": page_num + 1})
+            page_num += 1
+        for i, dp in enumerate(design_projects):
+            contents_items.append({"title": dp.get("name", f"Project {i+1}"), "page": page_num + 1 + i})
+        pages.append({
+            "id": "contents",
+            "type": "contents",
+            "name": "Contents",
+            "html": contents_page({"items": contents_items}, tokens)
+        })
+
+    # About
+    if about.get("enabled"):
+        about_data = {
+            "author_name": front_cover.get("authorName", "Architect"),
+            "author_initial": (front_cover.get("authorName", "A") or "A")[0].upper(),
+            "profile_photo_url": about.get("profilePhotoUrl", ""),
+            "sections": about.get("sections", {}),
+        }
+        pages.append({"id": "about", "type": "about", "name": "About Me", "html": about_page(about_data, tokens)})
+
+    # Project pages
+    project_layouts = [project_hero_image, project_grid_3col, project_plan_section, project_asymmetric, project_masonry]
+
+    if design_projects:
+        for i, dp in enumerate(design_projects):
+            dp_assets = dp.get("assets", {}) or {}
+            dp_data = {
+                "name": dp.get("name", f"Project {i+1}"),
+                "location": dp.get("location", ""),
+                "year": dp.get("year", ""),
+                "typology": dp.get("typology", ""),
+                "description": dp.get("description", ""),
+                "cover_image_url": dp.get("coverImageUrl", ""),
+                "renders": dp_assets.get("renders", []),
+                "plans": dp_assets.get("plans", []),
+                "sections": dp_assets.get("sections", []),
+                "elevations": dp_assets.get("elevations", []),
+                "concepts": dp_assets.get("concepts", []),
+                "diagrams": dp_assets.get("diagrams", []),
+            }
+            layout_fn = project_layout_fn if i == 0 else project_layouts[i % len(project_layouts)]
+            pages.append({
+                "id": f"project-{i}",
+                "type": "project",
+                "name": dp.get("name", f"Project {i+1}"),
+                "html": layout_fn(dp_data, tokens)
+            })
+    else:
+        fallback_data = {
+            "name": project.get("title", "Project"),
+            "location": "",
+            "year": str(project.get("year", "")),
+            "typology": project.get("project_type", ""),
+            "description": project.get("description", ""),
+            "cover_image_url": assets_by_type["renders"][0] if assets_by_type["renders"] else "",
+            **assets_by_type,
+        }
+        pages.append({
+            "id": "project-default",
+            "type": "project",
+            "name": project.get("title", "Project"),
+            "html": project_layout_fn(fallback_data, tokens)
+        })
+
+    # End
+    if end.get("enabled"):
+        end_data = {
+            "email": end.get("email", ""),
+            "website": end.get("website", ""),
+            "phone": end.get("phone", ""),
+            "instagram": end.get("instagram", ""),
+            "linkedin": end.get("linkedin", ""),
+        }
+        pages.append({"id": "end", "type": "end", "name": "Contact", "html": end_page(end_data, tokens)})
+
+    # Build the page document wrapper (head with fonts + body open/close)
+    head_html = """<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:wght@400;500;600;700;900&family=Lora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: white; }
+        .page { width: 100%; min-height: 100vh; }
+        img { display: block; max-width: 100%; }
+    </style>
+</head>"""
+
+    return {
+        "pages": pages,
+        "style_pack": style_pack,
+        "head_html": head_html,
+    }
+
+
+def render_portfolio_pages_safe(*args, **kwargs) -> Dict[str, Any]:
+    """Safe wrapper for paged renderer"""
+    try:
+        return render_portfolio_pages(*args, **kwargs)
+    except Exception as e:
+        logger.exception("Paged renderer failed")
+        return {
+            "pages": [{
+                "id": "error",
+                "type": "error",
+                "name": "Error",
+                "html": f"<div style='padding: 80px; font-family: system-ui; text-align: center;'><h2>Render Error</h2><pre style='background: #fee; padding: 16px; margin-top: 16px;'>{type(e).__name__}: {str(e)}</pre></div>"
+            }],
+            "style_pack": {},
+            "head_html": "<head></head>",
+        }

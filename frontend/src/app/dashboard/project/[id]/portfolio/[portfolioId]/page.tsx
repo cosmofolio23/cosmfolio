@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
@@ -8,62 +8,54 @@ import { PRESET_PACKS, StylePack } from '@/components/design-system/StylePackGal
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-const LAYOUTS = [
-  { id: 'project-hero-image', name: 'Hero Image', icon: '🖼️' },
-  { id: 'project-grid-3col', name: 'Grid 3-Col', icon: '⊞' },
-  { id: 'project-plan-section', name: 'Plan + Sections', icon: '📐' },
-  { id: 'project-asymmetric', name: 'Asymmetric', icon: '◱' },
-  { id: 'project-masonry', name: 'Masonry', icon: '▦' },
-]
+interface Page {
+  id: string
+  type: string
+  name: string
+  html: string
+}
 
-export default function PortfolioEditorPage() {
+export default function PortfolioFlipbookPage() {
   const params = useParams()
   const router = useRouter()
   const { token, isAuthenticated } = useAuthStore()
   const [portfolio, setPortfolio] = useState<any>(null)
-  const [html, setHtml] = useState<string>('')
+  const [pages, setPages] = useState<Page[]>([])
+  const [headHtml, setHeadHtml] = useState<string>('')
+  const [spreadIndex, setSpreadIndex] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isRendering, setIsRendering] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedPack, setSelectedPack] = useState<StylePack>(PRESET_PACKS[0])
-  const [selectedLayout, setSelectedLayout] = useState<string>('project-hero-image')
-  const [activePage, setActivePage] = useState<number>(0)
-  const [pageList, setPageList] = useState<{ name: string; idx: number }[]>([])
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [flipDirection, setFlipDirection] = useState<'next' | 'prev'>('next')
+  const [isFlipping, setIsFlipping] = useState(false)
+  const [showPacks, setShowPacks] = useState(false)
+  const [showJump, setShowJump] = useState(false)
+
+  // Total spreads: cover is single, then pairs, last might be single
+  // Spread 0 = [cover, page-1]
+  // Spread 1 = [page-2, page-3]
+  // etc.
+  const totalSpreads = Math.max(1, Math.ceil((pages.length + 1) / 2))
+
+  // Get pages for current spread
+  const getSpreadPages = (spread: number): { left: Page | null; right: Page | null } => {
+    if (spread === 0) {
+      // First spread: only right (cover)
+      return { left: null, right: pages[0] || null }
+    }
+    const leftIdx = spread * 2 - 1
+    const rightIdx = spread * 2
+    return {
+      left: pages[leftIdx] || null,
+      right: pages[rightIdx] || null,
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
     loadPortfolio()
   }, [isAuthenticated, token])
-
-  // Extract page list from HTML for left sidebar
-  useEffect(() => {
-    if (!html) return
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const pages = Array.from(doc.querySelectorAll('section.page'))
-    const list = pages.map((p, idx) => {
-      const heading = p.querySelector('h1, h2')?.textContent?.trim() || `Page ${idx + 1}`
-      const cls = p.className.includes('cover') ? 'Cover' :
-                  p.className.includes('about') ? 'About' :
-                  p.className.includes('contents') ? 'Contents' :
-                  p.className.includes('end') ? 'End' : 'Project'
-      return { name: `${cls}: ${heading.slice(0, 25)}`, idx }
-    })
-    setPageList(list)
-  }, [html])
-
-  // Scroll iframe to selected page
-  useEffect(() => {
-    const iframe = iframeRef.current
-    if (!iframe || !iframe.contentWindow) return
-    try {
-      const pages = iframe.contentDocument?.querySelectorAll('section.page')
-      if (pages && pages[activePage]) {
-        pages[activePage].scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    } catch (e) {}
-  }, [activePage, html])
 
   const loadPortfolio = async () => {
     setIsLoading(true)
@@ -72,96 +64,115 @@ export default function PortfolioEditorPage() {
       const savedToken = token || localStorage.getItem('auth_token')
       if (!savedToken) { setError('Not authenticated'); setIsLoading(false); return }
 
+      // Get portfolio metadata
       const metaRes = await fetch(`${API_URL}/api/portfolios/view/${params.portfolioId}`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
       if (metaRes.ok) {
         const meta = await metaRes.json()
         setPortfolio(meta)
-        // Default to current portfolio's pack/layout if found
         const currentPack = PRESET_PACKS.find(p => p.id === meta.style_pack) || PRESET_PACKS[0]
         setSelectedPack(currentPack)
-        if (meta.layout_id) setSelectedLayout(meta.layout_id)
       }
 
-      const previewRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/preview`, {
-        headers: { 'Authorization': `Bearer ${savedToken}` }
+      // Get paged data
+      const pagesRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
       })
-      if (previewRes.ok) {
-        const data = await previewRes.json()
-        setHtml(data.html || '')
+      if (pagesRes.ok) {
+        const data = await pagesRes.json()
+        setPages(data.pages || [])
+        setHeadHtml(data.head_html || '')
       } else {
-        setError(`Failed to render: ${previewRes.status}`)
+        const errText = await pagesRes.text()
+        setError(`Failed to render: ${pagesRes.status} ${errText.slice(0, 200)}`)
       }
     } catch (e: any) {
       setError(e.message || 'Failed to load')
     } finally { setIsLoading(false) }
   }
 
-  // Re-render when pack or layout changes
-  const rerender = async (pack: StylePack, layout: string) => {
+  // Re-fetch pages with a new pack
+  const switchPack = async (pack: StylePack) => {
+    setSelectedPack(pack)
+    setShowPacks(false)
     setIsRendering(true)
     try {
       const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/render-with-pack`, {
+      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${savedToken}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${savedToken}`
         },
-        body: JSON.stringify({
-          style_pack_data: pack,
-          layout_id: layout,
-        })
+        body: JSON.stringify({ style_pack_data: pack }),
       })
       if (res.ok) {
         const data = await res.json()
-        setHtml(data.html || '')
+        setPages(data.pages || [])
+        setHeadHtml(data.head_html || '')
       }
     } catch (e) {
-      console.error('Rerender failed:', e)
+      console.error('Switch pack failed:', e)
     } finally {
       setIsRendering(false)
     }
   }
 
-  const handlePackChange = (pack: StylePack) => {
-    setSelectedPack(pack)
-    rerender(pack, selectedLayout)
-  }
+  const flipTo = useCallback((targetSpread: number) => {
+    if (isFlipping) return
+    if (targetSpread < 0 || targetSpread >= totalSpreads) return
+    setFlipDirection(targetSpread > spreadIndex ? 'next' : 'prev')
+    setIsFlipping(true)
+    setTimeout(() => {
+      setSpreadIndex(targetSpread)
+      setTimeout(() => setIsFlipping(false), 50)
+    }, 300)
+  }, [spreadIndex, totalSpreads, isFlipping])
 
-  const handleLayoutChange = (layoutId: string) => {
-    setSelectedLayout(layoutId)
-    rerender(selectedPack, layoutId)
-  }
+  const next = () => flipTo(spreadIndex + 1)
+  const prev = () => flipTo(spreadIndex - 1)
+
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') next()
+      if (e.key === 'ArrowLeft') prev()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [spreadIndex, totalSpreads])
 
   const handlePrint = () => {
-    const iframe = iframeRef.current
-    if (iframe?.contentWindow) iframe.contentWindow.print()
-  }
-
-  const handleSave = async () => {
-    // Persist current pack/layout selection to the portfolio
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      // Re-generate with selected pack as the new default
-      alert('Changes saved! Reload to see persisted version.')
-    } catch (e) {
-      console.error(e)
+    // Build full HTML with all pages for print
+    const allPagesHtml = pages.map(p => p.html).join('\n')
+    const printDoc = `<!DOCTYPE html><html>${headHtml}<body>${allPagesHtml}<style>
+      @media print { .page { page-break-after: always; } }
+    </style></body></html>`
+    const w = window.open('', '_blank')
+    if (w) {
+      w.document.write(printDoc)
+      w.document.close()
+      setTimeout(() => w.print(), 500)
     }
   }
 
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-subtle">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-border-light border-t-primary rounded-full animate-spin mb-4 mx-auto"></div>
-        <p className="text-stone-light">Loading editor...</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="text-center text-white">
+        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4 mx-auto"></div>
+        <p className="text-white/70">Opening your portfolio book...</p>
       </div>
     </div>
   )
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-subtle p-6">
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 p-6">
       <div className="bg-white rounded-xl shadow-md p-8 max-w-lg">
         <h2 className="text-xl font-bold text-red-700 mb-3">⚠️ Error</h2>
         <pre className="text-sm bg-red-50 p-4 rounded text-red-800 overflow-auto">{error}</pre>
@@ -170,154 +181,243 @@ export default function PortfolioEditorPage() {
     </div>
   )
 
+  const { left, right } = getSpreadPages(spreadIndex)
+  const isFirstSpread = spreadIndex === 0
+  const isLastSpread = spreadIndex === totalSpreads - 1
+
   return (
-    <div className="h-screen flex flex-col bg-slate-900">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-800 via-slate-900 to-black overflow-hidden">
+
       {/* Top Toolbar */}
-      <div className="bg-white border-b border-border-light shadow-sm flex-shrink-0 z-50 px-4 py-3 flex items-center justify-between gap-3">
+      <div className="bg-black/40 backdrop-blur-lg border-b border-white/10 flex-shrink-0 z-50 px-4 py-2.5 flex items-center justify-between gap-3 text-white">
         <div className="flex items-center gap-3 min-w-0">
           <Link
             href={`/dashboard/project/${params.id}/generate`}
-            className="text-stone-light hover:text-slate transition-colors flex items-center gap-1 text-sm whitespace-nowrap"
+            className="text-white/70 hover:text-white transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
           >
             ← Back
           </Link>
-          <div className="h-4 w-px bg-border-light"></div>
-          <span className="text-sm font-bold text-charcoal truncate">
-            🎨 Portfolio Editor
-          </span>
-          <span className="text-xs text-stone-light hidden sm:inline">
-            Variant #{portfolio?.variant_number}
-          </span>
+          <div className="h-4 w-px bg-white/20"></div>
+          <span className="text-sm font-bold">📖 Portfolio Book</span>
         </div>
+
         <div className="flex gap-2 items-center">
           {isRendering && (
-            <span className="text-xs text-blue-600 flex items-center gap-1">
-              <span className="animate-spin">⟳</span> Updating...
+            <span className="text-xs text-blue-300 flex items-center gap-1">
+              <span className="animate-spin">⟳</span> Updating style...
             </span>
           )}
+
+          {/* Jump to page */}
+          <div className="relative">
+            <button
+              onClick={() => setShowJump(!showJump)}
+              className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-1"
+            >
+              📑 Spread {spreadIndex + 1} / {totalSpreads}
+            </button>
+            {showJump && (
+              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 w-64 max-h-80 overflow-y-auto z-50">
+                {pages.map((p, idx) => {
+                  const targetSpread = idx === 0 ? 0 : Math.floor((idx + 1) / 2)
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => { flipTo(targetSpread); setShowJump(false) }}
+                      className="w-full text-left px-3 py-2 rounded text-charcoal text-sm hover:bg-bg-subtle transition flex items-center gap-2"
+                    >
+                      <span>{
+                        p.type === 'cover' ? '🏠' :
+                        p.type === 'about' ? '👤' :
+                        p.type === 'contents' ? '📋' :
+                        p.type === 'end' ? '📞' : '🏗️'
+                      }</span>
+                      <span className="truncate">{p.name}</span>
+                      <span className="ml-auto text-xs text-stone-light">p.{idx + 1}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Style picker */}
+          <div className="relative">
+            <button
+              onClick={() => setShowPacks(!showPacks)}
+              className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-1"
+              title="Change design pack"
+            >
+              <div className="flex h-3 w-12 rounded overflow-hidden">
+                <div style={{ background: selectedPack.colors.primary, width: '30%' }} />
+                <div style={{ background: selectedPack.colors.accent, width: '20%' }} />
+                <div style={{ background: selectedPack.colors.background, width: '50%' }} />
+              </div>
+              <span className="ml-1">🎨</span>
+            </button>
+            {showPacks && (
+              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 w-72 max-h-96 overflow-y-auto z-50">
+                <div className="text-xs font-bold text-stone uppercase tracking-wider mb-2 px-2">Design Packs</div>
+                {PRESET_PACKS.map(pack => (
+                  <button
+                    key={pack.id}
+                    onClick={() => switchPack(pack)}
+                    className={`w-full text-left rounded mb-1 overflow-hidden border ${selectedPack.id === pack.id ? 'border-primary ring-1 ring-primary' : 'border-transparent hover:border-border-light'}`}
+                  >
+                    <div className="flex h-6">
+                      <div style={{ background: pack.colors.primary, width: '30%' }} />
+                      <div style={{ background: pack.colors.secondary, width: '20%' }} />
+                      <div style={{ background: pack.colors.accent, width: '15%' }} />
+                      <div style={{ background: pack.colors.background, width: '35%' }} />
+                    </div>
+                    <div className="p-2 bg-white">
+                      <div className="text-xs font-bold text-charcoal truncate" style={{ fontFamily: pack.typography.heading_font }}>
+                        {pack.name}
+                      </div>
+                      <div className="text-[10px] text-stone-light truncate">{pack.description}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={handlePrint}
-            className="bg-primary text-white px-4 py-1.5 rounded text-sm font-semibold hover:bg-primary-dark"
+            className="bg-white text-charcoal px-3 py-1.5 rounded text-xs font-semibold hover:bg-white/90"
           >
-            🖨️ Print / PDF
+            🖨️ Print
           </button>
         </div>
       </div>
 
-      {/* 3-Column Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Book Stage */}
+      <div className="flex-1 relative flex items-center justify-center px-4 py-6 overflow-hidden">
 
-        {/* LEFT: Page Thumbnails */}
-        <aside className="w-56 bg-white border-r border-border-light overflow-y-auto flex-shrink-0">
-          <div className="p-3 sticky top-0 bg-white border-b border-border-light z-10">
-            <h3 className="text-xs font-bold text-stone uppercase tracking-wider">📄 Pages ({pageList.length})</h3>
-          </div>
-          <div className="p-2 space-y-1">
-            {pageList.map((page) => (
-              <button
-                key={page.idx}
-                onClick={() => setActivePage(page.idx)}
-                className={`w-full text-left p-2 rounded text-xs transition flex items-center gap-2 ${
-                  activePage === page.idx
-                    ? 'bg-primary text-white'
-                    : 'hover:bg-bg-subtle text-charcoal'
-                }`}
-              >
-                <span className="text-base">{
-                  page.name.includes('Cover') ? '🏠' :
-                  page.name.includes('About') ? '👤' :
-                  page.name.includes('Contents') ? '📋' :
-                  page.name.includes('End') ? '📞' : '🏗️'
-                }</span>
-                <span className="flex-1 truncate">{page.name}</span>
-              </button>
-            ))}
-          </div>
+        {/* Previous Edge */}
+        {!isFirstSpread && (
+          <button
+            onClick={prev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white text-2xl flex items-center justify-center transition group"
+            title="Previous spread (←)"
+          >
+            <span className="group-hover:-translate-x-0.5 transition-transform">‹</span>
+          </button>
+        )}
 
-          {/* Layouts section */}
-          <div className="p-3 sticky bg-white border-b border-t border-border-light z-10">
-            <h3 className="text-xs font-bold text-stone uppercase tracking-wider">📐 Layouts</h3>
-          </div>
-          <div className="p-2 space-y-1">
-            {LAYOUTS.map((layout) => (
-              <button
-                key={layout.id}
-                onClick={() => handleLayoutChange(layout.id)}
-                className={`w-full text-left p-2 rounded text-xs transition flex items-center gap-2 ${
-                  selectedLayout === layout.id
-                    ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                    : 'hover:bg-bg-subtle text-charcoal'
-                }`}
-              >
-                <span>{layout.icon}</span>
-                <span>{layout.name}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
+        {/* Next Edge */}
+        {!isLastSpread && (
+          <button
+            onClick={next}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white text-2xl flex items-center justify-center transition group"
+            title="Next spread (→)"
+          >
+            <span className="group-hover:translate-x-0.5 transition-transform">›</span>
+          </button>
+        )}
 
-        {/* CENTER: Preview */}
-        <main className="flex-1 bg-slate-200 overflow-hidden relative">
-          {isRendering && (
-            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
-              <div className="bg-white rounded-lg shadow-lg px-4 py-2 flex items-center gap-2 text-sm font-medium text-charcoal">
-                <span className="animate-spin">⟳</span> Applying changes...
-              </div>
+        {/* The Book */}
+        <div
+          className={`book-container ${isFlipping ? `flipping flip-${flipDirection}` : ''}`}
+          style={{
+            display: 'flex',
+            maxWidth: '95%',
+            maxHeight: '92%',
+            aspectRatio: isFirstSpread || isLastSpread ? '0.707/1' : '1.414/1',
+            background: '#1a1a1a',
+            borderRadius: '4px',
+            boxShadow: '0 30px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+            position: 'relative',
+            transition: 'all 0.3s ease',
+          }}
+        >
+          {/* Center spine shadow */}
+          {!isFirstSpread && !isLastSpread && (
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: 0,
+                bottom: 0,
+                width: '40px',
+                marginLeft: '-20px',
+                background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.25) 50%, transparent)',
+                pointerEvents: 'none',
+                zIndex: 5,
+              }}
+            />
+          )}
+
+          {/* LEFT PAGE */}
+          {left && (
+            <div style={{ width: '50%', height: '100%', background: 'white', overflow: 'hidden', borderRight: '1px solid rgba(0,0,0,0.1)' }}>
+              <iframe
+                srcDoc={`<!DOCTYPE html><html>${headHtml}<body>${left.html}</body></html>`}
+                sandbox="allow-same-origin"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title={left.name}
+              />
             </div>
           )}
-          <iframe
-            ref={iframeRef}
-            srcDoc={html}
-            sandbox="allow-same-origin"
-            style={{
-              width: '100%',
+
+          {/* RIGHT PAGE (always shows on first spread = cover) */}
+          {right && (
+            <div style={{
+              width: isFirstSpread || isLastSpread ? '100%' : '50%',
               height: '100%',
-              border: 'none',
-              background: '#f5f5f5',
-            }}
-          />
-        </main>
-
-        {/* RIGHT: Design Packs */}
-        <aside className="w-64 bg-white border-l border-border-light overflow-y-auto flex-shrink-0">
-          <div className="p-3 sticky top-0 bg-white border-b border-border-light z-10">
-            <h3 className="text-xs font-bold text-stone uppercase tracking-wider">🎨 Design Packs</h3>
-            <p className="text-[10px] text-stone-light mt-1">Click to apply</p>
-          </div>
-          <div className="p-2 space-y-2">
-            {PRESET_PACKS.map((pack) => (
-              <button
-                key={pack.id}
-                onClick={() => handlePackChange(pack)}
-                className={`w-full text-left rounded-lg overflow-hidden transition border-2 ${
-                  selectedPack.id === pack.id
-                    ? 'border-primary shadow-md ring-2 ring-primary/30'
-                    : 'border-border-light hover:border-stone-light'
-                }`}
-              >
-                <div className="flex h-8">
-                  <div style={{ background: pack.colors.primary, width: '30%' }} />
-                  <div style={{ background: pack.colors.secondary, width: '20%' }} />
-                  <div style={{ background: pack.colors.accent, width: '15%' }} />
-                  <div style={{ background: pack.colors.background, width: '35%' }} />
-                </div>
-                <div className="p-2" style={{ background: pack.colors.background, color: pack.colors.text }}>
-                  <div
-                    className="font-bold text-xs truncate"
-                    style={{ fontFamily: pack.typography.heading_font }}
-                  >
-                    {pack.name}
-                  </div>
-                  <div className="text-[10px] opacity-70 truncate mt-0.5">
-                    {pack.description}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </aside>
-
+              background: 'white',
+              overflow: 'hidden',
+            }}>
+              <iframe
+                srcDoc={`<!DOCTYPE html><html>${headHtml}<body>${right.html}</body></html>`}
+                sandbox="allow-same-origin"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title={right.name}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Bottom indicator */}
+      <div className="bg-black/40 backdrop-blur-lg border-t border-white/10 flex-shrink-0 px-4 py-2 flex items-center justify-center gap-2 text-white/60 text-xs">
+        <span>← →</span>
+        <span>Keyboard arrows to navigate</span>
+        <span className="mx-3">·</span>
+        <span>Click the edges to flip pages</span>
+      </div>
+
+      {/* Backdrop for dropdowns */}
+      {(showPacks || showJump) && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => { setShowPacks(false); setShowJump(false) }}
+        />
+      )}
+
+      {/* Animations */}
+      <style jsx>{`
+        .book-container {
+          transform-style: preserve-3d;
+          transform-origin: center center;
+        }
+        .book-container.flipping.flip-next {
+          animation: flipNext 0.5s ease-out;
+        }
+        .book-container.flipping.flip-prev {
+          animation: flipPrev 0.5s ease-out;
+        }
+        @keyframes flipNext {
+          0% { transform: rotateY(0deg) scale(1); opacity: 1; }
+          50% { transform: rotateY(-12deg) scale(0.97); opacity: 0.85; }
+          100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+        @keyframes flipPrev {
+          0% { transform: rotateY(0deg) scale(1); opacity: 1; }
+          50% { transform: rotateY(12deg) scale(0.97); opacity: 0.85; }
+          100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   )
 }
