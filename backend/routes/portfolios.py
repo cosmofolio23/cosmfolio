@@ -212,11 +212,14 @@ async def generate_portfolio(
         start_variant = req.variant_number if req.variant_number else 1
 
         for variant_num in range(variant_count):
+            # Truncate style_pack to 50 chars (DB column limit)
+            safe_style_pack = (req.style_pack or "minimal_white")[:50]
+
             portfolio_data = {
                 "id": str(uuid.uuid4()),
                 "project_id": project_id,
                 "layout_id": req.layout_id,
-                "style_pack": req.style_pack,
+                "style_pack": safe_style_pack,
                 "status": "ready",
                 "variant_number": start_variant + variant_num,
                 "created_at": datetime.utcnow().isoformat()
@@ -251,7 +254,14 @@ async def generate_portfolio(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[ERROR] Portfolio generation failed for project {project_id}:")
+        print(error_trace)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{type(e).__name__}: {str(e)}"
+        )
 
 @router.get("/{project_id}/list")
 async def list_portfolios(project_id: str, current_user: dict = Depends(get_current_user)):
