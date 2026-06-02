@@ -211,7 +211,7 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
         {step === 1 && <Step1Basics builder={builder} />}
         {step === 2 && <Step2FrontCover builder={builder} onUpload={handleCoverImageUpload} uploading={uploadingCover} />}
         {step === 3 && <Step3Projects builder={builder} projectId={projectId} />}
-        {step === 4 && <Step4AboutPage builder={builder} />}
+        {step === 4 && <Step4AboutPage builder={builder} projectId={projectId} />}
         {step === 5 && <Step5ContentsPage builder={builder} />}
         {step === 6 && <Step6EndPage builder={builder} />}
         {step === 7 && <Step7Review builder={builder} totalPages={calculateTotalPages()} />}
@@ -762,7 +762,7 @@ function QuickUpload({ label, cat, project, idx, builder, projectId }: { label: 
 // STEP 4: About Me Page
 // ──────────────────────────────────────────────────────────────
 
-function Step4AboutPage({ builder }: { builder: any }) {
+function Step4AboutPage({ builder, projectId }: { builder: any; projectId: string }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-charcoal mb-1">👤 About Me Page</h2>
@@ -795,7 +795,7 @@ function Step4AboutPage({ builder }: { builder: any }) {
       {/* Sub-sections (only enabled when About Page enabled) */}
       {builder.aboutPage.enabled && (
         <>
-          <ProfilePhotoUpload builder={builder} projectId="" />
+          <ProfilePhotoUpload builder={builder} projectId={projectId} />
 
           <h3 className="text-sm font-bold text-stone uppercase tracking-wider mb-3 mt-6">
             Sections to include

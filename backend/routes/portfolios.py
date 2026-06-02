@@ -371,6 +371,78 @@ async def get_portfolio_preview(portfolio_id: str, current_user: dict = Depends(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{type(e).__name__}: {str(e)}")
 
 
+@router.post("/{portfolio_id}/render-with-pack")
+async def render_with_custom_pack(
+    portfolio_id: str,
+    body: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Re-render portfolio with a different style_pack_data and/or layout.
+    Body: {style_pack_data: {...}, layout_id: "..."}
+    Does NOT save to DB — just returns the HTML for live preview.
+    """
+    try:
+        from services.portfolio_renderer import render_full_portfolio_safe
+
+        response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        portfolio = dict(response.data[0])  # Copy so we can modify
+        project_id = portfolio["project_id"]
+
+        # Verify ownership
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        project = project_resp.data[0]
+
+        # Override style_pack in page_structure
+        custom_pack = body.get("style_pack_data")
+        custom_layout = body.get("layout_id")
+        ps = portfolio.get("page_structure") or {}
+        if isinstance(ps, str):
+            import json as _json
+            try:
+                ps = _json.loads(ps)
+            except Exception:
+                ps = {}
+        if custom_pack:
+            ps["style_pack"] = custom_pack
+        portfolio["page_structure"] = ps
+        if custom_layout:
+            portfolio["layout_id"] = custom_layout
+
+        # Get assets + wizard config
+        assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+        assets = assets_resp.data or []
+
+        wizard_config = None
+        try:
+            cfg_resp = supabase.table("portfolio_configs").select("*").eq("project_id", project_id).execute()
+            if cfg_resp.data:
+                cfg = cfg_resp.data[0]
+                wizard_config = cfg.get("config") or cfg.get("config_data") or cfg
+        except Exception:
+            pass
+
+        html = render_full_portfolio_safe(
+            portfolio=portfolio,
+            project=project,
+            assets=assets,
+            wizard_config=wizard_config,
+        )
+
+        return {"portfolio_id": portfolio_id, "html": html}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{type(e).__name__}: {str(e)}")
+
+
 @router.get("/{portfolio_id}/preview-html", response_class=None)
 async def get_portfolio_preview_html(portfolio_id: str):
     """Return raw HTML for iframe preview (public, no auth — designed for iframe rendering)"""
