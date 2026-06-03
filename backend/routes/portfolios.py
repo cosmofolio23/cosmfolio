@@ -371,6 +371,59 @@ async def get_portfolio_preview(portfolio_id: str, current_user: dict = Depends(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{type(e).__name__}: {str(e)}")
 
 
+@router.patch("/{portfolio_id}/customization")
+async def save_customization(
+    portfolio_id: str,
+    body: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Save user's editor customizations: design pack + per-page layouts.
+    Body: {style_pack_data: {...}, page_layouts: {...}}
+    Stored in portfolio.page_structure for persistence.
+    """
+    try:
+        response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        portfolio = response.data[0]
+        project_id = portfolio["project_id"]
+
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+        # Read current page_structure
+        ps = portfolio.get("page_structure") or {}
+        if isinstance(ps, str):
+            import json as _json
+            try: ps = _json.loads(ps)
+            except: ps = {}
+
+        # Update with customizations
+        if body.get("style_pack_data"):
+            ps["style_pack"] = body["style_pack_data"]
+        if body.get("page_layouts") is not None:
+            ps["page_layouts"] = body["page_layouts"]
+
+        # Save back
+        update_data = {"page_structure": ps}
+        # Also update style_pack column if pack id provided
+        if body.get("style_pack_data", {}).get("id"):
+            update_data["style_pack"] = body["style_pack_data"]["id"][:50]
+
+        supabase.table("portfolios").update(update_data).eq("id", portfolio_id).execute()
+
+        return {"ok": True, "portfolio_id": portfolio_id, "saved_at": datetime.utcnow().isoformat()}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{type(e).__name__}: {str(e)}")
+
+
 @router.post("/{portfolio_id}/pages")
 async def get_portfolio_pages(
     portfolio_id: str,

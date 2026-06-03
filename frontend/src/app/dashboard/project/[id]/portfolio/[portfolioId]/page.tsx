@@ -19,10 +19,15 @@ interface Page {
 
 const LAYOUT_OPTIONS = [
   { id: 'project-hero-image', name: 'Hero Image', icon: '🖼️', desc: 'Big image, text below' },
-  { id: 'project-grid-3col', name: '3-Column Grid', icon: '⊞', desc: 'Six images in grid' },
+  { id: 'project-grid-3col', name: '3-Col Grid', icon: '⊞', desc: 'Six images in grid' },
   { id: 'project-plan-section', name: 'Plan + Sections', icon: '📐', desc: 'Floor plan focus' },
   { id: 'project-asymmetric', name: 'Asymmetric', icon: '◱', desc: 'Magazine-style' },
   { id: 'project-masonry', name: 'Masonry', icon: '▦', desc: 'Pinterest-style' },
+  { id: 'project-fullbleed', name: 'Full-bleed', icon: '🎬', desc: 'Cinematic with overlay' },
+  { id: 'project-two-col-text', name: 'Two Column', icon: '⫾', desc: 'Text + image stack' },
+  { id: 'project-gallery-wall', name: 'Gallery Wall', icon: '◧', desc: 'Mosaic varied sizes' },
+  { id: 'project-blueprint', name: 'Blueprint', icon: '📋', desc: 'Technical drawings' },
+  { id: 'project-story-timeline', name: 'Story', icon: '⟶', desc: 'Process narrative' },
 ]
 
 export default function PortfolioFlipbookPage() {
@@ -43,6 +48,40 @@ export default function PortfolioFlipbookPage() {
   const [showJump, setShowJump] = useState(false)
   const [showLayoutPicker, setShowLayoutPicker] = useState<string | null>(null)  // page ID being edited
   const [pageLayouts, setPageLayouts] = useState<Record<string, string>>({})  // pageId → layoutId
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const hasLoadedInitialRef = useRef(false)
+
+  // Debounced auto-save
+  const scheduleSave = useCallback((pack: StylePack, layouts: Record<string, string>) => {
+    if (!hasLoadedInitialRef.current) return  // Don't save on initial load
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    setSaveStatus('saving')
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const savedToken = token || localStorage.getItem('auth_token')
+        const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/customization`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${savedToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            style_pack_data: pack,
+            page_layouts: layouts,
+          }),
+        })
+        if (res.ok) {
+          setSaveStatus('saved')
+          setTimeout(() => setSaveStatus('idle'), 2000)
+        } else {
+          setSaveStatus('error')
+        }
+      } catch {
+        setSaveStatus('error')
+      }
+    }, 1200)
+  }, [token, params.portfolioId])
 
   // Total spreads: cover is single, then pairs, last might be single
   // Spread 0 = [cover, page-1]
@@ -83,8 +122,21 @@ export default function PortfolioFlipbookPage() {
       if (metaRes.ok) {
         const meta = await metaRes.json()
         setPortfolio(meta)
-        const currentPack = PRESET_PACKS.find(p => p.id === meta.style_pack) || PRESET_PACKS[0]
-        setSelectedPack(currentPack)
+        // Restore saved customizations
+        const ps = meta.page_structure || {}
+        const savedPack = ps.style_pack
+        if (savedPack && savedPack.colors) {
+          // Use saved pack directly (handles custom + AI-generated)
+          setSelectedPack(savedPack as StylePack)
+        } else {
+          const currentPack = PRESET_PACKS.find(p => p.id === meta.style_pack) || PRESET_PACKS[0]
+          setSelectedPack(currentPack)
+        }
+        // Restore per-page layouts
+        const savedLayouts = ps.page_layouts || {}
+        if (Object.keys(savedLayouts).length > 0) {
+          setPageLayouts(savedLayouts)
+        }
       }
 
       // Get paged data (new endpoint - may not be deployed yet)
@@ -142,7 +194,11 @@ export default function PortfolioFlipbookPage() {
       }
     } catch (e: any) {
       setError(e.message || 'Failed to load')
-    } finally { setIsLoading(false) }
+    } finally {
+      setIsLoading(false)
+      // Allow auto-save after initial load completes
+      setTimeout(() => { hasLoadedInitialRef.current = true }, 500)
+    }
   }
 
   // Swap layout for a single page (preserve current pack + other page layouts)
@@ -151,6 +207,7 @@ export default function PortfolioFlipbookPage() {
     setPageLayouts(nextLayouts)
     setShowLayoutPicker(null)
     setIsRendering(true)
+    scheduleSave(selectedPack, nextLayouts)
     try {
       const savedToken = token || localStorage.getItem('auth_token')
       const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
@@ -184,6 +241,7 @@ export default function PortfolioFlipbookPage() {
     setSelectedPack(pack)
     setShowPacks(false)
     setIsRendering(true)
+    scheduleSave(pack, pageLayouts)
     try {
       const savedToken = token || localStorage.getItem('auth_token')
 
@@ -327,9 +385,25 @@ export default function PortfolioFlipbookPage() {
         </div>
 
         <div className="flex gap-2 items-center">
-          {isRendering && (
+          {/* Save status */}
+          {saveStatus === 'saving' && (
+            <span className="text-xs text-yellow-300 flex items-center gap-1">
+              <span className="animate-pulse">●</span> Saving...
+            </span>
+          )}
+          {saveStatus === 'saved' && (
+            <span className="text-xs text-green-400 flex items-center gap-1">
+              ✓ Saved
+            </span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="text-xs text-red-400 flex items-center gap-1">
+              ⚠ Save failed
+            </span>
+          )}
+          {isRendering && saveStatus === 'idle' && (
             <span className="text-xs text-blue-300 flex items-center gap-1">
-              <span className="animate-spin">⟳</span> Updating style...
+              <span className="animate-spin">⟳</span> Updating...
             </span>
           )}
 

@@ -237,6 +237,154 @@ def project_masonry(data: Dict, tokens: Dict[str, str]) -> str:
 """
 
 
+def project_fullbleed(data: Dict, tokens: Dict[str, str]) -> str:
+    """Full-bleed cinematic image with overlay text"""
+    img = (data.get("renders", []) + [""])[0]
+    bg = f"background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('{img}'); background-size: cover; background-position: center;" if img else f"background: {tokens['color_primary']};"
+    return f"""
+<section class="page project-page" style="{bg} color: white; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; padding: {tokens['space_xl']};">
+    <div style="max-width: 720px;">
+        <div style="font-family: {tokens['body_font']}; font-size: 0.75em; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.7; margin-bottom: {tokens['space_md']};">{data.get('typology', '')} · {data.get('year', '')}</div>
+        <h2 style="font-family: {tokens['heading_font']}; font-size: 4em; font-weight: {tokens['heading_weight']}; line-height: 1.0; letter-spacing: -0.03em; margin-bottom: {tokens['space_md']};">{data.get('name', 'Project')}</h2>
+        <p style="font-family: {tokens['body_font']}; font-size: 1.1em; opacity: 0.9; line-height: 1.7;">{data.get('description', '')}</p>
+        <div style="margin-top: {tokens['space_lg']}; font-family: {tokens['body_font']}; font-size: 0.85em; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7;">{data.get('location', '')}</div>
+    </div>
+</section>
+"""
+
+
+def project_two_col_text(data: Dict, tokens: Dict[str, str]) -> str:
+    """Left text column, right image stack"""
+    imgs = (data.get("renders", []) + data.get("plans", []))[:3]
+    img_tags = "".join([f'<div style="margin-bottom: {tokens["space_md"]};"><img src="{i}" style="width: 100%; display: block;" /></div>' for i in imgs])
+    return f"""
+<section class="page project-page" style="background: {tokens['color_background']}; min-height: 100vh; padding: {tokens['space_xl']};">
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.5fr; gap: {tokens['space_xl']};">
+        <div style="position: sticky; top: {tokens['space_xl']}; height: fit-content;">
+            <div style="font-family: {tokens['body_font']}; font-size: 0.75em; letter-spacing: 0.3em; text-transform: uppercase; color: {tokens['color_accent']}; margin-bottom: {tokens['space_md']};">Project · {data.get('year', '')}</div>
+            <h2 style="font-family: {tokens['heading_font']}; font-size: 2.5em; font-weight: {tokens['heading_weight']}; color: {tokens['color_primary']}; line-height: 1.1; margin-bottom: {tokens['space_md']};">{data.get('name', 'Project')}</h2>
+            <div style="height: 2px; width: 40px; background: {tokens['color_accent']}; margin-bottom: {tokens['space_md']};"></div>
+            <p style="font-family: {tokens['body_font']}; color: {tokens['color_text']}; line-height: {tokens['line_height']}; margin-bottom: {tokens['space_md']};">{data.get('description', '')}</p>
+            <div style="font-family: {tokens['body_font']}; font-size: 0.85em; color: {tokens['color_text']}; opacity: 0.7; line-height: 2;">
+                <div><strong>Location:</strong> {data.get('location', '')}</div>
+                <div><strong>Typology:</strong> {data.get('typology', '')}</div>
+                <div><strong>Year:</strong> {data.get('year', '')}</div>
+            </div>
+        </div>
+        <div>
+            {img_tags}
+        </div>
+    </div>
+</section>
+"""
+
+
+def project_gallery_wall(data: Dict, tokens: Dict[str, str]) -> str:
+    """Gallery wall — varied image sizes mosaic"""
+    imgs = (data.get("renders", []) + data.get("concepts", []) + data.get("plans", []))[:7]
+    placeholder = lambda i: imgs[i] if i < len(imgs) else ""
+    return f"""
+<section class="page project-page" style="background: {tokens['color_background']}; min-height: 100vh; padding: {tokens['space_xl']};">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: end; margin-bottom: {tokens['space_lg']};">
+            <h2 style="font-family: {tokens['heading_font']}; font-size: 2.5em; font-weight: {tokens['heading_weight']}; color: {tokens['color_primary']};">{data.get('name', 'Project')}</h2>
+            <div style="font-family: {tokens['body_font']}; font-size: 0.85em; color: {tokens['color_text']}; opacity: 0.7; text-align: right;">
+                <div>{data.get('location', '')}</div>
+                <div>{data.get('typology', '')} · {data.get('year', '')}</div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 200px); gap: {tokens['space_xs']};">
+            <div style="grid-column: span 2; grid-row: span 2; overflow: hidden;">{f'<img src="{placeholder(0)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(0) else ''}</div>
+            <div style="overflow: hidden;">{f'<img src="{placeholder(1)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(1) else ''}</div>
+            <div style="overflow: hidden;">{f'<img src="{placeholder(2)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(2) else ''}</div>
+            <div style="overflow: hidden; grid-column: span 2;">{f'<img src="{placeholder(3)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(3) else ''}</div>
+            <div style="overflow: hidden;">{f'<img src="{placeholder(4)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(4) else ''}</div>
+            <div style="overflow: hidden;">{f'<img src="{placeholder(5)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(5) else ''}</div>
+            <div style="overflow: hidden;">{f'<img src="{placeholder(6)}" style="width: 100%; height: 100%; object-fit: cover;" />' if placeholder(6) else ''}</div>
+        </div>
+        <p style="font-family: {tokens['body_font']}; color: {tokens['color_text']}; margin-top: {tokens['space_lg']}; max-width: 720px; opacity: 0.85;">{data.get('description', '')}</p>
+    </div>
+</section>
+"""
+
+
+def project_blueprint(data: Dict, tokens: Dict[str, str]) -> str:
+    """Technical blueprint mode — plans + sections + grid annotations"""
+    plan = (data.get("plans", []) + [""])[0]
+    section = (data.get("sections", []) + [""])[0]
+    elevation = (data.get("elevations", []) + [""])[0]
+    return f"""
+<section class="page project-page" style="background: {tokens['color_background']}; min-height: 100vh; padding: {tokens['space_xl']};">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="border-top: 4px solid {tokens['color_primary']}; padding-top: {tokens['space_md']}; margin-bottom: {tokens['space_lg']}; display: flex; justify-content: space-between; align-items: baseline;">
+            <div>
+                <div style="font-family: {tokens['body_font']}; font-size: 0.75em; letter-spacing: 0.3em; text-transform: uppercase; color: {tokens['color_accent']};">Technical Drawings</div>
+                <h2 style="font-family: {tokens['heading_font']}; font-size: 2.5em; font-weight: {tokens['heading_weight']}; color: {tokens['color_primary']}; margin-top: {tokens['space_xs']};">{data.get('name', 'Project')}</h2>
+            </div>
+            <div style="font-family: monospace; font-size: 0.75em; color: {tokens['color_text']}; opacity: 0.7; text-align: right; line-height: 1.6;">
+                <div>SCALE 1:200</div>
+                <div>{data.get('location', '')}</div>
+                <div>{data.get('year', '')}</div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: {tokens['space_md']}; margin-bottom: {tokens['space_md']};">
+            <div style="border: 1px solid {tokens['color_text']}33; padding: {tokens['space_md']}; background: white;">
+                <div style="font-family: monospace; font-size: 0.7em; letter-spacing: 0.15em; color: {tokens['color_text']}; opacity: 0.6; margin-bottom: {tokens['space_sm']};">A.01 — FLOOR PLAN</div>
+                {f'<img src="{plan}" style="width: 100%; max-height: 400px; object-fit: contain;" />' if plan else f'<div style="height: 400px; background: {tokens["color_text"]}11; display: flex; align-items: center; justify-content: center; font-family: monospace; color: {tokens["color_text"]}; opacity: 0.4;">PLAN</div>'}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: {tokens['space_md']};">
+                <div style="border: 1px solid {tokens['color_text']}33; padding: {tokens['space_md']}; background: white; flex: 1;">
+                    <div style="font-family: monospace; font-size: 0.7em; letter-spacing: 0.15em; color: {tokens['color_text']}; opacity: 0.6; margin-bottom: {tokens['space_sm']};">A.02 — SECTION</div>
+                    {f'<img src="{section}" style="width: 100%; height: 150px; object-fit: contain;" />' if section else f'<div style="height: 150px; background: {tokens["color_text"]}11;"></div>'}
+                </div>
+                <div style="border: 1px solid {tokens['color_text']}33; padding: {tokens['space_md']}; background: white; flex: 1;">
+                    <div style="font-family: monospace; font-size: 0.7em; letter-spacing: 0.15em; color: {tokens['color_text']}; opacity: 0.6; margin-bottom: {tokens['space_sm']};">A.03 — ELEVATION</div>
+                    {f'<img src="{elevation}" style="width: 100%; height: 150px; object-fit: contain;" />' if elevation else f'<div style="height: 150px; background: {tokens["color_text"]}11;"></div>'}
+                </div>
+            </div>
+        </div>
+        <p style="font-family: {tokens['body_font']}; color: {tokens['color_text']}; max-width: 720px; font-size: 0.95em; opacity: 0.85;">{data.get('description', '')}</p>
+    </div>
+</section>
+"""
+
+
+def project_story_timeline(data: Dict, tokens: Dict[str, str]) -> str:
+    """Story timeline — process narrative with steps"""
+    imgs = (data.get("concepts", []) + data.get("plans", []) + data.get("renders", []))[:4]
+    steps = ["Concept", "Development", "Construction", "Final"]
+    step_blocks = []
+    for i, label in enumerate(steps):
+        img = imgs[i] if i < len(imgs) else ""
+        step_blocks.append(f"""
+        <div style="display: grid; grid-template-columns: 80px 1fr 2fr; gap: {tokens['space_md']}; align-items: start; padding: {tokens['space_md']} 0; border-bottom: 1px dashed {tokens['color_text']}22;">
+            <div style="font-family: {tokens['heading_font']}; font-size: 2em; font-weight: {tokens['heading_weight']}; color: {tokens['color_accent']};">0{i+1}</div>
+            <div>
+                <div style="font-family: {tokens['heading_font']}; font-size: 1.1em; font-weight: {tokens['heading_weight']}; color: {tokens['color_primary']}; margin-bottom: {tokens['space_xs']};">{label}</div>
+                <div style="font-family: {tokens['body_font']}; font-size: 0.85em; color: {tokens['color_text']}; opacity: 0.7; line-height: 1.6;">Phase of the design process.</div>
+            </div>
+            <div style="aspect-ratio: 16/9; overflow: hidden; background: {tokens['color_text']}11;">
+                {f'<img src="{img}" style="width: 100%; height: 100%; object-fit: cover;" />' if img else ''}
+            </div>
+        </div>
+        """)
+
+    return f"""
+<section class="page project-page" style="background: {tokens['color_background']}; min-height: 100vh; padding: {tokens['space_xl']};">
+    <div style="max-width: 1100px; margin: 0 auto;">
+        <div style="margin-bottom: {tokens['space_lg']};">
+            <div style="font-family: {tokens['body_font']}; font-size: 0.75em; letter-spacing: 0.3em; text-transform: uppercase; color: {tokens['color_accent']}; margin-bottom: {tokens['space_xs']};">Design Process</div>
+            <h2 style="font-family: {tokens['heading_font']}; font-size: 2.5em; font-weight: {tokens['heading_weight']}; color: {tokens['color_primary']};">{data.get('name', 'Project')}</h2>
+            <p style="font-family: {tokens['body_font']}; color: {tokens['color_text']}; margin-top: {tokens['space_sm']}; opacity: 0.8; max-width: 720px;">{data.get('description', '')}</p>
+        </div>
+        <div>
+            {"".join(step_blocks)}
+        </div>
+    </div>
+</section>
+"""
+
+
 # ====================================================
 # ABOUT / END LAYOUTS
 # ====================================================
@@ -320,26 +468,46 @@ LAYOUT_REGISTRY = {
     "cover-split-image": cover_split_image,
     "cover-minimal": cover_minimal,
     "hero_render": cover_hero_full,  # alias
-    # Project layouts
+    # Project layouts (10 total)
     "project-hero-image": project_hero_image,
     "project-grid-3col": project_grid_3col,
     "project-plan-section": project_plan_section,
     "project-asymmetric": project_asymmetric,
     "project-masonry": project_masonry,
-    "grid_2col": project_grid_3col,  # alias
+    "project-fullbleed": project_fullbleed,        # NEW
+    "project-two-col-text": project_two_col_text,  # NEW
+    "project-gallery-wall": project_gallery_wall,  # NEW
+    "project-blueprint": project_blueprint,        # NEW
+    "project-story-timeline": project_story_timeline,  # NEW
+    # Aliases
+    "grid_2col": project_grid_3col,
     "grid_3col": project_grid_3col,
     "plan_centric": project_plan_section,
     "section_heavy": project_plan_section,
     "asymmetric": project_asymmetric,
-    "timeline": project_asymmetric,
+    "timeline": project_story_timeline,
     "competition_board": project_asymmetric,
-    "technical": project_plan_section,
-    "thesis": project_hero_image,
+    "technical": project_blueprint,
+    "thesis": project_two_col_text,
     # Special pages
     "about-page": about_page,
     "contents-page": contents_page,
     "end-page": end_page,
 }
+
+# Available project layouts (used by frontend picker)
+PROJECT_LAYOUT_IDS = [
+    "project-hero-image",
+    "project-grid-3col",
+    "project-plan-section",
+    "project-asymmetric",
+    "project-masonry",
+    "project-fullbleed",
+    "project-two-col-text",
+    "project-gallery-wall",
+    "project-blueprint",
+    "project-story-timeline",
+]
 
 
 def get_layout_renderer(layout_id: str):
@@ -580,6 +748,16 @@ def render_portfolio_pages(
     layout_id = portfolio.get("layout_id", "project-hero-image")
     project_layout_fn = get_layout_renderer(layout_id)
 
+    # Merge persisted page_layouts with caller-provided ones (caller overrides DB)
+    saved_page_layouts = page_structure.get("page_layouts") or {}
+    if not page_layouts:
+        page_layouts = saved_page_layouts
+    else:
+        # Merge — caller layouts override saved
+        merged = dict(saved_page_layouts)
+        merged.update(page_layouts)
+        page_layouts = merged
+
     # Build assets_by_type
     assets_by_type = {"renders": [], "plans": [], "sections": [], "elevations": [], "concepts": [], "diagrams": []}
     type_map = {"render": "renders", "plan": "plans", "section": "sections", "elevation": "elevations", "concept": "concepts", "diagram": "diagrams"}
@@ -682,7 +860,7 @@ def render_portfolio_pages(
                 "name": dp.get("name", f"Project {i+1}"),
                 "html": layout_fn(dp_data, tokens),
                 "current_layout": used_layout,
-                "available_layouts": ["project-hero-image", "project-grid-3col", "project-plan-section", "project-asymmetric", "project-masonry"],
+                "available_layouts": PROJECT_LAYOUT_IDS,
             })
     else:
         fallback_data = {
