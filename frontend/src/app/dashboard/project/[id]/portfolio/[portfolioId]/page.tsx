@@ -48,6 +48,12 @@ export default function PortfolioFlipbookPage() {
   const [showJump, setShowJump] = useState(false)
   const [showLayoutPicker, setShowLayoutPicker] = useState<string | null>(null)  // page ID being edited
   const [pageLayouts, setPageLayouts] = useState<Record<string, string>>({})  // pageId → layoutId
+  const [editingPage, setEditingPage] = useState<{ id: string; index: number } | null>(null)  // open content editor for this project
+  const [editForm, setEditForm] = useState<{ name: string; location: string; year: string; typology: string; description: string }>({
+    name: '', location: '', year: '', typology: '', description: ''
+  })
+  const [editProjects, setEditProjects] = useState<any[]>([])  // cache of design_projects from wizard config
+  const [aiGenerating, setAiGenerating] = useState<string | null>(null)  // mode being generated
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const hasLoadedInitialRef = useRef(false)
@@ -198,6 +204,124 @@ export default function PortfolioFlipbookPage() {
       setIsLoading(false)
       // Allow auto-save after initial load completes
       setTimeout(() => { hasLoadedInitialRef.current = true }, 500)
+    }
+  }
+
+  // Open content editor for a project page
+  const openEditor = async (pageId: string) => {
+    // Extract project index from pageId (e.g. "project-2" → 2)
+    const match = pageId.match(/^project-(\d+)$/)
+    if (!match) return
+    const idx = parseInt(match[1])
+
+    // Fetch current wizard config for this project
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/portfolios/${params.id}/wizard-config`, {
+        headers: { 'Authorization': `Bearer ${savedToken}` }
+      })
+      let dpList: any[] = []
+      if (res.ok) {
+        const data = await res.json()
+        const cfg = data.config || data.config_data || data
+        dpList = cfg?.design_projects || []
+      }
+      setEditProjects(dpList)
+      const dp = dpList[idx] || {}
+      setEditForm({
+        name: dp.name || '',
+        location: dp.location || '',
+        year: dp.year || '',
+        typology: dp.typology || '',
+        description: dp.description || '',
+      })
+      setEditingPage({ id: pageId, index: idx })
+    } catch (e) {
+      console.error('Failed to load project for edit:', e)
+      // Open anyway with blank form
+      setEditForm({ name: '', location: '', year: '', typology: '', description: '' })
+      setEditingPage({ id: pageId, index: idx })
+    }
+  }
+
+  // Save content edits
+  const saveEdits = async () => {
+    if (!editingPage) return
+    setSaveStatus('saving')
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(
+        `${API_URL}/api/portfolios/${params.id}/wizard-config/project/${editingPage.index}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${savedToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(editForm),
+        }
+      )
+      if (res.ok) {
+        setSaveStatus('saved')
+        setTimeout(() => setSaveStatus('idle'), 2000)
+        setEditingPage(null)
+        // Re-fetch pages with new content
+        setIsRendering(true)
+        try {
+          const pagesRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${savedToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ style_pack_data: selectedPack, page_layouts: pageLayouts }),
+          })
+          if (pagesRes.ok) {
+            const data = await pagesRes.json()
+            setPages(data.pages || [])
+          }
+        } finally { setIsRendering(false) }
+      } else {
+        setSaveStatus('error')
+        const err = await res.text()
+        alert(`Save failed: ${err.slice(0, 200)}`)
+      }
+    } catch (e: any) {
+      setSaveStatus('error')
+      alert(`Save error: ${e.message}`)
+    }
+  }
+
+  // AI generate/improve description
+  const aiHelp = async (mode: 'generate' | 'improve' | 'shorten' | 'expand') => {
+    setAiGenerating(mode)
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/portfolios/${params.id}/ai/generate-description`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode,
+          project_name: editForm.name,
+          typology: editForm.typology,
+          location: editForm.location,
+          year: editForm.year,
+          current_description: editForm.description,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setEditForm(prev => ({ ...prev, description: data.description || prev.description }))
+      } else {
+        alert('AI generation failed. Try again.')
+      }
+    } catch (e: any) {
+      alert(`AI error: ${e.message}`)
+    } finally {
+      setAiGenerating(null)
     }
   }
 
@@ -556,15 +680,24 @@ export default function PortfolioFlipbookPage() {
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title={left.name}
               />
-              {/* Layout button on project pages */}
+              {/* Page action buttons (project pages only) */}
               {left.type === 'project' && (
-                <button
-                  onClick={() => setShowLayoutPicker(left.id)}
-                  className="absolute top-2 left-2 bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
-                  title="Change layout for this page"
-                >
-                  📐 Layout
-                </button>
+                <div className="absolute top-2 left-2 flex gap-1">
+                  <button
+                    onClick={() => setShowLayoutPicker(left.id)}
+                    className="bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    title="Change layout"
+                  >
+                    📐 Layout
+                  </button>
+                  <button
+                    onClick={() => openEditor(left.id)}
+                    className="bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    title="Edit content"
+                  >
+                    ✏️ Edit
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -584,15 +717,24 @@ export default function PortfolioFlipbookPage() {
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title={right.name}
               />
-              {/* Layout button on project pages */}
+              {/* Page action buttons (project pages only) */}
               {right.type === 'project' && (
-                <button
-                  onClick={() => setShowLayoutPicker(right.id)}
-                  className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
-                  title="Change layout for this page"
-                >
-                  📐 Layout
-                </button>
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <button
+                    onClick={() => openEditor(right.id)}
+                    className="bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    title="Edit content"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => setShowLayoutPicker(right.id)}
+                    className="bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    title="Change layout"
+                  >
+                    📐 Layout
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -648,6 +790,147 @@ export default function PortfolioFlipbookPage() {
               <p className="text-xs text-stone-light text-center mt-4">
                 💡 Tip: Mix different layouts across projects for visual variety
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* CONTENT EDIT PANEL */}
+        {editingPage && (
+          <div
+            className="absolute inset-0 z-40 flex items-stretch justify-end bg-black/60 backdrop-blur-sm"
+            onClick={() => setEditingPage(null)}
+          >
+            <div
+              className="bg-white w-full max-w-md h-full overflow-y-auto shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-border-light flex items-center justify-between sticky top-0 bg-white z-10">
+                <div>
+                  <h3 className="text-lg font-bold text-charcoal">✏️ Edit Page Content</h3>
+                  <p className="text-xs text-stone-light mt-0.5">Project #{editingPage.index + 1}</p>
+                </div>
+                <button
+                  onClick={() => setEditingPage(null)}
+                  className="text-stone-light hover:text-charcoal p-2"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="flex-1 p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Project Name</label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    placeholder="e.g. Museum Redesign"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Location</label>
+                    <input
+                      type="text"
+                      value={editForm.location}
+                      onChange={e => setEditForm({ ...editForm, location: e.target.value })}
+                      className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                      placeholder="Mumbai, India"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Year</label>
+                    <input
+                      type="text"
+                      value={editForm.year}
+                      onChange={e => setEditForm({ ...editForm, year: e.target.value })}
+                      className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                      placeholder="2025"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Typology</label>
+                  <input
+                    type="text"
+                    value={editForm.typology}
+                    onChange={e => setEditForm({ ...editForm, typology: e.target.value })}
+                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    placeholder="Cultural / Residential / etc"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-stone uppercase tracking-wider">Description</label>
+                    <span className="text-[10px] text-stone-light">{editForm.description.length} chars</span>
+                  </div>
+                  <textarea
+                    value={editForm.description}
+                    onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                    rows={5}
+                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm resize-none"
+                    placeholder="A concise project description..."
+                  />
+
+                  {/* AI helper buttons */}
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => aiHelp('generate')}
+                      disabled={!!aiGenerating}
+                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {aiGenerating === 'generate' ? '⟳' : '✨'} Generate
+                    </button>
+                    <button
+                      onClick={() => aiHelp('improve')}
+                      disabled={!!aiGenerating || !editForm.description}
+                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {aiGenerating === 'improve' ? '⟳' : '🔧'} Improve
+                    </button>
+                    <button
+                      onClick={() => aiHelp('shorten')}
+                      disabled={!!aiGenerating || !editForm.description}
+                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {aiGenerating === 'shorten' ? '⟳' : '✂️'} Shorten
+                    </button>
+                    <button
+                      onClick={() => aiHelp('expand')}
+                      disabled={!!aiGenerating || !editForm.description}
+                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {aiGenerating === 'expand' ? '⟳' : '📝'} Expand
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-stone-light mt-1.5">
+                    💡 AI will use the project name, typology and location to generate text
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-5 py-4 border-t border-border-light flex gap-2 sticky bottom-0 bg-white">
+                <button
+                  onClick={() => setEditingPage(null)}
+                  className="flex-1 px-4 py-2 border border-border-light rounded-lg text-sm font-semibold text-stone hover:bg-bg-subtle"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveEdits}
+                  disabled={saveStatus === 'saving'}
+                  className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-dark disabled:opacity-50"
+                >
+                  {saveStatus === 'saving' ? '⟳ Saving...' : '💾 Save & Re-render'}
+                </button>
+              </div>
             </div>
           </div>
         )}

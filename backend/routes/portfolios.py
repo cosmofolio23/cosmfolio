@@ -371,6 +371,128 @@ async def get_portfolio_preview(portfolio_id: str, current_user: dict = Depends(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{type(e).__name__}: {str(e)}")
 
 
+@router.patch("/{project_id}/wizard-config/project/{project_index}")
+async def patch_project_content(
+    project_id: str,
+    project_index: int,
+    body: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update a single project's content within the wizard config.
+    Body: {name?, location?, year?, typology?, description?, ...}
+    """
+    try:
+        # Verify project ownership
+        project = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project.data:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+        # Load current config
+        existing = supabase.table("portfolio_configs").select("*").eq("project_id", project_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=404, detail="Wizard config not found - run wizard first")
+
+        cfg_row = existing.data[0]
+        config = cfg_row.get("config") or cfg_row.get("config_data") or {}
+        if isinstance(config, str):
+            import json as _json
+            try: config = _json.loads(config)
+            except: config = {}
+
+        design_projects = config.get("design_projects") or []
+        if project_index < 0 or project_index >= len(design_projects):
+            raise HTTPException(status_code=400, detail=f"Project index {project_index} out of range")
+
+        # Update fields
+        allowed_fields = ["name", "location", "year", "typology", "description", "pageCount", "coverImageUrl"]
+        current_project = design_projects[project_index]
+        for field in allowed_fields:
+            if field in body:
+                current_project[field] = body[field]
+        design_projects[project_index] = current_project
+        config["design_projects"] = design_projects
+
+        # Save back
+        supabase.table("portfolio_configs").update({
+            "config": config,
+            "updated_at": datetime.utcnow().isoformat(),
+        }).eq("project_id", project_id).execute()
+
+        return {"ok": True, "project_index": project_index, "project": current_project}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=400, detail=f"{type(e).__name__}: {str(e)}")
+
+
+@router.post("/{project_id}/ai/generate-description")
+async def ai_generate_description(
+    project_id: str,
+    body: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate or improve a project description using AI.
+    Body: {
+      mode: "generate" | "improve" | "shorten" | "expand",
+      project_name: "...",
+      typology: "...",
+      location: "...",
+      current_description: "..." (optional, for improve mode)
+    }
+    """
+    try:
+        # Verify ownership
+        project = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project.data:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+        mode = body.get("mode", "generate")
+        proj_name = body.get("project_name", "Untitled Project")
+        typology = body.get("typology", "")
+        location = body.get("location", "")
+        year = body.get("year", "")
+        current = body.get("current_description", "")
+
+        # Try AI generation via Replicate
+        try:
+            from services.ai_generation import get_ai_generation_service
+            ai = get_ai_generation_service()
+
+            if mode == "improve" and current:
+                prompt = f"Improve this architecture project description. Keep it concise (2-3 sentences), professional, and evocative. Project: {proj_name} ({typology}, {location}). Current: {current}\n\nImproved version:"
+            elif mode == "shorten":
+                prompt = f"Shorten this architecture project description to one strong sentence (max 25 words). Keep the essence. Original: {current}\n\nShortened:"
+            elif mode == "expand":
+                prompt = f"Expand this architecture project description into a more detailed paragraph (4-5 sentences). Project: {proj_name} ({typology}, {location}). Current: {current}\n\nExpanded:"
+            else:
+                prompt = f"Write a concise (2-3 sentences) professional architecture portfolio description for a project called '{proj_name}' ({typology} typology, located in {location}, completed {year}). Focus on concept, materials, and design intent. Sound confident and articulate but not boastful.\n\nDescription:"
+
+            # Call AI
+            result = await ai.call_replicate_text(prompt) if hasattr(ai, 'call_replicate_text') else None
+            if result and isinstance(result, str) and result.strip():
+                return {"description": result.strip(), "mode": mode}
+        except Exception as ai_err:
+            print(f"[AI] generation failed: {ai_err}")
+
+        # Fallback templates if AI unavailable
+        fallbacks = {
+            "generate": f"A {typology.lower() if typology else 'contemporary'} project in {location or 'an urban context'}, exploring the dialogue between built form and site condition. The design synthesizes program, materiality, and spatial sequence through a clear architectural language.",
+            "improve": current + " The intervention seeks to balance tectonic clarity with experiential richness.",
+            "shorten": current.split('.')[0] + '.' if current else "A study in spatial composition and material expression.",
+            "expand": current + " Structural strategies emphasize honesty of material and tectonic detail. Spatial sequences are choreographed to create moments of compression and release. Natural light is used as both functional and atmospheric medium. The project responds to its site context through carefully calibrated openings and a thoughtful relationship to scale.",
+        }
+        return {"description": fallbacks.get(mode, fallbacks["generate"]), "mode": mode, "fallback": True}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.patch("/{portfolio_id}/customization")
 async def save_customization(
     portfolio_id: str,
