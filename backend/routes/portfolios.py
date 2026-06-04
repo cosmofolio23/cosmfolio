@@ -502,6 +502,139 @@ async def ai_generate_description(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/{portfolio_id}/share")
+async def toggle_public_share(
+    portfolio_id: str,
+    body: dict = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Enable or disable public sharing. Generates a share slug.
+    Body: {enabled: true|false}
+    Returns: {share_slug, share_url, is_public}
+    """
+    try:
+        import secrets, string
+
+        response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        portfolio = response.data[0]
+        project_id = portfolio["project_id"]
+
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+        body = body or {}
+        enabled = body.get("enabled", True)
+
+        # Read current page_structure to store share info
+        ps = portfolio.get("page_structure") or {}
+        if isinstance(ps, str):
+            import json as _json
+            try: ps = _json.loads(ps)
+            except: ps = {}
+
+        share_info = ps.get("share") or {}
+        if enabled:
+            # Generate slug if not exists
+            if not share_info.get("slug"):
+                alphabet = string.ascii_lowercase + string.digits
+                share_info["slug"] = ''.join(secrets.choice(alphabet) for _ in range(10))
+            share_info["enabled"] = True
+            share_info["enabled_at"] = datetime.utcnow().isoformat()
+        else:
+            share_info["enabled"] = False
+
+        ps["share"] = share_info
+        supabase.table("portfolios").update({"page_structure": ps}).eq("id", portfolio_id).execute()
+
+        return {
+            "is_public": share_info.get("enabled", False),
+            "share_slug": share_info.get("slug") if share_info.get("enabled") else None,
+            "share_url": f"/p/{share_info['slug']}" if share_info.get("enabled") and share_info.get("slug") else None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/public/p/{slug}/pages", include_in_schema=False)
+@router.post("/public/p/{slug}/pages")
+async def public_portfolio_pages(slug: str):
+    """
+    Public endpoint - no auth required.
+    Returns pages for a publicly-shared portfolio by its slug.
+    """
+    try:
+        from services.portfolio_renderer import render_portfolio_pages_safe
+
+        # Find portfolio by share slug (search in page_structure JSONB)
+        # Simple approach: scan all portfolios (small scale; for production use indexed lookup)
+        all_portfolios = supabase.table("portfolios").select("*").execute()
+        target = None
+        for p in (all_portfolios.data or []):
+            ps = p.get("page_structure") or {}
+            if isinstance(ps, str):
+                import json as _json
+                try: ps = _json.loads(ps)
+                except: continue
+            share = ps.get("share") or {}
+            if share.get("slug") == slug and share.get("enabled"):
+                target = p
+                break
+
+        if not target:
+            raise HTTPException(status_code=404, detail="Portfolio not found or sharing disabled")
+
+        portfolio = target
+        project_id = portfolio["project_id"]
+
+        # Get project (without user check — public access)
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=404, detail="Source project not found")
+        project = project_resp.data[0]
+
+        # Get assets
+        assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+        assets = assets_resp.data or []
+
+        # Get wizard config
+        wizard_config = None
+        try:
+            cfg_resp = supabase.table("portfolio_configs").select("*").eq("project_id", project_id).execute()
+            if cfg_resp.data:
+                cfg = cfg_resp.data[0]
+                wizard_config = cfg.get("config") or cfg.get("config_data") or cfg
+        except Exception:
+            pass
+
+        result = render_portfolio_pages_safe(
+            portfolio=portfolio,
+            project=project,
+            assets=assets,
+            wizard_config=wizard_config,
+        )
+        # Add minimal metadata for display
+        result["meta"] = {
+            "title": (wizard_config or {}).get("front_cover", {}).get("title") or project.get("title", "Portfolio"),
+            "author": (wizard_config or {}).get("front_cover", {}).get("authorName", ""),
+        }
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.patch("/{portfolio_id}/customization")
 async def save_customization(
     portfolio_id: str,

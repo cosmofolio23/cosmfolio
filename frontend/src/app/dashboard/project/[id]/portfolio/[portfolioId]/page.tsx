@@ -59,6 +59,11 @@ export default function PortfolioFlipbookPage() {
   const [editProjects, setEditProjects] = useState<any[]>([])  // cache of design_projects from wizard config
   const [aiGenerating, setAiGenerating] = useState<string | null>(null)  // mode being generated
   const [uploadingCategory, setUploadingCategory] = useState<string | null>(null)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [shareEnabled, setShareEnabled] = useState(false)
+  const [shareLoading, setShareLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const hasLoadedInitialRef = useRef(false)
@@ -148,6 +153,13 @@ export default function PortfolioFlipbookPage() {
         if (Object.keys(savedLayouts).length > 0) {
           setPageLayouts(savedLayouts)
         }
+        // Restore share state
+        const share = ps.share || {}
+        if (share.enabled && share.slug) {
+          setShareEnabled(true)
+          const origin = typeof window !== 'undefined' ? window.location.origin : ''
+          setShareUrl(`${origin}/p/${share.slug}`)
+        }
       }
 
       // Get paged data (new endpoint - may not be deployed yet)
@@ -209,6 +221,57 @@ export default function PortfolioFlipbookPage() {
       setIsLoading(false)
       // Allow auto-save after initial load completes
       setTimeout(() => { hasLoadedInitialRef.current = true }, 500)
+    }
+  }
+
+  // Toggle public share
+  const toggleShare = async (enable: boolean) => {
+    setShareLoading(true)
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/share`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: enable }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setShareEnabled(data.is_public)
+        if (data.share_slug) {
+          const origin = typeof window !== 'undefined' ? window.location.origin : ''
+          setShareUrl(`${origin}/p/${data.share_slug}`)
+        } else {
+          setShareUrl(null)
+        }
+      } else {
+        alert('Failed to update share settings')
+      }
+    } catch (e: any) {
+      alert(`Share error: ${e.message}`)
+    } finally {
+      setShareLoading(false)
+    }
+  }
+
+  const copyShareLink = async () => {
+    if (!shareUrl) return
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea')
+      ta.value = shareUrl
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -666,6 +729,18 @@ export default function PortfolioFlipbookPage() {
               </div>
             )}
           </div>
+
+          <button
+            onClick={() => setShareModalOpen(true)}
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition flex items-center gap-1 ${
+              shareEnabled
+                ? 'bg-green-500/30 hover:bg-green-500/40 text-green-200 border border-green-400/30'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={shareEnabled ? 'Public — anyone with link can view' : 'Share publicly'}
+          >
+            {shareEnabled ? '🌐 Public' : '🔗 Share'}
+          </button>
 
           <button
             onClick={handlePrint}
@@ -1132,6 +1207,108 @@ export default function PortfolioFlipbookPage() {
           className="fixed inset-0 z-40"
           onClick={() => { setShowPacks(false); setShowJump(false) }}
         />
+      )}
+
+      {/* Share Modal */}
+      {shareModalOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setShareModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-charcoal">🔗 Share Portfolio</h3>
+                <p className="text-xs text-stone-light mt-0.5">Send your portfolio to anyone with a link</p>
+              </div>
+              <button
+                onClick={() => setShareModalOpen(false)}
+                className="text-stone-light hover:text-charcoal p-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Toggle */}
+            <div className="bg-bg-subtle rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                  <div className="font-bold text-sm text-charcoal">
+                    {shareEnabled ? '✅ Public link active' : '🔒 Private (only you)'}
+                  </div>
+                  <div className="text-xs text-stone-light mt-1">
+                    {shareEnabled
+                      ? 'Anyone with the link can view this portfolio'
+                      : 'Click below to generate a public link'}
+                  </div>
+                </div>
+                <button
+                  onClick={() => toggleShare(!shareEnabled)}
+                  disabled={shareLoading}
+                  className={`relative w-12 h-7 rounded-full transition disabled:opacity-50 ${
+                    shareEnabled ? 'bg-green-500' : 'bg-stone-light'
+                  }`}
+                >
+                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition ${
+                    shareEnabled ? 'left-6' : 'left-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Link */}
+            {shareEnabled && shareUrl && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1.5">
+                    Shareable Link
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={shareUrl}
+                      readOnly
+                      className="flex-1 px-3 py-2 border border-border-light rounded-lg text-sm font-mono bg-bg-subtle"
+                      onFocus={(e) => e.target.select()}
+                    />
+                    <button
+                      onClick={copyShareLink}
+                      className={`px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                        copied
+                          ? 'bg-green-500 text-white'
+                          : 'bg-primary text-white hover:bg-primary-dark'
+                      }`}
+                    >
+                      {copied ? '✓ Copied' : '📋 Copy'}
+                    </button>
+                  </div>
+                </div>
+
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center px-4 py-2 border border-border-light rounded-lg text-sm font-semibold text-charcoal hover:bg-bg-subtle transition"
+                >
+                  Open in new tab ↗
+                </a>
+
+                <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
+                  💡 <strong>Anyone with the link can view</strong> your portfolio. They can't edit it. To stop sharing, toggle off above — the link stops working immediately.
+                </div>
+              </div>
+            )}
+
+            {!shareEnabled && (
+              <div className="text-center py-2 text-xs text-stone-light">
+                Toggle on to generate a unique link you can share
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Animations */}
