@@ -54,10 +54,14 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-2">CosmoFolio</h1>
-        <p className="text-center text-gray-600 mb-8">Create your free account</p>
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary flex items-center justify-center relative overflow-hidden">
+      {/* Floating Elements for Glassmorphism Background */}
+      <div className="absolute top-10 left-10 w-96 h-96 bg-accent-primary/20 dark:bg-accent-gold/20 rounded-full blur-[100px] animate-pulse"></div>
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-accent-gold/20 dark:bg-accent-primary/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      
+      <div className="glass-card rounded-2xl p-8 max-w-md w-full relative z-10 border border-white/50 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+        <h1 className="text-3xl font-bold text-center mb-2 text-text-primary dark:text-dark-text-primary">CosmoFolio</h1>
+        <p className="text-center text-text-secondary dark:text-dark-text-secondary mb-8">Create your free account</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -155,19 +159,19 @@ export default function SignUp() {
           </Link>
         </p>
 
-        <div className="relative my-4">
+        <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-border-subtle dark:border-dark-border-subtle" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            <span className="px-2 bg-transparent text-text-tertiary dark:text-dark-text-tertiary backdrop-blur-md">Or continue with</span>
           </div>
         </div>
 
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-medium transition"
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border-subtle dark:border-dark-border-subtle rounded-lg text-text-primary dark:text-dark-text-primary bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-white/10 font-medium transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_15px_rgba(0,0,0,0.2)]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

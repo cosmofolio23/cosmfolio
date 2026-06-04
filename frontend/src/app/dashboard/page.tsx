@@ -94,13 +94,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-subtle">
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary relative overflow-hidden">
+      {/* Floating Elements for Glassmorphism Background */}
+      <div className="fixed top-20 -left-20 w-96 h-96 bg-accent-primary/10 dark:bg-accent-gold/10 rounded-full blur-[100px] animate-pulse pointer-events-none"></div>
+      <div className="fixed bottom-20 -right-20 w-80 h-80 bg-accent-gold/10 dark:bg-accent-primary/10 rounded-full blur-[80px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
+
       {/* Header */}
-      <header className="bg-white border-b border-border-light shadow-elevation-1 sticky top-0 z-40">
+      <header className="glass-nav shadow-elevation-1 sticky top-0 z-40">
         <div className="container-centered py-6 md:py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-charcoal">CosmoFolio</h1>
-            <p className="text-stone-light mt-2">Welcome back, <span className="font-semibold text-slate">{user?.name || user?.email}</span></p>
+            <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary">CosmoFolio</h1>
+            <p className="text-text-secondary dark:text-dark-text-secondary mt-2">Welcome back, <span className="font-semibold text-text-primary dark:text-dark-text-primary">{user?.name || user?.email}</span></p>
           </div>
           <button
             onClick={() => router.push('/signin')}
@@ -119,15 +123,15 @@ export default function Dashboard() {
             <h2 className="text-3xl font-bold text-charcoal mb-3">What would you like to create?</h2>
             <p className="text-stone-light mb-8 text-lg">Choose between a portfolio or presentation sheet</p>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 relative z-10">
               {/* Portfolio Generator */}
               <div
                 onClick={() => setCreatingType('portfolio')}
-                className="card bg-white p-8 rounded-2xl cursor-pointer hover:shadow-elevation-3 hover:border-primary border border-border-light transition-all duration-200 group"
+                className="glass-card p-8 rounded-2xl cursor-pointer transition-all duration-300 group"
               >
                 <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-200">📐</div>
-                <h3 className="text-2xl font-bold text-charcoal mb-2">Portfolio Generator</h3>
-                <p className="text-stone-light mb-6">
+                <h3 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary mb-2">Portfolio Generator</h3>
+                <p className="text-text-secondary dark:text-dark-text-secondary mb-6">
                   Create a professional architecture portfolio with your renders, plans, and projects.
                 </p>
                 <ul className="text-sm text-slate space-y-2 mb-6">
@@ -152,11 +156,11 @@ export default function Dashboard() {
               {/* Presentation Sheet Creator */}
               <div
                 onClick={() => setCreatingType('sheet')}
-                className="card bg-white p-8 rounded-2xl cursor-pointer hover:shadow-elevation-3 hover:border-primary border border-border-light transition-all duration-200 group"
+                className="glass-card p-8 rounded-2xl cursor-pointer transition-all duration-300 group"
               >
                 <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-200">🎨</div>
-                <h3 className="text-2xl font-bold text-charcoal mb-2">Presentation Sheet</h3>
-                <p className="text-stone-light mb-6">
+                <h3 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary mb-2">Presentation Sheet</h3>
+                <p className="text-text-secondary dark:text-dark-text-secondary mb-6">
                   Create stunning presentation sheets for client pitches and competitions.
                 </p>
                 <ul className="text-sm text-slate space-y-2 mb-6">
@@ -183,8 +187,8 @@ export default function Dashboard() {
 
         {/* Create New Project Section */}
         {creatingType && (
-          <div className="mb-12">
-            <div className="card p-8 bg-white">
+          <div className="mb-12 relative z-10">
+            <div className="glass-card rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <button
                   onClick={() => {
@@ -248,10 +252,10 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : projects.length === 0 ? (
-              <div className="card bg-white p-16 text-center">
-                <div className="text-6xl mb-6 opacity-20">✨</div>
-                <h3 className="text-2xl font-semibold text-slate mb-3">No projects yet</h3>
-                <p className="text-stone-light mb-8 max-w-sm mx-auto">
+              <div className="glass-card rounded-2xl p-16 text-center relative z-10">
+                <div className="text-6xl mb-6 opacity-40">✨</div>
+                <h3 className="text-2xl font-semibold text-text-primary dark:text-dark-text-primary mb-3">No projects yet</h3>
+                <p className="text-text-secondary dark:text-dark-text-secondary mb-8 max-w-sm mx-auto">
                   Get started by creating your first portfolio or presentation sheet above.
                 </p>
               </div>
@@ -273,14 +277,14 @@ export default function Dashboard() {
                         .filter((p) => p.project_type === 'portfolio')
                         .map((project) => (
                           <Link key={project.id} href={`/dashboard/project/${project.id}`}>
-                            <div className="card group bg-white overflow-hidden h-full hover:shadow-elevation-3 cursor-pointer">
-                              <div className="h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center overflow-hidden relative">
-                                <div className="text-5xl opacity-30">📐</div>
-                                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-all duration-200"></div>
+                            <div className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10">
+                              <div className="h-48 bg-gradient-to-br from-blue-100/50 to-blue-200/50 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center overflow-hidden relative">
+                                <div className="text-5xl opacity-40">📐</div>
+                                <div className="absolute inset-0 bg-white/20 dark:bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                               </div>
                               <div className="p-6">
                                 <div className="flex items-start justify-between mb-2 gap-3">
-                                  <h3 className="text-lg font-semibold text-charcoal flex-1 group-hover:text-primary transition-colors">
+                                  <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary flex-1 group-hover:text-accent-gold transition-colors">
                                     {project.title}
                                   </h3>
                                   <button
@@ -326,14 +330,14 @@ export default function Dashboard() {
                         .filter((p) => p.project_type === 'sheet')
                         .map((project) => (
                           <Link key={project.id} href={`/dashboard/project/${project.id}`}>
-                            <div className="card group bg-white overflow-hidden h-full hover:shadow-elevation-3 cursor-pointer">
-                              <div className="h-48 bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center overflow-hidden relative">
-                                <div className="text-5xl opacity-30">🎨</div>
-                                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-all duration-200"></div>
+                            <div className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10">
+                              <div className="h-48 bg-gradient-to-br from-amber-100/50 to-amber-200/50 dark:from-amber-900/30 dark:to-amber-800/30 flex items-center justify-center overflow-hidden relative">
+                                <div className="text-5xl opacity-40">🎨</div>
+                                <div className="absolute inset-0 bg-white/20 dark:bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                               </div>
                               <div className="p-6">
                                 <div className="flex items-start justify-between mb-2 gap-3">
-                                  <h3 className="text-lg font-semibold text-charcoal flex-1 group-hover:text-primary transition-colors">
+                                  <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary flex-1 group-hover:text-accent-gold transition-colors">
                                     {project.title}
                                   </h3>
                                   <button

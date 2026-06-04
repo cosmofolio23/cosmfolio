@@ -1,0 +1,2393 @@
+[
+
+  // ============================================================
+  // CATEGORY 1: CONCEPT SHEETS (10 templates)
+  // ============================================================
+
+  {
+    "id": "sht_001",
+    "name": "Concept — Minimal Thesis",
+    "sheet_type": "concept",
+    "category": "Conceptual",
+    "description": "Clean minimal concept sheet with central thesis statement, concept sketch, and supporting diagrams on white field.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF4500", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title_bar", "position": "top-left", "width": "40%", "height": "8%", "content": "project_title + concept_title" },
+        { "name": "thesis_statement", "position": "top-center", "width": "50%", "height": "10%", "content": "concept_statement_text" },
+        { "name": "hero_concept", "position": "center", "width": "60%", "height": "55%", "content": "concept_sketch_or_diagram" },
+        { "name": "supporting_diagrams", "position": "right", "width": "35%", "height": "55%", "content": "3_supporting_diagrams_vertical_stack" },
+        { "name": "annotation_strip", "position": "bottom", "width": "100%", "height": "15%", "content": "text_annotations_3_columns" }
+      ],
+      "grid": "asymmetric-2-column",
+      "alignment": "left-weighted"
+    },
+    "placeholders": {
+      "concept_sketch": 1,
+      "supporting_diagrams": 3,
+      "concept_statement": true,
+      "project_title": true,
+      "annotations": 3,
+      "keywords": true
+    },
+    "style_notes": "Swiss-school discipline, Inter font throughout, red accent on key words only",
+    "preview_image": "Clean white A1 landscape sheet with a bold concept sketch center-left, three stacked diagrams on the right, minimal red accent, thesis statement at top"
+  },
+  {
+    "id": "sht_002",
+    "name": "Concept — Bold Manifesto",
+    "sheet_type": "concept",
+    "category": "Bold",
+    "description": "Typography-forward concept sheet where the concept statement is the visual hero, oversized words with supporting imagery.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#000000", "accent": "#E50914", "background": "#FFFFFF", "text": "#000000", "muted": "#555555" },
+    "fonts": { "heading": "Archivo Black", "body": "Inter", "accent": "Space Mono" },
+    "layout": {
+      "zones": [
+        { "name": "manifesto_title", "position": "top", "width": "100%", "height": "35%", "content": "oversized_concept_statement" },
+        { "name": "concept_image", "position": "center-left", "width": "55%", "height": "40%", "content": "hero_render_or_model" },
+        { "name": "diagram_stack", "position": "center-right", "width": "40%", "height": "40%", "content": "concept_diagrams_vertical" },
+        { "name": "footer", "position": "bottom", "width": "100%", "height": "10%", "content": "project_info_bar" }
+      ],
+      "grid": "top-heavy",
+      "alignment": "centered"
+    },
+    "placeholders": {
+      "concept_sketch": 1,
+      "hero_render": 1,
+      "supporting_diagrams": 2,
+      "concept_statement": true,
+      "project_title": true,
+      "manifesto_text": true
+    },
+    "style_notes": "Massive typography dominates, red accent on key words, stark B&W imagery",
+    "preview_image": "A1 portrait sheet with enormous black Archivo Black type 'ARCHITECTURE IS CONFLICT' taking top 35%, stark B&W render below left, concept diagrams right, red accent words"
+  },
+  {
+    "id": "sht_003",
+    "name": "Concept — Narrative Flow",
+    "sheet_type": "concept",
+    "category": "Narrative",
+    "description": "Story-driven concept sheet with a left-to-right reading flow: problem → concept → response.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2A2A2A", "accent": "#B8956A", "background": "#FAF7F2", "text": "#2A2A2A", "muted": "#7A7066" },
+    "fonts": { "heading": "Lora", "body": "Lora", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title_strip", "position": "top", "width": "100%", "height": "8%", "content": "project_title_centered" },
+        { "name": "problem_zone", "position": "left-third", "width": "30%", "height": "75%", "content": "site_photo + problem_text" },
+        { "name": "concept_zone", "position": "center-third", "width": "35%", "height": "75%", "content": "concept_diagram + thesis" },
+        { "name": "response_zone", "position": "right-third", "width": "30%", "height": "75%", "content": "hero_render + resolution_text" },
+        { "name": "arrow_flow", "position": "center-horizontal", "width": "100%", "height": "5%", "content": "directional_arrows_connecting_zones" }
+      ],
+      "grid": "3-column-equal",
+      "alignment": "left-to-right-flow"
+    },
+    "placeholders": {
+      "site_photo": 1,
+      "concept_diagram": 1,
+      "hero_render": 1,
+      "problem_statement": true,
+      "concept_statement": true,
+      "resolution_text": true,
+      "project_title": true
+    },
+    "style_notes": "Warm cream background, storytelling left-to-right, gold accent arrows guiding the eye",
+    "preview_image": "Warm cream A1 landscape with 3 clear zones: site photo left, concept diagram center, render right, gold arrows connecting the narrative"
+  },
+  {
+    "id": "sht_004",
+    "name": "Concept — Parametric Diagram",
+    "sheet_type": "concept",
+    "category": "Parametric",
+    "description": "Computational concept sheet with generative iterations, parametric diagrams, and data-driven concept explanation.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#0A2540", "accent": "#FF6B35", "background": "#FAFAFA", "text": "#0A2540", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Space Grotesk", "body": "IBM Plex Sans", "accent": "IBM Plex Mono" },
+    "layout": {
+      "zones": [
+        { "name": "header", "position": "top", "width": "100%", "height": "10%", "content": "title + concept_statement" },
+        { "name": "iteration_grid", "position": "left", "width": "50%", "height": "60%", "content": "4x4_parametric_variation_grid" },
+        { "name": "selected_concept", "position": "right-top", "width": "45%", "height": "35%", "content": "hero_parametric_form" },
+        { "name": "data_analysis", "position": "right-bottom", "width": "45%", "height": "30%", "content": "performance_metrics_charts" },
+        { "name": "footer_annotations", "position": "bottom", "width": "100%", "height": "12%", "content": "parameter_explanations_monospace" }
+      ],
+      "grid": "data-driven-asymmetric",
+      "alignment": "iteration-focused"
+    },
+    "placeholders": {
+      "parametric_iterations": 16,
+      "hero_form": 1,
+      "performance_charts": 2,
+      "concept_statement": true,
+      "project_title": true,
+      "parameters_list": true
+    },
+    "style_notes": "Tech-forward, orange callouts on selected iteration, monospace data labels",
+    "preview_image": "White A1 landscape sheet with 4x4 grid of parametric variations left, hero selected form right, orange performance charts, monospace annotations"
+  },
+  {
+    "id": "sht_005",
+    "name": "Concept — Exploded Axonometric",
+    "sheet_type": "concept",
+    "category": "Diagrammatic",
+    "description": "Concept sheet centered on an exploded axonometric showing all design layers with callout annotations.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#0066CC", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "60%", "height": "8%", "content": "project_title" },
+        { "name": "hero_axonometric", "position": "center", "width": "70%", "height": "65%", "content": "exploded_axonometric_drawing" },
+        { "name": "callout_annotations", "position": "sides", "width": "15% each", "height": "65%", "content": "layer_labels_with_leader_lines" },
+        { "name": "concept_text", "position": "bottom-left", "width": "45%", "height": "18%", "content": "concept_description" },
+        { "name": "legend", "position": "bottom-right", "width": "45%", "height": "18%", "content": "layer_legend_color_coded" }
+      ],
+      "grid": "center-focused",
+      "alignment": "radial-from-center"
+    },
+    "placeholders": {
+      "exploded_axonometric": 1,
+      "layer_labels": 6,
+      "concept_description": true,
+      "legend_items": 6,
+      "project_title": true
+    },
+    "style_notes": "Blue accent on leader lines and callouts, exploded layers clearly separated",
+    "preview_image": "White A1 portrait with large exploded axonometric center showing structural/envelope/interior layers, blue leader-line annotations, legend bottom-right"
+  },
+  {
+    "id": "sht_006",
+    "name": "Concept — Black Canvas Dark",
+    "sheet_type": "concept",
+    "category": "Dark Premium",
+    "description": "Dark-mode concept board with white/gold diagrams on black background, cinematic atmosphere.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#0A0A0A", "accent": "#D4AF37", "background": "#0A0A0A", "text": "#F0F0F0", "muted": "#666666" },
+    "fonts": { "heading": "Didot", "body": "Montserrat", "accent": "Montserrat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "50%", "height": "10%", "content": "gold_title_on_black" },
+        { "name": "hero_image", "position": "left", "width": "55%", "height": "70%", "content": "atmospheric_render_or_model" },
+        { "name": "concept_diagrams", "position": "right", "width": "40%", "height": "40%", "content": "white_line_diagrams_on_black" },
+        { "name": "concept_text", "position": "right-bottom", "width": "40%", "height": "25%", "content": "concept_text_white_on_black" },
+        { "name": "footer", "position": "bottom", "width": "100%", "height": "8%", "content": "gold_accent_strip_project_info" }
+      ],
+      "grid": "cinematic-asymmetric",
+      "alignment": "image-led"
+    },
+    "placeholders": {
+      "hero_render": 1,
+      "concept_diagrams": 2,
+      "concept_statement": true,
+      "project_title": true
+    },
+    "style_notes": "Luxurious dark mode, gold foil title and footer strip, cinematic render hero",
+    "preview_image": "Dark black A1 landscape with atmospheric night render left, white-line concept diagrams right, gold Didot title and footer strip"
+  },
+  {
+    "id": "sht_007",
+    "name": "Concept — Hand Sketch Organic",
+    "sheet_type": "concept",
+    "category": "Sketch",
+    "description": "Hand-drawn concept board with scanned sketches, watercolor textures, and personal annotations.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C2416", "accent": "#9B7E46", "background": "#F5F0E1", "text": "#2C2416", "muted": "#7A6E58" },
+    "fonts": { "heading": "Caveat", "body": "Lora", "accent": "Caveat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "handwritten_title" },
+        { "name": "main_sketch", "position": "center", "width": "55%", "height": "60%", "content": "hero_concept_sketch" },
+        { "name": "sketch_evolution", "position": "left", "width": "25%", "height": "60%", "content": "3_process_sketches_stacked" },
+        { "name": "annotations", "position": "scattered", "width": "various", "height": "various", "content": "handwritten_notes_and_arrows" },
+        { "name": "concept_text", "position": "bottom", "width": "80%", "height": "15%", "content": "typed_concept_description" }
+      ],
+      "grid": "organic-freeform",
+      "alignment": "sketch-centered"
+    },
+    "placeholders": {
+      "hero_sketch": 1,
+      "process_sketches": 3,
+      "handwritten_annotations": 5,
+      "concept_description": true,
+      "project_title": true
+    },
+    "style_notes": "Warm paper texture, hand-drawn Caveat captions, scrapbook-organic feel",
+    "preview_image": "Warm cream-paper A1 with large pencil concept sketch center, smaller sketches left, handwritten annotations scattered, watercolor wash accents"
+  },
+  {
+    "id": "sht_008",
+    "name": "Concept — Sustainability Systems",
+    "sheet_type": "concept",
+    "category": "Sustainable",
+    "description": "Green concept sheet showing passive systems, energy flows, and sustainability strategy as core concept.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2D4A3E", "accent": "#A4B494", "background": "#F4F1E8", "text": "#2D4A3E", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Lora", "body": "Nunito Sans", "accent": "Nunito Sans" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "project_title_and_sustainability_tagline" },
+        { "name": "systems_section", "position": "center-left", "width": "45%", "height": "65%", "content": "building_section_with_passive_system_overlays" },
+        { "name": "strategy_diagrams", "position": "center-right", "width": "45%", "height": "35%", "content": "4_sustainability_strategy_icons_with_labels" },
+        { "name": "metrics", "position": "right-bottom", "width": "45%", "height": "25%", "content": "energy_data_performance_metrics" },
+        { "name": "concept_text", "position": "bottom-left", "width": "45%", "height": "15%", "content": "sustainability_concept_narrative" }
+      ],
+      "grid": "data-sidebar",
+      "alignment": "section-focused"
+    },
+    "placeholders": {
+      "building_section": 1,
+      "passive_system_overlays": 4,
+      "strategy_icons": 4,
+      "energy_metrics": true,
+      "concept_statement": true,
+      "project_title": true
+    },
+    "style_notes": "Sage green accents, botanical line art, energy-flow arrows, LEED-style metrics",
+    "preview_image": "Warm cream A1 landscape with building section showing sun/wind/rain passive systems, strategy icons grid right, sage green accents, performance metrics"
+  },
+  {
+    "id": "sht_009",
+    "name": "Concept — Urban Context Response",
+    "sheet_type": "concept",
+    "category": "Urban",
+    "description": "Urban-scale concept sheet showing site context analysis leading to design response, city-scale thinking.",
+    "format": "A0_landscape",
+    "colors": { "primary": "#2C3E50", "accent": "#E67E22", "background": "#FFFFFF", "text": "#2C3E50", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "8%", "content": "project_title" },
+        { "name": "context_map", "position": "left", "width": "35%", "height": "70%", "content": "urban_context_map_with_analysis" },
+        { "name": "concept_response", "position": "center", "width": "30%", "height": "70%", "content": "concept_diagrams_massing_studies" },
+        { "name": "design_render", "position": "right", "width": "30%", "height": "70%", "content": "hero_perspective_render" },
+        { "name": "legend_strip", "position": "bottom", "width": "100%", "height": "12%", "content": "map_legend_project_data_monospace" }
+      ],
+      "grid": "3-column-flow",
+      "alignment": "context-to-design-flow"
+    },
+    "placeholders": {
+      "context_map": 1,
+      "massing_diagrams": 3,
+      "hero_render": 1,
+      "concept_statement": true,
+      "project_title": true,
+      "site_data": true
+    },
+    "style_notes": "Urban analytical, orange-highlighted interventions on maps, monospace data labels",
+    "preview_image": "White A0 landscape with urban context map left, massing studies center, hero render right, orange intervention highlights, analytical feel"
+  },
+  {
+    "id": "sht_010",
+    "name": "Concept — Collage Experiential",
+    "sheet_type": "concept",
+    "category": "Collage",
+    "description": "Collage-style concept board mixing textures, photography, and abstract forms to convey atmosphere.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#C5704D", "background": "#F0E6D2", "text": "#1A1A1A", "muted": "#8B7563" },
+    "fonts": { "heading": "Playfair Display", "body": "Inter", "accent": "Caveat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "project_title" },
+        { "name": "collage_field", "position": "center", "width": "90%", "height": "70%", "content": "mixed_media_collage_overlapping" },
+        { "name": "concept_text", "position": "bottom-left", "width": "50%", "height": "15%", "content": "concept_narrative" },
+        { "name": "material_swatches", "position": "bottom-right", "width": "30%", "height": "15%", "content": "texture_swatches_row" }
+      ],
+      "grid": "freeform-collage",
+      "alignment": "organic-overlap"
+    },
+    "placeholders": {
+      "collage_images": 8,
+      "texture_swatches": 4,
+      "concept_statement": true,
+      "project_title": true,
+      "mood_keywords": true
+    },
+    "style_notes": "Overlapping images, torn-edge textures, terracotta warmth, handwritten captions",
+    "preview_image": "Warm paper-tone A1 with layered collage of photos/textures/material samples overlapping organically, handwritten Caveat captions, terracotta accents"
+  },
+
+  // ============================================================
+  // CATEGORY 2: SITE ANALYSIS SHEETS (8 templates)
+  // ============================================================
+
+  {
+    "id": "sht_011",
+    "name": "Site Analysis — Full Analytical",
+    "sheet_type": "site_analysis",
+    "category": "Analytical",
+    "description": "Comprehensive site analysis with sun path, wind, traffic, vegetation, topography, and noise analysis diagrams.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "site_analysis_title_bar" },
+        { "name": "site_plan", "position": "center-left", "width": "45%", "height": "60%", "content": "annotated_site_plan" },
+        { "name": "analysis_grid", "position": "right", "width": "50%", "height": "60%", "content": "6_analysis_diagram_grid_3x2" },
+        { "name": "data_strip", "position": "bottom", "width": "100%", "height": "20%", "content": "site_data_climate_demographics" }
+      ],
+      "grid": "analytical-2-column",
+      "alignment": "data-heavy"
+    },
+    "placeholders": {
+      "site_plan": 1,
+      "sun_path_diagram": 1,
+      "wind_rose": 1,
+      "traffic_diagram": 1,
+      "vegetation_map": 1,
+      "topography_section": 1,
+      "noise_analysis": 1,
+      "site_data_table": true,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Clean analytical, orange callouts on diagrams, monospace data tables, comprehensive",
+    "preview_image": "White A1 landscape with annotated site plan left, 6-cell analysis grid (sun/wind/traffic/vegetation/topo/noise) right, orange callouts, data strip bottom"
+  },
+  {
+    "id": "sht_012",
+    "name": "Site Analysis — Minimal Map Focus",
+    "sheet_type": "site_analysis",
+    "category": "Minimalist",
+    "description": "Minimal site analysis with large central map and clean data callouts around the periphery.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#E85A4F", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "50%", "height": "6%", "content": "minimal_title" },
+        { "name": "hero_map", "position": "center", "width": "85%", "height": "70%", "content": "large_annotated_site_map" },
+        { "name": "callout_bubbles", "position": "around_map", "width": "various", "height": "various", "content": "data_callouts_with_leader_lines" },
+        { "name": "legend", "position": "bottom", "width": "60%", "height": "10%", "content": "clean_legend" }
+      ],
+      "grid": "map-centered",
+      "alignment": "radial-callouts"
+    },
+    "placeholders": {
+      "site_map": 1,
+      "data_callouts": 6,
+      "project_title": true,
+      "legend_items": 8,
+      "location": true
+    },
+    "style_notes": "Map-dominant, red accent pins and callouts, minimal clutter, clean data hierarchy",
+    "preview_image": "White A1 portrait with large site map taking 70% of sheet, red pin callouts around edges with data, minimal clean legend bottom"
+  },
+  {
+    "id": "sht_013",
+    "name": "Site Analysis — Climate & Environment",
+    "sheet_type": "site_analysis",
+    "category": "Sustainable",
+    "description": "Climate-focused site analysis emphasizing sun path, wind patterns, rainfall, and seasonal conditions.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2D4A3E", "accent": "#FFB800", "background": "#F4F1E8", "text": "#2D4A3E", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Lora", "body": "Nunito Sans", "accent": "Nunito Sans" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "climate_analysis_title" },
+        { "name": "sun_study", "position": "left", "width": "30%", "height": "60%", "content": "sun_path_stereographic_and_shadow_study" },
+        { "name": "wind_rose", "position": "center", "width": "30%", "height": "40%", "content": "wind_rose_with_seasonal_data" },
+        { "name": "rainfall_chart", "position": "center-bottom", "width": "30%", "height": "25%", "content": "monthly_rainfall_temperature_chart" },
+        { "name": "site_section", "position": "right", "width": "35%", "height": "60%", "content": "site_section_with_climate_overlays" },
+        { "name": "data_footer", "position": "bottom", "width": "100%", "height": "15%", "content": "climate_data_summary_table" }
+      ],
+      "grid": "climate-analysis",
+      "alignment": "data-rich"
+    },
+    "placeholders": {
+      "sun_path_diagram": 1,
+      "shadow_studies": 4,
+      "wind_rose": 1,
+      "rainfall_chart": 1,
+      "site_section": 1,
+      "climate_data": true,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Warm earth tones, yellow sun-path accents, green for vegetation, data-rich environmental focus",
+    "preview_image": "Warm cream A1 landscape with sun path diagrams left, wind rose center, climate section right, yellow sun accents, environmental data tables bottom"
+  },
+  {
+    "id": "sht_014",
+    "name": "Site Analysis — Urban Context",
+    "sheet_type": "site_analysis",
+    "category": "Urban",
+    "description": "Urban context analysis showing figure-ground, circulation, land use, building heights, and infrastructure.",
+    "format": "A0_landscape",
+    "colors": { "primary": "#2C3E50", "accent": "#E74C3C", "background": "#FFFFFF", "text": "#2C3E50", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "urban_context_analysis_title" },
+        { "name": "figure_ground", "position": "top-left", "width": "30%", "height": "42%", "content": "figure_ground_plan" },
+        { "name": "circulation", "position": "top-center", "width": "30%", "height": "42%", "content": "circulation_and_transit_map" },
+        { "name": "land_use", "position": "top-right", "width": "30%", "height": "42%", "content": "land_use_zoning_map" },
+        { "name": "heights", "position": "bottom-left", "width": "30%", "height": "42%", "content": "building_heights_map" },
+        { "name": "infrastructure", "position": "bottom-center", "width": "30%", "height": "42%", "content": "infrastructure_services_map" },
+        { "name": "summary", "position": "bottom-right", "width": "30%", "height": "42%", "content": "swot_or_summary_panel" }
+      ],
+      "grid": "6-panel-grid-3x2",
+      "alignment": "uniform-grid"
+    },
+    "placeholders": {
+      "figure_ground": 1,
+      "circulation_map": 1,
+      "land_use_map": 1,
+      "building_heights_map": 1,
+      "infrastructure_map": 1,
+      "summary_text": true,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Clean diagrammatic with color-coded maps, red site boundary highlight, analytical urban planning feel",
+    "preview_image": "White A0 landscape with 6-panel grid of urban analysis maps (figure-ground, circulation, land use, heights, infrastructure, summary), red site markers"
+  },
+  {
+    "id": "sht_015",
+    "name": "Site Analysis — Photographic Context",
+    "sheet_type": "site_analysis",
+    "category": "Photographic",
+    "description": "Photo-driven site analysis with site photography, aerial views, and annotated context images.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF4500", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "8%", "content": "site_title" },
+        { "name": "aerial_photo", "position": "top-right", "width": "65%", "height": "45%", "content": "aerial_photo_annotated" },
+        { "name": "site_plan", "position": "left", "width": "30%", "height": "55%", "content": "site_plan_with_photo_viewpoints" },
+        { "name": "photo_strip", "position": "bottom", "width": "100%", "height": "30%", "content": "8_site_photos_horizontal_strip" }
+      ],
+      "grid": "photo-dominant",
+      "alignment": "aerial-led"
+    },
+    "placeholders": {
+      "aerial_photo": 1,
+      "site_plan": 1,
+      "site_photos": 8,
+      "viewpoint_markers": 8,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Photo-led, numbered viewpoint markers on map correspond to photos, red annotation pins",
+    "preview_image": "White A1 landscape with large aerial photo top-right, site plan left with numbered viewpoints, strip of 8 site photos bottom"
+  },
+  {
+    "id": "sht_016",
+    "name": "Site Analysis — Landscape & Ecology",
+    "sheet_type": "site_analysis",
+    "category": "Landscape",
+    "description": "Ecology-focused site analysis with vegetation survey, water systems, soil types, and biodiversity mapping.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1F3A2F", "accent": "#8BC34A", "background": "#F4F1E8", "text": "#1F3A2F", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "ecology_analysis_title" },
+        { "name": "ecological_map", "position": "center-left", "width": "50%", "height": "65%", "content": "ecological_mapping_with_vegetation_types" },
+        { "name": "water_systems", "position": "top-right", "width": "40%", "height": "30%", "content": "hydrology_and_drainage_diagram" },
+        { "name": "soil_profile", "position": "bottom-right", "width": "40%", "height": "30%", "content": "soil_types_cross_section" },
+        { "name": "species_list", "position": "bottom", "width": "100%", "height": "15%", "content": "biodiversity_species_list_with_icons" }
+      ],
+      "grid": "ecological-map-led",
+      "alignment": "map-dominant"
+    },
+    "placeholders": {
+      "ecological_map": 1,
+      "hydrology_diagram": 1,
+      "soil_section": 1,
+      "species_icons": 12,
+      "vegetation_photos": 4,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Green and earth tones, botanical illustration accents, nature-survey feel",
+    "preview_image": "Warm cream A1 landscape with ecological mapping left (green vegetation zones), hydrology diagram top-right, soil section bottom-right, species icons strip"
+  },
+  {
+    "id": "sht_017",
+    "name": "Site Analysis — Historical Layers",
+    "sheet_type": "site_analysis",
+    "category": "Heritage",
+    "description": "Historical site analysis showing temporal layers: historical maps, archaeological finds, heritage constraints.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#3A2F2A", "accent": "#A0522D", "background": "#F8F2E8", "text": "#3A2F2A", "muted": "#8B7867" },
+    "fonts": { "heading": "Cormorant", "body": "EB Garamond", "accent": "Cormorant SC" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "historical_analysis_title" },
+        { "name": "timeline_maps", "position": "center", "width": "90%", "height": "50%", "content": "4_historical_maps_timeline_1800_1900_1950_now" },
+        { "name": "heritage_overlay", "position": "bottom-left", "width": "45%", "height": "30%", "content": "heritage_constraints_map" },
+        { "name": "historical_photos", "position": "bottom-right", "width": "45%", "height": "30%", "content": "archival_photographs_grid" }
+      ],
+      "grid": "timeline-horizontal",
+      "alignment": "chronological"
+    },
+    "placeholders": {
+      "historical_maps": 4,
+      "heritage_constraints_map": 1,
+      "archival_photographs": 4,
+      "heritage_listings": true,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Aged cream paper, sepia tones, sienna accent for heritage constraints, timeline arrows",
+    "preview_image": "Cream A1 landscape with 4 historical maps in chronological row (1800→1900→1950→now), heritage overlay bottom-left, archival photos bottom-right, sepia tones"
+  },
+  {
+    "id": "sht_018",
+    "name": "Site Analysis — Dark Drone Aerial",
+    "sheet_type": "site_analysis",
+    "category": "Dark Premium",
+    "description": "Dark-background site analysis with dramatic drone photography and glowing analytical overlays.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#0A0A0A", "accent": "#00FFC8", "background": "#0F0F1E", "text": "#FFFFFF", "muted": "#666690" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "neon_title_on_dark" },
+        { "name": "aerial_hero", "position": "center", "width": "65%", "height": "70%", "content": "drone_aerial_with_glowing_overlay" },
+        { "name": "data_sidebar", "position": "right", "width": "30%", "height": "70%", "content": "analysis_data_neon_callouts" },
+        { "name": "mini_diagrams", "position": "bottom", "width": "100%", "height": "15%", "content": "4_mini_analysis_icons_neon" }
+      ],
+      "grid": "dark-aerial-led",
+      "alignment": "drone-centered"
+    },
+    "placeholders": {
+      "aerial_photo": 1,
+      "analysis_overlay": 1,
+      "data_callouts": 6,
+      "mini_analysis_diagrams": 4,
+      "project_title": true,
+      "location": true
+    },
+    "style_notes": "Dramatic dark mode, cyan neon overlays on aerial photography, data-driven sidebar",
+    "preview_image": "Dark navy-black A1 landscape with dramatic drone aerial center, cyan neon analytical overlays, glowing data sidebar, futuristic feel"
+  },
+
+  // ============================================================
+  // CATEGORY 3: MOOD BOARD SHEETS (8 templates)
+  // ============================================================
+
+  {
+    "id": "sht_019",
+    "name": "Mood Board — Classic Grid",
+    "sheet_type": "mood_board",
+    "category": "Classic",
+    "description": "Classic mood board with structured grid of inspiration images, material swatches, and color palette.",
+    "format": "A2_portrait",
+    "colors": { "primary": "#2C2A2A", "accent": "#C9A878", "background": "#FAF6F0", "text": "#2C2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "project_mood_title" },
+        { "name": "image_grid", "position": "center", "width": "70%", "height": "60%", "content": "3x3_inspiration_image_grid" },
+        { "name": "color_palette", "position": "right", "width": "25%", "height": "30%", "content": "5_color_swatches_vertical" },
+        { "name": "material_strip", "position": "right-bottom", "width": "25%", "height": "25%", "content": "4_material_texture_swatches" },
+        { "name": "mood_text", "position": "bottom", "width": "70%", "height": "15%", "content": "mood_keywords_and_description" }
+      ],
+      "grid": "classic-grid-sidebar",
+      "alignment": "grid-structured"
+    },
+    "placeholders": {
+      "inspiration_images": 9,
+      "color_swatches": 5,
+      "material_swatches": 4,
+      "mood_description": true,
+      "mood_keywords": true,
+      "project_title": true
+    },
+    "style_notes": "Clean organized grid, gold accent on title, elegant material presentation",
+    "preview_image": "Warm cream A2 portrait with 3x3 image grid center-left, color palette strip right, material swatches below, gold title, organized and elegant"
+  },
+  {
+    "id": "sht_020",
+    "name": "Mood Board — Organic Collage",
+    "sheet_type": "mood_board",
+    "category": "Organic",
+    "description": "Freeform collage mood board with overlapping images, textures, and handwritten notes.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#3D2817", "accent": "#C5704D", "background": "#F0E6D2", "text": "#3D2817", "muted": "#8B7563" },
+    "fonts": { "heading": "Caveat", "body": "Lora", "accent": "Caveat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "8%", "content": "handwritten_mood_title" },
+        { "name": "collage_field", "position": "full", "width": "100%", "height": "100%", "content": "freeform_overlapping_images_textures" },
+        { "name": "annotations", "position": "scattered", "width": "various", "height": "various", "content": "handwritten_labels_arrows" }
+      ],
+      "grid": "freeform-organic",
+      "alignment": "scattered-artistic"
+    },
+    "placeholders": {
+      "inspiration_images": 12,
+      "texture_samples": 4,
+      "handwritten_notes": 6,
+      "mood_keywords": true,
+      "project_title": true
+    },
+    "style_notes": "Torn-edge images, overlapping freely, warm aged paper, handwritten Caveat labels",
+    "preview_image": "Aged paper A2 landscape with 12+ images overlapping organically like a physical pinboard, torn edges, handwritten labels, warm terracotta tones"
+  },
+  {
+    "id": "sht_021",
+    "name": "Mood Board — Material Focus",
+    "sheet_type": "mood_board",
+    "category": "Materials",
+    "description": "Material-led mood board with large material swatches, close-up textures, and supplier references.",
+    "format": "A2_portrait",
+    "colors": { "primary": "#2A2A2A", "accent": "#8B7355", "background": "#F4F0EB", "text": "#2A2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Lora", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "material_palette_title" },
+        { "name": "hero_material", "position": "top-center", "width": "60%", "height": "35%", "content": "large_hero_material_texture" },
+        { "name": "swatch_grid", "position": "center", "width": "90%", "height": "35%", "content": "6_material_swatches_with_labels" },
+        { "name": "color_palette", "position": "bottom-left", "width": "40%", "height": "15%", "content": "extracted_color_palette" },
+        { "name": "supplier_credits", "position": "bottom-right", "width": "50%", "height": "15%", "content": "material_supplier_list" }
+      ],
+      "grid": "material-grid",
+      "alignment": "swatch-dominant"
+    },
+    "placeholders": {
+      "hero_texture": 1,
+      "material_swatches": 6,
+      "swatch_labels": 6,
+      "color_palette": 5,
+      "supplier_list": true,
+      "project_title": true
+    },
+    "style_notes": "Tactile feel, large material close-ups, restrained typography, material-first hierarchy",
+    "preview_image": "Warm cream A2 portrait with large oak-wood texture hero, 6 material swatches (stone/brass/linen/leather/marble/concrete) below, extracted color palette"
+  },
+  {
+    "id": "sht_022",
+    "name": "Mood Board — Interior Styling",
+    "sheet_type": "mood_board",
+    "category": "Interior",
+    "description": "Interior styling mood board with furniture references, color palettes, and lifestyle vignettes.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#3A3A3A", "accent": "#F4C2C2", "background": "#FDF8F4", "text": "#4A4A4A", "muted": "#B8B0AA" },
+    "fonts": { "heading": "DM Serif Display", "body": "DM Sans", "accent": "DM Sans" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "8%", "content": "interior_mood_title" },
+        { "name": "hero_interior", "position": "left", "width": "45%", "height": "55%", "content": "hero_interior_photograph" },
+        { "name": "furniture_grid", "position": "right", "width": "50%", "height": "35%", "content": "4_furniture_reference_images" },
+        { "name": "color_palette", "position": "right-bottom", "width": "50%", "height": "15%", "content": "color_palette_strip" },
+        { "name": "material_row", "position": "bottom", "width": "100%", "height": "20%", "content": "material_and_finish_samples_strip" }
+      ],
+      "grid": "interior-lifestyle",
+      "alignment": "lifestyle-led"
+    },
+    "placeholders": {
+      "hero_interior_photo": 1,
+      "furniture_references": 4,
+      "color_swatches": 5,
+      "material_finishes": 6,
+      "mood_description": true,
+      "project_title": true
+    },
+    "style_notes": "Soft pastel accents, lifestyle photography, rounded corners on images, feminine warmth",
+    "preview_image": "Soft cream A2 landscape with styled interior hero left, furniture grid top-right, blush pink color palette, material strip bottom"
+  },
+  {
+    "id": "sht_023",
+    "name": "Mood Board — Dark Luxury",
+    "sheet_type": "mood_board",
+    "category": "Dark Premium",
+    "description": "Dark luxury mood board with moody photography, gold accents, and premium material selections.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#0A0A0A", "accent": "#D4AF37", "background": "#0A0A0A", "text": "#F0F0F0", "muted": "#8B8B8B" },
+    "fonts": { "heading": "Didot", "body": "Montserrat", "accent": "Montserrat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "gold_mood_title_on_black" },
+        { "name": "hero_moody", "position": "center-left", "width": "50%", "height": "65%", "content": "moody_atmospheric_photograph" },
+        { "name": "inspiration_column", "position": "right", "width": "40%", "height": "45%", "content": "3_dark_inspiration_images_stacked" },
+        { "name": "material_strip", "position": "bottom", "width": "80%", "height": "20%", "content": "luxury_material_swatches_gold_framed" }
+      ],
+      "grid": "dark-luxury-asymmetric",
+      "alignment": "moody-atmospheric"
+    },
+    "placeholders": {
+      "hero_mood_photo": 1,
+      "inspiration_images": 3,
+      "luxury_swatches": 5,
+      "mood_description": true,
+      "project_title": true
+    },
+    "style_notes": "All-black background, gold foil frames on swatches, moody low-key photography, luxury hotel feel",
+    "preview_image": "Pure black A2 landscape with moody atmospheric photograph left, dark inspiration images stacked right, gold-framed material swatches bottom"
+  },
+  {
+    "id": "sht_024",
+    "name": "Mood Board — Minimalist Zen",
+    "sheet_type": "mood_board",
+    "category": "Minimalist",
+    "description": "Ultra-minimal mood board with maximum whitespace, few carefully selected images, and restrained palette.",
+    "format": "A2_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#8B6914", "background": "#F8F5F0", "text": "#1A1A1A", "muted": "#B0A99F" },
+    "fonts": { "heading": "Noto Serif JP", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-center", "width": "50%", "height": "6%", "content": "minimal_centered_title" },
+        { "name": "image_1", "position": "center-top", "width": "40%", "height": "30%", "content": "single_key_image" },
+        { "name": "image_2", "position": "center-bottom", "width": "30%", "height": "25%", "content": "secondary_image" },
+        { "name": "color_dots", "position": "bottom-center", "width": "30%", "height": "8%", "content": "3_color_circles" },
+        { "name": "keyword", "position": "bottom", "width": "50%", "height": "5%", "content": "single_mood_word" }
+      ],
+      "grid": "zen-sparse",
+      "alignment": "centered-breathing"
+    },
+    "placeholders": {
+      "key_images": 2,
+      "color_circles": 3,
+      "mood_keyword": true,
+      "project_title": true
+    },
+    "style_notes": "Supreme restraint, 70% white space, only 2-3 images, Zen-like calm",
+    "preview_image": "Warm white A2 portrait that is 70% empty space, one quiet architectural image center, one small secondary below, 3 color dots, single word 'STILLNESS'"
+  },
+  {
+    "id": "sht_025",
+    "name": "Mood Board — Tropical Biophilic",
+    "sheet_type": "mood_board",
+    "category": "Tropical",
+    "description": "Lush tropical mood board with greenery, natural materials, and resort-living inspiration.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#1B3D2F", "accent": "#D4A574", "background": "#F4EFE3", "text": "#1B3D2F", "muted": "#7A8773" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "tropical_mood_title" },
+        { "name": "hero_tropical", "position": "center-left", "width": "50%", "height": "55%", "content": "lush_tropical_hero_image" },
+        { "name": "nature_grid", "position": "right", "width": "45%", "height": "35%", "content": "6_botanical_texture_images_grid" },
+        { "name": "material_strip", "position": "bottom", "width": "100%", "height": "22%", "content": "natural_material_swatches_bamboo_teak_stone_rattan" }
+      ],
+      "grid": "tropical-organic",
+      "alignment": "lush-green-led"
+    },
+    "placeholders": {
+      "hero_tropical_photo": 1,
+      "botanical_images": 6,
+      "natural_swatches": 6,
+      "mood_description": true,
+      "project_title": true
+    },
+    "style_notes": "Deep forest greens, gold botanical accents, natural material textures, resort atmosphere",
+    "preview_image": "Warm cream A2 landscape with lush tropical villa hero left, botanical texture grid right, bamboo/teak/stone/rattan swatches bottom, deep green accents"
+  },
+  {
+    "id": "sht_026",
+    "name": "Mood Board — Brutalist Raw",
+    "sheet_type": "mood_board",
+    "category": "Brutalist",
+    "description": "Raw concrete-focused mood board with heavy textures, stark contrasts, and industrial materials.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#2C2C2C", "accent": "#E85A4F", "background": "#E8E4DC", "text": "#1A1A1A", "muted": "#6B6B6B" },
+    "fonts": { "heading": "Archivo Black", "body": "Space Grotesk", "accent": "Roboto Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "50%", "height": "10%", "content": "bold_brutalist_mood_title" },
+        { "name": "concrete_textures", "position": "center", "width": "60%", "height": "55%", "content": "3_large_concrete_texture_images" },
+        { "name": "inspiration_strip", "position": "right", "width": "35%", "height": "55%", "content": "4_brutalist_reference_images" },
+        { "name": "material_bar", "position": "bottom", "width": "100%", "height": "22%", "content": "raw_material_swatches_concrete_steel_glass" }
+      ],
+      "grid": "brutalist-heavy",
+      "alignment": "texture-dominant"
+    },
+    "placeholders": {
+      "concrete_textures": 3,
+      "reference_images": 4,
+      "raw_swatches": 5,
+      "mood_keywords": true,
+      "project_title": true
+    },
+    "style_notes": "Heavy concrete grays, red accent type, industrial materials, raw unfinished textures",
+    "preview_image": "Gray-paper A2 landscape with large concrete texture photos center, brutalist building references right, raw material bar bottom, red Archivo Black title"
+  },
+
+  // ============================================================
+  // CATEGORY 4: FLOOR PLAN SHEETS (8 templates)
+  // ============================================================
+
+  {
+    "id": "sht_027",
+    "name": "Floor Plan — Standard Technical",
+    "sheet_type": "floor_plan",
+    "category": "Technical",
+    "description": "Standard technical floor plan sheet with title block, scale bar, north arrow, room labels, and dimensions.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#000000", "accent": "#000000", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "plan_field", "position": "center", "width": "85%", "height": "80%", "content": "floor_plan_drawing" },
+        { "name": "title_block", "position": "bottom-right", "width": "30%", "height": "12%", "content": "standard_title_block" },
+        { "name": "scale_bar", "position": "bottom-left", "width": "20%", "height": "5%", "content": "graphic_scale" },
+        { "name": "north_arrow", "position": "top-right", "width": "5%", "height": "8%", "content": "north_arrow" },
+        { "name": "drawing_border", "position": "full", "width": "100%", "height": "100%", "content": "standard_border_frame" }
+      ],
+      "grid": "standard-technical",
+      "alignment": "drawing-centered"
+    },
+    "placeholders": {
+      "floor_plan": 1,
+      "room_labels": true,
+      "dimensions": true,
+      "door_swings": true,
+      "scale": true,
+      "north_arrow": true,
+      "title_block": true,
+      "drawing_number": true,
+      "project_title": true
+    },
+    "style_notes": "Pure technical drafting, black lines on white, standard architectural conventions",
+    "preview_image": "White A1 landscape with standard black-line floor plan centered, title block bottom-right, scale bar, north arrow, room labels, dimension strings"
+  },
+  {
+    "id": "sht_028",
+    "name": "Floor Plan — Rendered Presentation",
+    "sheet_type": "floor_plan",
+    "category": "Presentation",
+    "description": "Rendered presentation floor plan with materials shown, furniture layouts, landscaping, and shadows.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#4A90E2", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "rendered_plan", "position": "center", "width": "75%", "height": "80%", "content": "rendered_floor_plan_with_materials" },
+        { "name": "room_schedule", "position": "right", "width": "20%", "height": "60%", "content": "room_areas_schedule" },
+        { "name": "title_strip", "position": "top", "width": "100%", "height": "8%", "content": "project_title_floor_level" },
+        { "name": "legend", "position": "bottom-right", "width": "20%", "height": "15%", "content": "materials_legend" }
+      ],
+      "grid": "rendered-plan-sidebar",
+      "alignment": "plan-dominant"
+    },
+    "placeholders": {
+      "rendered_plan": 1,
+      "room_schedule": true,
+      "materials_legend": true,
+      "furniture_layout": true,
+      "landscape": true,
+      "project_title": true,
+      "floor_level": true
+    },
+    "style_notes": "Color-rendered plan with material textures visible, shadows, furniture, landscape context, blue accent labels",
+    "preview_image": "White A1 landscape with beautiful rendered floor plan showing wood/stone/tile textures, furniture, garden, room schedule sidebar, blue labels"
+  },
+  {
+    "id": "sht_029",
+    "name": "Floor Plan — Multi-Level Stack",
+    "sheet_type": "floor_plan",
+    "category": "Technical",
+    "description": "Multi-level plan sheet showing all floors stacked or side-by-side for comparison.",
+    "format": "A0_landscape",
+    "colors": { "primary": "#000000", "accent": "#0066CC", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "project_title_all_floors" },
+        { "name": "ground_plan", "position": "left", "width": "30%", "height": "75%", "content": "ground_floor_plan" },
+        { "name": "first_plan", "position": "center", "width": "30%", "height": "75%", "content": "first_floor_plan" },
+        { "name": "second_plan", "position": "right", "width": "30%", "height": "75%", "content": "second_floor_plan_or_roof" },
+        { "name": "title_block", "position": "bottom-right", "width": "25%", "height": "12%", "content": "title_block" }
+      ],
+      "grid": "3-plans-side-by-side",
+      "alignment": "uniform-comparison"
+    },
+    "placeholders": {
+      "floor_plans": 3,
+      "floor_labels": 3,
+      "room_labels": true,
+      "scale": true,
+      "north_arrow": true,
+      "title_block": true,
+      "project_title": true
+    },
+    "style_notes": "All floors same scale for comparison, blue floor-level labels, aligned vertically",
+    "preview_image": "White A0 landscape with 3 floor plans side-by-side (Ground, First, Second), all same scale, blue floor labels, title block"
+  },
+  {
+    "id": "sht_030",
+    "name": "Floor Plan — Minimal Gallery",
+    "sheet_type": "floor_plan",
+    "category": "Minimalist",
+    "description": "Minimal presentation plan with generous white space, thin lines, and elegant labeling.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#CCCCCC" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "6%", "content": "elegant_title_serif" },
+        { "name": "plan", "position": "center", "width": "70%", "height": "70%", "content": "thin_line_floor_plan" },
+        { "name": "room_names", "position": "within_plan", "width": "various", "height": "various", "content": "minimal_room_names_small_caps" },
+        { "name": "scale_north", "position": "bottom-left", "width": "20%", "height": "5%", "content": "minimal_scale_and_north" }
+      ],
+      "grid": "minimal-centered",
+      "alignment": "plan-as-artwork"
+    },
+    "placeholders": {
+      "floor_plan": 1,
+      "room_names": true,
+      "scale": true,
+      "north_arrow": true,
+      "project_title": true
+    },
+    "style_notes": "Thin hairline plan drawing, maximum white space, plan presented as artwork, gallery feel",
+    "preview_image": "White A1 portrait with thin-line floor plan floating in center with generous margins, elegant serif title, minimal labeling, gallery aesthetic"
+  },
+  {
+    "id": "sht_031",
+    "name": "Floor Plan — Color-Zoned Program",
+    "sheet_type": "floor_plan",
+    "category": "Diagrammatic",
+    "description": "Color-coded programmatic plan with zones highlighted by function: public, private, service, circulation.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "programmatic_plan_title" },
+        { "name": "color_plan", "position": "center", "width": "70%", "height": "70%", "content": "floor_plan_with_color_zone_fills" },
+        { "name": "legend", "position": "right", "width": "25%", "height": "40%", "content": "color_coded_program_legend" },
+        { "name": "area_table", "position": "right-bottom", "width": "25%", "height": "25%", "content": "area_breakdown_table" },
+        { "name": "scale_north", "position": "bottom-left", "width": "15%", "height": "8%", "content": "scale_and_north" }
+      ],
+      "grid": "program-analysis",
+      "alignment": "plan-with-legend"
+    },
+    "placeholders": {
+      "floor_plan": 1,
+      "zone_colors": 5,
+      "program_legend": true,
+      "area_table": true,
+      "scale": true,
+      "north_arrow": true,
+      "project_title": true
+    },
+    "style_notes": "Color-filled zones (blue=public, yellow=private, green=service, red=circulation), clear legend, area data",
+    "preview_image": "White A1 landscape with floor plan filled with colored zones (blue public, yellow private, green service), program legend right, area breakdown table"
+  },
+  {
+    "id": "sht_032",
+    "name": "Floor Plan — Landscape Site Plan",
+    "sheet_type": "floor_plan",
+    "category": "Landscape",
+    "description": "Site plan with landscape design showing planting zones, hardscape, water features, and outdoor furniture.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1F3A2F", "accent": "#8BC34A", "background": "#FFFFFF", "text": "#1F3A2F", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "landscape_plan_title" },
+        { "name": "site_plan", "position": "center", "width": "70%", "height": "70%", "content": "rendered_landscape_plan" },
+        { "name": "planting_schedule", "position": "right", "width": "25%", "height": "70%", "content": "planting_schedule_with_species" },
+        { "name": "legend", "position": "bottom", "width": "50%", "height": "12%", "content": "landscape_materials_legend" }
+      ],
+      "grid": "landscape-plan-schedule",
+      "alignment": "plan-with-planting"
+    },
+    "placeholders": {
+      "landscape_plan": 1,
+      "planting_schedule": true,
+      "species_list": true,
+      "hardscape_legend": true,
+      "scale": true,
+      "north_arrow": true,
+      "project_title": true
+    },
+    "style_notes": "Green rendered landscape, tree canopy shadows, botanical planting symbols, garden-design feel",
+    "preview_image": "White A1 landscape with beautiful rendered landscape plan showing green planting zones, tree shadows, planting schedule sidebar, botanical feel"
+  },
+  {
+    "id": "sht_033",
+    "name": "Floor Plan — Dark Contrast",
+    "sheet_type": "floor_plan",
+    "category": "Dark Premium",
+    "description": "Dark-mode floor plan with white lines on black background for dramatic gallery-style presentation.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#FFFFFF", "accent": "#D4AF37", "background": "#0A0A0A", "text": "#FFFFFF", "muted": "#666666" },
+    "fonts": { "heading": "Didot", "body": "Montserrat", "accent": "Montserrat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "gold_title_on_black" },
+        { "name": "plan", "position": "center", "width": "75%", "height": "75%", "content": "white_line_plan_on_black" },
+        { "name": "room_labels", "position": "within_plan", "width": "various", "height": "various", "content": "gold_room_labels" },
+        { "name": "scale_north", "position": "bottom-right", "width": "15%", "height": "8%", "content": "gold_scale_and_north" }
+      ],
+      "grid": "dark-gallery",
+      "alignment": "plan-as-artwork-dark"
+    },
+    "placeholders": {
+      "floor_plan": 1,
+      "room_labels": true,
+      "scale": true,
+      "north_arrow": true,
+      "project_title": true
+    },
+    "style_notes": "White plan lines on pure black, gold room labels and title, dramatic gallery feel",
+    "preview_image": "Pure black A1 landscape with white-line floor plan floating on dark field, gold Didot room labels, gold title, dramatic gallery aesthetic"
+  },
+  {
+    "id": "sht_034",
+    "name": "Floor Plan — Furniture Layout",
+    "sheet_type": "floor_plan",
+    "category": "Interior",
+    "description": "Interior furniture layout plan with detailed furniture symbols, finish schedules, and design intent.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C2A2A", "accent": "#C9A878", "background": "#FFFFFF", "text": "#2C2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "furniture_plan_title" },
+        { "name": "furniture_plan", "position": "center-left", "width": "65%", "height": "70%", "content": "plan_with_furniture_symbols" },
+        { "name": "furniture_schedule", "position": "right", "width": "30%", "height": "50%", "content": "furniture_schedule_with_images" },
+        { "name": "finish_schedule", "position": "right-bottom", "width": "30%", "height": "20%", "content": "finish_schedule_table" },
+        { "name": "legend", "position": "bottom-left", "width": "30%", "height": "12%", "content": "furniture_symbol_legend" }
+      ],
+      "grid": "interior-plan-schedule",
+      "alignment": "plan-with-ff-and-e"
+    },
+    "placeholders": {
+      "furniture_plan": 1,
+      "furniture_schedule": true,
+      "furniture_images": 8,
+      "finish_schedule": true,
+      "symbol_legend": true,
+      "project_title": true
+    },
+    "style_notes": "Detailed furniture symbols, gold accent labels, interior-design precision, FF&E focus",
+    "preview_image": "White A1 landscape with detailed furniture layout plan left, furniture schedule with product images right, finish schedule table, gold accent labels"
+  },
+
+  // ============================================================
+  // CATEGORY 5: SECTION SHEETS (6 templates)
+  // ============================================================
+
+  {
+    "id": "sht_035",
+    "name": "Section — Standard Technical",
+    "sheet_type": "section",
+    "category": "Technical",
+    "description": "Standard technical building section with material hatching, annotations, and dimensions.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#000000", "accent": "#000000", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "section_drawing", "position": "center", "width": "85%", "height": "75%", "content": "building_section_with_hatching" },
+        { "name": "detail_callouts", "position": "above_section", "width": "85%", "height": "5%", "content": "detail_reference_callouts" },
+        { "name": "dimensions", "position": "sides", "width": "5% each", "height": "75%", "content": "vertical_dimension_strings" },
+        { "name": "title_block", "position": "bottom-right", "width": "30%", "height": "12%", "content": "standard_title_block" },
+        { "name": "scale_bar", "position": "bottom-left", "width": "20%", "height": "5%", "content": "graphic_scale" }
+      ],
+      "grid": "standard-section",
+      "alignment": "drawing-centered"
+    },
+    "placeholders": {
+      "building_section": 1,
+      "material_hatching": true,
+      "dimensions": true,
+      "level_markers": true,
+      "detail_callouts": 4,
+      "title_block": true,
+      "scale": true,
+      "project_title": true
+    },
+    "style_notes": "Standard technical section, cut-fill hatching, dimension strings, level markers",
+    "preview_image": "White A1 landscape with technical building section showing material hatching, level markers, dimension strings, detail callout bubbles, title block"
+  },
+  {
+    "id": "sht_036",
+    "name": "Section — Rendered Atmospheric",
+    "sheet_type": "section",
+    "category": "Presentation",
+    "description": "Rendered atmospheric section showing interior spaces, light, people, and material character.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFB800", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "elegant_section_title" },
+        { "name": "rendered_section", "position": "center", "width": "90%", "height": "70%", "content": "full_rendered_section_with_people_light" },
+        { "name": "room_labels", "position": "within_section", "width": "various", "height": "various", "content": "elegant_room_labels" },
+        { "name": "description", "position": "bottom", "width": "60%", "height": "12%", "content": "section_description_text" }
+      ],
+      "grid": "rendered-section-hero",
+      "alignment": "section-dominant"
+    },
+    "placeholders": {
+      "rendered_section": 1,
+      "room_labels": true,
+      "human_figures": true,
+      "light_rays": true,
+      "section_description": true,
+      "project_title": true
+    },
+    "style_notes": "Atmospheric rendered section with warm light, human figures, material textures visible, presentation-grade",
+    "preview_image": "White A1 landscape with stunning rendered section showing interiors, golden sunlight pouring in, human silhouettes, elegant serif labels"
+  },
+  {
+    "id": "sht_037",
+    "name": "Section — Wall Detail Assembly",
+    "sheet_type": "section",
+    "category": "Technical",
+    "description": "Detailed wall section showing all construction layers from foundation to roof with material callouts.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#000000", "accent": "#0066CC", "background": "#FFFFFF", "text": "#000000", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "wall_section_detail_title" },
+        { "name": "wall_section", "position": "center-left", "width": "50%", "height": "80%", "content": "detailed_wall_section_foundation_to_roof" },
+        { "name": "callout_annotations", "position": "right", "width": "40%", "height": "80%", "content": "material_layer_callouts_with_leader_lines" },
+        { "name": "scale", "position": "bottom-left", "width": "15%", "height": "5%", "content": "detail_scale" }
+      ],
+      "grid": "detail-section-callouts",
+      "alignment": "section-with-annotations"
+    },
+    "placeholders": {
+      "wall_section": 1,
+      "material_callouts": 12,
+      "layer_dimensions": true,
+      "scale": true,
+      "project_title": true
+    },
+    "style_notes": "Detailed construction section, blue leader-line callouts, every layer labeled, technical precision",
+    "preview_image": "White A1 portrait with detailed wall section left (foundation to roof), blue leader-line callouts right labeling every material layer"
+  },
+  {
+    "id": "sht_038",
+    "name": "Section — Landscape Terrain",
+    "sheet_type": "section",
+    "category": "Landscape",
+    "description": "Landscape section showing terrain, planting, building integration with ground, and site context.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1F3A2F", "accent": "#8BC34A", "background": "#FFFFFF", "text": "#1F3A2F", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "landscape_section_title" },
+        { "name": "terrain_section", "position": "center", "width": "95%", "height": "60%", "content": "long_landscape_section_with_vegetation" },
+        { "name": "planting_labels", "position": "above_section", "width": "95%", "height": "10%", "content": "tree_and_plant_species_labels" },
+        { "name": "soil_layers", "position": "below_section", "width": "95%", "height": "10%", "content": "soil_profile_and_drainage" }
+      ],
+      "grid": "landscape-section",
+      "alignment": "terrain-dominant"
+    },
+    "placeholders": {
+      "terrain_section": 1,
+      "vegetation_symbols": true,
+      "species_labels": true,
+      "soil_profile": true,
+      "water_table": true,
+      "project_title": true
+    },
+    "style_notes": "Green vegetation, brown earth tones, long horizontal section, botanical tree symbols, terrain undulation",
+    "preview_image": "White A1 landscape with long panoramic terrain section showing vegetation/trees above, soil layers below, building nestled into landscape"
+  },
+  {
+    "id": "sht_039",
+    "name": "Section — Perspective Section",
+    "sheet_type": "section",
+    "category": "Presentation",
+    "description": "3D perspective section (sectional perspective) showing cut building with interior depth and context.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#C5704D", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "perspective_section_title" },
+        { "name": "hero_perspection", "position": "center", "width": "85%", "height": "75%", "content": "3d_sectional_perspective_render" },
+        { "name": "callout_labels", "position": "around_hero", "width": "various", "height": "various", "content": "space_labels_with_leader_lines" },
+        { "name": "description", "position": "bottom", "width": "50%", "height": "10%", "content": "section_description" }
+      ],
+      "grid": "perspective-section-hero",
+      "alignment": "3d-section-centered"
+    },
+    "placeholders": {
+      "perspective_section": 1,
+      "space_labels": 6,
+      "human_figures": true,
+      "section_description": true,
+      "project_title": true
+    },
+    "style_notes": "Dramatic 3D sectional perspective, terracotta accent labels, depth and atmosphere visible",
+    "preview_image": "White A1 landscape with stunning 3D perspective section showing cut building revealing all interior spaces with depth, people, light, terracotta labels"
+  },
+  {
+    "id": "sht_040",
+    "name": "Section — Multiple Sections Comparison",
+    "sheet_type": "section",
+    "category": "Technical",
+    "description": "Multiple building sections on one sheet (longitudinal + transverse) for comparison.",
+    "format": "A0_landscape",
+    "colors": { "primary": "#000000", "accent": "#0066CC", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "sections_comparison_title" },
+        { "name": "section_AA", "position": "top-half", "width": "90%", "height": "40%", "content": "longitudinal_section_AA" },
+        { "name": "section_BB", "position": "bottom-half", "width": "90%", "height": "40%", "content": "transverse_section_BB" },
+        { "name": "section_labels", "position": "left", "width": "5%", "height": "80%", "content": "section_reference_labels" },
+        { "name": "title_block", "position": "bottom-right", "width": "25%", "height": "10%", "content": "title_block" }
+      ],
+      "grid": "dual-section-stacked",
+      "alignment": "top-bottom-comparison"
+    },
+    "placeholders": {
+      "section_AA": 1,
+      "section_BB": 1,
+      "section_references": true,
+      "level_markers": true,
+      "dimensions": true,
+      "title_block": true,
+      "project_title": true
+    },
+    "style_notes": "Two sections stacked for comparison, blue section reference markers, level lines aligned",
+    "preview_image": "White A0 landscape with longitudinal section AA top and transverse section BB bottom, aligned level lines, blue section markers"
+  },
+
+  // ============================================================
+  // CATEGORY 6: ELEVATION SHEETS (6 templates)
+  // ============================================================
+
+  {
+    "id": "sht_041",
+    "name": "Elevation — Standard Technical",
+    "sheet_type": "elevation",
+    "category": "Technical",
+    "description": "Standard technical building elevation with material indications, level lines, and annotations.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#000000", "accent": "#000000", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "elevation_drawing", "position": "center", "width": "85%", "height": "70%", "content": "building_elevation_with_materials" },
+        { "name": "level_lines", "position": "right", "width": "8%", "height": "70%", "content": "floor_level_markers" },
+        { "name": "ground_line", "position": "below_elevation", "width": "85%", "height": "3%", "content": "ground_line_with_grade" },
+        { "name": "title_block", "position": "bottom-right", "width": "30%", "height": "12%", "content": "title_block" },
+        { "name": "material_legend", "position": "bottom-left", "width": "30%", "height": "12%", "content": "facade_materials_legend" }
+      ],
+      "grid": "standard-elevation",
+      "alignment": "drawing-centered"
+    },
+    "placeholders": {
+      "building_elevation": 1,
+      "level_markers": true,
+      "material_indications": true,
+      "dimensions": true,
+      "title_block": true,
+      "facade_legend": true,
+      "project_title": true
+    },
+    "style_notes": "Standard technical elevation, material hatching on facade, level lines, ground context",
+    "preview_image": "White A1 landscape with technical building elevation centered, level markers right, ground line below, material legend bottom-left, title block"
+  },
+  {
+    "id": "sht_042",
+    "name": "Elevation — Rendered Facade",
+    "sheet_type": "elevation",
+    "category": "Presentation",
+    "description": "Rendered facade elevation showing materials, shadows, landscape context, and human figures.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#B8956A", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "elegant_elevation_title" },
+        { "name": "rendered_elevation", "position": "center", "width": "90%", "height": "65%", "content": "rendered_elevation_with_context" },
+        { "name": "material_callouts", "position": "below_elevation", "width": "90%", "height": "15%", "content": "facade_material_callout_strip" },
+        { "name": "description", "position": "bottom", "width": "50%", "height": "8%", "content": "facade_description" }
+      ],
+      "grid": "rendered-elevation-hero",
+      "alignment": "elevation-dominant"
+    },
+    "placeholders": {
+      "rendered_elevation": 1,
+      "material_callouts": 5,
+      "human_figures": true,
+      "landscape_context": true,
+      "facade_description": true,
+      "project_title": true
+    },
+    "style_notes": "Beautifully rendered elevation with shadows, material textures, trees, and human scale figures, gold accent callouts",
+    "preview_image": "White A1 landscape with rendered facade elevation showing material textures, shadows, trees, human figures, gold material callout strip below"
+  },
+  {
+    "id": "sht_043",
+    "name": "Elevation — All Four Facades",
+    "sheet_type": "elevation",
+    "category": "Technical",
+    "description": "Four facade elevations on one sheet (North, South, East, West) for complete building exterior overview.",
+    "format": "A0_landscape",
+    "colors": { "primary": "#000000", "accent": "#0066CC", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "all_elevations_title" },
+        { "name": "north_elevation", "position": "top-left", "width": "45%", "height": "40%", "content": "north_elevation" },
+        { "name": "south_elevation", "position": "top-right", "width": "45%", "height": "40%", "content": "south_elevation" },
+        { "name": "east_elevation", "position": "bottom-left", "width": "45%", "height": "40%", "content": "east_elevation" },
+        { "name": "west_elevation", "position": "bottom-right", "width": "45%", "height": "40%", "content": "west_elevation" },
+        { "name": "title_block", "position": "bottom-right-corner", "width": "20%", "height": "8%", "content": "title_block" }
+      ],
+      "grid": "4-elevation-grid",
+      "alignment": "uniform-quad"
+    },
+    "placeholders": {
+      "north_elevation": 1,
+      "south_elevation": 1,
+      "east_elevation": 1,
+      "west_elevation": 1,
+      "facade_labels": 4,
+      "level_markers": true,
+      "title_block": true,
+      "project_title": true
+    },
+    "style_notes": "Four elevations same scale in 2x2 grid, blue facade direction labels, aligned level lines",
+    "preview_image": "White A0 landscape with 4 building elevations in 2x2 grid (N/S/E/W), all same scale, blue direction labels, aligned levels"
+  },
+  {
+    "id": "sht_044",
+    "name": "Elevation — Street Context",
+    "sheet_type": "elevation",
+    "category": "Urban",
+    "description": "Street elevation showing the building in context with neighboring buildings, streetscape, and urban fabric.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C3E50", "accent": "#E74C3C", "background": "#FFFFFF", "text": "#2C3E50", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "street_elevation_title" },
+        { "name": "street_elevation", "position": "center", "width": "95%", "height": "55%", "content": "long_street_elevation_with_neighbors" },
+        { "name": "project_highlight", "position": "within_elevation", "width": "30%", "height": "55%", "content": "highlighted_project_in_red" },
+        { "name": "context_photos", "position": "bottom", "width": "90%", "height": "22%", "content": "street_context_photos_strip" }
+      ],
+      "grid": "street-context",
+      "alignment": "panoramic-street"
+    },
+    "placeholders": {
+      "street_elevation": 1,
+      "neighboring_buildings": true,
+      "project_highlight": true,
+      "context_photos": 4,
+      "street_name": true,
+      "project_title": true
+    },
+    "style_notes": "Long panoramic street elevation, project highlighted in color vs gray neighbors, red accent on project boundary",
+    "preview_image": "White A1 landscape with long street elevation showing project building highlighted in red among gray neighboring buildings, context photos below"
+  },
+  {
+    "id": "sht_045",
+    "name": "Elevation — Facade Detail Study",
+    "sheet_type": "elevation",
+    "category": "Technical",
+    "description": "Facade detail study with overall elevation plus zoomed-in detail panels showing material joints and assemblies.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#000000", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#000000", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "facade_detail_study_title" },
+        { "name": "overall_elevation", "position": "left", "width": "45%", "height": "75%", "content": "elevation_with_detail_callout_boxes" },
+        { "name": "detail_1", "position": "top-right", "width": "25%", "height": "35%", "content": "zoomed_detail_panel_1" },
+        { "name": "detail_2", "position": "center-right", "width": "25%", "height": "35%", "content": "zoomed_detail_panel_2" },
+        { "name": "detail_3", "position": "bottom-right", "width": "25%", "height": "25%", "content": "zoomed_detail_panel_3" },
+        { "name": "material_legend", "position": "bottom-left", "width": "40%", "height": "10%", "content": "facade_materials_legend" }
+      ],
+      "grid": "elevation-with-details",
+      "alignment": "overview-to-detail"
+    },
+    "placeholders": {
+      "overall_elevation": 1,
+      "detail_panels": 3,
+      "callout_boxes": 3,
+      "material_legend": true,
+      "scale_bars": true,
+      "project_title": true
+    },
+    "style_notes": "Overview elevation with orange callout boxes linking to zoomed detail panels, technical precision",
+    "preview_image": "White A1 landscape with overall elevation left with orange callout boxes, 3 zoomed facade detail panels stacked right, materials legend"
+  },
+  {
+    "id": "sht_046",
+    "name": "Elevation — Dark Dramatic Night",
+    "sheet_type": "elevation",
+    "category": "Dark Premium",
+    "description": "Night elevation rendering showing building lit up, interior glow, and dramatic nightscape.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#0A0A0A", "accent": "#FFB800", "background": "#0A0A0A", "text": "#FFFFFF", "muted": "#666666" },
+    "fonts": { "heading": "Didot", "body": "Montserrat", "accent": "Montserrat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "gold_night_elevation_title" },
+        { "name": "night_elevation", "position": "center", "width": "95%", "height": "75%", "content": "night_rendered_elevation_glowing_interiors" },
+        { "name": "description", "position": "bottom", "width": "50%", "height": "10%", "content": "facade_design_intent" }
+      ],
+      "grid": "dark-night-render",
+      "alignment": "elevation-hero-dark"
+    },
+    "placeholders": {
+      "night_elevation_render": 1,
+      "facade_description": true,
+      "project_title": true
+    },
+    "style_notes": "Dark dramatic night elevation, warm glowing interiors, gold title, cinematic atmosphere",
+    "preview_image": "Pure black A1 landscape with dramatic night elevation showing building with warm glowing windows, gold Didot title, cinematic night atmosphere"
+  },
+
+  // ============================================================
+  // CATEGORY 7: AXONOMETRIC / 3D SHEETS (5 templates)
+  // ============================================================
+
+  {
+    "id": "sht_047",
+    "name": "Axonometric — Exploded Assembly",
+    "sheet_type": "axonometric",
+    "category": "Technical",
+    "description": "Exploded axonometric showing building systems: structure, envelope, interior, MEP, landscape as separate layers.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#0066CC", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "exploded_axon_title" },
+        { "name": "exploded_axon", "position": "center", "width": "70%", "height": "75%", "content": "exploded_axonometric_5_layers" },
+        { "name": "layer_labels", "position": "right", "width": "25%", "height": "75%", "content": "layer_identification_labels" },
+        { "name": "legend", "position": "bottom", "width": "80%", "height": "10%", "content": "systems_legend_color_coded" }
+      ],
+      "grid": "exploded-axon",
+      "alignment": "vertical-exploded"
+    },
+    "placeholders": {
+      "exploded_axonometric": 1,
+      "layer_labels": 5,
+      "systems_legend": true,
+      "project_title": true
+    },
+    "style_notes": "Color-coded layers (red=structure, blue=envelope, green=landscape), clean separation, technical labels",
+    "preview_image": "White A1 portrait with exploded axonometric showing 5 separated layers floating above each other, color-coded, blue leader-line labels right"
+  },
+  {
+    "id": "sht_048",
+    "name": "Axonometric — Worm's Eye",
+    "sheet_type": "axonometric",
+    "category": "Presentation",
+    "description": "Worm's-eye axonometric (view from below) showing spatial relationships, ceiling planes, and structural expression.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "50%", "height": "8%", "content": "worms_eye_title" },
+        { "name": "hero_axon", "position": "center", "width": "80%", "height": "70%", "content": "worms_eye_axonometric" },
+        { "name": "space_labels", "position": "around_axon", "width": "various", "height": "various", "content": "space_identification_callouts" },
+        { "name": "description", "position": "bottom", "width": "60%", "height": "12%", "content": "spatial_description" }
+      ],
+      "grid": "axon-hero",
+      "alignment": "axon-centered"
+    },
+    "placeholders": {
+      "worms_eye_axonometric": 1,
+      "space_labels": 6,
+      "spatial_description": true,
+      "project_title": true
+    },
+    "style_notes": "Dramatic worm's-eye view, orange callout labels, structural expression visible from below",
+    "preview_image": "White A1 portrait with dramatic worm's-eye axonometric showing building from below, ceiling planes visible, orange space labels"
+  },
+  {
+    "id": "sht_049",
+    "name": "Axonometric — Site Context Isometric",
+    "sheet_type": "axonometric",
+    "category": "Urban",
+    "description": "Isometric site view showing the building in full urban context with surrounding buildings, streets, and landscape.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C3E50", "accent": "#E74C3C", "background": "#FFFFFF", "text": "#2C3E50", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "isometric_context_title" },
+        { "name": "isometric_view", "position": "center", "width": "80%", "height": "72%", "content": "isometric_site_with_context_buildings" },
+        { "name": "project_highlight", "position": "within_iso", "width": "varies", "height": "varies", "content": "project_building_highlighted_red" },
+        { "name": "legend", "position": "bottom", "width": "50%", "height": "10%", "content": "context_legend" }
+      ],
+      "grid": "isometric-context",
+      "alignment": "iso-centered"
+    },
+    "placeholders": {
+      "isometric_view": 1,
+      "context_buildings": true,
+      "project_highlight": true,
+      "street_labels": true,
+      "project_title": true
+    },
+    "style_notes": "Project in red/color vs gray context buildings, urban isometric, streets and landscape visible",
+    "preview_image": "White A1 landscape with isometric site view showing project highlighted in red among gray urban context, streets, trees, analytical feel"
+  },
+  {
+    "id": "sht_050",
+    "name": "Axonometric — Cutaway Interior",
+    "sheet_type": "axonometric",
+    "category": "Presentation",
+    "description": "Cutaway axonometric revealing interior spaces, furniture, and daily life within the architecture.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#C9A878", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "cutaway_axon_title" },
+        { "name": "cutaway_axon", "position": "center", "width": "75%", "height": "75%", "content": "cutaway_axonometric_with_interiors" },
+        { "name": "room_labels", "position": "around", "width": "various", "height": "various", "content": "room_labels_with_leader_lines" },
+        { "name": "description", "position": "bottom", "width": "50%", "height": "10%", "content": "design_intent_description" }
+      ],
+      "grid": "cutaway-hero",
+      "alignment": "axon-centered"
+    },
+    "placeholders": {
+      "cutaway_axonometric": 1,
+      "room_labels": 8,
+      "furniture_visible": true,
+      "human_figures": true,
+      "design_description": true,
+      "project_title": true
+    },
+    "style_notes": "Beautiful cutaway revealing interior life, furniture, people, warm gold accent labels",
+    "preview_image": "White A1 landscape with cutaway axonometric revealing furnished interiors, human figures, gold leader-line room labels, architectural dollhouse feel"
+  },
+  {
+    "id": "sht_051",
+    "name": "Axonometric — Construction Sequence",
+    "sheet_type": "axonometric",
+    "category": "Technical",
+    "description": "Construction sequence axonometric showing 4-6 build stages from foundation to completion.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "construction_sequence_title" },
+        { "name": "stage_1", "position": "row", "width": "16%", "height": "65%", "content": "foundation_stage_axon" },
+        { "name": "stage_2", "position": "row", "width": "16%", "height": "65%", "content": "structure_stage_axon" },
+        { "name": "stage_3", "position": "row", "width": "16%", "height": "65%", "content": "envelope_stage_axon" },
+        { "name": "stage_4", "position": "row", "width": "16%", "height": "65%", "content": "interior_stage_axon" },
+        { "name": "stage_5", "position": "row", "width": "16%", "height": "65%", "content": "landscape_stage_axon" },
+        { "name": "stage_6", "position": "row", "width": "16%", "height": "65%", "content": "completed_axon" },
+        { "name": "stage_labels", "position": "bottom", "width": "100%", "height": "15%", "content": "stage_descriptions_strip" }
+      ],
+      "grid": "6-stage-sequence",
+      "alignment": "left-to-right-timeline"
+    },
+    "placeholders": {
+      "sequence_axonometrics": 6,
+      "stage_labels": 6,
+      "stage_descriptions": 6,
+      "project_title": true
+    },
+    "style_notes": "6 progressive axonometric stages left-to-right, orange stage numbers, timeline feel",
+    "preview_image": "White A1 landscape with 6 axonometric stages in a row (foundation→structure→envelope→interior→landscape→complete), orange stage numbers"
+  },
+
+  // ============================================================
+  // CATEGORY 8: DETAIL SHEETS (4 templates)
+  // ============================================================
+
+  {
+    "id": "sht_052",
+    "name": "Detail — Construction Detail Grid",
+    "sheet_type": "detail",
+    "category": "Technical",
+    "description": "Grid of 4-6 construction details with material callouts, dimensions, and specifications.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#000000", "accent": "#0066CC", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "construction_details_title" },
+        { "name": "detail_grid", "position": "center", "width": "90%", "height": "78%", "content": "2x3_detail_drawing_grid" },
+        { "name": "title_block", "position": "bottom-right", "width": "25%", "height": "10%", "content": "title_block" }
+      ],
+      "grid": "detail-grid-2x3",
+      "alignment": "uniform-detail-grid"
+    },
+    "placeholders": {
+      "detail_drawings": 6,
+      "detail_titles": 6,
+      "material_callouts": true,
+      "dimensions": true,
+      "scale_bars": 6,
+      "title_block": true,
+      "project_title": true
+    },
+    "style_notes": "Clean technical detail grid, blue reference numbers, each detail with its own scale bar",
+    "preview_image": "White A1 landscape with 2x3 grid of construction details (window head, sill, threshold, parapet, foundation, roof edge), blue callouts"
+  },
+  {
+    "id": "sht_053",
+    "name": "Detail — Facade System Assembly",
+    "sheet_type": "detail",
+    "category": "Technical",
+    "description": "Facade system detail sheet showing curtain wall or cladding assembly with all components labeled.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#000000", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#000000", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "facade_system_title" },
+        { "name": "overall_section", "position": "left", "width": "45%", "height": "75%", "content": "full_facade_section" },
+        { "name": "detail_zooms", "position": "right", "width": "45%", "height": "50%", "content": "3_zoomed_junction_details" },
+        { "name": "component_list", "position": "right-bottom", "width": "45%", "height": "20%", "content": "component_specification_table" },
+        { "name": "scale_bars", "position": "bottom-left", "width": "20%", "height": "5%", "content": "scale_bars" }
+      ],
+      "grid": "facade-detail-system",
+      "alignment": "section-with-zoomed-details"
+    },
+    "placeholders": {
+      "facade_section": 1,
+      "junction_details": 3,
+      "component_table": true,
+      "material_callouts": true,
+      "scale_bars": true,
+      "project_title": true
+    },
+    "style_notes": "Detailed facade assembly, orange callout circles linking section to zoomed details, specification table",
+    "preview_image": "White A1 portrait with full facade section left, 3 zoomed junction details right, orange callout links, component specification table"
+  },
+  {
+    "id": "sht_054",
+    "name": "Detail — Material Joint Close-Up",
+    "sheet_type": "detail",
+    "category": "Materials",
+    "description": "Material joint detail sheet showing close-up construction joints, material transitions, and craftsmanship.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#2A2A2A", "accent": "#8B7355", "background": "#F4F0EB", "text": "#2A2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Lora", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "material_joint_detail_title" },
+        { "name": "detail_drawing", "position": "left", "width": "50%", "height": "70%", "content": "joint_detail_drawing_large" },
+        { "name": "photo_reference", "position": "right-top", "width": "40%", "height": "35%", "content": "joint_photograph_closeup" },
+        { "name": "material_specs", "position": "right-bottom", "width": "40%", "height": "30%", "content": "material_specification_list" }
+      ],
+      "grid": "detail-with-photo",
+      "alignment": "drawing-photo-paired"
+    },
+    "placeholders": {
+      "joint_detail_drawing": 1,
+      "joint_photograph": 1,
+      "material_specifications": true,
+      "dimensions": true,
+      "project_title": true
+    },
+    "style_notes": "Tactile warm palette, drawing paired with real photograph, material-craft emphasis",
+    "preview_image": "Warm cream A2 landscape with detailed joint drawing left, close-up photograph of the actual joint right, material specs below photo"
+  },
+  {
+    "id": "sht_055",
+    "name": "Detail — Staircase/Railing Detail",
+    "sheet_type": "detail",
+    "category": "Technical",
+    "description": "Staircase and railing detail sheet with plan, section, handrail profile, and balustrade details.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#000000", "accent": "#000000", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "stair_detail_title" },
+        { "name": "stair_section", "position": "left", "width": "45%", "height": "70%", "content": "staircase_section" },
+        { "name": "stair_plan", "position": "right-top", "width": "40%", "height": "35%", "content": "staircase_plan" },
+        { "name": "handrail_detail", "position": "right-bottom", "width": "20%", "height": "30%", "content": "handrail_profile_section" },
+        { "name": "balustrade_detail", "position": "right-bottom-right", "width": "20%", "height": "30%", "content": "balustrade_detail" },
+        { "name": "title_block", "position": "bottom-right", "width": "25%", "height": "8%", "content": "title_block" }
+      ],
+      "grid": "stair-detail-composite",
+      "alignment": "multi-view-stair"
+    },
+    "placeholders": {
+      "stair_section": 1,
+      "stair_plan": 1,
+      "handrail_profile": 1,
+      "balustrade_detail": 1,
+      "dimensions": true,
+      "material_callouts": true,
+      "title_block": true,
+      "project_title": true
+    },
+    "style_notes": "Standard staircase detail composite, section + plan + railing details, comprehensive",
+    "preview_image": "White A1 landscape with staircase section left, stair plan top-right, handrail profile and balustrade detail bottom-right, dimensions"
+  },
+
+  // ============================================================
+  // CATEGORY 9: PRESENTATION / COMPETITION BOARDS (6 templates)
+  // ============================================================
+
+  {
+    "id": "sht_056",
+    "name": "Presentation Board — Full Project A1",
+    "sheet_type": "presentation_board",
+    "category": "Comprehensive",
+    "description": "Complete project presentation board with concept, plans, sections, renders, and project data on one sheet.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF4500", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title_bar", "position": "top", "width": "100%", "height": "6%", "content": "project_title_and_info_bar" },
+        { "name": "hero_render", "position": "top-section", "width": "100%", "height": "25%", "content": "hero_perspective_render" },
+        { "name": "concept_strip", "position": "second-row", "width": "100%", "height": "12%", "content": "concept_statement_and_diagrams" },
+        { "name": "plans_sections", "position": "third-row", "width": "100%", "height": "30%", "content": "floor_plans_and_sections_side_by_side" },
+        { "name": "detail_renders", "position": "fourth-row", "width": "100%", "height": "18%", "content": "interior_renders_and_details_strip" },
+        { "name": "project_info", "position": "bottom", "width": "100%", "height": "6%", "content": "project_data_footer" }
+      ],
+      "grid": "full-project-stacked",
+      "alignment": "top-to-bottom-narrative"
+    },
+    "placeholders": {
+      "hero_render": 1,
+      "concept_diagrams": 3,
+      "concept_statement": true,
+      "floor_plans": 2,
+      "sections": 1,
+      "interior_renders": 3,
+      "detail_images": 2,
+      "project_title": true,
+      "location": true,
+      "year": true,
+      "area": true
+    },
+    "style_notes": "Information-dense A1, clear visual hierarchy top-to-bottom, red accent on project number",
+    "preview_image": "White A1 portrait with hero render top, concept strip, plans+sections middle, interior renders bottom, red accent project number, comprehensive"
+  },
+  {
+    "id": "sht_057",
+    "name": "Presentation Board — Competition A0",
+    "sheet_type": "presentation_board",
+    "category": "Competition",
+    "description": "Large-format competition board designed for jury viewing, bold graphics, and clear hierarchy.",
+    "format": "A0_portrait",
+    "colors": { "primary": "#000000", "accent": "#FFD700", "background": "#FFFFFF", "text": "#000000", "muted": "#555555" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title_banner", "position": "top", "width": "100%", "height": "8%", "content": "competition_title_banner" },
+        { "name": "hero_render", "position": "top-section", "width": "100%", "height": "30%", "content": "competition_hero_render" },
+        { "name": "concept_row", "position": "second-section", "width": "100%", "height": "15%", "content": "concept_diagrams_row" },
+        { "name": "technical_row", "position": "third-section", "width": "100%", "height": "25%", "content": "plans_sections_elevations" },
+        { "name": "detail_row", "position": "fourth-section", "width": "100%", "height": "15%", "content": "detail_renders_diagrams" },
+        { "name": "data_footer", "position": "bottom", "width": "100%", "height": "5%", "content": "competition_data_and_team" }
+      ],
+      "grid": "competition-stacked",
+      "alignment": "jury-readable"
+    },
+    "placeholders": {
+      "hero_render": 1,
+      "concept_diagrams": 4,
+      "concept_statement": true,
+      "floor_plans": 2,
+      "sections": 2,
+      "elevations": 1,
+      "detail_renders": 3,
+      "project_title": true,
+      "competition_name": true,
+      "team_names": true
+    },
+    "style_notes": "Large-scale bold graphics for jury viewing at 3m distance, yellow competition number, clear hierarchy",
+    "preview_image": "White A0 portrait with massive hero render top, concept diagrams row, plans/sections/elevations middle, details bottom, yellow competition number"
+  },
+  {
+    "id": "sht_058",
+    "name": "Presentation Board — Landscape Panoramic",
+    "sheet_type": "presentation_board",
+    "category": "Landscape",
+    "description": "Wide panoramic presentation board optimized for landscape/master plan projects.",
+    "format": "A0_landscape",
+    "colors": { "primary": "#1F3A2F", "accent": "#C4A56B", "background": "#F2EEE3", "text": "#1F3A2F", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "6%", "content": "landscape_project_title" },
+        { "name": "panoramic_render", "position": "top-section", "width": "100%", "height": "30%", "content": "wide_panoramic_render" },
+        { "name": "master_plan", "position": "center-left", "width": "50%", "height": "35%", "content": "master_plan_rendered" },
+        { "name": "analysis_diagrams", "position": "center-right", "width": "45%", "height": "20%", "content": "landscape_analysis_diagrams" },
+        { "name": "sections", "position": "bottom-right", "width": "45%", "height": "15%", "content": "landscape_sections" },
+        { "name": "planting_schedule", "position": "bottom", "width": "100%", "height": "12%", "content": "planting_and_materials_strip" }
+      ],
+      "grid": "landscape-panoramic",
+      "alignment": "panoramic-led"
+    },
+    "placeholders": {
+      "panoramic_render": 1,
+      "master_plan": 1,
+      "analysis_diagrams": 3,
+      "landscape_sections": 2,
+      "planting_schedule": true,
+      "project_title": true,
+      "site_area": true
+    },
+    "style_notes": "Wide panoramic format, earth tones, botanical accents, landscape-architecture composition",
+    "preview_image": "Warm cream A0 landscape with panoramic render top, master plan center-left, analysis diagrams right, sections, planting strip bottom, earth tones"
+  },
+  {
+    "id": "sht_059",
+    "name": "Presentation Board — Student Crit Board",
+    "sheet_type": "presentation_board",
+    "category": "Academic",
+    "description": "Student crit-ready board with concept, process, drawings, and models for design review.",
+    "format": "A1_portrait",
+    "colors": { "primary": "#1B1B1B", "accent": "#A52A2A", "background": "#FAFAFA", "text": "#1B1B1B", "muted": "#5C5C5C" },
+    "fonts": { "heading": "Crimson Pro", "body": "Crimson Pro", "accent": "IBM Plex Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "student_project_title_with_abstract" },
+        { "name": "concept_process", "position": "top-section", "width": "100%", "height": "20%", "content": "concept_and_process_sketches" },
+        { "name": "drawings", "position": "middle", "width": "100%", "height": "35%", "content": "plans_sections_elevations" },
+        { "name": "models_renders", "position": "bottom-section", "width": "100%", "height": "25%", "content": "model_photos_and_renders" },
+        { "name": "references", "position": "bottom", "width": "100%", "height": "8%", "content": "references_and_bibliography" }
+      ],
+      "grid": "academic-crit",
+      "alignment": "top-to-bottom-thesis"
+    },
+    "placeholders": {
+      "concept_sketches": 4,
+      "process_diagrams": 3,
+      "floor_plans": 2,
+      "sections": 1,
+      "elevations": 1,
+      "model_photos": 3,
+      "renders": 2,
+      "abstract": true,
+      "references": true,
+      "project_title": true
+    },
+    "style_notes": "Academic rigor, burgundy accent, footnotes, thesis-like structure, process-to-product narrative",
+    "preview_image": "Off-white A1 portrait with abstract/concept top, process sketches, plans/sections middle, model photos/renders bottom, academic feel"
+  },
+  {
+    "id": "sht_060",
+    "name": "Presentation Board — Minimal Gallery",
+    "sheet_type": "presentation_board",
+    "category": "Minimalist",
+    "description": "Gallery-style minimal presentation board with one hero image and restrained supporting information.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#CCCCCC" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "6%", "content": "minimal_project_title" },
+        { "name": "hero_image", "position": "center", "width": "80%", "height": "60%", "content": "single_hero_render_or_photo" },
+        { "name": "thin_plan", "position": "bottom-left", "width": "25%", "height": "22%", "content": "small_floor_plan" },
+        { "name": "thin_section", "position": "bottom-center", "width": "25%", "height": "22%", "content": "small_section" },
+        { "name": "project_text", "position": "bottom-right", "width": "25%", "height": "22%", "content": "minimal_project_description" }
+      ],
+      "grid": "gallery-minimal",
+      "alignment": "image-dominant"
+    },
+    "placeholders": {
+      "hero_image": 1,
+      "floor_plan": 1,
+      "section": 1,
+      "project_description": true,
+      "project_title": true
+    },
+    "style_notes": "Supreme restraint, one hero image dominates, small supporting drawings below, gallery aesthetic",
+    "preview_image": "White A1 landscape with one stunning hero image taking center stage, tiny plan, section, and text below, maximum white space"
+  },
+  {
+    "id": "sht_061",
+    "name": "Presentation Board — Dark Cinematic",
+    "sheet_type": "presentation_board",
+    "category": "Dark Premium",
+    "description": "Dark cinematic presentation board with dramatic renders and gold accent information.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#0A0A0A", "accent": "#D4AF37", "background": "#0A0A0A", "text": "#F0F0F0", "muted": "#666666" },
+    "fonts": { "heading": "Didot", "body": "Montserrat", "accent": "Montserrat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "40%", "height": "8%", "content": "gold_project_title" },
+        { "name": "hero_render", "position": "center", "width": "65%", "height": "60%", "content": "cinematic_hero_render" },
+        { "name": "secondary_renders", "position": "right", "width": "30%", "height": "60%", "content": "3_secondary_atmospheric_renders" },
+        { "name": "plan_section", "position": "bottom-left", "width": "45%", "height": "22%", "content": "white_line_plan_and_section_on_black" },
+        { "name": "project_info", "position": "bottom-right", "width": "45%", "height": "22%", "content": "gold_project_data" }
+      ],
+      "grid": "dark-cinematic",
+      "alignment": "render-dominant-dark"
+    },
+    "placeholders": {
+      "hero_render": 1,
+      "secondary_renders": 3,
+      "floor_plan": 1,
+      "section": 1,
+      "project_data": true,
+      "project_title": true
+    },
+    "style_notes": "Dramatic dark mode, cinematic renders, gold data typography, luxury presentation",
+    "preview_image": "Pure black A1 landscape with cinematic hero render center, atmospheric secondary renders right, white-line plan/section bottom-left, gold data"
+  },
+
+  // ============================================================
+  // CATEGORY 10: DIAGRAM / INFOGRAPHIC SHEETS (5 templates)
+  // ============================================================
+
+  {
+    "id": "sht_062",
+    "name": "Diagram — Circulation & Program",
+    "sheet_type": "diagram",
+    "category": "Analytical",
+    "description": "Circulation and programmatic analysis diagram showing movement patterns, spatial relationships, and program adjacencies.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "circulation_diagram_title" },
+        { "name": "circulation_plan", "position": "left", "width": "50%", "height": "70%", "content": "plan_with_circulation_arrows" },
+        { "name": "program_bubble", "position": "right-top", "width": "40%", "height": "35%", "content": "bubble_diagram_adjacencies" },
+        { "name": "program_areas", "position": "right-bottom", "width": "40%", "height": "30%", "content": "program_area_pie_chart" },
+        { "name": "legend", "position": "bottom", "width": "50%", "height": "10%", "content": "circulation_legend" }
+      ],
+      "grid": "diagram-analytical",
+      "alignment": "analysis-paired"
+    },
+    "placeholders": {
+      "circulation_plan": 1,
+      "bubble_diagram": 1,
+      "area_chart": 1,
+      "circulation_legend": true,
+      "project_title": true
+    },
+    "style_notes": "Orange circulation arrows, color-coded program zones, clean analytical diagrams",
+    "preview_image": "White A2 landscape with circulation-arrow plan left, bubble diagram top-right, program pie chart bottom-right, orange flow arrows"
+  },
+  {
+    "id": "sht_063",
+    "name": "Diagram — Massing Study",
+    "sheet_type": "diagram",
+    "category": "Conceptual",
+    "description": "Massing study progression showing form development from basic volume through design iterations.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#4A90E2", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "10%", "content": "massing_study_title" },
+        { "name": "massing_sequence", "position": "center", "width": "90%", "height": "65%", "content": "6_massing_iterations_horizontal_row" },
+        { "name": "arrows", "position": "between_masses", "width": "various", "height": "various", "content": "progression_arrows" },
+        { "name": "labels", "position": "below_each", "width": "90%", "height": "15%", "content": "iteration_labels_and_rationale" }
+      ],
+      "grid": "sequence-row",
+      "alignment": "left-to-right-evolution"
+    },
+    "placeholders": {
+      "massing_models": 6,
+      "iteration_labels": 6,
+      "progression_rationale": true,
+      "project_title": true
+    },
+    "style_notes": "Clean white 3D mass models, blue accent on selected iteration, simple arrows between steps",
+    "preview_image": "White A2 landscape with 6 white massing models in a row showing form evolution, blue highlight on selected, arrows between, clean labels"
+  },
+  {
+    "id": "sht_064",
+    "name": "Diagram — Environmental Strategy",
+    "sheet_type": "diagram",
+    "category": "Sustainable",
+    "description": "Environmental strategy diagram showing passive design, energy systems, and sustainability metrics.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#2D4A3E", "accent": "#FFB800", "background": "#F4F1E8", "text": "#2D4A3E", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Lora", "body": "Nunito Sans", "accent": "Nunito Sans" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "environmental_strategy_title" },
+        { "name": "building_section", "position": "center", "width": "60%", "height": "60%", "content": "section_with_passive_system_overlays" },
+        { "name": "strategy_icons", "position": "right", "width": "35%", "height": "40%", "content": "6_strategy_icons_with_labels" },
+        { "name": "metrics_bar", "position": "bottom", "width": "90%", "height": "20%", "content": "performance_metrics_and_charts" }
+      ],
+      "grid": "environmental-analysis",
+      "alignment": "section-centered"
+    },
+    "placeholders": {
+      "building_section": 1,
+      "passive_overlays": 4,
+      "strategy_icons": 6,
+      "performance_metrics": true,
+      "energy_charts": 2,
+      "project_title": true
+    },
+    "style_notes": "Section with yellow sun arrows, blue rain, green vegetation, strategy icons, sustainability metrics bar",
+    "preview_image": "Warm cream A2 with building section showing sun/wind/rain passive systems, strategy icons right, performance metric charts bottom, green accents"
+  },
+  {
+    "id": "sht_065",
+    "name": "Diagram — Design Timeline Process",
+    "sheet_type": "diagram",
+    "category": "Process",
+    "description": "Project timeline diagram showing design phases from brief through construction with key milestones.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "10%", "content": "design_timeline_title" },
+        { "name": "timeline_bar", "position": "center", "width": "90%", "height": "15%", "content": "horizontal_timeline_phases" },
+        { "name": "phase_content", "position": "below_timeline", "width": "90%", "height": "50%", "content": "phase_deliverable_thumbnails" },
+        { "name": "milestones", "position": "above_timeline", "width": "90%", "height": "15%", "content": "milestone_markers_and_labels" }
+      ],
+      "grid": "timeline-horizontal",
+      "alignment": "chronological-left-to-right"
+    },
+    "placeholders": {
+      "timeline_phases": 6,
+      "phase_thumbnails": 6,
+      "milestone_markers": 4,
+      "phase_labels": 6,
+      "project_title": true
+    },
+    "style_notes": "Clean horizontal timeline, orange milestone markers, phase thumbnails below, Gantt-chart feel",
+    "preview_image": "White A2 landscape with horizontal timeline bar center, milestone markers above, phase thumbnails below (brief→concept→design→docs→construction→completion)"
+  },
+  {
+    "id": "sht_066",
+    "name": "Diagram — Structural System",
+    "sheet_type": "diagram",
+    "category": "Technical",
+    "description": "Structural system diagram showing load paths, structural grid, member sizing, and foundation system.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#E74C3C", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "structural_system_title" },
+        { "name": "structural_axon", "position": "left", "width": "50%", "height": "70%", "content": "structural_axonometric_wireframe" },
+        { "name": "load_diagram", "position": "right-top", "width": "40%", "height": "35%", "content": "load_path_diagram" },
+        { "name": "member_schedule", "position": "right-bottom", "width": "40%", "height": "30%", "content": "structural_member_schedule" },
+        { "name": "legend", "position": "bottom", "width": "50%", "height": "10%", "content": "structural_legend" }
+      ],
+      "grid": "structural-analysis",
+      "alignment": "axon-with-data"
+    },
+    "placeholders": {
+      "structural_axonometric": 1,
+      "load_path_diagram": 1,
+      "member_schedule": true,
+      "structural_legend": true,
+      "project_title": true
+    },
+    "style_notes": "Red structural members highlighted, load arrows, engineering-precision, member sizing table",
+    "preview_image": "White A2 landscape with structural axonometric wireframe left (red members), load path diagram right, member schedule table, engineering feel"
+  },
+
+  // ============================================================
+  // CATEGORY 11: MATERIALS & FINISHES SHEETS (3 templates)
+  // ============================================================
+
+  {
+    "id": "sht_067",
+    "name": "Materials — Finish Schedule Board",
+    "sheet_type": "materials",
+    "category": "Interior",
+    "description": "Interior finish schedule board with room-by-room material selections, swatches, and specifications.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C2A2A", "accent": "#C9A878", "background": "#FAF6F0", "text": "#2C2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "finish_schedule_title" },
+        { "name": "finish_table", "position": "center", "width": "55%", "height": "70%", "content": "room_by_room_finish_schedule_table" },
+        { "name": "swatch_column", "position": "right", "width": "40%", "height": "70%", "content": "material_swatch_grid_with_codes" },
+        { "name": "legend", "position": "bottom", "width": "100%", "height": "12%", "content": "material_code_legend" }
+      ],
+      "grid": "schedule-with-swatches",
+      "alignment": "table-swatch-paired"
+    },
+    "placeholders": {
+      "finish_schedule_table": true,
+      "material_swatches": 12,
+      "swatch_codes": 12,
+      "material_legend": true,
+      "project_title": true
+    },
+    "style_notes": "Warm palette, gold accent on headers, tactile material swatches paired with schedule table",
+    "preview_image": "Warm cream A1 landscape with finish schedule table left, 12 material swatch squares right with codes, gold header accents, interior-design precision"
+  },
+  {
+    "id": "sht_068",
+    "name": "Materials — Exterior Facade Palette",
+    "sheet_type": "materials",
+    "category": "Technical",
+    "description": "Exterior facade material palette showing cladding, glazing, and roofing selections with product specifications.",
+    "format": "A2_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#4A90E2", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "facade_materials_title" },
+        { "name": "elevation_reference", "position": "left", "width": "40%", "height": "65%", "content": "elevation_with_material_zones_marked" },
+        { "name": "material_cards", "position": "right", "width": "55%", "height": "65%", "content": "6_material_cards_with_specs" },
+        { "name": "product_specs", "position": "bottom", "width": "100%", "height": "18%", "content": "product_specification_table" }
+      ],
+      "grid": "facade-material-reference",
+      "alignment": "elevation-to-material"
+    },
+    "placeholders": {
+      "elevation_reference": 1,
+      "material_cards": 6,
+      "material_photos": 6,
+      "product_specs": true,
+      "project_title": true
+    },
+    "style_notes": "Clean technical, elevation with material zone markings linked to material cards, blue zone codes",
+    "preview_image": "White A2 landscape with elevation showing material zones left, 6 material cards with photos/specs right, product specification table bottom"
+  },
+  {
+    "id": "sht_069",
+    "name": "Materials — Color & Material Concept",
+    "sheet_type": "materials",
+    "category": "Conceptual",
+    "description": "Material concept board showing the material narrative: inspiration, palette development, and application.",
+    "format": "A2_portrait",
+    "colors": { "primary": "#2A2A2A", "accent": "#8B7355", "background": "#F4F0EB", "text": "#2A2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Lora", "body": "Inter", "accent": "Caveat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "material_concept_title" },
+        { "name": "inspiration", "position": "top-section", "width": "100%", "height": "25%", "content": "material_inspiration_images_and_text" },
+        { "name": "palette_development", "position": "center", "width": "100%", "height": "30%", "content": "material_palette_swatches_with_rationale" },
+        { "name": "application_renders", "position": "bottom-section", "width": "100%", "height": "28%", "content": "renders_showing_materials_applied" }
+      ],
+      "grid": "material-narrative",
+      "alignment": "inspiration-to-application"
+    },
+    "placeholders": {
+      "inspiration_images": 4,
+      "material_swatches": 6,
+      "palette_rationale": true,
+      "application_renders": 2,
+      "material_concept_text": true,
+      "project_title": true
+    },
+    "style_notes": "Warm tactile palette, narrative from inspiration→palette→application, handwritten Caveat annotations",
+    "preview_image": "Warm cream A2 portrait: inspiration images top, material palette swatches with rationale center, renders showing materials applied bottom"
+  },
+
+  // ============================================================
+  // CATEGORY 12: RENDERS & PERSPECTIVES SHEETS (4 templates)
+  // ============================================================
+
+  {
+    "id": "sht_070",
+    "name": "Render — Hero Perspective Full-Bleed",
+    "sheet_type": "render",
+    "category": "Presentation",
+    "description": "Single hero perspective render presented full-bleed with minimal overlay information.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#FFFFFF", "accent": "#FFFFFF", "background": "image", "text": "#FFFFFF", "muted": "#CCCCCC" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "full_bleed_render", "position": "full", "width": "100%", "height": "100%", "content": "hero_render_full_bleed" },
+        { "name": "title_overlay", "position": "bottom-left", "width": "30%", "height": "8%", "content": "white_title_overlay" }
+      ],
+      "grid": "full-bleed",
+      "alignment": "image-only"
+    },
+    "placeholders": {
+      "hero_render": 1,
+      "project_title": true
+    },
+    "style_notes": "Render IS the sheet, full bleed edge to edge, tiny white title overlay, gallery quality",
+    "preview_image": "Full-bleed A1 landscape that is entirely a stunning architectural render, tiny white project name bottom-left corner"
+  },
+  {
+    "id": "sht_071",
+    "name": "Render — Before & After Comparison",
+    "sheet_type": "render",
+    "category": "Adaptive Reuse",
+    "description": "Before/after split comparison showing existing condition vs. proposed design render.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#A0522D", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "before_after_title" },
+        { "name": "before_image", "position": "left", "width": "48%", "height": "72%", "content": "existing_condition_photo" },
+        { "name": "divider", "position": "center", "width": "2%", "height": "72%", "content": "vertical_divider_line" },
+        { "name": "after_render", "position": "right", "width": "48%", "height": "72%", "content": "proposed_design_render" },
+        { "name": "labels", "position": "within", "width": "various", "height": "various", "content": "BEFORE_AFTER_labels" },
+        { "name": "description", "position": "bottom", "width": "80%", "height": "12%", "content": "transformation_description" }
+      ],
+      "grid": "split-comparison",
+      "alignment": "before-after-split"
+    },
+    "placeholders": {
+      "before_photo": 1,
+      "after_render": 1,
+      "transformation_description": true,
+      "project_title": true
+    },
+    "style_notes": "Clean before/after split, sienna accent divider, BEFORE/AFTER labels, transformation narrative",
+    "preview_image": "White A1 landscape split vertically: existing derelict building left (BEFORE), proposed render right (AFTER), sienna divider, transformation text"
+  },
+  {
+    "id": "sht_072",
+    "name": "Render — Interior Vignettes Grid",
+    "sheet_type": "render",
+    "category": "Interior",
+    "description": "Grid of interior vignette renders showing different spaces within the project.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C2A2A", "accent": "#C9A878", "background": "#FAF6F0", "text": "#2C2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "interior_vignettes_title" },
+        { "name": "hero_interior", "position": "left", "width": "50%", "height": "70%", "content": "large_hero_interior_render" },
+        { "name": "vignette_grid", "position": "right", "width": "45%", "height": "70%", "content": "4_smaller_interior_renders_2x2" },
+        { "name": "room_labels", "position": "below_each", "width": "various", "height": "various", "content": "room_name_labels" }
+      ],
+      "grid": "interior-gallery",
+      "alignment": "hero-plus-grid"
+    },
+    "placeholders": {
+      "hero_interior_render": 1,
+      "interior_vignettes": 4,
+      "room_labels": 5,
+      "project_title": true
+    },
+    "style_notes": "Warm cream background, gold room labels, interior-design gallery, hero+supporting grid",
+    "preview_image": "Warm cream A1 landscape with large living room render left, 4 smaller interior renders (kitchen, bedroom, bathroom, study) in 2x2 grid right"
+  },
+  {
+    "id": "sht_073",
+    "name": "Render — Aerial Bird's Eye",
+    "sheet_type": "render",
+    "category": "Urban",
+    "description": "Aerial bird's-eye view render showing the project in its full site context from above.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C3E50", "accent": "#E74C3C", "background": "#FFFFFF", "text": "#2C3E50", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "8%", "content": "aerial_view_title" },
+        { "name": "aerial_render", "position": "center", "width": "85%", "height": "75%", "content": "birds_eye_render_with_context" },
+        { "name": "callout_labels", "position": "around", "width": "various", "height": "various", "content": "building_and_feature_labels" },
+        { "name": "north_arrow", "position": "top-right", "width": "5%", "height": "8%", "content": "north_arrow" },
+        { "name": "project_data", "position": "bottom", "width": "60%", "height": "10%", "content": "site_area_and_project_data" }
+      ],
+      "grid": "aerial-hero",
+      "alignment": "aerial-centered"
+    },
+    "placeholders": {
+      "aerial_render": 1,
+      "feature_labels": 6,
+      "north_arrow": true,
+      "site_data": true,
+      "project_title": true
+    },
+    "style_notes": "Dramatic aerial view, red project boundary highlight, labeled features, urban context visible",
+    "preview_image": "White A1 landscape with stunning aerial render showing project in urban context, red boundary highlight, labeled buildings and features, north arrow"
+  },
+
+  // ============================================================
+  // CATEGORY 13: PROCESS & DESIGN DEVELOPMENT (3 templates)
+  // ============================================================
+
+  {
+    "id": "sht_074",
+    "name": "Process — Design Development Timeline",
+    "sheet_type": "process",
+    "category": "Process",
+    "description": "Design development sheet showing project evolution from sketch to construction document.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "design_development_title" },
+        { "name": "phase_1", "position": "column-1", "width": "20%", "height": "75%", "content": "sketch_phase_concept_sketches" },
+        { "name": "phase_2", "position": "column-2", "width": "20%", "height": "75%", "content": "schematic_phase_diagrams_plans" },
+        { "name": "phase_3", "position": "column-3", "width": "20%", "height": "75%", "content": "design_dev_phase_renders_details" },
+        { "name": "phase_4", "position": "column-4", "width": "20%", "height": "75%", "content": "construction_docs_phase" },
+        { "name": "phase_5", "position": "column-5", "width": "15%", "height": "75%", "content": "built_work_photos" },
+        { "name": "phase_labels", "position": "bottom", "width": "100%", "height": "10%", "content": "phase_name_labels_strip" }
+      ],
+      "grid": "5-phase-columns",
+      "alignment": "left-to-right-development"
+    },
+    "placeholders": {
+      "concept_sketches": 3,
+      "schematic_diagrams": 3,
+      "design_development_images": 3,
+      "construction_docs": 2,
+      "built_photos": 2,
+      "phase_labels": 5,
+      "project_title": true
+    },
+    "style_notes": "5 columns showing design evolution, orange phase dividers, sketch-to-built narrative",
+    "preview_image": "White A1 landscape with 5 columns (Sketch→Schematic→Design Dev→CDs→Built) showing project evolution, orange dividers, chronological flow"
+  },
+  {
+    "id": "sht_075",
+    "name": "Process — Model Photography",
+    "sheet_type": "process",
+    "category": "Conceptual",
+    "description": "Physical model photography sheet with multiple angles, detail shots, and context models.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#1A1A1A", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top-left", "width": "30%", "height": "8%", "content": "model_photography_title" },
+        { "name": "hero_model", "position": "left", "width": "50%", "height": "70%", "content": "hero_model_photograph" },
+        { "name": "angle_grid", "position": "right", "width": "45%", "height": "45%", "content": "4_model_angles_2x2" },
+        { "name": "detail_strip", "position": "bottom-right", "width": "45%", "height": "22%", "content": "3_model_detail_close_ups" },
+        { "name": "model_info", "position": "bottom-left", "width": "30%", "height": "12%", "content": "model_scale_and_materials" }
+      ],
+      "grid": "model-gallery",
+      "alignment": "hero-plus-angles"
+    },
+    "placeholders": {
+      "hero_model_photo": 1,
+      "model_angles": 4,
+      "detail_close_ups": 3,
+      "model_scale": true,
+      "model_materials": true,
+      "project_title": true
+    },
+    "style_notes": "Clean white backgrounds, professional model photography, multiple viewpoints, gallery quality",
+    "preview_image": "White A1 landscape with large hero model photo left, 4 angle views top-right in grid, 3 detail close-ups bottom-right, clean gallery feel"
+  },
+  {
+    "id": "sht_076",
+    "name": "Process — Iterative Sketch Studies",
+    "sheet_type": "process",
+    "category": "Sketch",
+    "description": "Sketch study sheet showing iterative hand drawings, options explored, and selected direction.",
+    "format": "A1_landscape",
+    "colors": { "primary": "#2C2416", "accent": "#9B7E46", "background": "#F5F0E1", "text": "#2C2416", "muted": "#7A6E58" },
+    "fonts": { "heading": "Caveat", "body": "Lora", "accent": "Caveat" },
+    "layout": {
+      "zones": [
+        { "name": "title", "position": "top", "width": "100%", "height": "8%", "content": "sketch_studies_handwritten_title" },
+        { "name": "sketch_grid", "position": "center", "width": "80%", "height": "60%", "content": "3x3_sketch_options_grid" },
+        { "name": "selected_highlight", "position": "within_grid", "width": "varies", "height": "varies", "content": "highlighted_selected_option" },
+        { "name": "annotations", "position": "scattered", "width": "various", "height": "various", "content": "handwritten_pros_cons_notes" },
+        { "name": "conclusion", "position": "bottom", "width": "60%", "height": "15%", "content": "selected_option_rationale" }
+      ],
+      "grid": "sketch-grid-organic",
+      "alignment": "organic-study"
+    },
+    "placeholders": {
+      "sketch_options": 9,
+      "handwritten_notes": 6,
+      "selected_highlight": true,
+      "rationale": true,
+      "project_title": true
+    },
+    "style_notes": "Warm paper, pencil sketches, handwritten Caveat annotations, selected option circled in gold",
+    "preview_image": "Warm cream A1 landscape with 3x3 grid of hand sketches, one circled in gold as selected, handwritten pros/cons notes scattered, organic study feel"
+  }
+]

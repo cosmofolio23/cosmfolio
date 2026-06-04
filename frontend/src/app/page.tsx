@@ -54,7 +54,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-border-light shadow-elevation-1">
+      <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
         <div className="container-centered py-4 flex justify-between items-center">
           <div className="text-2xl font-bold text-primary">CosmoFolio</div>
           <div className="flex gap-3">
@@ -69,13 +69,16 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-gradient-to-br from-slate-900 via-primary to-slate-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 right-10 w-72 h-72 bg-accent rounded-full mix-blend-multiply filter blur-3xl"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary-light rounded-full mix-blend-multiply filter blur-3xl animation-pulse"></div>
-        </div>
+      <section className="relative overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-bg-primary dark:bg-dark-bg-primary"></div>
 
-        <div className="container-centered relative z-10">
+        {/* Floating Elements for Glassmorphism Background */}
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-accent-primary/20 dark:bg-accent-gold/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute top-40 -left-20 w-80 h-80 bg-accent-gold/20 dark:bg-accent-primary/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute -bottom-40 right-20 w-96 h-96 bg-color-info/10 dark:bg-color-info/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '4s' }}></div>
+
+        <div className="container-centered relative z-10 pt-32 pb-24">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-white text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Professional Architecture Portfolios, Generated in Seconds
@@ -83,18 +86,18 @@ export default function Home() {
             <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
               Upload your renders, plans, and diagrams. AI arranges them into stunning portfolio variations with 50+ sophisticated layouts and 7 design systems.
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Link href="/signup" className="btn-primary">
-                Get Started Free
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+              <Link href="/signup" className="btn-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+                Start Free Now
               </Link>
-              <button className="btn-secondary text-slate hover:bg-gray-100">
+              <button className="glass dark:glass-dark px-6 py-3 rounded-lg font-medium text-text-primary dark:text-dark-text-primary hover:bg-white/90 dark:hover:bg-white/20 transition-all duration-300">
                 View Demo
               </button>
             </div>
 
             {/* Trust Badges */}
-            <div className="flex flex-col sm:flex-row gap-8 justify-center items-center pt-8 border-t border-white border-opacity-20">
+            <div className="flex flex-col sm:flex-row gap-8 justify-center items-center pt-16 border-t border-white border-opacity-20 mt-16">
               <div className="text-center">
                 <div className="text-2xl font-bold text-accent">50+</div>
                 <div className="text-sm text-blue-100">Layout Variations</div>
@@ -155,12 +158,19 @@ export default function Home() {
                 description: 'Generate unique links, share with clients, save variants in your account.',
               },
             ].map((feature, idx) => (
-              <div key={idx} className="card p-8 hover:shadow-elevation-3">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 text-primary flex items-center justify-center mb-4">
-                  <FeatureIcon type={feature.icon} />
+              <div key={idx} className="glass-card p-8 rounded-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-lg bg-accent-primary/10 dark:bg-accent-gold/10 text-accent-primary dark:text-accent-gold flex items-center justify-center mb-4 flex-shrink-0 backdrop-blur-md">
+                    <FeatureIcon type={feature.icon} />
+                  </div>
+                  <h3 className="text-h4 text-text-primary dark:text-dark-text-primary mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-body text-text-secondary dark:text-dark-text-secondary">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-slate mb-3">{feature.title}</h3>
-                <p className="text-stone-light">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -175,18 +185,12 @@ export default function Home() {
             Free to use, free to generate, free to share. No credit card required. Start today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/signup"
-              className="bg-white text-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors"
-            >
+            <Link href="/signup" className="inline-block px-8 py-4 bg-white text-accent-primary font-semibold rounded-lg hover:shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 transition-all duration-300">
               Start Free Today
             </Link>
-            <a
-              href="#"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:bg-opacity-10 transition-colors"
-            >
+            <button className="glass px-8 py-4 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/30">
               Learn More
-            </a>
+            </button>
           </div>
         </div>
       </section>
