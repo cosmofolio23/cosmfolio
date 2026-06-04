@@ -1,0 +1,1082 @@
+[
+  {
+    "id": "tpl_001",
+    "name": "Nordic Minimal",
+    "category": "Minimalist",
+    "description": "Clean Scandinavian-inspired layout with abundant white space, thin serif headings, and a focus on a single hero image per project.",
+    "colors": { "primary": "#1A1A1A", "accent": "#E8E4DC", "background": "#FFFFFF", "text": "#333333", "muted": "#A8A8A8" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Full-bleed hero image with title overlay bottom-left, architect name top-right", "grid": "1-column", "image_ratio": "full-bleed" },
+      "project": { "structure": "Single hero image top, 2-column text below with project description left and metadata right", "grid": "2-column", "image_ratio": "16:9" },
+      "about": { "structure": "Portrait left (1/3), bio right (2/3), CV below in 3-column grid", "grid": "asymmetric" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true, "location": true },
+    "preview_image": "Pristine white pages with one stunning architectural photograph per spread, thin elegant serif title in black, lots of negative space",
+    "style_notes": "Premium feel, gallery-style, ideal for high-end residential",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_002",
+    "name": "Brutalist Bold",
+    "category": "Brutalist",
+    "description": "Heavy typography-driven layout with oversized sans-serif fonts, concrete-textured backgrounds, and stark contrasts.",
+    "colors": { "primary": "#2C2C2C", "accent": "#D9D2C5", "background": "#F2EFEA", "text": "#1A1A1A", "muted": "#6B6B6B" },
+    "fonts": { "heading": "Archivo Black", "body": "Space Grotesk", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Massive title taking 70% of page, small image bottom right", "grid": "asymmetric", "image_ratio": "1:1" },
+      "project": { "structure": "Project name as oversized header, image grid 2x2 below, brutalist captions in monospace", "grid": "2x2", "image_ratio": "4:3" },
+      "about": { "structure": "Big block of text, no photo, manifesto-style", "grid": "1-column" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 1, "text_description": true, "project_title": true, "year": true, "location": true, "materials": true },
+    "preview_image": "Heavy concrete-gray pages with monumental black typography dominating the layout, raw architectural images in stark rectangles",
+    "style_notes": "Strong character, ideal for concrete/brutalist architecture practices",
+    "page_count_range": "20-30",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_003",
+    "name": "Parametric Wave",
+    "category": "Parametric",
+    "description": "Dynamic curved layouts with diagrammatic overlays, ideal for computational and parametric design work.",
+    "colors": { "primary": "#0A2540", "accent": "#FF6B35", "background": "#FAFAFA", "text": "#0A2540", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Neue Haas Grotesk", "body": "IBM Plex Sans", "accent": "IBM Plex Mono" },
+    "layouts": {
+      "cover": { "structure": "Curved gradient overlay with diagram lines, title centered", "grid": "free-form", "image_ratio": "full-bleed" },
+      "project": { "structure": "Parametric diagram top, render middle, generative iterations grid bottom", "grid": "3-row-stack", "image_ratio": "varied" },
+      "about": { "structure": "Diagrammatic timeline of work, photo top-right circle", "grid": "timeline" }
+    },
+    "placeholders": { "renders": 4, "plans": 1, "sections": 2, "diagrams": 6, "text_description": true, "project_title": true, "year": true, "iterations": 8, "process_images": 4 },
+    "preview_image": "Tech-forward layout with orange accent lines, parametric iteration grids, diagrammatic overlays, futuristic feel",
+    "style_notes": "Best for computational design, generative architecture, research-heavy practices",
+    "page_count_range": "24-40",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_004",
+    "name": "Editorial Magazine",
+    "category": "Editorial",
+    "description": "Magazine-style layout with editorial typography, pull quotes, multi-column text and a refined photographic approach.",
+    "colors": { "primary": "#1C1C1C", "accent": "#B8956A", "background": "#FFFFFF", "text": "#2D2D2D", "muted": "#999999" },
+    "fonts": { "heading": "Playfair Display", "body": "Source Serif Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Magazine masthead top, large title centered, image grid bottom 3 cells", "grid": "magazine", "image_ratio": "varied" },
+      "project": { "structure": "Pull quote left page, full image right page, then 3-column article layout", "grid": "3-column", "image_ratio": "varied" },
+      "about": { "structure": "Editorial portrait, columned bio with drop caps, awards sidebar", "grid": "magazine" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 2, "text_description": true, "pull_quote": true, "project_title": true, "year": true, "location": true },
+    "preview_image": "Sophisticated editorial spread with drop caps, gold accent rules, mixed photography and typography, magazine-like rhythm",
+    "style_notes": "Sophisticated, narrative-driven, ideal for award-winning architects",
+    "page_count_range": "32-48",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_005",
+    "name": "Japanese Tatami",
+    "category": "Minimalist",
+    "description": "Inspired by Japanese architecture with grid-based modular layouts, restraint, and respect for negative space.",
+    "colors": { "primary": "#1A1A1A", "accent": "#8B6914", "background": "#F8F5F0", "text": "#2C2C2C", "muted": "#B0A99F" },
+    "fonts": { "heading": "Noto Serif JP", "body": "Inter", "accent": "Noto Sans JP" },
+    "layouts": {
+      "cover": { "structure": "Centered title, single hairline border frame, small image bottom center", "grid": "centered", "image_ratio": "3:2" },
+      "project": { "structure": "Tatami-grid 2x3 image layout, restrained captions in small caps", "grid": "tatami-2x3", "image_ratio": "uniform" },
+      "about": { "structure": "Single column centered, vertical text accents, philosophy statement", "grid": "centered" }
+    },
+    "placeholders": { "renders": 6, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "philosophy": true, "project_title": true, "year": true },
+    "preview_image": "Quiet beige and warm white pages with modular grid imagery, refined Japanese-inspired typography, meditative pacing",
+    "style_notes": "Refined, meditative, ideal for residential and hospitality projects",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_006",
+    "name": "Concrete Monolith",
+    "category": "Brutalist",
+    "description": "Dark concrete-toned portfolio celebrating raw materiality with full-bleed photography and monolithic typography.",
+    "colors": { "primary": "#3D3D3D", "accent": "#E85A4F", "background": "#1A1A1A", "text": "#F5F5F5", "muted": "#888888" },
+    "fonts": { "heading": "Bebas Neue", "body": "Roboto", "accent": "Roboto Mono" },
+    "layouts": {
+      "cover": { "structure": "Dark full-bleed image with vertical title overlay", "grid": "full-bleed", "image_ratio": "full-bleed" },
+      "project": { "structure": "Black background, white text, full-bleed photographs alternating with technical sections", "grid": "alternating", "image_ratio": "varied" },
+      "about": { "structure": "Dark page, white centered text, clean structural list of credentials", "grid": "centered-dark" }
+    },
+    "placeholders": { "renders": 5, "plans": 2, "sections": 2, "diagrams": 1, "text_description": true, "materials": true, "project_title": true, "year": true, "client": true },
+    "preview_image": "Bold dark pages with red accent color, raw concrete photography, oversized condensed type, monolithic feel",
+    "style_notes": "Dramatic, strong identity, ideal for industrial/concrete-focused practices",
+    "page_count_range": "24-32",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_007",
+    "name": "Sustainable Green",
+    "category": "Sustainable",
+    "description": "Earthy palette portfolio celebrating sustainable and biophilic architecture with botanical accents.",
+    "colors": { "primary": "#2D4A3E", "accent": "#A4B494", "background": "#F4F1E8", "text": "#2D4A3E", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Lora", "body": "Nunito Sans", "accent": "Nunito Sans" },
+    "layouts": {
+      "cover": { "structure": "Leaf or botanical illustration corner accent, soft natural image, organic title", "grid": "organic", "image_ratio": "16:9" },
+      "project": { "structure": "Sustainability data sidebar, render full-width, diagram of green systems below", "grid": "data-sidebar", "image_ratio": "varied" },
+      "about": { "structure": "Photo with botanical frame, mission statement, sustainability certifications list", "grid": "framed" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 2, "diagrams": 4, "text_description": true, "sustainability_metrics": true, "project_title": true, "year": true, "certifications": true },
+    "preview_image": "Warm earth-toned pages with sage green accents, botanical line illustrations, natural photography, sustainable data callouts",
+    "style_notes": "Eco-friendly, warm, ideal for green architects and LEED-certified practices",
+    "page_count_range": "24-36",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_008",
+    "name": "Urban Grid",
+    "category": "Modern",
+    "description": "Strong grid-based modern portfolio with clean geometry, perfect for urban and commercial projects.",
+    "colors": { "primary": "#0F0F0F", "accent": "#FFCB05", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#7C7C7C" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "9-cell grid with image fragments forming a larger composition", "grid": "9-cell", "image_ratio": "1:1" },
+      "project": { "structure": "Grid of 6 images uniform size, captions below, project info bar at top", "grid": "6-cell", "image_ratio": "1:1" },
+      "about": { "structure": "Grid of 9 cells mixing photos, text, and stats", "grid": "9-cell-mixed" }
+    },
+    "placeholders": { "renders": 6, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true, "location": true, "scope": true },
+    "preview_image": "Crisp gridded layouts with mustard yellow accent, technical numbering, urban architecture photography, contemporary feel",
+    "style_notes": "Systematic, contemporary, ideal for commercial and urban-scale projects",
+    "page_count_range": "24-32",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_009",
+    "name": "Heritage Classical",
+    "category": "Heritage",
+    "description": "Classical layout honoring traditional architecture with serif typography and refined ornamental details.",
+    "colors": { "primary": "#3A2F2A", "accent": "#9C7A4E", "background": "#F8F2E8", "text": "#3A2F2A", "muted": "#8B7867" },
+    "fonts": { "heading": "Cormorant", "body": "Crimson Text", "accent": "Cormorant SC" },
+    "layouts": {
+      "cover": { "structure": "Ornamental border, centered title in small caps, classical engraving-style image", "grid": "bordered", "image_ratio": "3:2" },
+      "project": { "structure": "Hand-drawn elevation top, photograph below, historical context sidebar", "grid": "classical", "image_ratio": "varied" },
+      "about": { "structure": "Formal portrait with frame, biography in classical layout, list of restorations", "grid": "formal" }
+    },
+    "placeholders": { "renders": 3, "plans": 3, "sections": 2, "diagrams": 1, "text_description": true, "historical_context": true, "project_title": true, "year": true, "period_style": true },
+    "preview_image": "Refined cream pages with bronze accents, classical serif type, ornamental rules, architectural elevations and historical photography",
+    "style_notes": "Traditional, refined, ideal for heritage restoration and classical architects",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_010",
+    "name": "Black Canvas",
+    "category": "Dark Premium",
+    "description": "Luxurious dark-mode portfolio with gold accents, full-bleed photography, and a premium feel.",
+    "colors": { "primary": "#0A0A0A", "accent": "#D4AF37", "background": "#0A0A0A", "text": "#F0F0F0", "muted": "#8B8B8B" },
+    "fonts": { "heading": "Didot", "body": "Montserrat", "accent": "Montserrat" },
+    "layouts": {
+      "cover": { "structure": "Pure black, gold-foil-style title centered, no image", "grid": "centered-dark", "image_ratio": "none" },
+      "project": { "structure": "Full-bleed dark photography with gold caption tags, minimal text", "grid": "full-bleed-dark", "image_ratio": "full-bleed" },
+      "about": { "structure": "Dark portrait, gold rule accents, elegant gold-on-black typography", "grid": "centered-dark" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true, "awards": true },
+    "preview_image": "Luxe black pages with gold typographic accents, moody architectural photography, premium feel like a coffee-table book",
+    "style_notes": "Luxury, premium, ideal for high-end and luxury residential architects",
+    "page_count_range": "20-30",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_011",
+    "name": "Pastel Soft",
+    "category": "Soft Modern",
+    "description": "Soft pastel palette for a contemporary residential portfolio with friendly, approachable feel.",
+    "colors": { "primary": "#3A3A3A", "accent": "#F4C2C2", "background": "#FDF8F4", "text": "#4A4A4A", "muted": "#B8B0AA" },
+    "fonts": { "heading": "DM Serif Display", "body": "DM Sans", "accent": "DM Sans" },
+    "layouts": {
+      "cover": { "structure": "Soft pastel gradient, hand-script title, single bright image", "grid": "soft", "image_ratio": "3:2" },
+      "project": { "structure": "Pastel color blocks framing photography, rounded corners, gentle hierarchy", "grid": "rounded", "image_ratio": "varied" },
+      "about": { "structure": "Circular portrait, soft pastel background, friendly bio with small icons", "grid": "soft-circular" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true, "client_quote": true },
+    "preview_image": "Light cream pages with blush pink accents, rounded image frames, friendly DM Sans typography, warm and inviting",
+    "style_notes": "Friendly, residential, ideal for small studio practices and interior architects",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_012",
+    "name": "Industrial Loft",
+    "category": "Industrial",
+    "description": "Industrial-inspired portfolio with steel grays, exposed-material aesthetic, and engineering-style annotations.",
+    "colors": { "primary": "#2B2B2B", "accent": "#C65D2A", "background": "#E8E4DC", "text": "#1F1F1F", "muted": "#7A6F65" },
+    "fonts": { "heading": "Oswald", "body": "Roboto", "accent": "Roboto Mono" },
+    "layouts": {
+      "cover": { "structure": "Industrial-grade title with rivets/rules, photograph with grid overlay", "grid": "industrial", "image_ratio": "16:9" },
+      "project": { "structure": "Technical drawing with annotation callouts, photograph below, materials list", "grid": "technical", "image_ratio": "varied" },
+      "about": { "structure": "Industrial badge style, workshop-feel photo, skills as technical specs", "grid": "industrial" }
+    },
+    "placeholders": { "renders": 3, "plans": 3, "sections": 3, "diagrams": 3, "text_description": true, "materials": true, "project_title": true, "year": true, "annotations": true },
+    "preview_image": "Steel-gray industrial pages with orange accent rules, technical annotations, exposed-material photography, engineering aesthetic",
+    "style_notes": "Industrial conversion specialists, adaptive reuse, loft renovations",
+    "page_count_range": "28-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_013",
+    "name": "Landscape Horizon",
+    "category": "Landscape",
+    "description": "Wide horizontal layouts emphasizing site and landscape, ideal for landscape architects and master planners.",
+    "colors": { "primary": "#1F3A2F", "accent": "#C4A56B", "background": "#F2EEE3", "text": "#1F3A2F", "muted": "#6B7F6B" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layouts": {
+      "cover": { "structure": "Wide panoramic horizon image, title in bottom strip", "grid": "panoramic", "image_ratio": "21:9" },
+      "project": { "structure": "Panoramic photograph top, site plan middle, planting/section schedule bottom", "grid": "panoramic-stack", "image_ratio": "21:9" },
+      "about": { "structure": "Landscape panorama, profile in lower third, ecology timeline", "grid": "panoramic" }
+    },
+    "placeholders": { "renders": 4, "plans": 4, "sections": 3, "diagrams": 4, "text_description": true, "site_analysis": true, "project_title": true, "year": true, "site_area": true },
+    "preview_image": "Wide horizontal compositions with deep forest greens, ochre accents, panoramic landscape photography, master plan grids",
+    "style_notes": "Landscape architecture, master planning, large-scale projects",
+    "page_count_range": "28-40",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_014",
+    "name": "Bold Geometric",
+    "category": "Bold Modern",
+    "description": "Bright geometric shapes as design language, vibrant colors, ideal for young practices wanting strong identity.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF4500", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666", "secondary_accent": "#0066FF" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "Space Mono" },
+    "layouts": {
+      "cover": { "structure": "Geometric color blocks with cutouts revealing image, oversized title", "grid": "geometric", "image_ratio": "varied" },
+      "project": { "structure": "Color block intro page, then image grid with shape overlays, bold project number", "grid": "color-blocked", "image_ratio": "varied" },
+      "about": { "structure": "Portrait inside geometric shape, bold typographic bio, manifesto in color block", "grid": "geometric" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true, "project_number": true },
+    "preview_image": "Vibrant orange and blue geometric shapes, bold Space Grotesk type, modern asymmetric image placements, energetic feel",
+    "style_notes": "Young practices, branding-forward, emerging architects",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_015",
+    "name": "Academic Research",
+    "category": "Academic",
+    "description": "Research-driven academic portfolio with diagrams, theory, and process documentation prominently featured.",
+    "colors": { "primary": "#1B1B1B", "accent": "#A52A2A", "background": "#FAFAFA", "text": "#1B1B1B", "muted": "#5C5C5C" },
+    "fonts": { "heading": "Crimson Pro", "body": "Crimson Pro", "accent": "IBM Plex Mono" },
+    "layouts": {
+      "cover": { "structure": "Thesis-style title page with subtitle, abstract, minimal image", "grid": "academic", "image_ratio": "4:3" },
+      "project": { "structure": "Abstract + thesis, process diagrams, iterative sketches, then final renders", "grid": "research", "image_ratio": "varied" },
+      "about": { "structure": "Academic CV layout, publications list, research interests, conference talks", "grid": "academic" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 2, "diagrams": 8, "text_description": true, "abstract": true, "process_sketches": 6, "thesis": true, "publications": true, "project_title": true, "year": true },
+    "preview_image": "Scholarly off-white pages with burgundy accents, footnotes, dense diagrammatic content, thesis-style layout",
+    "style_notes": "Academic, research-heavy, ideal for thesis projects and university applications",
+    "page_count_range": "40-60",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_016",
+    "name": "Modernist Bauhaus",
+    "category": "Modern",
+    "description": "Bauhaus-inspired layout with primary colors, geometric forms, and rigorous grid discipline.",
+    "colors": { "primary": "#000000", "accent": "#E63946", "background": "#FFFFFF", "text": "#000000", "muted": "#4D4D4D", "secondary_accent": "#FFD700", "tertiary_accent": "#1D3557" },
+    "fonts": { "heading": "Futura", "body": "Futura", "accent": "Futura" },
+    "layouts": {
+      "cover": { "structure": "Primary color geometric shapes, geometric type, single high-contrast image", "grid": "bauhaus", "image_ratio": "1:1" },
+      "project": { "structure": "Strict grid with primary color blocks, project info as geometric labels", "grid": "bauhaus-grid", "image_ratio": "uniform" },
+      "about": { "structure": "Geometric portrait composition, primary color CV organized as geometric blocks", "grid": "bauhaus" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 3, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Crisp white pages with red, yellow, and blue primary geometric elements, Futura typography, Bauhaus rigor",
+    "style_notes": "Modernist purists, design school graduates, formalist practices",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_017",
+    "name": "Photo Journal",
+    "category": "Photographic",
+    "description": "Photography-first portfolio where every page is a high-impact image, minimal text.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFFFFF", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Helvetica Neue", "body": "Helvetica Neue", "accent": "Helvetica Neue" },
+    "layouts": {
+      "cover": { "structure": "Single stunning full-bleed photograph, small name top-corner", "grid": "full-bleed", "image_ratio": "full-bleed" },
+      "project": { "structure": "Sequence of full-bleed photographs, tiny captions, project info only on title page", "grid": "photographic", "image_ratio": "full-bleed" },
+      "about": { "structure": "Self-portrait or workspace photo full-bleed, name and bio overlaid", "grid": "full-bleed" }
+    },
+    "placeholders": { "renders": 8, "plans": 0, "sections": 0, "diagrams": 0, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Every page a photograph, gallery-quality, minimal typography, photography-portfolio feel",
+    "style_notes": "Photogenic projects, completed buildings, photography-led firms",
+    "page_count_range": "30-50",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_018",
+    "name": "Diagram Architect",
+    "category": "Diagrammatic",
+    "description": "Diagram-heavy portfolio celebrating concept, analysis, and process drawings over final renders.",
+    "colors": { "primary": "#000000", "accent": "#FF6B35", "background": "#FFFFFF", "text": "#000000", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Diagram-style cover with concept lines forming title", "grid": "diagrammatic", "image_ratio": "varied" },
+      "project": { "structure": "Site analysis diagram, concept diagrams series, final diagrammatic representation", "grid": "diagrammatic", "image_ratio": "varied" },
+      "about": { "structure": "Practice methodology shown as a diagram, bio in callouts", "grid": "diagrammatic" }
+    },
+    "placeholders": { "renders": 2, "plans": 2, "sections": 2, "diagrams": 10, "text_description": true, "concept_diagrams": 8, "project_title": true, "year": true, "process": true },
+    "preview_image": "White pages with bold black diagram lines, orange callouts, axonometric exploded views, process-driven layouts",
+    "style_notes": "Conceptual practices, BIG-style narrative architects, MVRDV-inspired",
+    "page_count_range": "32-48",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_019",
+    "name": "Coastal Breeze",
+    "category": "Residential",
+    "description": "Light coastal-inspired palette with airy layouts for residential and hospitality projects.",
+    "colors": { "primary": "#1F3A5F", "accent": "#87CEEB", "background": "#F8FAFB", "text": "#1F3A5F", "muted": "#7A92A7" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Lato", "accent": "Lato" },
+    "layouts": {
+      "cover": { "structure": "Sky/sea horizon image, light typography overlay, breathing room", "grid": "horizon", "image_ratio": "16:9" },
+      "project": { "structure": "Bright airy photographs, light text, ocean/sky color hints", "grid": "airy", "image_ratio": "varied" },
+      "about": { "structure": "Portrait against light backdrop, breathable bio, light blue accents", "grid": "airy" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true, "location": true },
+    "preview_image": "Sky blue accents on near-white pages, coastal photography, airy typography, beach house aesthetic",
+    "style_notes": "Coastal residential, hospitality, resort architects",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_020",
+    "name": "Terracotta Earth",
+    "category": "Residential",
+    "description": "Warm terracotta and earth-tone palette for Mediterranean, adobe, and warm-climate architecture.",
+    "colors": { "primary": "#3D2817", "accent": "#C5704D", "background": "#F4EDE4", "text": "#3D2817", "muted": "#8B7563" },
+    "fonts": { "heading": "Playfair Display", "body": "Source Serif Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Terracotta color block, warm earth-toned photograph, classical proportions", "grid": "classical", "image_ratio": "4:3" },
+      "project": { "structure": "Warm photography with terracotta callout boxes, materials swatches", "grid": "classical", "image_ratio": "varied" },
+      "about": { "structure": "Warm portrait, terracotta accents on bio, regional context map", "grid": "classical" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 1, "text_description": true, "project_title": true, "year": true, "location": true, "materials": true },
+    "preview_image": "Warm cream pages with terracotta and clay accents, Mediterranean photography, classical serif type, earthy mood",
+    "style_notes": "Mediterranean, adobe, Southwest, regional architects",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_021",
+    "name": "Mono Sans",
+    "category": "Minimalist",
+    "description": "Pure monochrome minimal with sans-serif typography, ideal for a confident, restrained statement.",
+    "colors": { "primary": "#000000", "accent": "#000000", "background": "#FFFFFF", "text": "#000000", "muted": "#808080" },
+    "fonts": { "heading": "Neue Haas Grotesk", "body": "Neue Haas Grotesk", "accent": "Neue Haas Grotesk" },
+    "layouts": {
+      "cover": { "structure": "Plain white, small title bottom-left, page number top-right", "grid": "minimal", "image_ratio": "none" },
+      "project": { "structure": "Single image per spread, tiny project info, generous margins", "grid": "minimal", "image_ratio": "varied" },
+      "about": { "structure": "Single column centered, no decoration, restrained text only", "grid": "minimal" }
+    },
+    "placeholders": { "renders": 3, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Stark white pages with tiny black sans-serif text, single images, supreme restraint, Swiss design discipline",
+    "style_notes": "Swiss school, formalist, restrained masters",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_022",
+    "name": "Sketchbook Process",
+    "category": "Conceptual",
+    "description": "Sketchbook-feel portfolio with hand-drawn elements, process sketches, and a personal artistic touch.",
+    "colors": { "primary": "#2C2416", "accent": "#9B7E46", "background": "#F5F0E1", "text": "#2C2416", "muted": "#7A6E58" },
+    "fonts": { "heading": "Caveat", "body": "Lora", "accent": "Caveat" },
+    "layouts": {
+      "cover": { "structure": "Hand-drawn title, sketch-paper texture, pencil illustration", "grid": "organic", "image_ratio": "varied" },
+      "project": { "structure": "Sketches scanned, process drawings, ink wash renders, handwritten captions", "grid": "scrapbook", "image_ratio": "varied" },
+      "about": { "structure": "Hand-drawn self-portrait or sketch, handwritten bio elements, philosophy", "grid": "scrapbook" }
+    },
+    "placeholders": { "renders": 2, "plans": 2, "sections": 2, "diagrams": 4, "text_description": true, "sketches": 8, "process_drawings": 6, "project_title": true, "year": true },
+    "preview_image": "Warm cream paper texture with hand-drawn sketches in pencil and ink, handwritten captions, sepia tones, intimate feel",
+    "style_notes": "Hand-drawing focused, process-oriented, artistic architects",
+    "page_count_range": "32-48",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_023",
+    "name": "Futurist Tech",
+    "category": "Futuristic",
+    "description": "High-tech futuristic portfolio with neon accents, digital aesthetics, and computational visualization.",
+    "colors": { "primary": "#0F0F1E", "accent": "#00FFC8", "background": "#0F0F1E", "text": "#FFFFFF", "muted": "#666690", "secondary_accent": "#FF00AA" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Dark cyber background, neon green title with glow, digital grid", "grid": "cyber", "image_ratio": "varied" },
+      "project": { "structure": "Dark mode renders with neon callouts, parametric data overlays, holographic feel", "grid": "cyber", "image_ratio": "varied" },
+      "about": { "structure": "Dark portrait with neon outline, futuristic bio layout, tech skill chips", "grid": "cyber" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 4, "text_description": true, "project_title": true, "year": true, "tech_stack": true },
+    "preview_image": "Deep dark blue pages with bright cyan and magenta neon, digital grids, holographic renders, sci-fi aesthetic",
+    "style_notes": "Computational, VR/AR architects, smart-city designers, metaverse",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_024",
+    "name": "Plan Library",
+    "category": "Technical",
+    "description": "Technical drawing-focused portfolio celebrating plans, sections, elevations as the primary content.",
+    "colors": { "primary": "#1A1A1A", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#808080" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Plan drawing as cover, technical title block bottom", "grid": "technical", "image_ratio": "varied" },
+      "project": { "structure": "Plan, section, elevation, axonometric on consecutive pages, scale bars and north arrows", "grid": "technical-drawing", "image_ratio": "drawing" },
+      "about": { "structure": "Architect-stamp-style intro, credentials in title-block format", "grid": "technical" }
+    },
+    "placeholders": { "renders": 2, "plans": 6, "sections": 4, "diagrams": 4, "text_description": true, "project_title": true, "year": true, "scale": true, "north_arrow": true, "title_block": true },
+    "preview_image": "Pristine white technical pages with high-resolution black-line plans, sections, elevations, drafting precision",
+    "style_notes": "Technical architects, drawing-focused, construction documentation showcase",
+    "page_count_range": "32-48",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_025",
+    "name": "Storyteller Narrative",
+    "category": "Narrative",
+    "description": "Story-driven portfolio with each project as a narrative, beginning-middle-end format.",
+    "colors": { "primary": "#2A2A2A", "accent": "#B8956A", "background": "#FAF7F2", "text": "#2A2A2A", "muted": "#7A7066" },
+    "fonts": { "heading": "Lora", "body": "Lora", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Book-cover style with story title, evocative single image, chapter list", "grid": "book", "image_ratio": "3:2" },
+      "project": { "structure": "Chapter intro with quote, story arc with images, conclusion with reflection", "grid": "narrative", "image_ratio": "varied" },
+      "about": { "structure": "Author bio style, design philosophy as story, journey timeline", "grid": "book" }
+    },
+    "placeholders": { "renders": 4, "plans": 1, "sections": 1, "diagrams": 2, "text_description": true, "story_intro": true, "story_conclusion": true, "client_quote": true, "project_title": true, "year": true },
+    "preview_image": "Warm cream pages with rich storytelling typography, book-chapter feel, evocative photography, narrative flow",
+    "style_notes": "Story-driven practices, residential architects, client-focused",
+    "page_count_range": "32-48",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_026",
+    "name": "Tropical Modern",
+    "category": "Residential",
+    "description": "Lush tropical-inspired portfolio with deep greens, natural textures, and biophilic design celebration.",
+    "colors": { "primary": "#1B3D2F", "accent": "#D4A574", "background": "#F4EFE3", "text": "#1B3D2F", "muted": "#7A8773" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Karla", "accent": "Karla" },
+    "layouts": {
+      "cover": { "structure": "Lush plant-framed image, classical title overlay, tropical color palette", "grid": "framed", "image_ratio": "3:2" },
+      "project": { "structure": "Photography emphasizing biophilic elements, materials including wood/stone callouts", "grid": "organic", "image_ratio": "varied" },
+      "about": { "structure": "Portrait with natural backdrop, philosophy on biophilic design, projects map", "grid": "organic" }
+    },
+    "placeholders": { "renders": 5, "plans": 2, "sections": 2, "diagrams": 2, "text_description": true, "biophilic_elements": true, "project_title": true, "year": true, "climate_response": true },
+    "preview_image": "Deep forest green accents on warm cream pages, lush tropical photography, gold botanical line work",
+    "style_notes": "Tropical architects, biophilic designers, resort and villa specialists",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_027",
+    "name": "Manifesto Mono",
+    "category": "Conceptual",
+    "description": "Manifesto-driven portfolio leading with theory and ideas before showing built work.",
+    "colors": { "primary": "#0F0F0F", "accent": "#E50914", "background": "#FFFFFF", "text": "#0F0F0F", "muted": "#555555" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Space Mono" },
+    "layouts": {
+      "cover": { "structure": "Manifesto title in extreme large type, no image, bold statement", "grid": "manifesto", "image_ratio": "none" },
+      "project": { "structure": "Thesis statement first, manifestos as red text blocks, supporting images", "grid": "manifesto", "image_ratio": "varied" },
+      "about": { "structure": "Manifesto of practice values, no photo of self, bold typographic statements", "grid": "manifesto" }
+    },
+    "placeholders": { "renders": 3, "plans": 1, "sections": 1, "diagrams": 3, "text_description": true, "manifesto_statement": true, "project_thesis": true, "project_title": true, "year": true },
+    "preview_image": "Bold white pages with massive black type and red accent statements, more text than image, intellectual feel",
+    "style_notes": "Theoretical practices, polemic architects, school directors",
+    "page_count_range": "20-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_028",
+    "name": "Asymmetric Modern",
+    "category": "Modern",
+    "description": "Asymmetric layouts breaking the grid intentionally, contemporary art-book feel.",
+    "colors": { "primary": "#1F1F1F", "accent": "#FF9F1C", "background": "#F4F4F2", "text": "#1F1F1F", "muted": "#7A7A7A" },
+    "fonts": { "heading": "Helvetica Now", "body": "Helvetica Now", "accent": "GT America Mono" },
+    "layouts": {
+      "cover": { "structure": "Image fragments asymmetrically placed, title nestled into negative space", "grid": "asymmetric", "image_ratio": "varied" },
+      "project": { "structure": "Asymmetric image placement, text running off-grid, intentional broken layout", "grid": "asymmetric", "image_ratio": "varied" },
+      "about": { "structure": "Off-grid portrait, bio text rotating around image", "grid": "asymmetric" }
+    },
+    "placeholders": { "renders": 5, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Off-balance compositions with orange accents, broken grid feel, contemporary art-book aesthetic",
+    "style_notes": "Avant-garde, art-book practices, contemporary studios",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_029",
+    "name": "Vintage Print",
+    "category": "Vintage",
+    "description": "Vintage print-press feel with letterpress textures, classic typography, and aged paper aesthetics.",
+    "colors": { "primary": "#3D2C1E", "accent": "#8B0000", "background": "#F0E6D2", "text": "#3D2C1E", "muted": "#7A6E58" },
+    "fonts": { "heading": "IM Fell English", "body": "EB Garamond", "accent": "EB Garamond" },
+    "layouts": {
+      "cover": { "structure": "Letterpress-style title with ornaments, vintage frame, sepia photograph", "grid": "letterpress", "image_ratio": "3:2" },
+      "project": { "structure": "Old-print layout with engraving-style sections, sepia photography, ornamental rules", "grid": "letterpress", "image_ratio": "varied" },
+      "about": { "structure": "Vintage portrait, classical bio, signature scroll", "grid": "letterpress" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 2, "diagrams": 2, "text_description": true, "project_title": true, "year": true, "historical_context": true },
+    "preview_image": "Aged paper texture with deep brown ink, classical engraving illustrations, letterpress ornaments, antiquarian feel",
+    "style_notes": "Historic restoration, traditional craftsmen, period architects",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_030",
+    "name": "Color Block Pop",
+    "category": "Bold Modern",
+    "description": "Bold color blocking with bright contemporary palette, energetic young-studio feel.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF006E", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#555555", "secondary_accent": "#3A86FF", "tertiary_accent": "#FFBE0B" },
+    "fonts": { "heading": "Clash Display", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Pink/blue/yellow color blocks, large display title, image cutout", "grid": "color-blocked", "image_ratio": "varied" },
+      "project": { "structure": "Each project gets a signature color block, bold display headlines, energetic compositions", "grid": "color-blocked", "image_ratio": "varied" },
+      "about": { "structure": "Multi-color portrait composition, bio with accent highlights, fun stats", "grid": "color-blocked" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true, "project_color": true },
+    "preview_image": "Vibrant magenta, electric blue, and warm yellow color blocks on white, bold display typography, energetic young feel",
+    "style_notes": "Young firms, design-forward, color-confident practices",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_031",
+    "name": "Section Cut Master",
+    "category": "Technical",
+    "description": "Section-drawing focused portfolio highlighting cross-sections, axonometrics, and constructional details.",
+    "colors": { "primary": "#000000", "accent": "#0066CC", "background": "#FFFFFF", "text": "#000000", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Large detailed section drawing as cover, technical title block", "grid": "technical", "image_ratio": "varied" },
+      "project": { "structure": "Detailed section foldouts, exploded axonometric, construction details, materials index", "grid": "technical-section", "image_ratio": "drawing" },
+      "about": { "structure": "Architect bio as technical title block, software list, drawing skills", "grid": "technical" }
+    },
+    "placeholders": { "renders": 2, "plans": 2, "sections": 6, "diagrams": 5, "text_description": true, "construction_details": true, "project_title": true, "year": true, "scale": true },
+    "preview_image": "Crisp white pages with intricate black-line section cuts, blue annotation callouts, construction-detail focus",
+    "style_notes": "Detail-oriented architects, technical specialists, construction documentation",
+    "page_count_range": "32-48",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_032",
+    "name": "Render Showcase",
+    "category": "Visualization",
+    "description": "Render-focused portfolio for visualization specialists, photo-realistic CGI front and center.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFFFFF", "background": "#1A1A1A", "text": "#FFFFFF", "muted": "#999999" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Stunning hero render full-bleed, sleek title overlay", "grid": "full-bleed", "image_ratio": "full-bleed" },
+      "project": { "structure": "Renders take 80% of every spread, minimal text, render specs (software, time) sidebar", "grid": "render-first", "image_ratio": "full-bleed" },
+      "about": { "structure": "Self-rendered scene or workspace, tech stack, software fluency callout", "grid": "render-first" }
+    },
+    "placeholders": { "renders": 10, "plans": 0, "sections": 0, "diagrams": 1, "text_description": true, "render_specs": true, "project_title": true, "year": true, "software_used": true },
+    "preview_image": "Dramatic dark pages where every spread is a cinematic CGI render, minimal type, gallery-of-renders feel",
+    "style_notes": "Visualization specialists, render firms, CGI artists",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_033",
+    "name": "Interior Stylist",
+    "category": "Interior",
+    "description": "Interior design focused portfolio with material palettes, furniture details, and styled vignettes.",
+    "colors": { "primary": "#2C2A2A", "accent": "#C9A878", "background": "#FAF6F0", "text": "#2C2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Styled interior vignette, elegant title overlay, material swatch corner accent", "grid": "interior", "image_ratio": "4:5" },
+      "project": { "structure": "Interior photography, mood board with material swatches, furniture/lighting credits", "grid": "moodboard", "image_ratio": "varied" },
+      "about": { "structure": "Stylized portrait in designed space, bio with brand collaborations", "grid": "interior" }
+    },
+    "placeholders": { "renders": 6, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "moodboard": true, "material_swatches": 4, "furniture_credits": true, "project_title": true, "year": true },
+    "preview_image": "Warm cream pages with gold accents, beautifully styled interior photography, material swatch grids, lifestyle feel",
+    "style_notes": "Interior designers, hospitality, residential interiors",
+    "page_count_range": "28-40",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_034",
+    "name": "Civic Public",
+    "category": "Civic",
+    "description": "Civic/public architecture portfolio celebrating public space, community engagement, and civic identity.",
+    "colors": { "primary": "#0F2942", "accent": "#C0392B", "background": "#F5F5F0", "text": "#0F2942", "muted": "#7A8794" },
+    "fonts": { "heading": "Source Serif Pro", "body": "Source Sans Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Civic monument photograph, dignified title, place-stamp accent", "grid": "civic", "image_ratio": "16:9" },
+      "project": { "structure": "Site context, public-use scenes, community engagement diagrams, civic program", "grid": "civic", "image_ratio": "varied" },
+      "about": { "structure": "Practice civic mission, public-work timeline, community values", "grid": "civic" }
+    },
+    "placeholders": { "renders": 4, "plans": 3, "sections": 2, "diagrams": 4, "text_description": true, "community_engagement": true, "public_program": true, "project_title": true, "year": true, "client_authority": true },
+    "preview_image": "Dignified navy and warm white pages with red accents, civic-scale photography, community engagement diagrams",
+    "style_notes": "Civic, public, government, large-scale public realm",
+    "page_count_range": "32-48",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_035",
+    "name": "Adaptive Reuse",
+    "category": "Adaptive Reuse",
+    "description": "Before/after focused portfolio celebrating adaptive reuse, heritage transformation, and material storytelling.",
+    "colors": { "primary": "#2B2B2B", "accent": "#A0522D", "background": "#F2EFE9", "text": "#2B2B2B", "muted": "#7A6E58" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Source Serif Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Split before/after image, transformation title, sienna accent", "grid": "before-after", "image_ratio": "split" },
+      "project": { "structure": "Before/after photography pairs, historical context, intervention diagrams, materials retained", "grid": "before-after", "image_ratio": "split" },
+      "about": { "structure": "Practice philosophy on adaptation, conservation credentials, heritage projects map", "grid": "civic" }
+    },
+    "placeholders": { "renders": 4, "plans": 3, "sections": 2, "diagrams": 3, "text_description": true, "before_after_pairs": 4, "historical_context": true, "intervention_strategy": true, "project_title": true, "year_original": true, "year_intervention": true },
+    "preview_image": "Warm cream pages with sienna accents, before/after photography pairs, restoration diagrams, heritage feel",
+    "style_notes": "Heritage, conservation, adaptive reuse specialists",
+    "page_count_range": "32-44",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_036",
+    "name": "Material Library",
+    "category": "Materials",
+    "description": "Materials-driven portfolio with rich material palettes, samples, and tactile photography.",
+    "colors": { "primary": "#2A2A2A", "accent": "#8B7355", "background": "#F4F0EB", "text": "#2A2A2A", "muted": "#9C8E7E" },
+    "fonts": { "heading": "Lora", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Material swatch grid as cover, embossed title, tactile feel", "grid": "swatch", "image_ratio": "uniform" },
+      "project": { "structure": "Material palette pages, close-up macro photography, applied-context images, supplier index", "grid": "material", "image_ratio": "varied" },
+      "about": { "structure": "Practice signature material story, supplier/maker partnerships, craft values", "grid": "material" }
+    },
+    "placeholders": { "renders": 3, "plans": 1, "sections": 2, "diagrams": 2, "text_description": true, "material_swatches": 8, "macro_textures": 6, "supplier_credits": true, "project_title": true, "year": true },
+    "preview_image": "Tactile cream pages with rich material swatch grids, macro texture photography, craft-driven feel",
+    "style_notes": "Material-led architects, craft-focused practices, fabricators",
+    "page_count_range": "28-40",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_037",
+    "name": "Competition Board",
+    "category": "Academic",
+    "description": "Competition-board style portfolio with information-dense layouts, perfect for student competitions and jury presentations.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFD700", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#555555" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Title strip across top, panel grid showing all projects as competition boards", "grid": "competition-grid", "image_ratio": "varied" },
+      "project": { "structure": "Single A1-style board per project with concept, diagrams, plans, renders all on one page", "grid": "competition-board", "image_ratio": "varied" },
+      "about": { "structure": "Compact CV-style with student work timeline, awards, juries", "grid": "competition-grid" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 2, "diagrams": 6, "text_description": true, "concept_statement": true, "project_title": true, "year": true, "competition_name": true, "award_received": true },
+    "preview_image": "Information-dense competition-board layouts with all project elements on one page, yellow accent highlights, academic feel",
+    "style_notes": "Students, competition entries, academic showcases",
+    "page_count_range": "20-32",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_038",
+    "name": "Boutique Studio",
+    "category": "Boutique",
+    "description": "Personal boutique studio portfolio with handcrafted feel, signature touches, and intimate scale.",
+    "colors": { "primary": "#3D3D3D", "accent": "#C5A572", "background": "#FAF5EE", "text": "#3D3D3D", "muted": "#A09584" },
+    "fonts": { "heading": "Lora", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Studio logo, handcrafted title with signature, single intimate image", "grid": "boutique", "image_ratio": "3:2" },
+      "project": { "structure": "Intimate photography, personal client stories, small-scale celebrations", "grid": "intimate", "image_ratio": "varied" },
+      "about": { "structure": "Personal portrait, signature, hand-written philosophy, small client list", "grid": "intimate" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "client_story": true, "personal_note": true, "project_title": true, "year": true },
+    "preview_image": "Warm cream pages with antique gold accents, intimate residential photography, handcrafted typography, boutique feel",
+    "style_notes": "Boutique studios, small practices, residential specialists",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_039",
+    "name": "Mid-Century Mod",
+    "category": "Mid-Century",
+    "description": "Mid-century modern aesthetic with warm wood tones, geometric patterns, and 1950s-60s typography.",
+    "colors": { "primary": "#2A1B0F", "accent": "#E07A3F", "background": "#F2E7D5", "text": "#2A1B0F", "muted": "#9C8266", "secondary_accent": "#5B7B6E" },
+    "fonts": { "heading": "Quattrocento", "body": "Quattrocento Sans", "accent": "Quattrocento Sans" },
+    "layouts": {
+      "cover": { "structure": "Geometric mid-century pattern, warm photograph, retro title treatment", "grid": "mid-century", "image_ratio": "4:3" },
+      "project": { "structure": "Warm wood-tone photography, geometric pattern dividers, retro furniture credits", "grid": "mid-century", "image_ratio": "varied" },
+      "about": { "structure": "Vintage-styled portrait, retro bio layout, mid-century influence list", "grid": "mid-century" }
+    },
+    "placeholders": { "renders": 5, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true, "vintage_influence": true },
+    "preview_image": "Warm tan and orange pages with deep teal accents, geometric patterns, wood-tone photography, 1960s aesthetic",
+    "style_notes": "Mid-century restorations, Eichler-style, Palm Springs aesthetic",
+    "page_count_range": "24-32",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_040",
+    "name": "Skyline Tower",
+    "category": "Commercial",
+    "description": "Tower and high-rise focused portfolio with vertical compositions and commercial-scale presentation.",
+    "colors": { "primary": "#0F1B2D", "accent": "#A8DADC", "background": "#FFFFFF", "text": "#0F1B2D", "muted": "#6B7A8F" },
+    "fonts": { "heading": "Montserrat", "body": "Open Sans", "accent": "Open Sans" },
+    "layouts": {
+      "cover": { "structure": "Tall vertical tower photograph, sleek title overlay, corporate feel", "grid": "vertical", "image_ratio": "9:16" },
+      "project": { "structure": "Tower elevation full-page, plan-stack diagram, program use diagrams, urban context", "grid": "vertical", "image_ratio": "varied" },
+      "about": { "structure": "Corporate-style team photo, commercial credentials, project scale stats", "grid": "corporate" }
+    },
+    "placeholders": { "renders": 5, "plans": 4, "sections": 2, "diagrams": 3, "text_description": true, "project_title": true, "year": true, "height": true, "gfa": true, "client": true, "program": true },
+    "preview_image": "Crisp white pages with deep navy and pale blue accents, dramatic tower photography, corporate commercial feel",
+    "style_notes": "Commercial architects, high-rise specialists, large firms",
+    "page_count_range": "32-48",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_041",
+    "name": "Sketches & Concepts",
+    "category": "Conceptual",
+    "description": "Concept-led portfolio with bold sketches, ideation drawings, and process documentation.",
+    "colors": { "primary": "#1A1A1A", "accent": "#F4A460", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Caveat" },
+    "layouts": {
+      "cover": { "structure": "Concept sketch as cover art, casual title, sketch-paper feel", "grid": "concept", "image_ratio": "varied" },
+      "project": { "structure": "Initial sketch, concept evolution series, schematic plans, final renders, concept-to-build progression", "grid": "process", "image_ratio": "varied" },
+      "about": { "structure": "Sketch-style portrait, design process diagram, philosophy", "grid": "concept" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 1, "diagrams": 5, "text_description": true, "concept_sketches": 6, "concept_statement": true, "project_title": true, "year": true },
+    "preview_image": "White pages with hand-drawn pencil sketches, peach accent highlights, ideation-to-build storytelling",
+    "style_notes": "Conceptual practices, design-thinking firms, ideation-led",
+    "page_count_range": "32-44",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_042",
+    "name": "Photoreal Studio",
+    "category": "Visualization",
+    "description": "Photorealistic visualization showcase with cinema-quality renders and VFX-style presentation.",
+    "colors": { "primary": "#0A0A0A", "accent": "#FFCC00", "background": "#0A0A0A", "text": "#FFFFFF", "muted": "#888888" },
+    "fonts": { "heading": "Bebas Neue", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Cinematic render full-bleed with film-credit-style title", "grid": "cinematic", "image_ratio": "21:9" },
+      "project": { "structure": "Cinematic renders with VFX behind-the-scenes, lighting setups, render passes", "grid": "cinematic", "image_ratio": "21:9" },
+      "about": { "structure": "Dark studio shot, software stack as movie credits, demo reel link", "grid": "cinematic" }
+    },
+    "placeholders": { "renders": 12, "plans": 0, "sections": 0, "diagrams": 1, "text_description": true, "render_breakdown": true, "software_used": true, "project_title": true, "year": true, "lighting_setup": true },
+    "preview_image": "Dark cinematic pages with bold yellow accents, photoreal CGI hero images, VFX-studio aesthetic",
+    "style_notes": "Visualization studios, archviz firms, CGI specialists",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_043",
+    "name": "Cultural Heritage",
+    "category": "Heritage",
+    "description": "Cultural and heritage architecture portfolio with deep storytelling about place, history, and people.",
+    "colors": { "primary": "#3D2817", "accent": "#A0522D", "background": "#F4ECDC", "text": "#3D2817", "muted": "#7A6E58" },
+    "fonts": { "heading": "Cormorant", "body": "EB Garamond", "accent": "Cormorant SC" },
+    "layouts": {
+      "cover": { "structure": "Heritage photograph with ornamental frame, classical title", "grid": "heritage", "image_ratio": "3:2" },
+      "project": { "structure": "Site history page, archival photos vs current, restoration documentation, cultural narrative", "grid": "heritage", "image_ratio": "varied" },
+      "about": { "structure": "Classical portrait, heritage credentials, conservation philosophy", "grid": "heritage" }
+    },
+    "placeholders": { "renders": 3, "plans": 2, "sections": 2, "diagrams": 2, "text_description": true, "archival_images": 4, "cultural_narrative": true, "project_title": true, "year": true, "heritage_status": true },
+    "preview_image": "Warm aged-paper pages with rich brown ink, classical serif type, archival and contemporary photography pairs",
+    "style_notes": "Heritage architects, conservation specialists, cultural buildings",
+    "page_count_range": "32-44",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_044",
+    "name": "Urban Diagram",
+    "category": "Urban",
+    "description": "Urban planning and design portfolio with city-scale diagrams, mapping, and analytical visualization.",
+    "colors": { "primary": "#2C3E50", "accent": "#E67E22", "background": "#FFFFFF", "text": "#2C3E50", "muted": "#7F8C8D" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "City map as cover with project pins, urban-scale title", "grid": "urban", "image_ratio": "varied" },
+      "project": { "structure": "Context map, urban analysis diagrams, masterplan, street-level renders, phasing", "grid": "urban", "image_ratio": "varied" },
+      "about": { "structure": "World map with project locations, urban-scale credentials, planning awards", "grid": "urban" }
+    },
+    "placeholders": { "renders": 3, "plans": 4, "sections": 1, "diagrams": 8, "text_description": true, "urban_analysis": true, "masterplan": true, "project_title": true, "year": true, "site_area": true, "phasing": true },
+    "preview_image": "White pages with deep blue and orange accents, urban-scale maps and diagrams, analytical infographic feel",
+    "style_notes": "Urban designers, planners, master plan specialists",
+    "page_count_range": "36-52",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_045",
+    "name": "Pavilion Concept",
+    "category": "Conceptual",
+    "description": "Pavilion and small-scale conceptual project portfolio with experimental forms and material exploration.",
+    "colors": { "primary": "#1A1A1A", "accent": "#00A86B", "background": "#FAFAFA", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Experimental pavilion render or model photograph, conceptual title", "grid": "experimental", "image_ratio": "1:1" },
+      "project": { "structure": "Concept diagram, parametric variations, model photography, fabrication details, pavilion-in-context", "grid": "experimental", "image_ratio": "varied" },
+      "about": { "structure": "Experimental practice statement, prototyping skills, fabrication partnerships", "grid": "experimental" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 4, "text_description": true, "model_photos": 4, "fabrication_details": true, "concept_statement": true, "project_title": true, "year": true },
+    "preview_image": "Clean white pages with vibrant green accents, experimental pavilion renders and model photography, fabrication detail",
+    "style_notes": "Pavilion specialists, experimental practices, fabrication-focused",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_046",
+    "name": "Workspace Office",
+    "category": "Commercial",
+    "description": "Office and workspace design portfolio with human-centered focus, brand integration, and workplace culture.",
+    "colors": { "primary": "#1F1F1F", "accent": "#FF6B6B", "background": "#FFFFFF", "text": "#1F1F1F", "muted": "#7A7A7A" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Vibrant office photograph, modern title, brand-collab feel", "grid": "workplace", "image_ratio": "16:9" },
+      "project": { "structure": "Office photography with people, brand integration callouts, productivity diagrams, materials list", "grid": "workplace", "image_ratio": "varied" },
+      "about": { "structure": "Studio team photo, workplace philosophy, brand client list", "grid": "workplace" }
+    },
+    "placeholders": { "renders": 5, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "brand_client": true, "headcount": true, "project_title": true, "year": true, "workplace_strategy": true },
+    "preview_image": "Bright white pages with coral accents, vibrant office photography with people in motion, contemporary workplace feel",
+    "style_notes": "Workplace specialists, office designers, corporate interiors",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_047",
+    "name": "Hospitality Lux",
+    "category": "Hospitality",
+    "description": "Luxury hospitality portfolio for hotels, restaurants, and high-end experience design.",
+    "colors": { "primary": "#1F2937", "accent": "#D4AF37", "background": "#F9F7F2", "text": "#1F2937", "muted": "#9CA3AF" },
+    "fonts": { "heading": "Cormorant Garamond", "body": "Cormorant Garamond", "accent": "Montserrat" },
+    "layouts": {
+      "cover": { "structure": "Atmospheric hotel/restaurant photograph, gold-accent title, luxury feel", "grid": "luxury", "image_ratio": "16:9" },
+      "project": { "structure": "Hero atmospheric photography, mood shots, materials and curation list, guest experience narrative", "grid": "luxury", "image_ratio": "varied" },
+      "about": { "structure": "Elegant portrait, hospitality credentials, premier brand collaborations", "grid": "luxury" }
+    },
+    "placeholders": { "renders": 6, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "brand_partners": true, "key_rooms": true, "project_title": true, "year": true, "location": true, "star_rating": true },
+    "preview_image": "Warm cream pages with refined gold accents, atmospheric mood photography, luxury hospitality feel",
+    "style_notes": "Hospitality specialists, hotel architects, restaurant designers",
+    "page_count_range": "32-44",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_048",
+    "name": "Healthcare Design",
+    "category": "Healthcare",
+    "description": "Healthcare and wellness architecture portfolio with evidence-based design and patient-centered focus.",
+    "colors": { "primary": "#2E5266", "accent": "#6E8898", "background": "#F4F8FA", "text": "#2E5266", "muted": "#9BB1BC" },
+    "fonts": { "heading": "Source Serif Pro", "body": "Source Sans Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Calming healthcare photograph, professional title, soft palette", "grid": "healthcare", "image_ratio": "16:9" },
+      "project": { "structure": "Patient-experience photography, evidence-based diagrams, flow plans, biophilic integration", "grid": "healthcare", "image_ratio": "varied" },
+      "about": { "structure": "Practice values, healthcare credentials, evidence-based design certifications", "grid": "healthcare" }
+    },
+    "placeholders": { "renders": 4, "plans": 3, "sections": 2, "diagrams": 4, "text_description": true, "evidence_basis": true, "patient_experience": true, "project_title": true, "year": true, "bed_count": true },
+    "preview_image": "Calm soft blue pages with gentle slate accents, warm healthcare photography, evidence-based diagrams",
+    "style_notes": "Healthcare specialists, hospital architects, wellness designers",
+    "page_count_range": "32-44",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_049",
+    "name": "Modular Prefab",
+    "category": "Modular",
+    "description": "Modular and prefab architecture portfolio with systems thinking, assembly diagrams, and unit variations.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FF6F61", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#666666" },
+    "fonts": { "heading": "Space Grotesk", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Modular unit grid, exploded axonometric, technical title", "grid": "modular", "image_ratio": "varied" },
+      "project": { "structure": "Unit module variations, assembly sequence, transportation diagrams, on-site assembly photography", "grid": "modular", "image_ratio": "varied" },
+      "about": { "structure": "Systems-thinking practice statement, supply chain partners, manufacturing capacity", "grid": "modular" }
+    },
+    "placeholders": { "renders": 4, "plans": 3, "sections": 2, "diagrams": 6, "text_description": true, "module_variations": 4, "assembly_sequence": true, "project_title": true, "year": true, "unit_count": true },
+    "preview_image": "White pages with coral accents, modular unit grids, assembly diagrams, prefab manufacturing feel",
+    "style_notes": "Prefab specialists, modular housing, ADU designers",
+    "page_count_range": "28-40",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_050",
+    "name": "Desert Adobe",
+    "category": "Residential",
+    "description": "Desert and adobe architecture portfolio with warm earth tones and regional vernacular celebration.",
+    "colors": { "primary": "#5C3A21", "accent": "#D2691E", "background": "#F4E4CC", "text": "#5C3A21", "muted": "#A08568" },
+    "fonts": { "heading": "Lora", "body": "Lora", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Desert architecture in golden light, warm title, terracotta accents", "grid": "regional", "image_ratio": "16:9" },
+      "project": { "structure": "Site-in-landscape photography, vernacular references, thermal mass diagrams, regional materials", "grid": "regional", "image_ratio": "varied" },
+      "about": { "structure": "Portrait in desert context, regional architecture philosophy, vernacular research", "grid": "regional" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 3, "text_description": true, "climate_response": true, "vernacular_reference": true, "project_title": true, "year": true, "location": true },
+    "preview_image": "Warm sand and terracotta pages, desert architecture photography, vernacular diagrams, regional warmth",
+    "style_notes": "Desert architects, Southwest, vernacular specialists",
+    "page_count_range": "24-32",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_051",
+    "name": "Glass & Steel",
+    "category": "Commercial",
+    "description": "Glass and steel modern architecture portfolio with sleek corporate aesthetic and reflective surfaces.",
+    "colors": { "primary": "#1F1F1F", "accent": "#4A90E2", "background": "#F0F2F5", "text": "#1F1F1F", "muted": "#7A7A7A" },
+    "fonts": { "heading": "Montserrat", "body": "Open Sans", "accent": "Open Sans" },
+    "layouts": {
+      "cover": { "structure": "Reflective glass tower photograph, sleek modern title, corporate blue accent", "grid": "corporate", "image_ratio": "16:9" },
+      "project": { "structure": "Sleek architectural photography, structural diagrams, facade systems, corporate program", "grid": "corporate", "image_ratio": "varied" },
+      "about": { "structure": "Corporate studio shot, large-firm credentials, multinational client list", "grid": "corporate" }
+    },
+    "placeholders": { "renders": 5, "plans": 3, "sections": 2, "diagrams": 2, "text_description": true, "facade_system": true, "project_title": true, "year": true, "gfa": true, "client": true },
+    "preview_image": "Light gray pages with crisp blue accents, sleek glass tower photography, corporate modern feel",
+    "style_notes": "Corporate, commercial, large-firm aesthetic",
+    "page_count_range": "32-44",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_052",
+    "name": "Tiny House Cabin",
+    "category": "Residential",
+    "description": "Small-scale residential portfolio for tiny houses, cabins, ADUs, and micro-architecture.",
+    "colors": { "primary": "#3D3A2F", "accent": "#7A8C5C", "background": "#F4F1E4", "text": "#3D3A2F", "muted": "#9C947A" },
+    "fonts": { "heading": "Lora", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Cozy cabin photograph in nature, handwritten-style title, warm feel", "grid": "intimate", "image_ratio": "3:2" },
+      "project": { "structure": "Cabin photography in landscape, micro-plan, section showing efficient space, materials list", "grid": "intimate", "image_ratio": "varied" },
+      "about": { "structure": "Personal portrait, philosophy on small-living, project gallery thumbnails", "grid": "intimate" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 2, "text_description": true, "sqft": true, "project_title": true, "year": true, "location": true, "construction_cost": true },
+    "preview_image": "Warm cream pages with olive green accents, cozy cabin photography, intimate small-scale feel",
+    "style_notes": "Tiny house designers, cabin architects, ADU specialists",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_053",
+    "name": "School Education",
+    "category": "Educational",
+    "description": "Educational architecture portfolio for schools, universities, and learning environments.",
+    "colors": { "primary": "#1F4E5F", "accent": "#F4A261", "background": "#FFFFFF", "text": "#1F4E5F", "muted": "#7A8C8F" },
+    "fonts": { "heading": "Source Serif Pro", "body": "Source Sans Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Active learning space photograph with students, optimistic title, teal accent", "grid": "educational", "image_ratio": "16:9" },
+      "project": { "structure": "Learning space photography, pedagogical diagrams, age-appropriate scale, learning outcomes", "grid": "educational", "image_ratio": "varied" },
+      "about": { "structure": "Practice educational philosophy, pedagogical partnerships, learning environment credentials", "grid": "educational" }
+    },
+    "placeholders": { "renders": 5, "plans": 3, "sections": 2, "diagrams": 3, "text_description": true, "pedagogy": true, "student_capacity": true, "project_title": true, "year": true, "school_level": true },
+    "preview_image": "Bright white pages with teal and orange accents, active learning photography, educational architecture feel",
+    "style_notes": "Educational architects, schools, universities, learning environments",
+    "page_count_range": "28-40",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_054",
+    "name": "Religious Sacred",
+    "category": "Religious",
+    "description": "Religious and sacred architecture portfolio with reverent design, light study, and spiritual narrative.",
+    "colors": { "primary": "#3D3D3D", "accent": "#C5A572", "background": "#F8F4ED", "text": "#3D3D3D", "muted": "#9C9484" },
+    "fonts": { "heading": "Cormorant", "body": "EB Garamond", "accent": "Cormorant SC" },
+    "layouts": {
+      "cover": { "structure": "Sacred space with dramatic light photograph, reverent title, gold accent", "grid": "sacred", "image_ratio": "3:2" },
+      "project": { "structure": "Light study photography, processional sequence, sacred geometry, liturgical/ritual context", "grid": "sacred", "image_ratio": "varied" },
+      "about": { "structure": "Practice spiritual philosophy, sacred space credentials, faith-tradition collaborations", "grid": "sacred" }
+    },
+    "placeholders": { "renders": 4, "plans": 3, "sections": 3, "diagrams": 2, "text_description": true, "light_studies": 3, "faith_tradition": true, "project_title": true, "year": true, "congregation_size": true },
+    "preview_image": "Warm cream pages with gold accents, dramatic light photography, sacred geometry diagrams, reverent feel",
+    "style_notes": "Religious specialists, sacred space designers, all faith traditions",
+    "page_count_range": "28-40",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_055",
+    "name": "Cultural Museum",
+    "category": "Cultural",
+    "description": "Museum and cultural building portfolio with curatorial narrative and exhibition design.",
+    "colors": { "primary": "#1A1A1A", "accent": "#B22234", "background": "#FAFAFA", "text": "#1A1A1A", "muted": "#7A7A7A" },
+    "fonts": { "heading": "Playfair Display", "body": "Source Sans Pro", "accent": "Source Sans Pro" },
+    "layouts": {
+      "cover": { "structure": "Iconic museum photograph, curatorial title, museum-poster feel", "grid": "cultural", "image_ratio": "3:2" },
+      "project": { "structure": "Exterior icon shot, gallery sequences, curatorial diagrams, visitor experience flow", "grid": "cultural", "image_ratio": "varied" },
+      "about": { "structure": "Practice cultural philosophy, museum portfolio, curatorial collaborations", "grid": "cultural" }
+    },
+    "placeholders": { "renders": 5, "plans": 3, "sections": 2, "diagrams": 3, "text_description": true, "exhibition_program": true, "project_title": true, "year": true, "collection_focus": true, "visitor_capacity": true },
+    "preview_image": "Crisp white pages with deep red accents, museum-quality photography, cultural building gravity",
+    "style_notes": "Museum architects, cultural buildings, exhibition designers",
+    "page_count_range": "32-44",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_056",
+    "name": "Retail Concept",
+    "category": "Retail",
+    "description": "Retail and commercial interior portfolio with brand integration and customer experience focus.",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFD700", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#7A7A7A" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "Inter" },
+    "layouts": {
+      "cover": { "structure": "Bold retail photograph, brand-style title, energetic feel", "grid": "retail", "image_ratio": "16:9" },
+      "project": { "structure": "Storefront photography, customer flow diagrams, brand integration callouts, material details", "grid": "retail", "image_ratio": "varied" },
+      "about": { "structure": "Studio brand identity, retail client portfolio, brand collaborations", "grid": "retail" }
+    },
+    "placeholders": { "renders": 5, "plans": 2, "sections": 1, "diagrams": 2, "text_description": true, "brand_partner": true, "retail_program": true, "project_title": true, "year": true, "sqft": true },
+    "preview_image": "Bright white pages with yellow accents, energetic retail photography, brand-integration feel",
+    "style_notes": "Retail specialists, brand experience, flagship stores",
+    "page_count_range": "24-36",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_057",
+    "name": "Sports Stadium",
+    "category": "Sports",
+    "description": "Sports and stadium architecture portfolio with crowd-scale photography and event-experience focus.",
+    "colors": { "primary": "#0F0F0F", "accent": "#FF6B00", "background": "#1A1A1A", "text": "#FFFFFF", "muted": "#888888" },
+    "fonts": { "heading": "Oswald", "body": "Roboto", "accent": "Roboto Mono" },
+    "layouts": {
+      "cover": { "structure": "Dramatic stadium photograph with crowd, bold title, orange accent", "grid": "stadium", "image_ratio": "21:9" },
+      "project": { "structure": "Aerial stadium shots, crowd-experience photography, sight-line diagrams, event flow", "grid": "stadium", "image_ratio": "21:9" },
+      "about": { "structure": "Sports specialist credentials, stadium portfolio, capacity-led stats", "grid": "stadium" }
+    },
+    "placeholders": { "renders": 5, "plans": 3, "sections": 2, "diagrams": 3, "text_description": true, "capacity": true, "sight_lines": true, "project_title": true, "year": true, "sport_type": true },
+    "preview_image": "Dark dramatic pages with bright orange accents, dramatic stadium photography, sports-architecture energy",
+    "style_notes": "Sports specialists, stadium architects, venue designers",
+    "page_count_range": "32-44",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_058",
+    "name": "Industrial Factory",
+    "category": "Industrial",
+    "description": "Industrial and manufacturing architecture portfolio with operational diagrams and process flow.",
+    "colors": { "primary": "#2A2A2A", "accent": "#F4A300", "background": "#F0F0F0", "text": "#2A2A2A", "muted": "#7A7A7A" },
+    "fonts": { "heading": "Oswald", "body": "Roboto", "accent": "Roboto Mono" },
+    "layouts": {
+      "cover": { "structure": "Industrial-scale photograph, technical title with rivets, gray-orange palette", "grid": "industrial", "image_ratio": "16:9" },
+      "project": { "structure": "Industrial photography, process flow diagrams, structural systems, operational programming", "grid": "industrial", "image_ratio": "varied" },
+      "about": { "structure": "Industrial credentials, factory portfolio, engineering partnerships", "grid": "industrial" }
+    },
+    "placeholders": { "renders": 4, "plans": 3, "sections": 3, "diagrams": 4, "text_description": true, "process_flow": true, "structural_system": true, "project_title": true, "year": true, "production_capacity": true },
+    "preview_image": "Industrial gray pages with safety orange accents, factory and warehouse photography, engineering precision",
+    "style_notes": "Industrial architects, factory specialists, logistics buildings",
+    "page_count_range": "28-40",
+    "orientation": "landscape_A3"
+  },
+  {
+    "id": "tpl_059",
+    "name": "Lab Research",
+    "category": "Research",
+    "description": "Research and laboratory architecture portfolio with technical systems and scientific aesthetics.",
+    "colors": { "primary": "#1F2937", "accent": "#10B981", "background": "#FFFFFF", "text": "#1F2937", "muted": "#7A8C8F" },
+    "fonts": { "heading": "Inter", "body": "Inter", "accent": "JetBrains Mono" },
+    "layouts": {
+      "cover": { "structure": "Clean lab photograph, technical title, scientific feel", "grid": "research", "image_ratio": "16:9" },
+      "project": { "structure": "Lab photography, MEP systems diagrams, biocontainment levels, flexibility analysis", "grid": "research", "image_ratio": "varied" },
+      "about": { "structure": "Research credentials, lab portfolio, scientific partnerships", "grid": "research" }
+    },
+    "placeholders": { "renders": 4, "plans": 4, "sections": 2, "diagrams": 4, "text_description": true, "biosafety_level": true, "lab_type": true, "project_title": true, "year": true, "sqft": true },
+    "preview_image": "Crisp white pages with emerald green accents, sterile lab photography, technical systems diagrams",
+    "style_notes": "Lab specialists, research facility architects, pharma/biotech buildings",
+    "page_count_range": "32-44",
+    "orientation": "landscape_A4"
+  },
+  {
+    "id": "tpl_060",
+    "name": "Eco Vernacular",
+    "category": "Sustainable",
+    "description": "Eco-vernacular portfolio blending regional vernacular wisdom with sustainable building techniques.",
+    "colors": { "primary": "#3D4F2C", "accent": "#C57E3C", "background": "#F4EFE0", "text": "#3D4F2C", "muted": "#8B9270" },
+    "fonts": { "heading": "Lora", "body": "Karla", "accent": "Karla" },
+    "layouts": {
+      "cover": { "structure": "Vernacular architecture in landscape, warm earth-tone title, organic accents", "grid": "vernacular", "image_ratio": "3:2" },
+      "project": { "structure": "Landscape integration photography, vernacular references, low-tech sustainability diagrams, local materials", "grid": "vernacular", "image_ratio": "varied" },
+      "about": { "structure": "Portrait in regional context, vernacular research portfolio, sustainability philosophy", "grid": "vernacular" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 2, "diagrams": 4, "text_description": true, "vernacular_reference": true, "local_materials": true, "low_tech_strategies": true, "project_title": true, "year": true, "location": true },
+    "preview_image": "Warm cream pages with deep forest green and terracotta accents, vernacular architecture photography, regional warmth",
+    "style_notes": "Vernacular specialists, low-tech sustainability, regional-modern architects",
+    "page_count_range": "28-40",
+    "orientation": "portrait_A4"
+  }
+]

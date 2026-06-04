@@ -49,11 +49,16 @@ export default function PortfolioFlipbookPage() {
   const [showLayoutPicker, setShowLayoutPicker] = useState<string | null>(null)  // page ID being edited
   const [pageLayouts, setPageLayouts] = useState<Record<string, string>>({})  // pageId → layoutId
   const [editingPage, setEditingPage] = useState<{ id: string; index: number } | null>(null)  // open content editor for this project
+  const [editTab, setEditTab] = useState<'content' | 'images'>('content')
   const [editForm, setEditForm] = useState<{ name: string; location: string; year: string; typology: string; description: string }>({
     name: '', location: '', year: '', typology: '', description: ''
   })
+  const [editAssets, setEditAssets] = useState<Record<string, string[]>>({
+    renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: []
+  })
   const [editProjects, setEditProjects] = useState<any[]>([])  // cache of design_projects from wizard config
   const [aiGenerating, setAiGenerating] = useState<string | null>(null)  // mode being generated
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const hasLoadedInitialRef = useRef(false)
@@ -235,13 +240,70 @@ export default function PortfolioFlipbookPage() {
         typology: dp.typology || '',
         description: dp.description || '',
       })
+      setEditAssets({
+        renders: dp.assets?.renders || [],
+        plans: dp.assets?.plans || [],
+        sections: dp.assets?.sections || [],
+        elevations: dp.assets?.elevations || [],
+        concepts: dp.assets?.concepts || [],
+        diagrams: dp.assets?.diagrams || [],
+      })
+      setEditTab('content')
       setEditingPage({ id: pageId, index: idx })
     } catch (e) {
       console.error('Failed to load project for edit:', e)
-      // Open anyway with blank form
       setEditForm({ name: '', location: '', year: '', typology: '', description: '' })
+      setEditAssets({ renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: [] })
       setEditingPage({ id: pageId, index: idx })
     }
+  }
+
+  // Upload a new image to a category
+  const uploadAssetToCategory = async (category: string, file: File) => {
+    setUploadingCategory(category)
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const formData = new FormData()
+      formData.append('files', file)
+      const assetType = category.slice(0, -1)  // "renders" → "render"
+      const res = await fetch(
+        `${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=${assetType}`,
+        { method: 'POST', headers: { 'Authorization': `Bearer ${savedToken}` }, body: formData }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        const uploadedUrl = data.assets?.[0]?.file_url
+        if (uploadedUrl) {
+          setEditAssets(prev => ({
+            ...prev,
+            [category]: [...(prev[category] || []), uploadedUrl]
+          }))
+        }
+      } else {
+        alert(`Upload failed: ${res.status}`)
+      }
+    } catch (e: any) {
+      alert(`Upload error: ${e.message}`)
+    } finally {
+      setUploadingCategory(null)
+    }
+  }
+
+  const removeAsset = (category: string, url: string) => {
+    setEditAssets(prev => ({
+      ...prev,
+      [category]: prev[category].filter(u => u !== url)
+    }))
+  }
+
+  const moveAsset = (category: string, idx: number, direction: 'up' | 'down') => {
+    setEditAssets(prev => {
+      const arr = [...(prev[category] || [])]
+      const newIdx = direction === 'up' ? idx - 1 : idx + 1
+      if (newIdx < 0 || newIdx >= arr.length) return prev
+      ;[arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]]
+      return { ...prev, [category]: arr }
+    })
   }
 
   // Save content edits
@@ -258,7 +320,7 @@ export default function PortfolioFlipbookPage() {
             'Authorization': `Bearer ${savedToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(editForm),
+          body: JSON.stringify({ ...editForm, assets: editAssets }),
         }
       )
       if (res.ok) {
@@ -805,20 +867,46 @@ export default function PortfolioFlipbookPage() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="px-5 py-4 border-b border-border-light flex items-center justify-between sticky top-0 bg-white z-10">
-                <div>
-                  <h3 className="text-lg font-bold text-charcoal">✏️ Edit Page Content</h3>
-                  <p className="text-xs text-stone-light mt-0.5">Project #{editingPage.index + 1}</p>
+              <div className="px-5 py-4 border-b border-border-light sticky top-0 bg-white z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-charcoal">✏️ Edit Page</h3>
+                    <p className="text-xs text-stone-light mt-0.5">Project #{editingPage.index + 1}</p>
+                  </div>
+                  <button
+                    onClick={() => setEditingPage(null)}
+                    className="text-stone-light hover:text-charcoal p-2"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <button
-                  onClick={() => setEditingPage(null)}
-                  className="text-stone-light hover:text-charcoal p-2"
-                >
-                  ✕
-                </button>
+                {/* Tabs */}
+                <div className="flex gap-2 -mb-4">
+                  <button
+                    onClick={() => setEditTab('content')}
+                    className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${
+                      editTab === 'content'
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-stone-light hover:text-charcoal'
+                    }`}
+                  >
+                    📝 Content
+                  </button>
+                  <button
+                    onClick={() => setEditTab('images')}
+                    className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${
+                      editTab === 'images'
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-stone-light hover:text-charcoal'
+                    }`}
+                  >
+                    🖼️ Images ({Object.values(editAssets).reduce((s, a) => s + a.length, 0)})
+                  </button>
+                </div>
               </div>
 
-              {/* Form */}
+              {/* Tab Content */}
+              {editTab === 'content' && (
               <div className="flex-1 p-5 space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Project Name</label>
@@ -914,6 +1002,99 @@ export default function PortfolioFlipbookPage() {
                   </p>
                 </div>
               </div>
+              )}
+
+              {/* IMAGES TAB */}
+              {editTab === 'images' && (
+              <div className="flex-1 p-5 space-y-4 overflow-y-auto">
+                {[
+                  { key: 'renders', label: '🎨 Renders', desc: 'Photorealistic visuals' },
+                  { key: 'plans', label: '📐 Plans', desc: 'Floor & site plans' },
+                  { key: 'sections', label: '📏 Sections', desc: 'Building sections' },
+                  { key: 'elevations', label: '🏢 Elevations', desc: 'Building elevations' },
+                  { key: 'concepts', label: '💡 Concepts', desc: 'Concept diagrams' },
+                  { key: 'diagrams', label: '📊 Diagrams', desc: 'Technical diagrams' },
+                ].map(cat => {
+                  const items = editAssets[cat.key] || []
+                  return (
+                    <div key={cat.key} className="border border-border-light rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <div className="text-sm font-bold text-charcoal">{cat.label} <span className="text-xs text-stone-light font-normal">({items.length})</span></div>
+                          <div className="text-[10px] text-stone-light">{cat.desc}</div>
+                        </div>
+                        <label className="text-xs px-2.5 py-1.5 bg-primary text-white rounded font-semibold hover:bg-primary-dark cursor-pointer transition disabled:opacity-50">
+                          {uploadingCategory === cat.key ? '⟳' : '+ Add'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            disabled={!!uploadingCategory}
+                            className="hidden"
+                            onChange={async (e) => {
+                              const files = e.target.files
+                              if (!files) return
+                              for (const f of Array.from(files)) {
+                                await uploadAssetToCategory(cat.key, f)
+                              }
+                              e.target.value = ''
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {items.length === 0 ? (
+                        <div className="text-center py-4 text-xs text-stone-light bg-bg-subtle rounded">
+                          No images yet — click "+ Add" to upload
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2">
+                          {items.map((url, idx) => (
+                            <div key={`${url}-${idx}`} className="relative group aspect-square bg-bg-subtle rounded overflow-hidden border border-border-light">
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              {/* Overlay buttons */}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition">
+                                <button
+                                  onClick={() => moveAsset(cat.key, idx, 'up')}
+                                  disabled={idx === 0}
+                                  className="bg-white text-charcoal w-7 h-7 rounded-full text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle"
+                                  title="Move earlier"
+                                >
+                                  ←
+                                </button>
+                                <button
+                                  onClick={() => moveAsset(cat.key, idx, 'down')}
+                                  disabled={idx === items.length - 1}
+                                  className="bg-white text-charcoal w-7 h-7 rounded-full text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle"
+                                  title="Move later"
+                                >
+                                  →
+                                </button>
+                                <button
+                                  onClick={() => removeAsset(cat.key, url)}
+                                  className="bg-red-600 text-white w-7 h-7 rounded-full text-xs font-bold hover:bg-red-700"
+                                  title="Remove"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              {/* Order badge */}
+                              <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-mono">
+                                {idx + 1}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+
+                <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
+                  💡 <strong>Tip:</strong> The order of images affects how they appear in your layout. Drag to reorder soon, for now use ← → arrows.
+                </div>
+              </div>
+              )}
 
               {/* Footer */}
               <div className="px-5 py-4 border-t border-border-light flex gap-2 sticky bottom-0 bg-white">

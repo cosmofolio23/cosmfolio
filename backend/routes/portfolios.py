@@ -410,6 +410,15 @@ async def patch_project_content(
         for field in allowed_fields:
             if field in body:
                 current_project[field] = body[field]
+
+        # Allow updating assets dict (renders, plans, sections, etc.)
+        if "assets" in body and isinstance(body["assets"], dict):
+            current_assets = current_project.get("assets") or {}
+            for category, urls in body["assets"].items():
+                if isinstance(urls, list):
+                    current_assets[category] = urls
+            current_project["assets"] = current_assets
+
         design_projects[project_index] = current_project
         config["design_projects"] = design_projects
 

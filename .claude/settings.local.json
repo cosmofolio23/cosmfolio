@@ -122,7 +122,14 @@
       "Bash(curl -s -o /dev/null -w \"Frontend: HTTP %{http_code}\\\\n\" -m 10 https://cosmofolio.pages.dev/)",
       "Bash(curl -s https://cosmfolio-backend.onrender.com/health -w \"\\\\nBackend: HTTP %{http_code}\\\\n\" -m 10)",
       "Bash(curl -s -o /dev/null -w \"Dashboard: HTTP %{http_code}\\\\n\" -m 10 https://cosmofolio.pages.dev/dashboard)",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" https://cosmfolio-backend.onrender.com/api/projects)"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" https://cosmfolio-backend.onrender.com/api/projects)",
+      "WebFetch(domain:dl.medicalresourcesbox.com)",
+      "Bash(curl -s -L -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://dl.medicalresourcesbox.com/2026/01/25/btr-tnd-7/\" -o /tmp/page.html)",
+      "Bash(grep -iE \"\\(download|\\\\.pdf|\\\\.mp4|href=\\)\" /tmp/page.html | head -30)",
+      "Bash(grep -oE 'href=\"https://[^\"]+\"' /tmp/page.html | sort -u | head -40)",
+      "Bash(ls \"E:/Projects/My Product/BUILDING APP/ArchPortfolio Generator/\" 2>&1 | head -30)",
+      "WebFetch(domain:www.canva.com)",
+      "WebSearch"
     ]
   }
 }

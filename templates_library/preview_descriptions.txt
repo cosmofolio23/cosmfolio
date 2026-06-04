@@ -1,0 +1,251 @@
+============================================================
+ARCHITECTURE PORTFOLIO TEMPLATES — VISUAL PREVIEW DESCRIPTIONS
+============================================================
+Use these descriptions to generate preview thumbnail images for each template (via AI image generation or by hand).
+Each description is written to capture the visual essence of the template's cover and a sample spread.
+
+------------------------------------------------------------
+
+tpl_001 | NORDIC MINIMAL
+Cover: Pure white A4 portrait page. Full-bleed photograph of a minimalist Scandinavian house in soft natural light at the top three-quarters. Title "ATELIER NORD / SELECTED WORKS" in thin Cormorant Garamond serif, set bottom-left in pure black. Tiny "2026" top-right corner. Lots of breathing room.
+Spread: Left page pure white with one project name in serif; right page is a single hero photograph of timber architecture. Captions in 8pt Inter, smallcaps.
+
+tpl_002 | BRUTALIST BOLD
+Cover: Concrete-gray (#F2EFEA) background. Massive black "PORTFOLIO" in Archivo Black taking 70% of vertical space, bleeding off the right edge. Small square photograph of raw concrete texture bottom-right.
+Spread: Heavy oversized project name as headline; a 2x2 grid of architectural photos below with monospace JetBrains Mono captions in faded gray.
+
+tpl_003 | PARAMETRIC WAVE
+Cover: Light gray (#FAFAFA) with orange curved gradient lines arcing across the page like a parametric diagram. Centered title "GENERATIVE STUDIO" in Neue Haas Grotesk, deep navy. Subtitle "Computational Architecture 2020–2026" in IBM Plex Mono.
+Spread: Top half shows a generative iteration grid (3x3 of variation diagrams in orange line work); bottom half features a final render and dense annotation columns.
+
+tpl_004 | EDITORIAL MAGAZINE
+Cover: Magazine masthead "ARCHITECTURAL REVIEW" top in tan. Large Playfair Display title centered. Three small images arranged in a row at bottom showing varied project types. Gold accent rule above bottom row.
+Spread: Left page features a pull quote with drop cap; right page is a full-bleed atmospheric photograph. Body text below in 3 columns with Source Serif Pro.
+
+tpl_005 | JAPANESE TATAMI
+Cover: Warm off-white (#F8F5F0) page. Hairline border framing the entire page. Centered title "間 / MA: SELECTED WORKS" in Noto Serif JP and Inter combination. Single small 3:2 image of a quiet Japanese interior bottom-center.
+Spread: Modular 2x3 grid of architectural details (timber joinery, paper screens, stone garden, etc.). Small caps captions in muted ochre.
+
+tpl_006 | CONCRETE MONOLITH
+Cover: Full-bleed dark photograph of brutalist concrete architecture in low light. Vertical title "MONOLITH" reading bottom-to-top along the left edge in white Bebas Neue. Red accent rule.
+Spread: Pure black left page with white centered text and project specifications; right page full-bleed photograph of raw concrete with red caption tag.
+
+tpl_007 | SUSTAINABLE GREEN
+Cover: Warm cream (#F4F1E8) page with botanical line illustration arcing across the top corner. Title "GREEN ROOTS ARCHITECTURE" in Lora serif, deep forest green. Photograph of a green-roofed house with planted facade.
+Spread: Sustainability data sidebar on left (LEED rating, energy stats); right page features a render of biophilic interior. Diagram below shows passive solar and rainwater systems.
+
+tpl_008 | URBAN GRID
+Cover: Crisp white page divided into 9 equal cells. Each cell shows a fragment of an urban architectural photograph, together forming a larger composition. Mustard yellow accent number "01" top-right.
+Spread: 6-cell uniform grid of urban project photographs, captions below each. Top bar lists project name, year, location, scope in Inter.
+
+tpl_009 | HERITAGE CLASSICAL
+Cover: Warm cream (#F8F2E8) page with ornamental classical border frame. Centered title "HERITAGE STUDIO / RESTORATION WORKS" in Cormorant SC small caps. Bronze classical engraving-style illustration centered.
+Spread: Left page shows a hand-drawn elevation in sepia; right page features historical-context sidebar and a photograph of the restored heritage building.
+
+tpl_010 | BLACK CANVAS
+Cover: Pure black page. Centered title "M I R I A M  A R C H" in faux-gold Didot, extra letter-spacing. Below it, a hairline gold rule. No image.
+Spread: Both pages dark with full-bleed moody architectural photography (luxury villa at night). Tiny gold "CHAPTER 03 — VILLA LUNARA" caption.
+
+tpl_011 | PASTEL SOFT
+Cover: Soft blush-pink to cream gradient. Hand-script title "Maison & Co." in DM Serif Display, charcoal. Single bright photo of a modern residential interior with curved arches and warm light.
+Spread: Pastel pink color block left with rounded-corner image inset; right page features a soft cream background with project description in DM Sans.
+
+tpl_012 | INDUSTRIAL LOFT
+Cover: Steel-gray (#E8E4DC) page with grid overlay. Title "STEELWORKS / ADAPTIVE REUSE" in heavy Oswald, charcoal. Photograph of a loft conversion with exposed beams. Orange rivet-style accents at corners.
+Spread: Technical drawing left with annotation callouts in monospace; right page shows the loft photograph and a materials list with orange callout tags.
+
+tpl_013 | LANDSCAPE HORIZON
+Cover: A3 landscape page. Wide 21:9 panoramic photograph of a meadow with a low-profile pavilion in the distance. Title strip across the bottom 1/5 in deep forest green with ochre Cormorant Garamond text.
+Spread: Top is a full-bleed panoramic site photograph; middle features the site plan; bottom is a planting schedule grid with botanical illustrations.
+
+tpl_014 | BOLD GEOMETRIC
+Cover: White background with bold orange and blue geometric shapes (triangle, circle, rectangle) overlapping. Oversized "STUDIO/03" in Space Grotesk cuts through the shapes. Single architectural photograph fragment visible through a circular cutout.
+Spread: Left page is a vibrant orange color block with project number "03" oversized; right page features the project image with geometric shape overlays and bold display headlines.
+
+tpl_015 | ACADEMIC RESEARCH
+Cover: Off-white (#FAFAFA) page in a thesis layout. Title "ON THRESHOLDS: A THEORY OF SPATIAL BOUNDARIES" in Crimson Pro. Abstract paragraph below in 10pt. Small burgundy rule and "Sarah Chen / MArch Thesis 2026".
+Spread: Dense layout with abstract text on left in two columns, a process-diagram series across the bottom, and footnotes in small print. Burgundy accent on section dividers.
+
+tpl_016 | MODERNIST BAUHAUS
+Cover: White page with rigorous geometric composition: a red square, yellow circle, and blue rectangle arranged in a Bauhaus-style composition. Black Futura title "FORMSTUDIO" set within the geometric arrangement.
+Spread: Strict 9-cell grid with primary-color blocks alternating with high-contrast architectural photographs. All labels in Futura, all caps.
+
+tpl_017 | PHOTO JOURNAL
+Cover: A single full-bleed stunning architectural photograph (modernist house at golden hour). Tiny black "MORALES PHOTOGRAPHY / WORKS 2018–2026" in top-left corner. No other elements.
+Spread: Two consecutive full-bleed photographs, no margins, no text. Tiny page number bottom outer corner.
+
+tpl_018 | DIAGRAM ARCHITECT
+Cover: White page with bold black diagram lines forming letters of the studio name "BIG-IDEA STUDIO" through concept-diagram-like markings. Orange callout circles annotate the diagram.
+Spread: Left page shows site analysis diagrams (wind, sun, density) in black with orange callouts; right page features an exploded axonometric of the project.
+
+tpl_019 | COASTAL BREEZE
+Cover: Light page with a horizon-line photograph (sky meets sea) where a modern coastal house sits low on the horizon. Title "OCEANSIDE DESIGN" in Cormorant Garamond serif, deep ocean blue, centered.
+Spread: Bright airy photographs of beach-house interiors with pale wood and white textiles. Sky-blue accent rules and Lato body text.
+
+tpl_020 | TERRACOTTA EARTH
+Cover: Warm cream (#F4EDE4) page. Terracotta color block bottom-left holds the title "ESTUDIO TIERRA" in Playfair Display, deep brown. Adjacent photograph shows Mediterranean architecture in golden afternoon light.
+Spread: Warm photograph of adobe interior on left; right page has terracotta callout boxes with material swatches and Source Serif Pro project description.
+
+tpl_021 | MONO SANS
+Cover: Pristine white page. Tiny "studio." in lowercase Neue Haas Grotesk, bottom-left. Page number "001" top-right in tiny same font. Nothing else.
+Spread: Left page entirely white with a single tiny line of text centered: "Project 04 — Hillside Residence — 2025". Right page features one modestly-sized photograph centered. Supreme restraint.
+
+tpl_022 | SKETCHBOOK PROCESS
+Cover: Warm cream (#F5F0E1) page with sketch-paper texture. Hand-drawn pencil sketch of a house in the upper portion. Title "DRAWING ARCHITECTURE" handwritten in Caveat script, dark sepia. Small handwritten subtitle below.
+Spread: Left page features scanned ink-wash concept sketches and handwritten notes; right page shows a final render with a personal handwritten caption.
+
+tpl_023 | FUTURIST TECH
+Cover: Deep dark navy (#0F0F1E) page. Bright cyan neon title "META.ARCH" in Space Grotesk with subtle glow. Digital grid pattern overlay. Magenta accent rule. Holographic render of a parametric structure floating center.
+Spread: Both pages dark with bright cyan annotation overlays; left page shows a holographic render with data callouts, right page features parametric variation iterations in a 4x4 grid.
+
+tpl_024 | PLAN LIBRARY
+Cover: A3 landscape, pristine white. Large detailed black-line architectural plan dominates the page. Technical title block bottom-right with project name, scale, date in Inter.
+Spread: Left page is a full-page plan with scale bar and north arrow; right page features a section drawing with construction annotations and dimension callouts.
+
+tpl_025 | STORYTELLER NARRATIVE
+Cover: Warm cream (#FAF7F2) book-cover style. Title "STORIES IN STONE" in large Lora serif italic. Chapter list below: "I. Beginnings, II. Foundations, III. Inhabitations..." in muted brown. Evocative single image of a hand on a stone wall.
+Spread: Left page features a long pull-quote in serif italic with brass-gold accent rule; right page has a narrative paragraph and an atmospheric photograph that supports the story.
+
+tpl_026 | TROPICAL MODERN
+Cover: Warm cream page with lush tropical plant illustrations framing the top corners in deep forest green. Title "CASA VERDE" in Cormorant Garamond, deep green. Photograph of a villa with louvered shutters and palm shadows.
+Spread: Both pages feature photography of tropical residential architecture with biophilic elements; gold botanical line accents and material swatch callouts.
+
+tpl_027 | MANIFESTO MONO
+Cover: White page with massive "ARCHITECTURE IS POLITICS." in extreme-large black Inter type taking up most of the page. Tiny red footer "— MARTA REGUERA / 2026". No image.
+Spread: Left page has a thesis paragraph in black; right page shows the same statement repeated with key phrases highlighted in red, plus a single supporting photograph at small scale.
+
+tpl_028 | ASYMMETRIC MODERN
+Cover: Light gray (#F4F4F2) page. Image fragments asymmetrically placed (one shifted off the top edge, another off the right). Title "OFF-CENTER" nestled into the negative space at an unexpected angle, in Helvetica Now. Orange accent dot.
+Spread: Off-grid image placements, text running diagonally, orange accent dots and rules connecting elements. Intentional broken-layout aesthetic.
+
+tpl_029 | VINTAGE PRINT
+Cover: Aged paper (#F0E6D2) texture with deep brown ink. Letterpress-style title "MERIDIAN & CO. ESTABLISHED 1947" in IM Fell English with classical ornamental flourishes. Burgundy accent rule. Sepia-toned engraving illustration of a building.
+Spread: Old-print layout with engraving-style architectural illustrations, sepia photographs in classical frames, and classical type set as in an antique book.
+
+tpl_030 | COLOR BLOCK POP
+Cover: White page divided into bright color blocks: hot pink, electric blue, warm yellow, and a charcoal corner. Each block has a piece of the project image inside it. Massive black "PORTFOLIO 26" in Clash Display.
+Spread: Each project page features a signature color block with bold display headlines. Energetic compositions with multi-color highlights on stats.
+
+tpl_031 | SECTION CUT MASTER
+Cover: White A3 landscape page. Large detailed black-line cross-section drawing showing all interior spaces, ceiling assemblies, and structural members. Blue annotation callouts label key details.
+Spread: Left page features a detailed building section with annotation callouts; right page shows an exploded axonometric of a constructional detail with materials index.
+
+tpl_032 | RENDER SHOWCASE
+Cover: Dark (#1A1A1A) page with a stunning full-bleed photo-realistic CGI render of an architectural interior at twilight. Tiny white "STUDIO REI / 2026" in top corner.
+Spread: Two consecutive cinematic full-bleed renders. Tiny white render-spec sidebar with software (V-Ray, Blender) and render time.
+
+tpl_033 | INTERIOR STYLIST
+Cover: Warm cream (#FAF6F0) page. Beautifully styled interior vignette photograph (a chair, lamp, and artwork composition). Title "INTERIOR THEORY" in Cormorant Garamond, charcoal. Gold corner-accent with a tiny material swatch.
+Spread: Left page is a styled interior photograph; right page features a mood board with 4 material swatches, furniture credits, and lighting specifications.
+
+tpl_034 | CIVIC PUBLIC
+Cover: Off-white (#F5F5F0) page. Dignified photograph of a civic monument or public space. Title "PUBLIC WORKS" in Source Serif Pro, deep navy. Red civic-stamp accent.
+Spread: Left page shows site-context photography with public-use vignettes; right page features community-engagement diagrams and a public-program legend.
+
+tpl_035 | ADAPTIVE REUSE
+Cover: Warm cream (#F2EFE9) page split vertically: left half shows a "before" photograph of a derelict building; right half shows the "after" photograph of the transformed space. Title "RE/MADE" in Cormorant Garamond, sienna accent.
+Spread: Both pages feature paired before/after photographs with intervention-strategy diagrams. Materials retained vs. added shown as callout list.
+
+tpl_036 | MATERIAL LIBRARY
+Cover: Tactile warm cream (#F4F0EB) page. Grid of 8 material swatches (oak, brass, travertine, linen, etc.) forming the cover composition. Embossed-style title "MATERIA" in Lora serif, deep charcoal.
+Spread: Left page is a macro close-up texture photograph (wood grain detail); right page shows the material applied in a finished room with material credit and supplier information.
+
+tpl_037 | COMPETITION BOARD
+Cover: White A3 landscape page. Title strip across the top. Below, a 3x3 grid of mini competition-board panels, each showing concept-to-render for a different project. Yellow accent highlights on winning entries.
+Spread: Single A1-style competition board: concept statement (top), site analysis diagrams (middle-left), plans/sections (middle-right), final renders (bottom). All on one page.
+
+tpl_038 | BOUTIQUE STUDIO
+Cover: Warm cream (#FAF5EE) page. Small handcrafted-style logo top-center. Title "BAUER BOUTIQUE" handwritten with a delicate flourish in Lora. Below, an intimate residential photograph in soft natural light.
+Spread: Left page features an intimate residential photograph and a personal client story in narrative form; right page shows additional photographs and a small handwritten quote.
+
+tpl_039 | MID-CENTURY MOD
+Cover: Warm tan (#F2E7D5) page with geometric mid-century pattern (atomic boomerangs and starbursts) along the top. Title "EICHLER REVIVAL" in Quattrocento serif, deep brown. Photograph of a 1960s-style modernist home.
+Spread: Warm wood-tone photographs of mid-century interiors with deep teal accent rules. Geometric pattern dividers between sections, retro furniture credits.
+
+tpl_040 | SKYLINE TOWER
+Cover: White page with a tall vertical photograph of a glass tower against blue sky. Sleek title "VERTEX ARCHITECTS / TOWERS" in Montserrat, deep navy. Pale blue accent rule.
+Spread: Left page shows full-page tower elevation rendering; right page features a plan-stack diagram with each floor's program color-coded and labeled.
+
+tpl_041 | SKETCHES AND CONCEPTS
+Cover: White A4 landscape page. Bold hand-drawn pencil-and-charcoal concept sketch of an architectural form takes up most of the page. Title "FROM SKETCH TO SITE" in Inter, charcoal. Peach accent dots highlight key sketch areas.
+Spread: Left page shows the initial concept sketch and 3 evolution sketches; right page shows the schematic plan and final render, showing the progression.
+
+tpl_042 | PHOTOREAL STUDIO
+Cover: Dark cinematic page. Stunning photoreal CGI render of an architectural scene with movie-quality lighting. Title "RAYBOUND VISUAL" in Bebas Neue with film-credit-style subtitle. Yellow accent rule.
+Spread: Left page is a full-page cinematic render; right page shows render passes (lighting, reflection, depth) and software stack as movie-credit list.
+
+tpl_043 | CULTURAL HERITAGE
+Cover: Aged-paper (#F4ECDC) page. Heritage photograph framed in classical ornamental border. Title "PATRIMONIO" in Cormorant SC, deep brown. Subtitle in EB Garamond. Sienna ornamental rule.
+Spread: Left page shows an archival photograph next to a contemporary photograph; right page features a cultural narrative paragraph and conservation documentation.
+
+tpl_044 | URBAN DIAGRAM
+Cover: White A3 landscape page. Large city map of the studio's project locations with orange pins. Title "URBAN INTELLIGENCE" in Inter, deep blue.
+Spread: Left page is a context map of a project site with urban-analysis overlay; right page features a master plan rendering with phasing diagrams and orange annotation callouts.
+
+tpl_045 | PAVILION CONCEPT
+Cover: White (#FAFAFA) page. Render of an experimental pavilion with curved timber form sits centered. Title "PAVILION 09" in Space Grotesk, charcoal. Bright green accent dot.
+Spread: Left page shows concept diagrams and parametric variations; right page features model photography with fabrication details and a green-accented materials list.
+
+tpl_046 | WORKSPACE OFFICE
+Cover: Bright white page. Vibrant photograph of a modern office space with people working. Title "WORKPLACE STUDIO" in Inter, charcoal. Coral accent rule.
+Spread: Left page features photography of office interiors with people in motion; right page shows brand-integration callouts and a workplace-strategy diagram.
+
+tpl_047 | HOSPITALITY LUX
+Cover: Warm cream (#F9F7F2) page. Atmospheric photograph of a luxury hotel lobby with dramatic lighting. Title "MAISON LUX HOSPITALITY" in Cormorant Garamond italic. Gold leaf accent.
+Spread: Left page is a hero atmospheric photograph; right page features key-room mood photographs and a curated list of materials, brand partners, and hospitality experience narrative.
+
+tpl_048 | HEALTHCARE DESIGN
+Cover: Calming soft blue (#F4F8FA) page. Photograph of a serene healthcare interior with natural light. Title "WELL-BUILT HEALTHCARE" in Source Serif Pro, deep blue.
+Spread: Left page features patient-experience photography; right page shows evidence-based design diagrams, biophilic integration callouts, and a flow plan.
+
+tpl_049 | MODULAR PREFAB
+Cover: White page. Exploded axonometric of a modular unit assembly takes most of the page. Title "MOD/03 PREFAB SYSTEMS" in Space Grotesk, charcoal. Coral accent.
+Spread: Left page shows unit module variations and assembly sequence diagram; right page features on-site assembly photography and a transportation diagram with coral callouts.
+
+tpl_050 | DESERT ADOBE
+Cover: Warm sand (#F4E4CC) page. Photograph of a desert adobe house in golden hour light, with sage and cacti foreground. Title "TIERRA DEL SOL" in Lora serif, deep brown.
+Spread: Left page features site-in-landscape photography with vernacular references; right page shows thermal mass diagrams and regional materials with terracotta callouts.
+
+tpl_051 | GLASS AND STEEL
+Cover: Light gray (#F0F2F5) page. Reflective glass tower photograph against bright sky. Title "REFLECT/TOWER" in sleek Montserrat, deep charcoal. Crisp blue accent rule.
+Spread: Left page shows full-page architectural photograph of a glass facade; right page features structural diagrams of the facade system and corporate program legend.
+
+tpl_052 | TINY HOUSE CABIN
+Cover: Warm cream (#F4F1E4) page. Cozy cabin photograph nestled in a forest, warm window light. Title "Small Spaces" handwritten in Lora italic with subtitle in Inter. Olive green accent.
+Spread: Left page features a cabin-in-landscape photograph; right page shows a micro-plan, section, and intimate detail photography with construction cost callout.
+
+tpl_053 | SCHOOL EDUCATION
+Cover: Bright white page. Active learning space photograph with students in motion. Title "SCHOOLBUILDER" in Source Serif Pro, deep teal. Optimistic orange accent.
+Spread: Left page features photography of learning spaces with students; right page shows pedagogical diagrams, age-appropriate scale references, and learning-outcomes data.
+
+tpl_054 | RELIGIOUS SACRED
+Cover: Warm cream (#F8F4ED) page. Dramatic photograph of a sacred interior with shafts of light. Title "CASA DE LUZ" in Cormorant SC, charcoal. Gold accent rule.
+Spread: Left page shows a light-study photograph series; right page features a sacred-geometry diagram and processional sequence with reverent body text in EB Garamond.
+
+tpl_055 | CULTURAL MUSEUM
+Cover: Crisp white page. Iconic museum exterior photograph centered. Title "CURATING SPACE" in Playfair Display, charcoal. Deep red accent rule.
+Spread: Left page is an iconic museum photograph with curatorial title; right page features gallery sequences, visitor-experience flow diagram, and an exhibition-program legend.
+
+tpl_056 | RETAIL CONCEPT
+Cover: White page. Bold storefront photograph with brand identity prominent. Title "FLAGSHIP" in Inter, charcoal. Yellow accent rule and brand-collab tag.
+Spread: Left page features storefront and interior retail photography; right page shows customer-flow diagrams, brand-integration callouts, and material-detail close-ups.
+
+tpl_057 | SPORTS STADIUM
+Cover: Dark (#1A1A1A) page. Dramatic stadium photograph with crowd in motion under stadium lights. Title "ARENA ARCHITECTURE" in Oswald, white. Bright orange accent rule.
+Spread: Left page features aerial stadium photography; right page shows sight-line diagrams, event-flow plan, and crowd-experience photography with orange callouts.
+
+tpl_058 | INDUSTRIAL FACTORY
+Cover: Industrial gray (#F0F0F0) page. Large industrial photograph of a factory interior. Title "PROCESS / PLANT" in Oswald, charcoal. Safety orange accent with technical title block.
+Spread: Left page shows industrial-scale photography; right page features a process-flow diagram, structural-systems drawings, and operational-programming legend in monospace.
+
+tpl_059 | LAB RESEARCH
+Cover: Crisp white page. Clean photograph of a sterile lab interior with technical aesthetic. Title "RESEARCH BUILDING TYPOLOGY" in Inter, deep slate. Emerald accent rule.
+Spread: Left page features lab photography with technical labels; right page shows MEP system diagrams, biosafety-level callouts, and flexibility-analysis diagram.
+
+tpl_060 | ECO VERNACULAR
+Cover: Warm cream (#F4EFE0) page. Photograph of vernacular architecture in regional landscape, golden hour light. Title "TRADITION FORWARD" in Lora serif, deep forest green. Terracotta accent.
+Spread: Left page features landscape-integration photography; right page shows vernacular reference diagrams, low-tech sustainability strategies, and local-materials list with botanical sketches.
+
+============================================================
+END OF PREVIEW DESCRIPTIONS
+============================================================
