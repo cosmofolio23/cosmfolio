@@ -500,14 +500,7 @@ export default function TemplateMarketplace() {
                     Preview
                   </button>
                   <button
-                    onClick={() => {
-                      setSelectedTemplate(template)
-                      setCustomColors(template.colors || {})
-                      setCustomFonts(template.fonts || {})
-                      setCustomizeName(`${template.name} Custom`)
-                      setSaveAsVariant(false)
-                      setShowCustomize(true)
-                    }}
+                    onClick={() => router.push(`/dashboard/templates/${template.id}/editor`)}
                     className="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition">
                     Use Template
                   </button>
@@ -563,15 +556,15 @@ export default function TemplateMarketplace() {
               )}
               <div className="flex gap-3 pt-6 border-t border-border-light">
                 <button
-                  onClick={() => { setShowPreview(false); setApplyingTo('new') }}
+                  onClick={() => { setShowPreview(false); router.push(`/dashboard/templates/${selectedTemplate.id}/editor`) }}
                   className="flex-1 bg-primary text-white px-4 py-3 rounded-lg font-semibold hover:bg-primary-dark transition">
-                  Use This Template
+                  ✏️ Edit This Template
                 </button>
                 {portfolios.length > 0 && (
                   <button
                     onClick={() => { setShowPreview(false); setApplyingTo('existing') }}
                     className="flex-1 border border-primary text-primary px-4 py-3 rounded-lg font-semibold hover:bg-primary/10 transition">
-                    Apply to Portfolio
+                    Apply to Existing
                   </button>
                 )}
               </div>
