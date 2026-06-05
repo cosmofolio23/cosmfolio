@@ -63,7 +63,8 @@ export default function AnalyticsDashboard() {
     }
   }
 
-  const loadPortfolioAnalytics = async (portfolioId: string, savedToken?: string) => {
+  const loadPortfolioAnalytics = async (portfolioId: string | null, savedToken?: string | null) => {
+    if (!portfolioId) return
     try {
       const tkn = savedToken || (token || localStorage.getItem('auth_token'))
       const res = await fetch(`${API_URL}/api/portfolios/${portfolioId}/analytics`, {
