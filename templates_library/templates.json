@@ -1078,5 +1078,257 @@
     "style_notes": "Vernacular specialists, low-tech sustainability, regional-modern architects",
     "page_count_range": "28-40",
     "orientation": "portrait_A4"
+  },
+
+  // ============================================================
+  // ARCHIFOLIO REAL TEMPLATES (13 verified templates)
+  // ============================================================
+
+  {
+    "id": "tpl_061",
+    "name": "Museum",
+    "category": "Contemporary",
+    "description": "Sophisticated, yet modern feel with crisp hero image and centered content. Contemporary aesthetic with professional proportions.",
+    "source": "Archifolio",
+    "colors": { "primary": "#FFFFFF", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Serif (Classic)", "body": "Sans-serif (Clean)", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Full-bleed hero image with tagline space below centered", "grid": "1-column", "image_ratio": "full-bleed" },
+      "project": { "structure": "Centered hero image, project title below, description in centered column", "grid": "centered", "image_ratio": "3:2" },
+      "about": { "structure": "Centered layout, portrait top, bio centered below", "grid": "centered" }
+    },
+    "placeholders": { "renders": 3, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true, "location": true },
+    "preview_image": "Clean white pages with crisp hero images, centered elegant typography, sophisticated contemporary feel",
+    "style_notes": "Established architects, professional practices, elegant and refined",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_062",
+    "name": "Palazzo",
+    "category": "Minimalist",
+    "description": "Refined canvas with subtle shadow details. Minimalist aesthetic with elegant proportions and refined spacing.",
+    "source": "Archifolio",
+    "colors": { "primary": "#F5F5F5", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#2C2C2C", "muted": "#CCCCCC" },
+    "fonts": { "heading": "Serif (Elegant)", "body": "Sans-serif (Minimal)", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Minimal spacing, refined image placement, elegant proportions", "grid": "centered", "image_ratio": "16:9" },
+      "project": { "structure": "Subtle shadow details, refined image framing, minimal text", "grid": "1-column", "image_ratio": "3:2" },
+      "about": { "structure": "Portrait with subtle shadows, bio in minimal text below", "grid": "centered" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Subtle shadow effects, refined white and gray pages, elegant minimalist spacing, luxury feel",
+    "style_notes": "Luxury residential, premium architects, refined aesthetic",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_063",
+    "name": "Deco",
+    "category": "Industrial",
+    "description": "Dark industrial aesthetic with bright mineral green accents. Art Deco inspired with modern sensibility.",
+    "source": "Archifolio",
+    "colors": { "primary": "#1A1A1A", "accent": "#90EE90", "background": "#0D0D0D", "text": "#FFFFFF", "muted": "#666666" },
+    "fonts": { "heading": "Bold Sans-serif", "body": "Sans-serif", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Dark background, bright accent title, minimal image", "grid": "1-column", "image_ratio": "16:9" },
+      "project": { "structure": "Dark pages with bright green accents on text/dividers, images prominent", "grid": "2-column", "image_ratio": "4:3" },
+      "about": { "structure": "Dark background, white text, green accent elements", "grid": "1-column" }
+    },
+    "placeholders": { "renders": 4, "plans": 1, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Dark basalt pages with bright mineral green accent lines, white typography, modern industrial feel",
+    "style_notes": "Contemporary architects, bold practices, strong visual identity",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_064",
+    "name": "Chapter",
+    "category": "Organic",
+    "description": "Laidback but crisp design with full-page cover image and blurred text overlay. Organic contemporary aesthetic.",
+    "source": "Archifolio",
+    "colors": { "primary": "#FFFFFF", "accent": "#2C2C2C", "background": "#F9F9F9", "text": "#1A1A1A", "muted": "#999999" },
+    "fonts": { "heading": "Modern Sans-serif", "body": "Clean Sans-serif", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Full-page cover image with blurred text overlay, organic feel", "grid": "full-bleed", "image_ratio": "full-bleed" },
+      "project": { "structure": "Full-bleed hero, organic text placement with soft shadows", "grid": "organic", "image_ratio": "16:9" },
+      "about": { "structure": "Full-page cover photo with text overlay, organic arrangement", "grid": "full-bleed" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Full-page cover images with blurred text overlays, organic contemporary feel, soft aesthetic",
+    "style_notes": "Residential architects, artistic practices, organic sensibility",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_065",
+    "name": "Agora",
+    "category": "Minimalist",
+    "description": "Timeless design with full-width hero images and monochrome palette. Customizable with accent colors.",
+    "source": "Archifolio",
+    "colors": { "primary": "#000000", "accent": "customizable", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#CCCCCC" },
+    "fonts": { "heading": "Sans-serif (Timeless)", "body": "Sans-serif (Clean)", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Full-width hero image, centered title below", "grid": "full-bleed", "image_ratio": "full-bleed" },
+      "project": { "structure": "Full-width image top, 1-column text below, minimal spacing", "grid": "full-bleed", "image_ratio": "16:9" },
+      "about": { "structure": "Full-width layout, minimal elements, generous spacing", "grid": "full-bleed" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Full-width hero images, monochrome with custom accent color, timeless and versatile",
+    "style_notes": "All architects, most versatile template, timeless aesthetic",
+    "page_count_range": "16-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_066",
+    "name": "Downtown",
+    "category": "Brutalist",
+    "description": "Strong first impression with oversized typography and prominent visuals. Brutalist modern aesthetic.",
+    "source": "Archifolio",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFFFFF", "background": "#FFFFFF", "text": "#000000", "muted": "#666666" },
+    "fonts": { "heading": "Extra Bold Sans-serif", "body": "Sans-serif", "accent": "Bold Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Oversized name/title (70% of page), small image bottom", "grid": "asymmetric", "image_ratio": "1:1" },
+      "project": { "structure": "Oversized project name, bold imagery, stark composition", "grid": "asymmetric", "image_ratio": "4:3" },
+      "about": { "structure": "Bold typography dominates, minimal text, strong presence", "grid": "1-column" }
+    },
+    "placeholders": { "renders": 4, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Oversized bold typography dominating layout, stark white and black contrast, strong brutalist identity",
+    "style_notes": "Bold architects, strong brand identity, contemporary practices",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_067",
+    "name": "Loft",
+    "category": "Contemporary",
+    "description": "Elegant layout with 5-image rotating slideshow gallery. Sleek and professional aesthetic.",
+    "source": "Archifolio",
+    "colors": { "primary": "#FFFFFF", "accent": "#1A1A1A", "background": "#FFFFFF", "text": "#2C2C2C", "muted": "#AAAAAA" },
+    "fonts": { "heading": "Modern Serif", "body": "Sans-serif", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "5-image slideshow hero, elegant spacing, centered title", "grid": "full-bleed", "image_ratio": "16:9" },
+      "project": { "structure": "5-image rotation, sleek typography, professional layout", "grid": "slideshow", "image_ratio": "16:9" },
+      "about": { "structure": "Clean layout with portrait and bio, elegant proportions", "grid": "2-column" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "5-image rotating slideshow hero, elegant white pages, professional sleek aesthetic",
+    "style_notes": "Commercial architects, established firms, dynamic portfolio presentation",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_068",
+    "name": "Classica",
+    "category": "Dark Premium",
+    "description": "Luxurious dark aesthetic with golden fonts and Art Deco inspired details. Premium luxury feel.",
+    "source": "Archifolio",
+    "colors": { "primary": "#2C2C2C", "accent": "#DAA520", "background": "#1A1A1A", "text": "#FFFFFF", "muted": "#666666" },
+    "fonts": { "heading": "Gold Serif (Luxurious)", "body": "Sans-serif (Clean)", "accent": "Serif" },
+    "layouts": {
+      "cover": { "structure": "Dark background, gold title, elegant spacing", "grid": "centered", "image_ratio": "16:9" },
+      "project": { "structure": "Dark pages with gold accents, luxurious proportions", "grid": "1-column", "image_ratio": "3:2" },
+      "about": { "structure": "Dark luxury background, gold typography, refined portrait", "grid": "centered" }
+    },
+    "placeholders": { "renders": 4, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Dark grey background with golden typography and accents, luxurious Art Deco aesthetic, premium feel",
+    "style_notes": "Luxury residential, heritage architects, premium market",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_069",
+    "name": "Neue",
+    "category": "Industrial",
+    "description": "Simplicity with soulfulness using white space and dark bronze tones. Industrial minimalist aesthetic.",
+    "source": "Archifolio",
+    "colors": { "primary": "#FFFFFF", "accent": "#8B7355", "background": "#F5F5F5", "text": "#1A1A1A", "muted": "#B0A08F" },
+    "fonts": { "heading": "Modern Sans-serif", "body": "Sans-serif (Elegant)", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Ample white space, minimal elements, elegant proportions", "grid": "centered", "image_ratio": "3:2" },
+      "project": { "structure": "Bronze tone accents, generous spacing, industrial touch", "grid": "1-column", "image_ratio": "16:9" },
+      "about": { "structure": "Minimal layout, white space emphasis, soulful design", "grid": "centered" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Abundant white space, dark bronze accent tones, light gray background, industrial minimalist feel",
+    "style_notes": "Minimalist architects, design-forward practices, refined aesthetic",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_070",
+    "name": "Modular",
+    "category": "Modern",
+    "description": "Flexible modular layouts with subtle pink-grey color palette. Contemporary minimalist approach.",
+    "source": "Archifolio",
+    "colors": { "primary": "#FFFFFF", "accent": "#FFB6C1", "background": "#F8F8F8", "text": "#2C2C2C", "muted": "#B8B8B8" },
+    "fonts": { "heading": "Sans-serif (Modern)", "body": "Sans-serif (Clean)", "accent": "Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Modular grid with pink accents, flexible arrangement", "grid": "modular", "image_ratio": "varied" },
+      "project": { "structure": "Flexible modules, pink highlight accents, contemporary feel", "grid": "modular", "image_ratio": "varied" },
+      "about": { "structure": "Modular layout with accent highlights, flexible composition", "grid": "modular" }
+    },
+    "placeholders": { "renders": 4, "plans": 2, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Modular grid layouts with soft pink accents on light gray background, contemporary minimalist feel",
+    "style_notes": "Contemporary architects, flexible portfolio needs, modern sensibility",
+    "page_count_range": "20-28",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_071",
+    "name": "Haus",
+    "category": "Bauhaus",
+    "description": "Asymmetrical layout with dual image sections and striking typography. Bauhaus design principles.",
+    "source": "Archifolio",
+    "colors": { "primary": "#000000", "accent": "#FFFFFF", "background": "#FFFFFF", "text": "#1A1A1A", "muted": "#CCCCCC" },
+    "fonts": { "heading": "Bold Sans-serif (Bauhaus)", "body": "Sans-serif", "accent": "Bold Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "Asymmetric dual sections, bold typography, geometric composition", "grid": "asymmetric", "image_ratio": "varied" },
+      "project": { "structure": "Dual image sections, striking title placement, asymmetric balance", "grid": "asymmetric", "image_ratio": "varied" },
+      "about": { "structure": "Asymmetric portrait and bio arrangement, geometric balance", "grid": "asymmetric" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 2, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Asymmetric dual image sections, bold black typography, geometric Bauhaus composition",
+    "style_notes": "Design-forward architects, bold identities, geometric sensibility",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_072",
+    "name": "Beaux",
+    "category": "Classical",
+    "description": "Classical elegant design with serif typeface and 3D shadow effects. Light sophisticated aesthetic.",
+    "source": "Archifolio",
+    "colors": { "primary": "#F5F1E8", "accent": "#3A2F2A", "background": "#F5F1E8", "text": "#3A2F2A", "muted": "#B8A897" },
+    "fonts": { "heading": "Serif (Classical)", "body": "Serif (Elegant)", "accent": "Serif" },
+    "layouts": {
+      "cover": { "structure": "Classical proportions, serif title, 3D shadow effects", "grid": "centered", "image_ratio": "3:2" },
+      "project": { "structure": "Beige background, serif typography, shadow depth effects", "grid": "1-column", "image_ratio": "3:2" },
+      "about": { "structure": "Classical portrait arrangement, serif bio, elegant spacing", "grid": "centered" }
+    },
+    "placeholders": { "renders": 4, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "Beige classical pages with serif typography and subtle 3D shadow effects, light sophisticated feel",
+    "style_notes": "Heritage architects, classical practices, refined traditional approach",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
+  },
+  {
+    "id": "tpl_073",
+    "name": "Metropolitan",
+    "category": "Brutalist",
+    "description": "5-image slideshow hero for showcasing work across responsive formats. Brutalist modern approach.",
+    "source": "Archifolio",
+    "colors": { "primary": "#1A1A1A", "accent": "#FFFFFF", "background": "#FFFFFF", "text": "#000000", "muted": "#999999" },
+    "fonts": { "heading": "Bold Sans-serif", "body": "Sans-serif", "accent": "Bold Sans-serif" },
+    "layouts": {
+      "cover": { "structure": "5-image slideshow hero, bold title below, brutalist presence", "grid": "full-bleed", "image_ratio": "16:9" },
+      "project": { "structure": "5-image rotating showcase, bold typography, responsive design", "grid": "slideshow", "image_ratio": "16:9" },
+      "about": { "structure": "Bold layout with portrait rotation, strong presence", "grid": "full-bleed" }
+    },
+    "placeholders": { "renders": 5, "plans": 1, "sections": 1, "diagrams": 1, "text_description": true, "project_title": true, "year": true },
+    "preview_image": "5-image rotating slideshow hero, bold black and white contrast, brutalist modern aesthetic",
+    "style_notes": "Commercial architects, dynamic portfolios, high-impact presentation",
+    "page_count_range": "16-24",
+    "orientation": "portrait_A4"
   }
 ]

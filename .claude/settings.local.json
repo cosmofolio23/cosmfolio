@@ -129,7 +129,9 @@
       "Bash(grep -oE 'href=\"https://[^\"]+\"' /tmp/page.html | sort -u | head -40)",
       "Bash(ls \"E:/Projects/My Product/BUILDING APP/ArchPortfolio Generator/\" 2>&1 | head -30)",
       "WebFetch(domain:www.canva.com)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:blog.archifol.io)",
+      "Bash(awk '{print $9, $5}')"
     ]
   }
 }

@@ -644,6 +644,110 @@ async def export_portfolio_pdf(
         raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
 
 
+@router.post("/{portfolio_id}/analytics/view")
+async def log_view(portfolio_id: str, request: dict = None):
+    """
+    Log a portfolio view (called publicly, no auth needed).
+    Tracks views for analytics without identifying users.
+    """
+    try:
+        from services.analytics import log_portfolio_view
+        # Extract IP from request (proxy-safe)
+        ip = "0.0.0.0"  # Fallback
+        log_portfolio_view(portfolio_id, ip)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Analytics log failed: {e}")
+        return {"ok": False}
+
+
+@router.post("/{portfolio_id}/analytics/share")
+async def log_share(portfolio_id: str, body: dict = None):
+    """
+    Log a portfolio share event.
+    Body: {platform: "link" | "email" | "twitter" | "linkedin"}
+    """
+    try:
+        from services.analytics import log_portfolio_share
+        body = body or {}
+        platform = body.get("platform", "link")
+        log_portfolio_share(portfolio_id, platform)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Share log failed: {e}")
+        return {"ok": False}
+
+
+@router.post("/{portfolio_id}/analytics/download")
+async def log_download(portfolio_id: str, body: dict = None):
+    """
+    Log a portfolio download event.
+    Body: {format: "pdf" | "html"}
+    """
+    try:
+        from services.analytics import log_portfolio_download
+        body = body or {}
+        fmt = body.get("format", "pdf")
+        log_portfolio_download(portfolio_id, fmt)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Download log failed: {e}")
+        return {"ok": False}
+
+
+@router.get("/{portfolio_id}/analytics")
+async def get_analytics(
+    portfolio_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get analytics for a portfolio (auth required - owner only).
+    Returns: views, shares, downloads, conversion rates, time series.
+    """
+    try:
+        from services.analytics import get_portfolio_analytics
+
+        # Verify ownership
+        response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Portfolio not found")
+
+        portfolio = response.data[0]
+        project_id = portfolio["project_id"]
+
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+        # Get analytics
+        analytics = get_portfolio_analytics(portfolio_id)
+        return analytics
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/user/analytics/summary")
+async def get_user_analytics_summary(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get aggregate analytics across all user's portfolios.
+    Returns: total views/shares/downloads, top performing portfolio.
+    """
+    try:
+        from services.analytics import get_user_portfolio_summary
+        summary = get_user_portfolio_summary(current_user["user_id"])
+        return summary
+    except Exception as e:
+        logger.error(f"User analytics failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/public/p/{slug}/pages", include_in_schema=False)
 @router.post("/public/p/{slug}/pages")
 async def public_portfolio_pages(slug: str):

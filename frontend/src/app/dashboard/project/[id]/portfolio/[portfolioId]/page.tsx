@@ -123,7 +123,21 @@ export default function PortfolioFlipbookPage() {
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
     loadPortfolio()
+    // Log view event
+    logAnalyticsEvent('view')
   }, [isAuthenticated, token])
+
+  const logAnalyticsEvent = (eventType: 'view' | 'share' | 'download', data?: any) => {
+    try {
+      const endpoint = `${API_URL}/api/portfolios/${params.portfolioId}/analytics/${eventType}`
+      const body = data ? JSON.stringify(data) : '{}'
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      }).catch(() => {}) // Fail silently
+    } catch (e) {}
+  }
 
   const loadPortfolio = async () => {
     setIsLoading(true)
@@ -262,6 +276,8 @@ export default function PortfolioFlipbookPage() {
     try {
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
+      // Log share event
+      logAnalyticsEvent('share', { platform: 'link' })
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Fallback for older browsers
@@ -272,6 +288,7 @@ export default function PortfolioFlipbookPage() {
       document.execCommand('copy')
       document.body.removeChild(ta)
       setCopied(true)
+      logAnalyticsEvent('share', { platform: 'link' })
       setTimeout(() => setCopied(false), 2000)
     }
   }
@@ -616,6 +633,8 @@ export default function PortfolioFlipbookPage() {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+      // Log download event
+      logAnalyticsEvent('download', { format: 'pdf' })
     } catch (e: any) {
       alert(`Export error: ${e.message}`)
     } finally {
