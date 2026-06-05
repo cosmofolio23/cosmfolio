@@ -756,30 +756,58 @@ export default function TemplateMarketplace() {
               <button
                 onClick={async () => {
                   try {
-                    // Apply customized template to new portfolio
-                    const response = await fetch('/api/templates/portfolios', {
+                    const savedToken = token || localStorage.getItem('auth_token')
+                    if (!savedToken) {
+                      alert('Please sign in to create a portfolio')
+                      router.push('/signin')
+                      return
+                    }
+
+                    // Step 1: Create a new project
+                    const projectRes = await fetch(`${API_URL}/api/projects`, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: {
+                        'Authorization': `Bearer ${savedToken}`,
+                        'Content-Type': 'application/json'
+                      },
                       body: JSON.stringify({
-                        template_id: selectedTemplate.id,
-                        colors: customColors,
-                        fonts: customFonts,
-                        variant_name: saveAsVariant ? customizeName : null,
+                        title: customizeName || `${selectedTemplate.name} Portfolio`,
+                        project_type: 'portfolio',
+                        description: `Created from template: ${selectedTemplate.name}`
                       }),
                     });
 
-                    if (response.ok) {
-                      const data = await response.json();
-                      alert('Portfolio created with customized template!');
-                      setShowCustomize(false);
-                      // Reset state
-                      setCustomColors({});
-                      setCustomFonts({});
-                      setCustomizeName('');
-                      setSaveAsVariant(false);
+                    if (!projectRes.ok) {
+                      const err = await projectRes.json().catch(() => ({}))
+                      alert(`Failed to create project: ${err.detail || projectRes.statusText}`)
+                      return
                     }
+
+                    const project = await projectRes.json();
+                    const projectId = project.id;
+
+                    // Step 2: Save template customization to localStorage for the project
+                    localStorage.setItem(`template_${projectId}`, JSON.stringify({
+                      template_id: selectedTemplate.id,
+                      template_name: selectedTemplate.name,
+                      colors: { ...selectedTemplate.colors, ...customColors },
+                      fonts: { ...selectedTemplate.fonts, ...customFonts },
+                      variant_name: saveAsVariant ? customizeName : null,
+                    }));
+
+                    alert(`✅ Portfolio "${customizeName || selectedTemplate.name}" created!`);
+                    setShowCustomize(false);
+                    // Reset state
+                    setCustomColors({});
+                    setCustomFonts({});
+                    setCustomizeName('');
+                    setSaveAsVariant(false);
+
+                    // Step 3: Navigate to the new project
+                    router.push(`/dashboard/project/${projectId}`);
                   } catch (error) {
-                    alert('Failed to create portfolio');
+                    console.error('Error creating portfolio:', error);
+                    alert('Failed to create portfolio. Please try again.');
                   }
                 }}
                 className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition disabled:opacity-50"
