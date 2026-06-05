@@ -1176,13 +1176,13 @@ class ContentRequirements(BaseModel):
 class SheetTemplateResponse(BaseModel):
     id: str
     name: str
-    sheet_type: str
+    sheet_type: Optional[str] = None
     category: Optional[str] = None
     description: str
     source: Optional[str] = "ai-generated"
-    colors: ColorPalette
-    fonts: FontSystem
-    layout_zones: List[LayoutZone]
+    colors: Optional[ColorPalette] = None
+    fonts: Optional[FontSystem] = None
+    layout_zones: Optional[List[LayoutZone]] = None
     format: Optional[str] = None
     aspect_ratio: Optional[str] = None
     preview_image: Optional[str] = None

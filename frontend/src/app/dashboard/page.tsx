@@ -120,10 +120,22 @@ export default function Dashboard() {
         {/* Quick Access */}
         <div className="mb-12 flex gap-3 flex-wrap">
           <Link
+            href="/dashboard/templates"
+            className="inline-block bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+          >
+            🎨 Browse Templates (319) →
+          </Link>
+          <Link
             href="/dashboard/portfolios"
             className="inline-block bg-gradient-to-br from-green-500 to-green-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
           >
             📚 My Portfolios →
+          </Link>
+          <Link
+            href="/dashboard/sheets"
+            className="inline-block bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+          >
+            📄 Sheet Composer →
           </Link>
           <Link
             href="/dashboard/analytics"
