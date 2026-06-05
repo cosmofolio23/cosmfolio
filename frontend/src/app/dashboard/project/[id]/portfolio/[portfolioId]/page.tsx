@@ -699,68 +699,71 @@ export default function PortfolioFlipbookPage() {
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-800 via-slate-900 to-black overflow-hidden">
 
-      {/* Top Toolbar */}
-      <div className="bg-black/40 backdrop-blur-lg border-b border-white/10 flex-shrink-0 z-50 px-4 py-2.5 flex items-center justify-between gap-3 text-white">
-        <div className="flex items-center gap-3 min-w-0">
+      {/* Top Toolbar - Responsive */}
+      <div className="bg-black/40 backdrop-blur-lg border-b border-white/10 flex-shrink-0 z-50 px-3 md:px-4 py-2 md:py-2.5 flex items-center justify-between gap-2 md:gap-3 text-white overflow-x-auto">
+        {/* Left: Back + Title */}
+        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink-0">
           <Link
             href={`/dashboard/project/${params.id}/generate`}
-            className="text-white/70 hover:text-white transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
+            className="text-white/70 hover:text-white transition-colors text-xs md:text-sm flex items-center gap-1 whitespace-nowrap"
           >
-            ← Back
+            ← {!isMobile && 'Back'}
           </Link>
-          <div className="h-4 w-px bg-white/20"></div>
-          <span className="text-sm font-bold">📖 Portfolio Book</span>
+          <div className="h-3 md:h-4 w-px bg-white/20"></div>
+          <span className="text-xs md:text-sm font-bold whitespace-nowrap">📖 {!isMobile && 'Portfolio'} Book</span>
         </div>
 
-        <div className="flex gap-2 items-center">
-          {/* Save status */}
+        {/* Center/Right: Action Buttons - Responsive Layout */}
+        <div className="flex gap-1.5 md:gap-2 items-center flex-wrap justify-end">
+          {/* Save status - always visible but compact on mobile */}
           {saveStatus === 'saving' && (
-            <span className="text-xs text-yellow-300 flex items-center gap-1">
-              <span className="animate-pulse">●</span> Saving...
+            <span className="text-[10px] md:text-xs text-yellow-300 flex items-center gap-0.5 whitespace-nowrap">
+              <span className="animate-pulse">●</span> {!isMobile && 'Saving...'}
             </span>
           )}
           {saveStatus === 'saved' && (
-            <span className="text-xs text-green-400 flex items-center gap-1">
-              ✓ Saved
+            <span className="text-[10px] md:text-xs text-green-400 flex items-center gap-0.5">
+              ✓ {!isMobile && 'Saved'}
             </span>
           )}
           {saveStatus === 'error' && (
-            <span className="text-xs text-red-400 flex items-center gap-1">
-              ⚠ Save failed
+            <span className="text-[10px] md:text-xs text-red-400 flex items-center gap-0.5">
+              ⚠ {!isMobile && 'Error'}
             </span>
           )}
           {isRendering && saveStatus === 'idle' && (
-            <span className="text-xs text-blue-300 flex items-center gap-1">
-              <span className="animate-spin">⟳</span> Updating...
+            <span className="text-[10px] md:text-xs text-blue-300 flex items-center gap-0.5">
+              <span className="animate-spin">⟳</span>
             </span>
           )}
 
-          {/* Jump to page */}
+          {/* Jump to page - icon only on mobile */}
           <div className="relative">
             <button
               onClick={() => setShowJump(!showJump)}
-              className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-1"
+              title={`Spread ${spreadIndex + 1} of ${totalSpreads}`}
+              className="text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-0.5 md:gap-1 whitespace-nowrap"
             >
-              📑 Spread {spreadIndex + 1} / {totalSpreads}
+              📑 {!isMobile && <span>{spreadIndex + 1}/{totalSpreads}</span>}
             </button>
             {showJump && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 w-64 max-h-80 overflow-y-auto z-50">
+              <div className={`absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 ${isMobile ? 'w-48' : 'w-64'} max-h-80 overflow-y-auto z-50`}>
                 {pages.map((p, idx) => {
                   const targetSpread = idx === 0 ? 0 : Math.floor((idx + 1) / 2)
                   return (
                     <button
                       key={p.id}
                       onClick={() => { flipTo(targetSpread); setShowJump(false) }}
-                      className="w-full text-left px-3 py-2 rounded text-charcoal text-sm hover:bg-bg-subtle transition flex items-center gap-2"
+                      className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 rounded text-charcoal text-xs md:text-sm hover:bg-bg-subtle transition flex items-center gap-2"
                     >
-                      <span>{
+                      <span className="flex-shrink-0">{
                         p.type === 'cover' ? '🏠' :
                         p.type === 'about' ? '👤' :
                         p.type === 'contents' ? '📋' :
                         p.type === 'end' ? '📞' : '🏗️'
                       }</span>
-                      <span className="truncate">{p.name}</span>
-                      <span className="ml-auto text-xs text-stone-light">p.{idx + 1}</span>
+                      <span className="truncate flex-1 text-xs">{p.name}</span>
+                      <span className="text-xs text-stone-light flex-shrink-0">p.{idx + 1}</span>
                     </button>
                   )
                 })}
@@ -768,22 +771,22 @@ export default function PortfolioFlipbookPage() {
             )}
           </div>
 
-          {/* Style picker */}
+          {/* Style picker - color swatch only on mobile */}
           <div className="relative">
             <button
               onClick={() => setShowPacks(!showPacks)}
-              className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-1"
               title="Change design pack"
+              className="text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-0.5 md:gap-1"
             >
-              <div className="flex h-3 w-12 rounded overflow-hidden">
+              <div className="flex h-2 md:h-3 w-8 md:w-12 rounded overflow-hidden">
                 <div style={{ background: selectedPack.colors.primary, width: '30%' }} />
                 <div style={{ background: selectedPack.colors.accent, width: '20%' }} />
                 <div style={{ background: selectedPack.colors.background, width: '50%' }} />
               </div>
-              <span className="ml-1">🎨</span>
+              {!isMobile && <span>🎨</span>}
             </button>
             {showPacks && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 w-72 max-h-96 overflow-y-auto z-50">
+              <div className={`absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 ${isMobile ? 'w-56' : 'w-72'} max-h-96 overflow-y-auto z-50`}>
                 <div className="text-xs font-bold text-stone uppercase tracking-wider mb-2 px-2">Design Packs</div>
                 {PRESET_PACKS.map(pack => (
                   <button
@@ -791,13 +794,13 @@ export default function PortfolioFlipbookPage() {
                     onClick={() => switchPack(pack)}
                     className={`w-full text-left rounded mb-1 overflow-hidden border ${selectedPack.id === pack.id ? 'border-primary ring-1 ring-primary' : 'border-transparent hover:border-border-light'}`}
                   >
-                    <div className="flex h-6">
+                    <div className="flex h-5 md:h-6">
                       <div style={{ background: pack.colors.primary, width: '30%' }} />
                       <div style={{ background: pack.colors.secondary, width: '20%' }} />
                       <div style={{ background: pack.colors.accent, width: '15%' }} />
                       <div style={{ background: pack.colors.background, width: '35%' }} />
                     </div>
-                    <div className="p-2 bg-white">
+                    <div className="p-1.5 md:p-2 bg-white">
                       <div className="text-xs font-bold text-charcoal truncate" style={{ fontFamily: pack.typography.heading_font }}>
                         {pack.name}
                       </div>
@@ -809,55 +812,61 @@ export default function PortfolioFlipbookPage() {
             )}
           </div>
 
+          {/* Share button */}
           <button
             onClick={() => setShareModalOpen(true)}
-            className={`px-3 py-1.5 rounded text-xs font-semibold transition flex items-center gap-1 ${
+            className={`px-2 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-semibold transition flex items-center gap-0.5 md:gap-1 whitespace-nowrap ${
               shareEnabled
                 ? 'bg-green-500/30 hover:bg-green-500/40 text-green-200 border border-green-400/30'
                 : 'bg-white/10 hover:bg-white/20 text-white'
             }`}
-            title={shareEnabled ? 'Public — anyone with link can view' : 'Share publicly'}
+            title={shareEnabled ? 'Public' : 'Share'}
           >
-            {shareEnabled ? '🌐 Public' : '🔗 Share'}
+            {shareEnabled ? '🌐' : '🔗'} {!isMobile && (shareEnabled ? 'Public' : 'Share')}
           </button>
 
+          {/* PDF Export */}
           <button
             onClick={handleExportPDF}
             disabled={exporting}
-            className="bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-amber-600 disabled:opacity-50 flex items-center gap-1"
+            title="Download as PDF"
+            className="bg-amber-500 text-white px-2 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-semibold hover:bg-amber-600 disabled:opacity-50 flex items-center gap-0.5 md:gap-1 whitespace-nowrap"
           >
-            {exporting ? '⟳' : '📥'} PDF
+            {exporting ? '⟳' : '📥'} {!isMobile && 'PDF'}
           </button>
 
-          <button
-            onClick={handlePrint}
-            className="bg-white text-charcoal px-3 py-1.5 rounded text-xs font-semibold hover:bg-white/90"
-          >
-            🖨️ Print
-          </button>
+          {/* Print button - hide on mobile if space is tight */}
+          {!isMobile && (
+            <button
+              onClick={handlePrint}
+              className="bg-white text-charcoal px-3 py-1.5 rounded text-xs font-semibold hover:bg-white/90"
+            >
+              🖨️ Print
+            </button>
+          )}
         </div>
       </div>
 
       {/* Book Stage */}
       <div className="flex-1 relative flex items-center justify-center px-2 md:px-4 py-4 md:py-6 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
 
-        {/* Previous Edge */}
+        {/* Previous Edge - Larger on Mobile */}
         {!isFirstSpread && (
           <button
             onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white text-2xl flex items-center justify-center transition group"
-            title="Previous spread (←)"
+            className={`absolute top-1/2 -translate-y-1/2 z-30 ${isMobile ? 'left-2 w-14 h-14 text-3xl' : 'left-4 w-12 h-12 text-2xl'} bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white flex items-center justify-center transition group touch-manipulation`}
+            title="Previous spread"
           >
             <span className="group-hover:-translate-x-0.5 transition-transform">‹</span>
           </button>
         )}
 
-        {/* Next Edge */}
+        {/* Next Edge - Larger on Mobile */}
         {!isLastSpread && (
           <button
             onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white text-2xl flex items-center justify-center transition group"
-            title="Next spread (→)"
+            className={`absolute top-1/2 -translate-y-1/2 z-30 ${isMobile ? 'right-2 w-14 h-14 text-3xl' : 'right-4 w-12 h-12 text-2xl'} bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white flex items-center justify-center transition group touch-manipulation`}
+            title="Next spread"
           >
             <span className="group-hover:translate-x-0.5 transition-transform">›</span>
           </button>
@@ -904,22 +913,22 @@ export default function PortfolioFlipbookPage() {
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title={left.name}
               />
-              {/* Page action buttons (project pages only) */}
+              {/* Page action buttons (project pages only) - Mobile Optimized */}
               {left.type === 'project' && (
-                <div className="absolute top-2 left-2 flex gap-1">
+                <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2 flex gap-1.5' : 'top-2 left-2 flex gap-1'}`}>
                   <button
                     onClick={() => setShowLayoutPicker(left.id)}
-                    className="bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    className={`${isMobile ? 'flex-1' : ''} bg-black/70 hover:bg-black/90 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
                     title="Change layout"
                   >
-                    📐 Layout
+                    {isMobile ? '📐' : '📐 Layout'}
                   </button>
                   <button
                     onClick={() => openEditor(left.id)}
-                    className="bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    className={`${isMobile ? 'flex-1' : ''} bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
                     title="Edit content"
                   >
-                    ✏️ Edit
+                    {isMobile ? '✏️' : '✏️ Edit'}
                   </button>
                 </div>
               )}
@@ -941,22 +950,22 @@ export default function PortfolioFlipbookPage() {
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title={right.name}
               />
-              {/* Page action buttons (project pages only) */}
+              {/* Page action buttons (project pages only) - Mobile Optimized */}
               {right.type === 'project' && (
-                <div className="absolute top-2 right-2 flex gap-1">
+                <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2 flex gap-1.5' : 'top-2 right-2 flex gap-1'}`}>
                   <button
                     onClick={() => openEditor(right.id)}
-                    className="bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    className={`${isMobile ? 'flex-1' : ''} bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
                     title="Edit content"
                   >
-                    ✏️ Edit
+                    {isMobile ? '✏️' : '✏️ Edit'}
                   </button>
                   <button
                     onClick={() => setShowLayoutPicker(right.id)}
-                    className="bg-black/70 hover:bg-black/90 backdrop-blur text-white text-[11px] px-2.5 py-1.5 rounded-full font-medium flex items-center gap-1 transition"
+                    className={`${isMobile ? 'flex-1' : ''} bg-black/70 hover:bg-black/90 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
                     title="Change layout"
                   >
-                    📐 Layout
+                    {isMobile ? '📐' : '📐 Layout'}
                   </button>
                 </div>
               )}
@@ -964,89 +973,89 @@ export default function PortfolioFlipbookPage() {
           )}
         </div>
 
-        {/* Layout Picker Overlay */}
+        {/* Layout Picker Modal - Mobile Optimized */}
         {showLayoutPicker && (
           <div
-            className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-40 flex items-end md:items-center md:justify-center bg-black/60 backdrop-blur-sm md:absolute p-0 md:p-4"
             onClick={() => setShowLayoutPicker(null)}
           >
             <div
-              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6"
+              className={`bg-white ${isMobile ? 'w-full rounded-t-3xl max-h-[90vh]' : 'rounded-2xl max-w-3xl w-full'} shadow-2xl p-4 md:p-6 overflow-y-auto flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold text-charcoal">📐 Choose Layout for This Page</h3>
-                  <p className="text-xs text-stone-light mt-1">
+              <div className="flex items-center justify-between mb-3 md:mb-4 flex-shrink-0">
+                <div className="min-w-0">
+                  <h3 className="text-base md:text-lg font-bold text-charcoal">📐 Choose Layout</h3>
+                  <p className="text-xs text-stone-light mt-1 hidden md:block">
                     Each page can have a different layout — design style stays the same
                   </p>
                 </div>
                 <button
                   onClick={() => setShowLayoutPicker(null)}
-                  className="text-stone-light hover:text-charcoal p-2"
+                  className="text-stone-light hover:text-charcoal p-2 flex-shrink-0 text-xl"
                 >
-                  ✕
+                  {isMobile ? '▼' : '✕'}
                 </button>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'} gap-2 md:gap-3 flex-1`}>
                 {LAYOUT_OPTIONS.map((layout) => {
                   const isActive = (pageLayouts[showLayoutPicker] || pages.find(p => p.id === showLayoutPicker)?.current_layout) === layout.id
                   return (
                     <button
                       key={layout.id}
                       onClick={() => switchPageLayout(showLayoutPicker, layout.id)}
-                      className={`text-left p-3 rounded-xl border-2 transition ${
+                      className={`text-left p-2 md:p-3 rounded-xl border-2 transition touch-manipulation ${
                         isActive
                           ? 'border-primary bg-blue-50 ring-2 ring-primary/30'
                           : 'border-border-light hover:border-stone-light hover:bg-bg-subtle'
                       }`}
                     >
-                      <div className="text-3xl mb-2">{layout.icon}</div>
-                      <div className="font-bold text-sm text-charcoal">{layout.name}</div>
-                      <div className="text-xs text-stone-light mt-1">{layout.desc}</div>
+                      <div className="text-2xl md:text-3xl mb-1 md:mb-2">{layout.icon}</div>
+                      <div className="font-bold text-xs md:text-sm text-charcoal">{layout.name}</div>
+                      <div className="text-[10px] md:text-xs text-stone-light mt-0.5 md:mt-1 hidden md:block">{layout.desc}</div>
                       {isActive && (
-                        <div className="text-xs text-primary font-semibold mt-2">✓ Current</div>
+                        <div className="text-xs text-primary font-semibold mt-1 md:mt-2">✓</div>
                       )}
                     </button>
                   )
                 })}
               </div>
-              <p className="text-xs text-stone-light text-center mt-4">
-                💡 Tip: Mix different layouts across projects for visual variety
+              <p className="text-xs text-stone-light text-center mt-3 md:mt-4 flex-shrink-0">
+                💡 Mix layouts for visual variety
               </p>
             </div>
           </div>
         )}
 
-        {/* CONTENT EDIT PANEL */}
+        {/* CONTENT EDIT PANEL - Mobile Optimized */}
         {editingPage && (
           <div
-            className="absolute inset-0 z-40 flex items-stretch justify-end bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-40 flex items-end md:items-stretch md:justify-end bg-black/60 backdrop-blur-sm md:absolute"
             onClick={() => setEditingPage(null)}
           >
             <div
-              className="bg-white w-full max-w-md h-full overflow-y-auto shadow-2xl flex flex-col"
+              className={`bg-white ${isMobile ? 'w-full rounded-t-2xl max-h-[85vh]' : 'w-full max-w-md h-full'} overflow-y-auto shadow-2xl flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="px-5 py-4 border-b border-border-light sticky top-0 bg-white z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-charcoal">✏️ Edit Page</h3>
+              <div className="px-4 md:px-5 py-3 md:py-4 border-b border-border-light sticky top-0 bg-white z-10 flex-shrink-0">
+                <div className="flex items-center justify-between mb-2 md:mb-3">
+                  <div className="min-w-0">
+                    <h3 className="text-base md:text-lg font-bold text-charcoal">✏️ Edit Page</h3>
                     <p className="text-xs text-stone-light mt-0.5">Project #{editingPage.index + 1}</p>
                   </div>
                   <button
                     onClick={() => setEditingPage(null)}
-                    className="text-stone-light hover:text-charcoal p-2"
+                    className="text-stone-light hover:text-charcoal p-2 flex-shrink-0 text-xl"
                   >
-                    ✕
+                    {isMobile ? '▼' : '✕'}
                   </button>
                 </div>
                 {/* Tabs */}
-                <div className="flex gap-2 -mb-4">
+                <div className="flex gap-1 md:gap-2 -mb-3 md:-mb-4 overflow-x-auto">
                   <button
                     onClick={() => setEditTab('content')}
-                    className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${
+                    className={`px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
                       editTab === 'content'
                         ? 'border-primary text-primary'
                         : 'border-transparent text-stone-light hover:text-charcoal'
@@ -1056,39 +1065,39 @@ export default function PortfolioFlipbookPage() {
                   </button>
                   <button
                     onClick={() => setEditTab('images')}
-                    className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${
+                    className={`px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
                       editTab === 'images'
                         ? 'border-primary text-primary'
                         : 'border-transparent text-stone-light hover:text-charcoal'
                     }`}
                   >
-                    🖼️ Images ({Object.values(editAssets).reduce((s, a) => s + a.length, 0)})
+                    🖼️ {Object.values(editAssets).reduce((s, a) => s + a.length, 0)}
                   </button>
                 </div>
               </div>
 
               {/* Tab Content */}
               {editTab === 'content' && (
-              <div className="flex-1 p-5 space-y-4">
+              <div className="flex-1 p-4 md:p-5 space-y-3 md:space-y-4 overflow-y-auto">
                 <div>
-                  <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Project Name</label>
+                  <label className="block text-xs md:text-xs font-bold text-stone uppercase tracking-wider mb-1">Project Name</label>
                   <input
                     type="text"
                     value={editForm.name}
                     onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
                     placeholder="e.g. Museum Redesign"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
                   <div>
                     <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Location</label>
                     <input
                       type="text"
                       value={editForm.location}
                       onChange={e => setEditForm({ ...editForm, location: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                      className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
                       placeholder="Mumbai, India"
                     />
                   </div>
@@ -1098,7 +1107,7 @@ export default function PortfolioFlipbookPage() {
                       type="text"
                       value={editForm.year}
                       onChange={e => setEditForm({ ...editForm, year: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                      className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
                       placeholder="2025"
                     />
                   </div>
@@ -1110,7 +1119,7 @@ export default function PortfolioFlipbookPage() {
                     type="text"
                     value={editForm.typology}
                     onChange={e => setEditForm({ ...editForm, typology: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
                     placeholder="Cultural / Residential / etc"
                   />
                 </div>
@@ -1123,52 +1132,52 @@ export default function PortfolioFlipbookPage() {
                   <textarea
                     value={editForm.description}
                     onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                    rows={5}
-                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm resize-none"
+                    rows={isMobile ? 4 : 5}
+                    className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm resize-none touch-manipulation"
                     placeholder="A concise project description..."
                   />
 
-                  {/* AI helper buttons */}
-                  <div className="mt-2 flex flex-wrap gap-1.5">
+                  {/* AI helper buttons - stack on mobile */}
+                  <div className={`mt-2 flex ${isMobile ? 'flex-col' : 'flex-wrap'} gap-2`}>
                     <button
                       onClick={() => aiHelp('generate')}
                       disabled={!!aiGenerating}
-                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
                     >
                       {aiGenerating === 'generate' ? '⟳' : '✨'} Generate
                     </button>
                     <button
                       onClick={() => aiHelp('improve')}
                       disabled={!!aiGenerating || !editForm.description}
-                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
                     >
                       {aiGenerating === 'improve' ? '⟳' : '🔧'} Improve
                     </button>
                     <button
                       onClick={() => aiHelp('shorten')}
                       disabled={!!aiGenerating || !editForm.description}
-                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
                     >
                       {aiGenerating === 'shorten' ? '⟳' : '✂️'} Shorten
                     </button>
                     <button
                       onClick={() => aiHelp('expand')}
                       disabled={!!aiGenerating || !editForm.description}
-                      className="text-xs px-2.5 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center gap-1"
+                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
                     >
                       {aiGenerating === 'expand' ? '⟳' : '📝'} Expand
                     </button>
                   </div>
-                  <p className="text-[10px] text-stone-light mt-1.5">
-                    💡 AI will use the project name, typology and location to generate text
+                  <p className="text-[10px] text-stone-light mt-2">
+                    💡 AI will use project details to generate text
                   </p>
                 </div>
               </div>
               )}
 
-              {/* IMAGES TAB */}
+              {/* IMAGES TAB - Mobile Optimized */}
               {editTab === 'images' && (
-              <div className="flex-1 p-5 space-y-4 overflow-y-auto">
+              <div className="flex-1 p-4 md:p-5 space-y-3 md:space-y-4 overflow-y-auto">
                 {[
                   { key: 'renders', label: '🎨 Renders', desc: 'Photorealistic visuals' },
                   { key: 'plans', label: '📐 Plans', desc: 'Floor & site plans' },
@@ -1179,13 +1188,13 @@ export default function PortfolioFlipbookPage() {
                 ].map(cat => {
                   const items = editAssets[cat.key] || []
                   return (
-                    <div key={cat.key} className="border border-border-light rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <div className="text-sm font-bold text-charcoal">{cat.label} <span className="text-xs text-stone-light font-normal">({items.length})</span></div>
-                          <div className="text-[10px] text-stone-light">{cat.desc}</div>
+                    <div key={cat.key} className="border border-border-light rounded-lg p-3 md:p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="min-w-0">
+                          <div className="text-sm md:text-sm font-bold text-charcoal">{cat.label} <span className="text-xs text-stone-light font-normal">({items.length})</span></div>
+                          <div className="text-[10px] md:text-[10px] text-stone-light">{cat.desc}</div>
                         </div>
-                        <label className="text-xs px-2.5 py-1.5 bg-primary text-white rounded font-semibold hover:bg-primary-dark cursor-pointer transition disabled:opacity-50">
+                        <label className="text-xs md:text-xs px-3 py-2 md:py-1.5 bg-primary text-white rounded font-semibold hover:bg-primary-dark cursor-pointer transition disabled:opacity-50 flex-shrink-0 ml-2 touch-manipulation">
                           {uploadingCategory === cat.key ? '⟳' : '+ Add'}
                           <input
                             type="file"
@@ -1207,19 +1216,19 @@ export default function PortfolioFlipbookPage() {
 
                       {items.length === 0 ? (
                         <div className="text-center py-4 text-xs text-stone-light bg-bg-subtle rounded">
-                          No images yet — click "+ Add" to upload
+                          No images — click "+ Add" to upload
                         </div>
                       ) : (
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-3 gap-2'}`}>
                           {items.map((url, idx) => (
                             <div key={`${url}-${idx}`} className="relative group aspect-square bg-bg-subtle rounded overflow-hidden border border-border-light">
                               <img src={url} alt="" className="w-full h-full object-cover" />
-                              {/* Overlay buttons */}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition">
+                              {/* Overlay buttons - always visible on mobile, hover on desktop */}
+                              <div className={`absolute inset-0 bg-black/60 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} flex items-center justify-center gap-1 transition`}>
                                 <button
                                   onClick={() => moveAsset(cat.key, idx, 'up')}
                                   disabled={idx === 0}
-                                  className="bg-white text-charcoal w-7 h-7 rounded-full text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle"
+                                  className="bg-white text-charcoal w-7 h-7 md:w-8 md:h-8 rounded-full text-sm md:text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle transition touch-manipulation"
                                   title="Move earlier"
                                 >
                                   ←
@@ -1227,14 +1236,14 @@ export default function PortfolioFlipbookPage() {
                                 <button
                                   onClick={() => moveAsset(cat.key, idx, 'down')}
                                   disabled={idx === items.length - 1}
-                                  className="bg-white text-charcoal w-7 h-7 rounded-full text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle"
+                                  className="bg-white text-charcoal w-7 h-7 md:w-8 md:h-8 rounded-full text-sm md:text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle transition touch-manipulation"
                                   title="Move later"
                                 >
                                   →
                                 </button>
                                 <button
                                   onClick={() => removeAsset(cat.key, url)}
-                                  className="bg-red-600 text-white w-7 h-7 rounded-full text-xs font-bold hover:bg-red-700"
+                                  className="bg-red-600 text-white w-7 h-7 md:w-8 md:h-8 rounded-full text-sm md:text-xs font-bold hover:bg-red-700 transition touch-manipulation"
                                   title="Remove"
                                 >
                                   ✕
@@ -1253,25 +1262,25 @@ export default function PortfolioFlipbookPage() {
                 })}
 
                 <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
-                  💡 <strong>Tip:</strong> The order of images affects how they appear in your layout. Drag to reorder soon, for now use ← → arrows.
+                  💡 <strong>Tip:</strong> Image order matters. Use ← → to reorder.
                 </div>
               </div>
               )}
 
-              {/* Footer */}
-              <div className="px-5 py-4 border-t border-border-light flex gap-2 sticky bottom-0 bg-white">
+              {/* Footer - Mobile Optimized */}
+              <div className="px-4 md:px-5 py-3 md:py-4 border-t border-border-light flex gap-2 sticky bottom-0 bg-white flex-shrink-0 z-10">
                 <button
                   onClick={() => setEditingPage(null)}
-                  className="flex-1 px-4 py-2 border border-border-light rounded-lg text-sm font-semibold text-stone hover:bg-bg-subtle"
+                  className="flex-1 px-3 md:px-4 py-2.5 md:py-2 border border-border-light rounded-lg text-sm md:text-sm font-semibold text-stone hover:bg-bg-subtle transition touch-manipulation"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveEdits}
                   disabled={saveStatus === 'saving'}
-                  className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-dark disabled:opacity-50"
+                  className="flex-1 bg-primary text-white px-3 md:px-4 py-2.5 md:py-2 rounded-lg text-sm md:text-sm font-bold hover:bg-primary-dark disabled:opacity-50 transition touch-manipulation"
                 >
-                  {saveStatus === 'saving' ? '⟳ Saving...' : '💾 Save & Re-render'}
+                  {saveStatus === 'saving' ? '⟳ Saving...' : '💾 Save'}
                 </button>
               </div>
             </div>
@@ -1279,13 +1288,20 @@ export default function PortfolioFlipbookPage() {
         )}
       </div>
 
-      {/* Bottom indicator */}
-      <div className="bg-black/40 backdrop-blur-lg border-t border-white/10 flex-shrink-0 px-4 py-2 flex items-center justify-center gap-4 text-white/60 text-xs flex-wrap">
-        <span><span className="text-white/90">← →</span> Flip pages</span>
-        <span className="mx-1">·</span>
-        <span><span className="text-white/90">📐 Layout</span> button on each project page</span>
-        <span className="mx-1">·</span>
-        <span><span className="text-white/90">🎨</span> Top right to change design pack</span>
+      {/* Bottom indicator - Responsive */}
+      <div className="bg-black/40 backdrop-blur-lg border-t border-white/10 flex-shrink-0 px-3 md:px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 md:gap-4 text-white/60 text-[10px] md:text-xs flex-wrap">
+        {!isMobile && (
+          <>
+            <span><span className="text-white/90">← →</span> Flip pages</span>
+            <span className="mx-1">·</span>
+            <span><span className="text-white/90">📐</span> Layout each page</span>
+            <span className="mx-1">·</span>
+            <span><span className="text-white/90">🎨</span> Change design pack</span>
+          </>
+        )}
+        {isMobile && (
+          <span>← → Swipe or tap arrows to flip</span>
+        )}
       </div>
 
       {/* Backdrop for dropdowns */}
@@ -1296,74 +1312,74 @@ export default function PortfolioFlipbookPage() {
         />
       )}
 
-      {/* Share Modal */}
+      {/* Share Modal - Mobile Optimized */}
       {shareModalOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[60] flex items-end md:items-center md:justify-center bg-black/70 backdrop-blur-sm p-0 md:p-4"
           onClick={() => setShareModalOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            className={`bg-white ${isMobile ? 'w-full rounded-t-3xl max-h-[90vh]' : 'rounded-2xl max-w-md w-full'} shadow-2xl p-4 md:p-6 overflow-y-auto`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-charcoal">🔗 Share Portfolio</h3>
-                <p className="text-xs text-stone-light mt-0.5">Send your portfolio to anyone with a link</p>
+              <div className="min-w-0">
+                <h3 className="text-base md:text-lg font-bold text-charcoal">🔗 Share Portfolio</h3>
+                <p className="text-xs text-stone-light mt-0.5 hidden md:block">Send your portfolio to anyone with a link</p>
               </div>
               <button
                 onClick={() => setShareModalOpen(false)}
-                className="text-stone-light hover:text-charcoal p-2"
+                className="text-stone-light hover:text-charcoal p-2 flex-shrink-0 text-xl"
               >
-                ✕
+                {isMobile ? '▼' : '✕'}
               </button>
             </div>
 
-            {/* Toggle */}
-            <div className="bg-bg-subtle rounded-xl p-4 mb-4">
+            {/* Toggle - More touch-friendly on mobile */}
+            <div className="bg-bg-subtle rounded-xl p-3 md:p-4 mb-4">
               <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                  <div className="font-bold text-sm text-charcoal">
-                    {shareEnabled ? '✅ Public link active' : '🔒 Private (only you)'}
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm md:text-sm text-charcoal">
+                    {shareEnabled ? '✅ Public' : '🔒 Private'}
                   </div>
-                  <div className="text-xs text-stone-light mt-1">
+                  <div className="text-xs text-stone-light mt-0.5 hidden md:block">
                     {shareEnabled
-                      ? 'Anyone with the link can view this portfolio'
-                      : 'Click below to generate a public link'}
+                      ? 'Anyone with the link can view'
+                      : 'Generate a public link'}
                   </div>
                 </div>
                 <button
                   onClick={() => toggleShare(!shareEnabled)}
                   disabled={shareLoading}
-                  className={`relative w-12 h-7 rounded-full transition disabled:opacity-50 ${
+                  className={`relative w-14 h-8 md:w-12 md:h-7 rounded-full transition disabled:opacity-50 flex-shrink-0 touch-manipulation ${
                     shareEnabled ? 'bg-green-500' : 'bg-stone-light'
                   }`}
                 >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition ${
-                    shareEnabled ? 'left-6' : 'left-1'
+                  <div className={`absolute top-1.5 md:top-1 w-6 md:w-5 h-6 md:h-5 bg-white rounded-full transition ${
+                    shareEnabled ? 'left-7 md:left-6' : 'left-1'
                   }`} />
                 </button>
               </div>
             </div>
 
-            {/* Link */}
+            {/* Link - Stack on mobile */}
             {shareEnabled && shareUrl && (
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1.5">
-                    Shareable Link
+                    Your Link
                   </label>
-                  <div className="flex gap-2">
+                  <div className={`flex ${isMobile ? 'flex-col' : 'gap-2'} gap-2`}>
                     <input
                       type="text"
                       value={shareUrl}
                       readOnly
-                      className="flex-1 px-3 py-2 border border-border-light rounded-lg text-sm font-mono bg-bg-subtle"
+                      className="flex-1 px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-sm md:text-sm font-mono bg-bg-subtle touch-manipulation"
                       onFocus={(e) => e.target.select()}
                     />
                     <button
                       onClick={copyShareLink}
-                      className={`px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                      className={`${isMobile ? 'w-full' : ''} px-3 py-2.5 md:py-2 rounded-lg text-sm md:text-sm font-semibold transition touch-manipulation ${
                         copied
                           ? 'bg-green-500 text-white'
                           : 'bg-primary text-white hover:bg-primary-dark'
@@ -1378,13 +1394,13 @@ export default function PortfolioFlipbookPage() {
                   href={shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-center px-4 py-2 border border-border-light rounded-lg text-sm font-semibold text-charcoal hover:bg-bg-subtle transition"
+                  className="block text-center px-4 py-2.5 md:py-2 border border-border-light rounded-lg text-sm md:text-sm font-semibold text-charcoal hover:bg-bg-subtle transition touch-manipulation"
                 >
                   Open in new tab ↗
                 </a>
 
                 <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
-                  💡 <strong>Anyone with the link can view</strong> your portfolio. They can't edit it. To stop sharing, toggle off above — the link stops working immediately.
+                  💡 <strong>Anyone with the link can view</strong> your portfolio. They can't edit. Toggle off to stop sharing.
                 </div>
               </div>
             )}
