@@ -1,11 +1,16 @@
-from fastapi import FastAPI
+"""
+Vercel Serverless Entry Point
+Routes FastAPI requests to main application
+"""
+import sys
+from pathlib import Path
 
-app = FastAPI()
+# Add parent directory to path to import main
+backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
 
-@app.get("/health")
-async def health():
-    return {"status": "ok", "service": "CosmoFolio Backend"}
+# Import the main FastAPI app with all routes
+from main import app
 
-@app.get("/api/health")
-async def api_health():
-    return {"status": "healthy", "service": "ArchPortfolio API"}
+# Export for Vercel
+__all__ = ["app"]
