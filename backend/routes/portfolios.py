@@ -564,6 +564,86 @@ async def toggle_public_share(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+@router.get("/{portfolio_id}/export/pdf")
+async def export_portfolio_pdf(
+    portfolio_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Export portfolio as PDF file.
+    Returns file download with appropriate headers.
+    """
+    try:
+        import asyncio
+        from services.pdf_export import generate_pdf_from_html, create_pdf_filename
+
+        # Get portfolio metadata
+        response = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Portfolio not found")
+
+        portfolio = dict(response.data[0])
+        project_id = portfolio["project_id"]
+
+        # Verify ownership
+        project_resp = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not project_resp.data:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        project = project_resp.data[0]
+
+        # Get portfolio pages (full HTML)
+        assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+        assets = assets_resp.data or []
+
+        wizard_config = None
+        try:
+            cfg_resp = supabase.table("portfolio_configs").select("*").eq("project_id", project_id).execute()
+            if cfg_resp.data:
+                cfg = cfg_resp.data[0]
+                wizard_config = cfg.get("config") or cfg.get("config_data") or cfg
+        except Exception:
+            pass
+
+        # Render full portfolio HTML
+        from services.portfolio_renderer import render_full_portfolio_safe
+        html = render_full_portfolio_safe(
+            portfolio=portfolio,
+            project=project,
+            assets=assets,
+            wizard_config=wizard_config,
+        )
+
+        # Generate PDF
+        pdf_bytes = await generate_pdf_from_html(
+            html_content=html,
+            title=project.get("title", "Portfolio"),
+            options={
+                'format': 'A4',
+                'printBackground': True,
+                'preferCSSPageSize': True,
+            }
+        )
+
+        # Create filename
+        filename = create_pdf_filename(
+            project.get("title", "Portfolio"),
+            portfolio.get("variant_number", 1)
+        )
+
+        return {
+            "pdf": pdf_bytes,
+            "filename": filename,
+            "content_type": "application/pdf",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+
+
 @router.get("/public/p/{slug}/pages", include_in_schema=False)
 @router.post("/public/p/{slug}/pages")
 async def public_portfolio_pages(slug: str):

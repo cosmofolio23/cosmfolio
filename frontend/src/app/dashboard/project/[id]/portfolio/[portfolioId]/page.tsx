@@ -64,6 +64,7 @@ export default function PortfolioFlipbookPage() {
   const [shareEnabled, setShareEnabled] = useState(false)
   const [shareLoading, setShareLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const hasLoadedInitialRef = useRef(false)
@@ -581,7 +582,6 @@ export default function PortfolioFlipbookPage() {
   }, [spreadIndex, totalSpreads])
 
   const handlePrint = () => {
-    // Build full HTML with all pages for print
     const allPagesHtml = pages.map(p => p.html).join('\n')
     const printDoc = `<!DOCTYPE html><html>${headHtml}<body>${allPagesHtml}<style>
       @media print { .page { page-break-after: always; } }
@@ -591,6 +591,35 @@ export default function PortfolioFlipbookPage() {
       w.document.write(printDoc)
       w.document.close()
       setTimeout(() => w.print(), 500)
+    }
+  }
+
+  const handleExportPDF = async () => {
+    setExporting(true)
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/export/pdf`, {
+        headers: { 'Authorization': `Bearer ${savedToken}` }
+      })
+      if (!res.ok) {
+        alert(`Export failed: ${res.status}`)
+        setExporting(false)
+        return
+      }
+      const blob = await res.blob()
+      const filename = `portfolio-${new Date().toISOString().slice(0, 10)}.pdf`
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e: any) {
+      alert(`Export error: ${e.message}`)
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -740,6 +769,14 @@ export default function PortfolioFlipbookPage() {
             title={shareEnabled ? 'Public — anyone with link can view' : 'Share publicly'}
           >
             {shareEnabled ? '🌐 Public' : '🔗 Share'}
+          </button>
+
+          <button
+            onClick={handleExportPDF}
+            disabled={exporting}
+            className="bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-amber-600 disabled:opacity-50 flex items-center gap-1"
+          >
+            {exporting ? '⟳' : '📥'} PDF
           </button>
 
           <button
