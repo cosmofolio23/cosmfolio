@@ -39,6 +39,8 @@ export default function PortfolioFlipbookPage() {
   const [headHtml, setHeadHtml] = useState<string>('')
   const [spreadIndex, setSpreadIndex] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
+  const touchStartRef = useRef(0)
   const [isRendering, setIsRendering] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedPack, setSelectedPack] = useState<StylePack>(PRESET_PACKS[0])
@@ -121,6 +123,16 @@ export default function PortfolioFlipbookPage() {
   }
 
   useEffect(() => {
+    // Detect mobile/tablet on mount and window resize
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
     loadPortfolio()
     // Log view event
@@ -137,6 +149,25 @@ export default function PortfolioFlipbookPage() {
         body
       }).catch(() => {}) // Fail silently
     } catch (e) {}
+  }
+
+  // Touch swipe handling for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartRef.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEnd = e.changedTouches[0].clientX
+    const diff = touchStartRef.current - touchEnd
+
+    // Swipe left = next, swipe right = prev
+    if (Math.abs(diff) > 50) {  // min swipe distance
+      if (diff > 0) {
+        flipTo(spreadIndex + 1)
+      } else {
+        flipTo(spreadIndex - 1)
+      }
+    }
   }
 
   const loadPortfolio = async () => {
@@ -808,7 +839,7 @@ export default function PortfolioFlipbookPage() {
       </div>
 
       {/* Book Stage */}
-      <div className="flex-1 relative flex items-center justify-center px-4 py-6 overflow-hidden">
+      <div className="flex-1 relative flex items-center justify-center px-2 md:px-4 py-4 md:py-6 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
 
         {/* Previous Edge */}
         {!isFirstSpread && (
@@ -837,12 +868,12 @@ export default function PortfolioFlipbookPage() {
           className={`book-container ${isFlipping ? `flipping flip-${flipDirection}` : ''}`}
           style={{
             display: 'flex',
-            maxWidth: '95%',
+            maxWidth: isMobile ? '100%' : '95%',
             maxHeight: '92%',
-            aspectRatio: isFirstSpread || isLastSpread ? '0.707/1' : '1.414/1',
+            aspectRatio: isMobile ? '0.707/1' : (isFirstSpread || isLastSpread ? '0.707/1' : '1.414/1'),
             background: '#1a1a1a',
-            borderRadius: '4px',
-            boxShadow: '0 30px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+            borderRadius: isMobile ? '0px' : '4px',
+            boxShadow: isMobile ? 'none' : '0 30px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
             position: 'relative',
             transition: 'all 0.3s ease',
           }}

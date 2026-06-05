@@ -78,13 +78,14 @@ except Exception as e:
 # Optional: Try to load more routes
 print("[STARTUP] Loading additional routes...")
 try:
-    from routes import sheets, layouts, design_system, ai_generation, previews, style_pack
+    from routes import sheets, layouts, design_system, ai_generation, previews, style_pack, templates
     app.include_router(sheets.router, tags=["sheets"])  # routes already have /api/... prefix
     app.include_router(layouts.router, prefix="/api/layouts", tags=["layouts"])
     app.include_router(design_system.router, prefix="/api/design", tags=["design"])
     app.include_router(ai_generation.router, prefix="/api/ai", tags=["ai"])
     app.include_router(previews.router, prefix="/api/previews", tags=["previews"])
     app.include_router(style_pack.router, prefix="/api/portfolios", tags=["style-packs"])  # routes: /{portfolio_id}/style-packs
+    app.include_router(templates.router, tags=["templates"])  # routes: /api/templates/... (Phase 4)
     print("[OK] Additional routes loaded")
 except Exception as e:
     print(f"[WARNING] Some additional routes failed: {e}")

@@ -1109,3 +1109,104 @@ class ContentQualityMetricsResponse(BaseModel):
     approved_count: int
     used_count: int
     usage_rate_percent: float
+
+# ==================== Templates (Phase 4) ====================
+
+class ColorPalette(BaseModel):
+    primary: str
+    accent: str
+    background: str
+    text: str
+    muted: str
+
+class FontSystem(BaseModel):
+    heading: str
+    body: str
+    accent: str
+
+class LayoutDefinitionTemplate(BaseModel):
+    structure: str
+    grid: str
+    image_ratio: Optional[str] = None
+
+class Placeholders(BaseModel):
+    renders: int
+    plans: int
+    sections: int
+    diagrams: int
+    text_description: bool = True
+    project_title: bool = True
+    year: Optional[bool] = False
+    location: Optional[bool] = False
+
+class PortfolioTemplateResponse(BaseModel):
+    id: str
+    name: str
+    category: str
+    description: str
+    source: Optional[str] = "ai-generated"
+    colors: ColorPalette
+    fonts: FontSystem
+    layouts: Dict[str, LayoutDefinitionTemplate]
+    placeholders: Placeholders
+    preview_image: Optional[str] = None
+    style_notes: Optional[str] = None
+    page_count_range: Optional[str] = None
+    orientation: Optional[str] = "portrait_A4"
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class PortfolioTemplateList(BaseModel):
+    total: int
+    templates: List[PortfolioTemplateResponse]
+
+class LayoutZone(BaseModel):
+    type: str
+    position: Optional[str] = None
+    size: Optional[Dict[str, Any]] = None
+    content_type: Optional[str] = None
+
+class ContentRequirements(BaseModel):
+    renders: Optional[int] = None
+    plans: Optional[int] = None
+    diagrams: Optional[int] = None
+    text: Optional[bool] = None
+
+class SheetTemplateResponse(BaseModel):
+    id: str
+    name: str
+    sheet_type: str
+    category: Optional[str] = None
+    description: str
+    source: Optional[str] = "ai-generated"
+    colors: ColorPalette
+    fonts: FontSystem
+    layout_zones: List[LayoutZone]
+    format: Optional[str] = None
+    aspect_ratio: Optional[str] = None
+    preview_image: Optional[str] = None
+    style_notes: Optional[str] = None
+    content_requirements: Optional[ContentRequirements] = None
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class SheetTemplateList(BaseModel):
+    total: int
+    templates: List[SheetTemplateResponse]
+
+class TemplateCompatibility(BaseModel):
+    portfolio_template_id: str
+    sheet_template_id: str
+    compatibility_score: float = 1.0
+    recommended: bool = False
+
+class TemplateFilterQuery(BaseModel):
+    category: Optional[str] = None
+    source: Optional[str] = None
+    color_mood: Optional[str] = None
+    page_range: Optional[str] = None
+    search: Optional[str] = None
+    limit: int = Field(50, ge=1, le=100)
+    offset: int = Field(0, ge=0)
