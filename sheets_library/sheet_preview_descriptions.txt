@@ -1,0 +1,275 @@
+============================================================
+ARCHITECTURAL PRESENTATION SHEET TEMPLATES
+VISUAL PREVIEW DESCRIPTIONS
+============================================================
+
+CONCEPT SHEETS (10 templates)
+---
+
+sht_001 | Concept — Minimal Thesis
+A1 landscape. Pure white page. "THESIS STATEMENT" in large Inter sans-serif top-left. Below, a single bold concept sketch dominates center-left. Right side has 3 stacked supporting diagrams with red accent callouts. Minimal text, maximum breathing room. Swiss design discipline.
+
+sht_002 | Concept — Bold Manifesto
+A1 portrait. Massive black Archivo Black type "ARCHITECTURE IS CONFLICT" takes up 35% of page, bleeding off edges. Below, bold red accent rule. Center shows stark B&W render. Bottom has concept diagrams in red-circled callouts. Powerful typographic presence, red emphasis.
+
+sht_003 | Concept — Narrative Flow
+A1 landscape. Warm cream background. Three clear zones left-to-right: (1) PROBLEM: site photo + brown text, (2) CONCEPT: diagram + gold accent box, (3) RESPONSE: render + resolution text. Gold directional arrows flow left-to-right. Storytelling format, warm Lora serif typography.
+
+sht_004 | Concept — Parametric Diagram
+A1 landscape. Light gray background. Top: "GENERATIVE LOGIC" title in Neue Haas Grotesk navy. Left: 4x4 grid of 16 parametric form variations (orange outlines). Right: hero selected form in 3D. Bottom: performance data charts with orange highlights. Tech-forward, data-driven.
+
+sht_005 | Concept — Exploded Axonometric
+A1 portrait. White page. Center: large exploded axonometric showing 5 vertical layers (structure, envelope, interior, systems, landscape) separated vertically. Right side: blue leader-line callouts labeling each layer. Bottom: color-coded legend. Clean analytical, architectural precision.
+
+sht_006 | Concept — Black Canvas Dark
+A1 landscape. Pure black page. Centered: "MAISON NOIR" in gold Didot serif, extra-spaced. Below: moody nighttime architectural render (holographic feel). Right: white-line concept diagrams on black. Cinematic, luxurious dark atmosphere. Gallery-quality lighting.
+
+sht_007 | Concept — Hand Sketch Organic
+A1 landscape. Warm cream (#F5F0E1) with texture. Large hand-drawn pencil architectural sketch dominates center. Handwritten "DRAWING ARCHITECTURE" in Caveat script top-left. Left margin: 3 smaller process sketches stacked. Scattered handwritten annotations in sepia. Intimate, personal feel.
+
+sht_008 | Concept — Sustainability Systems
+A1 landscape. Warm cream background. Building section left showing green passive system overlays (sun rays, rain arrows, wind indicators). Right: 4 sustainability strategy icons (solar + water + biodiversity + energy) in sage green circles. Bottom: LEED metrics bar. Environmental focus, green accents.
+
+sht_009 | Concept — Urban Context Response
+A0 landscape. White page. Three columns: (1) Urban context map with orange site pin, (2) Massing studies 2x2 grid showing form evolution, (3) Hero perspective render. Orange intervention highlights on map. Analytical urban design thinking, large scale.
+
+sht_010 | Concept — Collage Experiential
+A1 landscape. Warm aged paper (#F0E6D2). 8+ images layered and overlapping organically like a physical mood board. Torn-edge textures visible. 4 material swatches integrated. Handwritten Caveat captions scattered. Terracotta accent rule top. Atmospheric, artistic collage feel.
+
+SITE ANALYSIS SHEETS (8 templates)
+---
+
+sht_011 | Site Analysis — Full Analytical
+A1 landscape. White page. Title bar top. Left: annotated site plan with property lines and context. Right: 6-cell grid (2x3) of analysis diagrams: sun path, wind rose, traffic pattern, vegetation map, topography section, noise contours. Orange callout numbers. Bottom: site data table. Comprehensive, analytical.
+
+sht_012 | Site Analysis — Minimal Map Focus
+A1 portrait. White page. Centered: large annotated site map taking 60% of page. Around edges: 6 red circular callouts with data (climate, area, zoning, utilities, traffic, ecology) floating off the map with thin leader lines. Bottom: minimal legend. Clean, restrained, map-dominant.
+
+sht_013 | Site Analysis — Climate & Environment
+A1 landscape. Warm cream background. Left: sun path stereographic projection with shadow study at 4 hours. Center: wind rose diagram (seasonal colors). Right: building section showing passive systems (sun angles, wind flow, rain infiltration). Bottom: monthly rainfall + temperature chart. Yellow sun accents on green.
+
+sht_014 | Site Analysis — Urban Context
+A0 landscape. White page. Title strip. 6 uniform panels in 3x2 grid: figure-ground map, circulation/transit, land use zones, building heights, infrastructure systems, SWOT analysis. Each color-coded. Clean diagrammatic analysis, urban-scale thinking. Professional presentation.
+
+sht_015 | Site Analysis — Photographic Context
+A1 landscape. White page. Large aerial photo (annotated with red pins and viewpoint numbers) top-right. Left: site plan showing 8 numbered viewpoints. Bottom: strip of 8 ground-level photographs corresponding to viewpoint numbers. Photography-led, experiential site understanding.
+
+sht_016 | Site Analysis — Landscape & Ecology
+A1 landscape. Warm cream background. Center-left: ecological mapping with vegetation types color-coded (green zones). Top-right: hydrology diagram showing water flows. Bottom-right: soil profile section through layers. Bottom: biodiversity species list with botanical icons. Nature-focused, scientific layout.
+
+sht_017 | Site Analysis — Historical Layers
+A1 landscape. Aged cream paper (#F8F2E8). Four maps in horizontal timeline row showing the site in 1800 → 1900 → 1950 → 2026. Sepia tones for historical maps, color for present. Sienna overlay showing heritage constraints. Archival photos bottom-right. Temporal narrative, heritage context.
+
+sht_018 | Site Analysis — Dark Drone Aerial
+A1 landscape. Deep dark navy background (#0F0F1E). Dominant: dramatic drone aerial photograph with bright cyan neon analytical overlays (analysis lines, zone boundaries). Right side: cyan glowing data callouts and mini-diagram icons. Futuristic, cinematic, dark-mode analysis. Holographic aesthetic.
+
+MOOD BOARD SHEETS (8 templates)
+---
+
+sht_019 | Mood Board — Classic Grid
+A2 portrait. Warm cream background. Title top. Center: 3x3 grid of 9 inspiration images (architecture, landscape, objects, textures) uniform size. Right margin: 5 color circles stacked. Below colors: 4 material swatches with labels. Gold accent on title. Organized, elegant, professional mood compilation.
+
+sht_020 | Mood Board — Organic Collage
+A2 landscape. Aged paper texture (#F0E6D2). 12+ inspiration images overlapping freely like a physical pinboard. Torn-edge collage composition. 4 texture swatches peeking out. Handwritten Caveat labels and arrows scattered. No grid. Organic, artistic, intimate mood gathering.
+
+sht_021 | Mood Board — Material Focus
+A2 portrait. Warm cream (#F4F0EB). Top: large hero oak-wood texture photograph. Center: 6 material swatches in a horizontal row (stone, brass, linen, leather, marble, concrete) with product codes. Bottom-left: extracted color palette (5 circles). Bottom-right: supplier names and links. Material-first hierarchy, tactile focus.
+
+sht_022 | Mood Board — Interior Styling
+A2 landscape. Soft cream (#FDF8F4) with blush pink accents. Left: hero interior photograph (styled living room with curved arches). Top-right: 4 furniture reference images (sofa, chair, lighting, accessories) in 2x2 grid. Center-right: 5 color swatches. Bottom: material finish samples. Lifestyle-focused, soft aesthetics.
+
+sht_023 | Mood Board — Dark Luxury
+A2 landscape. Pure black page. Moody nighttime interior photograph (luxury hotel lobby with dramatic lighting) taking 50%. Right: 3 dark inspiration images stacked. Bottom: 5 luxury material swatches with gold foil-style frames and subtle shine. Gold Didot title top-left. Cinematic, premium atmosphere.
+
+sht_024 | Mood Board — Minimalist Zen
+A2 portrait. Warm white page with 70% empty space. Single quiet image top-center (modern teahouse detail). One smaller secondary image below. Three color circles bottom-center. Tiny word "STILLNESS" at base. Supreme restraint. Zen-like calm, gallery aesthetic. Negative space as primary design element.
+
+sht_025 | Mood Board — Tropical Biophilic
+A2 landscape. Warm cream (#F4EFE3). Left: lush tropical villa photograph with palm fronds and water features. Top-right: 6-cell botanical texture grid (leaf details, wood grain, stone, water, sky, foliage). Bottom: 6 natural material swatches (bamboo, teak, stone, rattan, linen, cork). Deep forest green accents. Lush, biophilic mood.
+
+sht_026 | Mood Board — Brutalist Raw
+A2 landscape. Gray paper (#E8E4DC). Center: 3 large concrete texture close-ups (raw aggregate, weathered surface, geometric cast). Right: 4 brutalist building references (Barbican Estate, Habitat, Vessel, Parking structure). Bottom: 5 raw swatches (concrete, steel, glass, timber, plaster). Red Archivo Black title. Heavy, industrial mood.
+
+FLOOR PLAN SHEETS (8 templates)
+---
+
+sht_027 | Floor Plan — Standard Technical
+A1 landscape. White page. Large black-line floor plan centered. Room labels in small caps. Dimension strings around edges. Scale bar bottom-left. North arrow top-right. Title block bottom-right with drawing number and revision. Door swings shown. Border frame. Standard CAD-style technical drawing.
+
+sht_028 | Floor Plan — Rendered Presentation
+A1 landscape. White page. Color-rendered floor plan showing wood tones, stone, tile textures. Furniture layouts shown. Landscape garden visible. Blue labels for zones (public/private/service). Right: room area schedule table. Title bar top. Clean, client-ready presentation plan. Material textures visible.
+
+sht_029 | Floor Plan — Multi-Level Stack
+A0 landscape. White page. Three identical-scale floor plans stacked vertically: Ground Floor, First Floor, Second Floor. Level names labeled clearly. Height dimensions on right align all levels. North arrow shown once. All rooms labeled consistently. Comparison-friendly layout for multi-story buildings.
+
+sht_030 | Floor Plan — Minimal Gallery
+A1 portrait. Pure white page. Thin hairline floor plan floating centered with 30% white margins. Minimal tiny room names in small caps. Scale bar and north arrow bottom-left in tiny font. Title in elegant serif top-left. Plan presented as artwork, gallery display aesthetic. Swiss minimalism.
+
+sht_031 | Floor Plan — Color-Zoned Program
+A1 landscape. White page. Floor plan with zones filled in colors: blue=public, yellow=private, green=service, red=circulation, orange=support. Right: color-coded legend with program areas. Bottom-right: area breakdown table (GFA, public sqft, private sqft, etc). Orange callouts. Programmatic analysis focus.
+
+sht_032 | Floor Plan — Landscape Site Plan
+A1 landscape. White page. Rendered landscape plan showing green planting zones with tree canopy shadows. Hardscape areas in warm grays. Building footprint in light charcoal. Right: planting schedule listing botanical species. Bottom: landscape material legend with symbols. Garden design focus, organic shapes.
+
+sht_033 | Floor Plan — Dark Contrast
+A1 landscape. Pure black page. Plan drawn in white lines. Gold Didot room labels. White scale bar and north arrow. Plan glows against black background, gallery-like. Gold title bar top-left. Dramatic dark presentation. Cinematic night-mode aesthetic. Premium feel.
+
+sht_034 | Floor Plan — Furniture Layout
+A1 landscape. White page. Interior furniture plan showing sofa, chairs, tables, lighting with professional symbols. Right: furniture schedule table with product images (8 items). Bottom-right: finish schedule table. Legend showing furniture symbols. Gold accent on headers. Interior design precision, FF&E focused.
+
+SECTION SHEETS (6 templates)
+---
+
+sht_035 | Section — Standard Technical
+A1 landscape. White page. Technical building section with material hatching (brick = diagonal lines, concrete = stipple, wood = grain). Level markers at right with elevations. Dimension strings below. Detail reference callouts with bubble numbers. Title block bottom-right. Scale bar. Standard drafting conventions.
+
+sht_036 | Section — Rendered Atmospheric
+A1 landscape. White page. Beautiful rendered section showing interior spaces with warm golden sunlight. Human silhouettes for scale. Furniture visible. Material textures apparent. Room labels in elegant serif. Cool shadows, warm highlights. Architectural mood-setting section, not technical but expressive.
+
+sht_037 | Section — Wall Detail Assembly
+A1 portrait. White page. Large detailed wall section (foundation to roof) left side showing all construction layers: concrete foundation, insulation, vapor barrier, studs, sheathing, cladding, roof assembly. Right: 12 blue leader-line callouts identifying each layer (material code + thickness). Bottom: title block. Technical specification focus.
+
+sht_038 | Section — Landscape Terrain
+A1 landscape. White page. Long panoramic landscape section showing ground plane, vegetation, building sitting in landscape. Trees drawn as symbols above ground, soil layers below. Building integrated with terrain. Planting labels. Soft brown and green tones. Landscape integration narrative, long horizontal format.
+
+sht_039 | Section — Perspective Section
+A1 landscape. White page. Dramatic 3D perspective section (oblique angle) revealing interior spaces receding into depth. People shown in various spaces. Lighting effects. Furniture visible. Terracotta accent labels for spaces. Architectural storytelling. Sectional perspective hybrid.
+
+sht_040 | Section — Multiple Sections Comparison
+A0 landscape. White page. Two building sections stacked vertically: Longitudinal Section AA (top), Transverse Section BB (bottom). Level lines and column grids aligned for reference. Same scale. Title block bottom-right. Reference bubble marks show section cut lines on plan (not shown). Comparison-friendly multi-section layout.
+
+ELEVATION SHEETS (6 templates)
+---
+
+sht_041 | Elevation — Standard Technical
+A1 landscape. White page. Building elevation with black lines. Material indications shown (hatching for brick, stipple for concrete). Level markers along right edge with elevation dimensions. Ground line defined. Window/door openings clear. Material legend bottom-left. Title block bottom-right. Scale bar. Standard CAD elevation.
+
+sht_042 | Elevation — Rendered Facade
+A1 landscape. White page. Beautiful rendered building facade showing material textures, shadows, depth. Grass and trees at base for scale. Human figures in foreground. Warm afternoon light creating shadow pattern on facade. Gold accent labels for key materials. Presentation-grade architectural rendering of facade.
+
+sht_043 | Elevation — All Four Facades
+A0 landscape. White page. Title strip. Four building elevations in 2x2 grid: North (top-left), South (top-right), East (bottom-left), West (bottom-right). All same scale for comparison. Level markers aligned. Blue direction labels. Title block. Comprehensive 4-facade presentation on one large sheet.
+
+sht_044 | Elevation — Street Context
+A1 landscape. White page. Long panoramic street elevation showing project building highlighted in red/color while neighboring buildings in light gray. Trees and street furniture visible. Depth of street shown through perspective. Context photos of street below (4 photographs). Contextual urban presentation.
+
+sht_045 | Elevation — Facade Detail Study
+A1 landscape. White page. Left: overall building elevation. Right: three zoomed detail panels (corner detail, window assembly, base/ground condition) at larger scale. Orange callout boxes link zoom areas to detail panels. Material names and specifications. From overview to detailed construction assembly.
+
+sht_046 | Elevation — Dark Dramatic Night
+A1 landscape. Pure black page. Night-rendered elevation showing building glowing from warm interior light behind windows. Exterior ground lighting. Dramatic nightscape atmosphere. Tiny white title bar top-left. Gold scale bar. Cinematic night elevation. Theatrical, premium mood.
+
+AXONOMETRIC / 3D SHEETS (5 templates)
+---
+
+sht_047 | Axonometric — Exploded Assembly
+A1 portrait. White page. Title top. Central exploded axonometric with 5 layers vertically separated floating above each other: (1) Landscape (green), (2) Foundation (gray), (3) Structure (red), (4) Envelope (blue), (5) Interior (yellow). Color-coded. Right: layer identification labels with leader lines. Bottom: systems legend. Technical layer separation showing building composition.
+
+sht_048 | Axonometric — Worm's Eye
+A1 portrait. White page. Dramatic worm's-eye axonometric (view from below looking up) showing building's underside, ceiling planes, structure, and interior void relationships. Spaces labeled with orange callouts. Unusual perspective reveals spatial complexity. Architectural discovery view. Technical precision with dramatic angle.
+
+sht_049 | Axonometric — Site Context Isometric
+A1 landscape. White page. Title. Isometric site view showing project building in full urban context. Project building in red/color. Surrounding context buildings in light gray. Streets and public realm shown. Site boundary marked. Analytical urban context visualization. Urban integration story.
+
+sht_050 | Axonometric — Cutaway Interior
+A1 landscape. White page. Magnificent cutaway axonometric showing building with 30% of exterior "removed" to reveal interior. Furnished spaces visible. Human figures in various rooms. Gold leader-line labels for key spaces. Architectural dollhouse quality. Experiential interior reveal. Design intent narrative.
+
+sht_051 | Axonometric — Construction Sequence
+A1 landscape. White page. Six progressive axonometrics in horizontal row: (1) Foundation, (2) Structure frame, (3) Envelope assembly, (4) Interior fit-out, (5) Landscape installation, (6) Completed. Orange stage numbers. Labels below each. Left-to-right timeline showing construction evolution. Project delivery narrative.
+
+DETAIL SHEETS (4 templates)
+---
+
+sht_052 | Detail — Construction Detail Grid
+A1 landscape. White page. Title top. 2x3 grid of six construction details: window head, sill, door jamb, soffit, foundation, parapet. Each detail at large scale with dimensions, material callouts (blue circles), assembly. Each has individual scale bar. Title block. Professional detail documentation grid.
+
+sht_053 | Detail — Facade System Assembly
+A1 portrait. White page. Large detailed section through facade wall (left) showing all components: frame, insulation, membrane, cladding. Right: three zoomed junction detail enlargements (corner, mullion, base) with orange callout links. Bottom-right: component specification table. From system overview to specific junctions.
+
+sht_054 | Detail — Material Joint Close-Up
+A2 landscape. Warm cream page. Left: detailed technical drawing of material joint (wood-to-stone, steel connection, etc.) at 1:10 scale. Right: actual photograph of that same joint in real building context. Below: material specification with supplier, finish, tolerances. Drawing paired with reality. Craft documentation.
+
+sht_055 | Detail — Staircase/Railing Detail
+A1 landscape. White page. Composite staircase details: central section through stairs showing rise/run/handrail. Top-right: plan view of stair flight. Bottom-left: handrail profile section (2 inches tall). Bottom-right: balustrade detail (spindle spacing, glass panel). Complete stair specification on one sheet.
+
+PRESENTATION BOARDS (6 templates)
+---
+
+sht_056 | Presentation Board — Full Project A1
+A1 portrait. White page, title bar top. Stacked sections: (1) Hero perspective render (25%), (2) Concept statement with diagrams (12%), (3) Plans and sections side-by-side (30%), (4) Interior renders and details (18%), (5) Project data footer (6%). Information-dense, complete project summary. Professional presentation. Red accent project number.
+
+sht_057 | Presentation Board — Competition A0
+A0 portrait. White page. Large scale for jury viewing. Stacked sections: (1) Competition title banner with number (8%), (2) Stunning hero render (30%), (3) Concept diagrams row (15%), (4) Plans/sections/elevations (25%), (5) Detail renders (15%), (6) Team data footer (5%). Bold graphics. Yellow competition number. Jury-readable from 3m.
+
+sht_058 | Presentation Board — Landscape Panoramic
+A0 landscape. Warm cream background. Stacked sections: (1) Wide panoramic site render showing landscape (30%), (2) Master plan left (35%), (3) Analysis diagrams right (20%), (4) Sections and planting schedule (15%). Wide format optimized for landscape/master plan. Panoramic render emphasis. Earth tones. Landscape-scale thinking.
+
+sht_059 | Presentation Board — Student Crit Board
+A1 portrait. Off-white background. Title with abstract. Stacked sections: (1) Concept and process sketches (20%), (2) Plans/sections/elevations (35%), (3) Model photographs and renders (25%), (4) References and bibliography (10%). Academic rigor. Burgundy accents. Thesis-like structure. Design evolution narrative. Scholarly presentation.
+
+sht_060 | Presentation Board — Minimal Gallery
+A1 landscape. White page. One stunning hero image dominates center (60%). Small floor plan bottom-left. Tiny section bottom-center. Project description text bottom-right (25%). Elegant title top. Maximum white space. Image-first gallery approach. Premium presentation through restraint.
+
+sht_061 | Presentation Board — Dark Cinematic
+A1 landscape. Pure black page. Stacked sections: (1) Massive hero render (35%), (2) Three secondary renders right side (30%), (3) White-line plan and section bottom-left (20%), (4) Gold data typography bottom-right (15%). Dramatic dark mode. Gold Didot type. Cinematic, premium feel. Render-dominant luxury presentation.
+
+DIAGRAM / INFOGRAPHIC SHEETS (5 templates)
+---
+
+sht_062 | Diagram — Circulation & Program
+A2 landscape. White page. Left: floor plan with orange circulation flow arrows showing pedestrian pathways and movement patterns. Right-top: bubble diagram showing spatial adjacencies and program relationships. Right-bottom: pie chart showing program area percentages. Orange accent on flow paths. Analytical movement and organization study.
+
+sht_063 | Diagram — Massing Study
+A2 landscape. White page. Title "MASSING EVOLUTION." Six white 3D building masses in a horizontal row showing form transformation. Left-to-right progression from simple cube through iterations to final complex form. Blue highlight circle on selected final mass. Simple arrows between steps. Form development narrative. Clean study.
+
+sht_064 | Diagram — Environmental Strategy
+A2 landscape. Warm cream background. Central building section left. Section overlaid with yellow sun rays (summer/winter angles), blue rain arrows (water management), green vegetation (landscaping benefits). Right: 6 strategy icons (solar, wind, water, vegetation, thermal mass, natural ventilation). Bottom: performance metrics bar charts. Yellow sun accents. Sustainability focus.
+
+sht_065 | Diagram — Design Timeline Process
+A2 landscape. White page. Title top. Horizontal timeline bar center. Above bar: milestone markers (4 key dates). Below bar: phase deliverable thumbnails (6 phases: Sketch → Schematic → Design Dev → CDs → Construction → Built). Bottom: phase descriptions. Orange milestone markers. Gantt-chart feel. Chronological project evolution.
+
+sht_066 | Diagram — Structural System
+A2 landscape. White page. Title "STRUCTURAL LOGIC." Left: structural axonometric wireframe (columns, beams, trusses in red lines on white). Right-top: load path diagram showing forces flowing down to foundation. Right-bottom: structural member schedule table (column sizes, beam spans, materials). Blue dimension callouts. Engineering-focused diagram.
+
+MATERIALS & FINISHES SHEETS (3 templates)
+---
+
+sht_067 | Materials — Finish Schedule Board
+A1 landscape. Warm cream background. Title top. Left: interior finish schedule table (room names, wall/floor/ceiling finishes with codes). Right: 12 material swatch squares in 4x3 grid (each with product code and name). Bottom: material code legend. Gold accent on headers. Professional FF&E specification. Interior design precision.
+
+sht_068 | Materials — Exterior Facade Palette
+A2 landscape. White page. Left: building elevation with material zones marked (bronze zone 1, glass zone 2, etc.). Right: 6 material cards stacked showing actual material photos with product specifications. Bottom: detailed product specification table (name, manufacturer, color, finish, fire rating, cost). Technical facade material documentation.
+
+sht_069 | Materials — Color & Material Concept
+A2 portrait. Warm cream background. Three-part narrative: (1) Top: inspiration images (natural materials, textures, places) (2) Center: material palette swatches (6 swatches) showing color/material direction. (3) Bottom: rendered interior showing materials applied in context. Handwritten Caveat annotations throughout. Design story from inspiration to application.
+
+RENDERS & PERSPECTIVES SHEETS (4 templates)
+---
+
+sht_070 | Render — Hero Perspective Full-Bleed
+A1 landscape. Entire page is one stunning architectural render. Image bleeds to all edges. Tiny white project title "MAISON NORD 2026" in bottom-left corner (8pt). That's it. Full-bleed gallery-quality image. Professional presentation through simplicity.
+
+sht_071 | Render — Before & After Comparison
+A1 landscape. White page. Vertically split: left half shows derelict existing building (photographic), sienna vertical line divider, right half shows proposed design render. BEFORE label left side, AFTER label right side. Bottom: transformation description text explaining the intervention. Adaptive reuse narrative.
+
+sht_072 | Render — Interior Vignettes Grid
+A1 landscape. Warm cream background. Large hero interior photo left (living room). Right side: 2x2 grid of four smaller interior renders (kitchen, bedroom, bathroom, study). Gold labels under each. Gallery layout. Lifestyle interior presentation. Warm aesthetic showing home life within architecture.
+
+sht_073 | Render — Aerial Bird's Eye
+A1 landscape. White page. Title top-left. Dominant: dramatic aerial drone photograph showing site from above. Project boundary highlighted in red box/outline. Surrounding context (streets, parks, buildings) visible. Feature labels with red pins. North arrow. Site data bottom. Urban context from above. Strategic location visualization.
+
+PROCESS & DESIGN DEVELOPMENT (3 templates)
+---
+
+sht_074 | Process — Design Development Timeline
+A1 landscape. White page. Title top. Five columns showing design evolution left-to-right: (1) Sketch phase (pencil sketches), (2) Schematic (simple diagrams), (3) Design Dev (renders + plans), (4) Construction Docs (technical drawings), (5) Built Work (photography). Orange vertical dividers. Narrative from concept to reality. Five-phase design story.
+
+sht_075 | Process — Model Photography
+A1 landscape. White page. Title top. Large architectural model photo takes 50% left (beautifully lit, professional studio lighting). Right side: 2x2 grid of four model views from different angles. Bottom-right: three close-up detail model photographs. Right margin: model scale notation and materials description. Gallery-quality model documentation.
+
+sht_076 | Process — Iterative Sketch Studies
+A1 landscape. Warm cream (#F5F0E1) with paper texture. Title handwritten in Caveat "SKETCH STUDIES." 3x3 grid of nine hand sketches showing design options explored. One winning sketch circled in gold. Around grid: handwritten pros/cons annotations (white space sketches = "clean," dark sketches = "too heavy," etc.). Organic study feel. Design thinking visualization.
+
+============================================================
+END OF SHEET PREVIEW DESCRIPTIONS
+============================================================
