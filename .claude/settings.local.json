@@ -135,7 +135,8 @@
       "Bash(curl -s -I https://cosmfolio.vercel.app/)",
       "Bash(curl -s -I https://cosmfolio.vercel.app/dashboard)",
       "Bash(curl -s -I https://frontend-fawn-kappa-36.vercel.app/dashboard)",
-      "Bash(cat)"
+      "Bash(cat)",
+      "Bash(\n# Check the actual path from the system reminder\nls -la \"C:/Users/MY PC/.claude/projects/E--Projects-My-Product-BUILDING-APP-ArchPortfolio-Generator/memory/\" 2>/dev/null || \\\\\nls -la \"$HOME/.claude/projects/\" 2>/dev/null || \\\\\necho \"Checking alternative paths...\" && \\\\\nfind ~ -name \"MEMORY.md\" -o -name \"*.md\" -path \"*ArchPortfolio*\" 2>/dev/null | head -10\n)"
     ]
   }
 }

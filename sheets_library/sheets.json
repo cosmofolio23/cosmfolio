@@ -1,8 +1,5 @@
 [
 
-  // ============================================================
-  // CATEGORY 1: CONCEPT SHEETS (10 templates)
-  // ============================================================
 
   {
     "id": "sht_001",
@@ -309,9 +306,6 @@
     "preview_image": "Warm paper-tone A1 with layered collage of photos/textures/material samples overlapping organically, handwritten Caveat captions, terracotta accents"
   },
 
-  // ============================================================
-  // CATEGORY 2: SITE ANALYSIS SHEETS (8 templates)
-  // ============================================================
 
   {
     "id": "sht_011",
@@ -568,9 +562,6 @@
     "preview_image": "Dark navy-black A1 landscape with dramatic drone aerial center, cyan neon analytical overlays, glowing data sidebar, futuristic feel"
   },
 
-  // ============================================================
-  // CATEGORY 3: MOOD BOARD SHEETS (8 templates)
-  // ============================================================
 
   {
     "id": "sht_019",
@@ -810,9 +801,6 @@
     "preview_image": "Gray-paper A2 landscape with large concrete texture photos center, brutalist building references right, raw material bar bottom, red Archivo Black title"
   },
 
-  // ============================================================
-  // CATEGORY 4: FLOOR PLAN SHEETS (8 templates)
-  // ============================================================
 
   {
     "id": "sht_027",
@@ -1064,9 +1052,6 @@
     "preview_image": "White A1 landscape with detailed furniture layout plan left, furniture schedule with product images right, finish schedule table, gold accent labels"
   },
 
-  // ============================================================
-  // CATEGORY 5: SECTION SHEETS (6 templates)
-  // ============================================================
 
   {
     "id": "sht_035",
@@ -1252,9 +1237,6 @@
     "preview_image": "White A0 landscape with longitudinal section AA top and transverse section BB bottom, aligned level lines, blue section markers"
   },
 
-  // ============================================================
-  // CATEGORY 6: ELEVATION SHEETS (6 templates)
-  // ============================================================
 
   {
     "id": "sht_041",
@@ -1441,9 +1423,6 @@
     "preview_image": "Pure black A1 landscape with dramatic night elevation showing building with warm glowing windows, gold Didot title, cinematic night atmosphere"
   },
 
-  // ============================================================
-  // CATEGORY 7: AXONOMETRIC / 3D SHEETS (5 templates)
-  // ============================================================
 
   {
     "id": "sht_047",
@@ -1593,9 +1572,6 @@
     "preview_image": "White A1 landscape with 6 axonometric stages in a row (foundation→structure→envelope→interior→landscape→complete), orange stage numbers"
   },
 
-  // ============================================================
-  // CATEGORY 8: DETAIL SHEETS (4 templates)
-  // ============================================================
 
   {
     "id": "sht_052",
@@ -1722,9 +1698,6 @@
     "preview_image": "White A1 landscape with staircase section left, stair plan top-right, handrail profile and balustrade detail bottom-right, dimensions"
   },
 
-  // ============================================================
-  // CATEGORY 9: PRESENTATION / COMPETITION BOARDS (6 templates)
-  // ============================================================
 
   {
     "id": "sht_056",
@@ -1929,9 +1902,6 @@
     "preview_image": "Pure black A1 landscape with cinematic hero render center, atmospheric secondary renders right, white-line plan/section bottom-left, gold data"
   },
 
-  // ============================================================
-  // CATEGORY 10: DIAGRAM / INFOGRAPHIC SHEETS (5 templates)
-  // ============================================================
 
   {
     "id": "sht_062",
@@ -2081,9 +2051,6 @@
     "preview_image": "White A2 landscape with structural axonometric wireframe left (red members), load path diagram right, member schedule table, engineering feel"
   },
 
-  // ============================================================
-  // CATEGORY 11: MATERIALS & FINISHES SHEETS (3 templates)
-  // ============================================================
 
   {
     "id": "sht_067",
@@ -2174,9 +2141,6 @@
     "preview_image": "Warm cream A2 portrait: inspiration images top, material palette swatches with rationale center, renders showing materials applied bottom"
   },
 
-  // ============================================================
-  // CATEGORY 12: RENDERS & PERSPECTIVES SHEETS (4 templates)
-  // ============================================================
 
   {
     "id": "sht_070",
@@ -2291,9 +2255,6 @@
     "preview_image": "White A1 landscape with stunning aerial render showing project in urban context, red boundary highlight, labeled buildings and features, north arrow"
   },
 
-  // ============================================================
-  // CATEGORY 13: PROCESS & DESIGN DEVELOPMENT (3 templates)
-  // ============================================================
 
   {
     "id": "sht_074",
