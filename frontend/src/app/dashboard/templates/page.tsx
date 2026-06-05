@@ -66,6 +66,11 @@ export default function TemplateMarketplace() {
   const [applying, setApplying] = useState(false)
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [filterPresets, setFilterPresets] = useState<Map<string, FilterPreset>>(new Map())
+  const [showCustomize, setShowCustomize] = useState(false)
+  const [customColors, setCustomColors] = useState<Record<string, string>>({})
+  const [customFonts, setCustomFonts] = useState<Record<string, string>>({})
+  const [customizeName, setCustomizeName] = useState('')
+  const [saveAsVariant, setSaveAsVariant] = useState(false)
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -495,7 +500,14 @@ export default function TemplateMarketplace() {
                     Preview
                   </button>
                   <button
-                    onClick={() => { setSelectedTemplate(template); setApplyingTo('new') }}
+                    onClick={() => {
+                      setSelectedTemplate(template)
+                      setCustomColors(template.colors || {})
+                      setCustomFonts(template.fonts || {})
+                      setCustomizeName(`${template.name} Custom`)
+                      setSaveAsVariant(false)
+                      setShowCustomize(true)
+                    }}
                     className="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition">
                     Use Template
                   </button>
@@ -592,6 +604,187 @@ export default function TemplateMarketplace() {
             <div className="p-6 border-t border-border-light flex gap-3">
               <button onClick={() => setApplyingTo(null)} className="flex-1 px-4 py-2 border border-border-light rounded-lg text-sm font-medium hover:bg-bg-subtle">
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Customization Modal */}
+      {showCustomize && selectedTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowCustomize(false)}>
+          <div className="bg-white dark:bg-dark-surface-base rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 p-6 border-b border-border-light bg-white dark:bg-dark-surface-base">
+              <h2 className="text-h3 font-bold text-text-primary dark:text-dark-text-primary">Customize Template</h2>
+              <p className="text-sm text-text-secondary dark:text-dark-text-secondary mt-1">{selectedTemplate.name}</p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-8">
+              {/* Color Customization */}
+              <div>
+                <h3 className="text-h4 font-semibold text-text-primary dark:text-dark-text-primary mb-4">Colors</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedTemplate.colors && Object.entries(selectedTemplate.colors).map(([key, originalColor]) => (
+                    <div key={key} className="space-y-2">
+                      <label className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary capitalize">
+                        {key}
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={customColors[key] || originalColor || '#000000'}
+                          onChange={(e) => setCustomColors({ ...customColors, [key]: e.target.value })}
+                          className="w-12 h-10 rounded cursor-pointer border border-border-light"
+                        />
+                        <input
+                          type="text"
+                          value={customColors[key] || originalColor || ''}
+                          onChange={(e) => setCustomColors({ ...customColors, [key]: e.target.value })}
+                          placeholder="#000000"
+                          className="flex-1 px-3 py-2 border border-border-light rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Customization */}
+              <div>
+                <h3 className="text-h4 font-semibold text-text-primary dark:text-dark-text-primary mb-4">Typography</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { key: 'heading' as const, label: 'Heading Font', options: ['Montserrat', 'Playfair Display', 'Roboto', 'Inter', 'Poppins', 'Georgia', 'Lora'] },
+                    { key: 'body' as const, label: 'Body Font', options: ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', 'Dosis', 'Raleway'] },
+                  ].map(({ key, label, options }) => (
+                    <div key={key} className="space-y-2">
+                      <label className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">
+                        {label}
+                      </label>
+                      <select
+                        value={customFonts[key] || selectedTemplate.fonts?.[key] || ''}
+                        onChange={(e) => setCustomFonts({ ...customFonts, [key]: e.target.value })}
+                        className="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-dark-surface-overlay"
+                      >
+                        <option value="">Select a font</option>
+                        {options.map(font => (
+                          <option key={font} value={font}>{font}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save as Variant */}
+              <div className="flex items-center gap-3 p-4 bg-bg-subtle dark:bg-dark-surface-overlay rounded-lg">
+                <input
+                  type="checkbox"
+                  id="saveVariant"
+                  checked={saveAsVariant}
+                  onChange={(e) => setSaveAsVariant(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="saveVariant" className="flex-1 cursor-pointer">
+                  <div className="text-sm font-medium text-text-primary dark:text-dark-text-primary">Save as Variant</div>
+                  <div className="text-xs text-text-secondary dark:text-dark-text-secondary">Save this customization for future use</div>
+                </label>
+              </div>
+
+              {/* Variant Name */}
+              {saveAsVariant && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Variant Name</label>
+                  <input
+                    type="text"
+                    value={customizeName}
+                    onChange={(e) => setCustomizeName(e.target.value)}
+                    placeholder="e.g., Modern Blue Variant"
+                    className="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              )}
+
+              {/* Live Preview */}
+              <div className="p-4 bg-bg-subtle dark:bg-dark-surface-overlay rounded-lg border border-border-light">
+                <h4 className="text-sm font-semibold text-text-primary dark:text-dark-text-primary mb-4">Preview</h4>
+                <div className="space-y-3">
+                  <div>
+                    <h1
+                      style={{
+                        fontFamily: customFonts.heading || selectedTemplate.fonts?.heading || 'Montserrat',
+                        color: customColors.primary || selectedTemplate.colors?.primary || '#000'
+                      }}
+                      className="text-2xl font-bold"
+                    >
+                      Preview Heading
+                    </h1>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: customFonts.body || selectedTemplate.fonts?.body || 'Inter',
+                      color: (customColors as any).text || (selectedTemplate.colors as any)?.text || '#333'
+                    }}
+                    className="text-sm leading-relaxed"
+                  >
+                    This is how your portfolio will look with the customized template. Colors and fonts update in real-time.
+                  </p>
+                  <div className="flex gap-2 pt-2">
+                    {Object.entries(customColors).map(([key, color]) => (
+                      <div
+                        key={key}
+                        className="w-12 h-12 rounded border border-border-light"
+                        style={{ background: color || (selectedTemplate.colors as any)?.[key] || '#ccc' }}
+                        title={key}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="sticky bottom-0 p-6 border-t border-border-light bg-white dark:bg-dark-surface-base flex gap-3">
+              <button
+                onClick={() => setShowCustomize(false)}
+                className="flex-1 px-4 py-2 border border-border-light rounded-lg text-sm font-medium hover:bg-bg-subtle dark:hover:bg-dark-surface-overlay transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    // Apply customized template to new portfolio
+                    const response = await fetch('/api/templates/portfolios', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        template_id: selectedTemplate.id,
+                        colors: customColors,
+                        fonts: customFonts,
+                        variant_name: saveAsVariant ? customizeName : null,
+                      }),
+                    });
+
+                    if (response.ok) {
+                      const data = await response.json();
+                      alert('Portfolio created with customized template!');
+                      setShowCustomize(false);
+                      // Reset state
+                      setCustomColors({});
+                      setCustomFonts({});
+                      setCustomizeName('');
+                      setSaveAsVariant(false);
+                    }
+                  } catch (error) {
+                    alert('Failed to create portfolio');
+                  }
+                }}
+                className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition disabled:opacity-50"
+              >
+                Create Portfolio
               </button>
             </div>
           </div>
