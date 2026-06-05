@@ -24,7 +24,7 @@ async def get_portfolio_templates(
     category: Optional[str] = Query(None, description="Filter by category"),
     source: Optional[str] = Query(None, description="Filter by source (ai-generated, archifolio)"),
     search: Optional[str] = Query(None, description="Search by name or description"),
-    limit: int = Query(50, ge=1, le=100, description="Number of results"),
+    limit: int = Query(50, ge=1, le=500, description="Number of results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
 ):
     """
@@ -104,7 +104,7 @@ async def get_sheet_templates(
     category: Optional[str] = Query(None, description="Filter by category"),
     format: Optional[str] = Query(None, description="Filter by format (A0, A1, A2, etc)"),
     search: Optional[str] = Query(None, description="Search by name or description"),
-    limit: int = Query(50, ge=1, le=100, description="Number of results"),
+    limit: int = Query(50, ge=1, le=500, description="Number of results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
 ):
     """

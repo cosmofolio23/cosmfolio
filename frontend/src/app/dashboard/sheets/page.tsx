@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
+import TemplateMockup from '@/components/templates/TemplateMockup'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -81,7 +82,7 @@ export default function SheetComposer() {
   const fetchTemplates = async () => {
     try {
       const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/templates/sheets?limit=200`, {
+      const res = await fetch(`${API_URL}/api/templates/sheets?limit=500`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
       if (res.ok) {
@@ -216,22 +217,16 @@ export default function SheetComposer() {
               key={template.id}
               className="bg-white dark:bg-dark-surface-base rounded-2xl shadow-sm border border-border-light overflow-hidden hover:shadow-xl transition-all duration-200 group"
             >
-              {/* Thumbnail */}
-              <div
-                className="h-48 flex items-center justify-center text-7xl relative overflow-hidden"
-                style={{
-                  background: template.colors?.background
-                    ? `linear-gradient(135deg, ${template.colors.background} 0%, ${template.colors.accent || template.colors.primary || '#f3f4f6'} 100%)`
-                    : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'
-                }}
-              >
-                <span className="group-hover:scale-110 transition-transform duration-300">
-                  {template.preview_image && template.preview_image.length < 5
-                    ? template.preview_image
-                    : '📄'}
-                </span>
+              {/* Visual Mockup Thumbnail */}
+              <div className="h-48 relative overflow-hidden border-b border-border-light group-hover:scale-[1.02] transition-transform duration-300">
+                <TemplateMockup
+                  colors={template.colors as any}
+                  fonts={template.fonts as any}
+                  name={template.name}
+                  variant="sheet"
+                />
                 {template.format && (
-                  <span className="absolute top-3 right-3 bg-white/90 dark:bg-black/80 text-xs font-semibold px-2 py-1 rounded">
+                  <span className="absolute top-3 right-3 bg-white/90 dark:bg-black/80 text-xs font-semibold px-2 py-1 rounded z-10">
                     {template.format}
                   </span>
                 )}
@@ -285,7 +280,7 @@ export default function SheetComposer() {
                     Preview
                   </button>
                   <button
-                    onClick={() => { setSelectedTemplate(template); setSheetTitle(`${template.name} Sheet`) }}
+                    onClick={() => router.push(`/dashboard/templates/${template.id}/editor`)}
                     className="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition"
                   >
                     Use Template
@@ -328,15 +323,13 @@ export default function SheetComposer() {
               </button>
             </div>
             <div className="p-6 space-y-6">
-              <div
-                className="h-64 rounded-lg flex items-center justify-center text-8xl"
-                style={{
-                  background: selectedTemplate.colors?.background
-                    ? `linear-gradient(135deg, ${selectedTemplate.colors.background} 0%, ${selectedTemplate.colors.accent || selectedTemplate.colors.primary} 100%)`
-                    : 'linear-gradient(135deg, #fef3c7, #fde68a)'
-                }}
-              >
-                📄
+              <div className="h-64 rounded-lg overflow-hidden border border-border-light">
+                <TemplateMockup
+                  colors={selectedTemplate.colors as any}
+                  fonts={selectedTemplate.fonts as any}
+                  name={selectedTemplate.name}
+                  variant="sheet"
+                />
               </div>
               <p className="text-text-secondary dark:text-dark-text-secondary">{selectedTemplate.description}</p>
               {selectedTemplate.style_notes && (
@@ -353,13 +346,10 @@ export default function SheetComposer() {
                   Close
                 </button>
                 <button
-                  onClick={() => {
-                    setShowPreview(false)
-                    setSheetTitle(`${selectedTemplate.name} Sheet`)
-                  }}
+                  onClick={() => router.push(`/dashboard/templates/${selectedTemplate.id}/editor`)}
                   className="flex-1 bg-primary text-white px-4 py-3 rounded-lg font-medium hover:bg-primary-dark transition"
                 >
-                  Use This Template
+                  ✏️ Edit This Template
                 </button>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
+import TemplateMockup from '@/components/templates/TemplateMockup'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -460,9 +461,14 @@ export default function TemplateMarketplace() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTemplates.map(template => (
             <div key={template.id} className="card overflow-hidden hover:shadow-elevation-3 transition-all duration-200 group flex flex-col">
-              {/* Thumbnail */}
-              <div className="h-48 bg-gradient-to-br from-accent-primary to-accent-light dark:from-dark-surface-elevated dark:to-dark-surface-overlay flex items-center justify-center text-6xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-                {template.preview_image || '🏗️'}
+              {/* Visual Mockup Thumbnail */}
+              <div className="h-48 overflow-hidden group-hover:scale-[1.02] transition-transform duration-300 border-b border-border-light">
+                <TemplateMockup
+                  colors={template.colors as any}
+                  fonts={template.fonts as any}
+                  name={template.name}
+                  variant="portfolio"
+                />
               </div>
 
               {/* Content */}
@@ -531,9 +537,19 @@ export default function TemplateMarketplace() {
               <button onClick={() => setShowPreview(false)} className="text-2xl text-text-secondary hover:text-text-primary">✕</button>
             </div>
             <div className="p-6 space-y-6">
-              <div className="h-64 bg-gradient-to-br from-accent-primary to-accent-light rounded-lg flex items-center justify-center text-8xl">
-                {selectedTemplate.preview_image || '🏗️'}
+              <div className="h-64 rounded-lg overflow-hidden border border-border-light">
+                <TemplateMockup
+                  colors={selectedTemplate.colors as any}
+                  fonts={selectedTemplate.fonts as any}
+                  name={selectedTemplate.name}
+                  variant="portfolio"
+                />
               </div>
+              {selectedTemplate.preview_image && (
+                <p className="text-sm italic text-text-secondary dark:text-dark-text-secondary">
+                  Design: {selectedTemplate.preview_image}
+                </p>
+              )}
               <p className="text-body text-text-secondary dark:text-dark-text-secondary">{selectedTemplate.description}</p>
               {selectedTemplate.style_notes && (
                 <div>
