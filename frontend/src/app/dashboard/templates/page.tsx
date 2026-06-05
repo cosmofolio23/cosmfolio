@@ -41,13 +41,22 @@ const CATEGORIES = [
   { id: 'student', label: 'Student', emoji: '🎓' },
 ]
 
+interface FilterPreset {
+  name: string
+  categories: Set<string>
+  pageCountRange: string | null
+  source: string | null
+}
+
 export default function TemplateMarketplace() {
   const router = useRouter()
   const { isAuthenticated, token } = useAuthStore()
   const [templates, setTemplates] = useState<Template[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
+  const [pageCountRange, setPageCountRange] = useState<string | null>(null)
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null)
   const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
@@ -55,6 +64,8 @@ export default function TemplateMarketplace() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
   const [applyingTo, setApplyingTo] = useState<string | null>(null)
   const [applying, setApplying] = useState(false)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [filterPresets, setFilterPresets] = useState<Map<string, FilterPreset>>(new Map())
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -77,14 +88,62 @@ export default function TemplateMarketplace() {
     fetchPortfolios()
   }, [isAuthenticated])
 
-  // Filter templates
+  // Load filter presets on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('template_filter_presets')
+    if (saved) {
+      const presets = JSON.parse(saved)
+      const restoredMap = new Map(
+        Object.entries(presets).map(([key, value]: [string, any]) => [
+          key,
+          { ...value, categories: new Set(value.categories) }
+        ])
+      )
+      setFilterPresets(restoredMap)
+    }
+  }, [])
+
+  // Save filter presets to localStorage
+  useEffect(() => {
+    if (filterPresets.size > 0) {
+      const obj = Object.fromEntries(
+        Array.from(filterPresets.entries()).map(([key, preset]) => [
+          key,
+          { ...preset, categories: Array.from(preset.categories) }
+        ])
+      )
+      localStorage.setItem('template_filter_presets', JSON.stringify(obj))
+    }
+  }, [filterPresets])
+
+  // Filter templates with multiple criteria
   useEffect(() => {
     let filtered = templates
 
-    if (selectedCategory) {
-      filtered = filtered.filter(t => t.category === selectedCategory)
+    // Category filter (multiple selection)
+    if (selectedCategories.size > 0) {
+      filtered = filtered.filter(t => selectedCategories.has(t.category))
     }
 
+    // Page count range filter
+    if (pageCountRange) {
+      filtered = filtered.filter(t => {
+        if (!t.page_count_range) return false
+        if (pageCountRange === '16-24') return t.page_count_range === '16-24'
+        if (pageCountRange === '20-30') return t.page_count_range === '20-30'
+        if (pageCountRange === '24-40') return t.page_count_range === '24-40'
+        if (pageCountRange === '32-48') return t.page_count_range === '32-48'
+        if (pageCountRange === '40+') return parseInt(t.page_count_range.split('-')[1]) >= 40
+        return true
+      })
+    }
+
+    // Source filter
+    if (sourceFilter) {
+      filtered = filtered.filter(t => t.source === sourceFilter)
+    }
+
+    // Search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(t =>
@@ -94,7 +153,7 @@ export default function TemplateMarketplace() {
     }
 
     setFilteredTemplates(filtered)
-  }, [searchQuery, selectedCategory, templates])
+  }, [searchQuery, selectedCategories, pageCountRange, sourceFilter, templates])
 
   const fetchTemplates = async () => {
     try {
@@ -139,6 +198,52 @@ export default function TemplateMarketplace() {
     }
     setFavorites(newFavorites)
   }
+
+  const toggleCategory = (categoryId: string) => {
+    const newCategories = new Set(selectedCategories)
+    if (newCategories.has(categoryId)) {
+      newCategories.delete(categoryId)
+    } else {
+      newCategories.add(categoryId)
+    }
+    setSelectedCategories(newCategories)
+  }
+
+  const clearAllFilters = () => {
+    setSelectedCategories(new Set())
+    setPageCountRange(null)
+    setSourceFilter(null)
+    setSearchQuery('')
+  }
+
+  const saveFilterPreset = (presetName: string) => {
+    const preset: FilterPreset = {
+      name: presetName,
+      categories: new Set(selectedCategories),
+      pageCountRange,
+      source: sourceFilter,
+    }
+    const newPresets = new Map(filterPresets)
+    newPresets.set(presetName, preset)
+    setFilterPresets(newPresets)
+  }
+
+  const loadFilterPreset = (presetName: string) => {
+    const preset = filterPresets.get(presetName)
+    if (preset) {
+      setSelectedCategories(new Set(preset.categories))
+      setPageCountRange(preset.pageCountRange)
+      setSourceFilter(preset.source)
+    }
+  }
+
+  const deleteFilterPreset = (presetName: string) => {
+    const newPresets = new Map(filterPresets)
+    newPresets.delete(presetName)
+    setFilterPresets(newPresets)
+  }
+
+  const hasActiveFilters = selectedCategories.size > 0 || pageCountRange || sourceFilter || searchQuery.trim() !== ''
 
   const applyTemplateToPortfolio = async (templateId: string, portfolioId: string) => {
     setApplying(true)
@@ -212,35 +317,138 @@ export default function TemplateMarketplace() {
           />
         </div>
 
-        {/* Category Filter */}
+        {/* Filter Controls */}
         <div className="mb-12">
-          <h3 className="text-body-sm font-semibold text-text-primary dark:text-dark-text-primary mb-4">Categories</h3>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedCategory === null
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
-              }`}>
-              All Templates ({templates.length})
-            </button>
-            {CATEGORIES.map(cat => {
-              const count = templates.filter(t => t.category === cat.id).length
-              return (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-body-sm font-semibold text-text-primary dark:text-dark-text-primary">Filters</h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="text-xs px-3 py-1 bg-surface-elevated dark:bg-dark-surface-overlay rounded hover:bg-border-light transition"
+              >
+                {showAdvancedFilters ? '▼' : '▶'} Advanced Filters
+              </button>
+              {hasActiveFilters && (
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategory === cat.id
-                      ? 'bg-primary text-white'
-                      : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
-                  }`}>
-                  {cat.emoji} {cat.label} {count > 0 && `(${count})`}
+                  onClick={clearAllFilters}
+                  className="text-xs px-3 py-1 bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 rounded hover:bg-red-200 transition"
+                >
+                  Clear All
                 </button>
-              )
-            })}
+              )}
+            </div>
           </div>
+
+          {/* Category Filter (Always Visible) */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-stone-light mb-2">Categories</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedCategories(new Set())}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  selectedCategories.size === 0
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
+                }`}>
+                All ({templates.length})
+              </button>
+              {CATEGORIES.map(cat => {
+                const count = templates.filter(t => t.category === cat.id).length
+                const isSelected = selectedCategories.has(cat.id)
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => toggleCategory(cat.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      isSelected
+                        ? 'bg-primary text-white'
+                        : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
+                    }`}>
+                    {cat.emoji} {cat.label} {count > 0 && `(${count})`}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Advanced Filters (Expandable) */}
+          {showAdvancedFilters && (
+            <div className="bg-surface-elevated dark:bg-dark-surface-overlay p-4 rounded-lg space-y-4">
+              {/* Page Count Range */}
+              <div>
+                <p className="text-xs font-semibold text-stone-light mb-2">Page Count Range</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'All', value: null },
+                    { label: '16-24', value: '16-24' },
+                    { label: '20-30', value: '20-30' },
+                    { label: '24-40', value: '24-40' },
+                    { label: '32-48', value: '32-48' },
+                    { label: '40+', value: '40+' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setPageCountRange(opt.value)}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                        pageCountRange === opt.value
+                          ? 'bg-primary text-white'
+                          : 'bg-white dark:bg-dark-bg-primary text-text-secondary hover:text-text-primary border border-border-light'
+                      }`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Source Filter */}
+              <div>
+                <p className="text-xs font-semibold text-stone-light mb-2">Template Source</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'All', value: null },
+                    { label: 'Downloaded', value: 'downloaded' },
+                    { label: 'AI-Generated', value: 'ai-generated' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSourceFilter(opt.value)}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                        sourceFilter === opt.value
+                          ? 'bg-primary text-white'
+                          : 'bg-white dark:bg-dark-bg-primary text-text-secondary hover:text-text-primary border border-border-light'
+                      }`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filter Presets */}
+              {filterPresets.size > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-stone-light mb-2">Saved Presets</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(filterPresets.keys()).map(name => (
+                      <div key={name} className="flex items-center gap-1 bg-white dark:bg-dark-bg-primary border border-border-light rounded px-2 py-1">
+                        <button
+                          onClick={() => loadFilterPreset(name)}
+                          className="text-xs font-medium text-primary hover:text-primary-dark transition"
+                        >
+                          {name}
+                        </button>
+                        <button
+                          onClick={() => deleteFilterPreset(name)}
+                          className="text-xs text-stone-light hover:text-red-500 transition"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Templates Grid */}
