@@ -131,7 +131,11 @@
       "WebFetch(domain:www.canva.com)",
       "WebSearch",
       "WebFetch(domain:blog.archifol.io)",
-      "Bash(awk '{print $9, $5}')"
+      "Bash(awk '{print $9, $5}')",
+      "Bash(curl -s -I https://cosmfolio.vercel.app/)",
+      "Bash(curl -s -I https://cosmfolio.vercel.app/dashboard)",
+      "Bash(curl -s -I https://frontend-fawn-kappa-36.vercel.app/dashboard)",
+      "Bash(cat)"
     ]
   }
 }

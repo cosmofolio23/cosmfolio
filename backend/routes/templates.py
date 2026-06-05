@@ -237,6 +237,90 @@ async def get_compatible_sheets(portfolio_id: str, limit: int = Query(10, ge=1, 
         raise HTTPException(status_code=400, detail=str(e))
 
 # ============================================================
+# Apply Template
+# ============================================================
+
+@router.post("/portfolios/{template_id}/apply/{portfolio_id}")
+async def apply_portfolio_template(template_id: str, portfolio_id: str):
+    """
+    Apply a portfolio template to an existing portfolio
+    Copies template design (colors, fonts, layouts) to the portfolio
+    """
+    try:
+        if not supabase:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+
+        # Get the template
+        template_response = supabase.table("portfolio_templates")\
+            .select("*")\
+            .eq("id", template_id)\
+            .execute()
+
+        if not template_response.data:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        template = template_response.data[0]
+
+        # Get the portfolio
+        portfolio_response = supabase.table("portfolios")\
+            .select("*")\
+            .eq("id", portfolio_id)\
+            .execute()
+
+        if not portfolio_response.data:
+            raise HTTPException(status_code=404, detail="Portfolio not found")
+
+        portfolio = portfolio_response.data[0]
+
+        # Apply template design to portfolio
+        updated_portfolio = {
+            "id": portfolio_id,
+            "user_id": portfolio["user_id"],
+            "project_id": portfolio["project_id"],
+            "variant_num": portfolio.get("variant_num", 1),
+            "style_pack_data": {
+                "id": f"template-{template_id}",
+                "name": template.get("name", "Template Design"),
+                "colors": template.get("colors", {}),
+                "typography": {
+                    "heading_font": template.get("fonts", {}).get("heading", "Montserrat"),
+                    "body_font": template.get("fonts", {}).get("body", "Inter"),
+                },
+                "spacing": {},
+                "grid": {},
+                "borders": {},
+                "effects": {},
+            },
+            "page_structure": portfolio.get("page_structure", {}),
+            "page_layouts": portfolio.get("page_layouts", {}),
+            "is_public": portfolio.get("is_public", False),
+            "share_slug": portfolio.get("share_slug", None),
+            "updated_at": "now()",
+        }
+
+        # Update portfolio in database
+        update_response = supabase.table("portfolios")\
+            .update(updated_portfolio)\
+            .eq("id", portfolio_id)\
+            .execute()
+
+        if not update_response.data:
+            raise HTTPException(status_code=400, detail="Failed to apply template")
+
+        return {
+            "status": "success",
+            "message": f"Template '{template.get('name')}' applied to portfolio",
+            "portfolio_id": portfolio_id,
+            "template_id": template_id,
+            "applied_design": updated_portfolio["style_pack_data"],
+        }
+
+    except Exception as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail="Template or portfolio not found")
+        raise HTTPException(status_code=400, detail=str(e))
+
+# ============================================================
 # Statistics & Analytics
 # ============================================================
 

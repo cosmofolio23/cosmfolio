@@ -6,132 +6,80 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 interface Template {
   id: string
   name: string
   description: string
-  category: 'student' | 'thesis' | 'competition' | 'studio' | 'interior' | 'landscape' | 'urban'
-  rating: number
-  reviews: number
-  price: 'free' | 'premium'
-  thumbnail: string
-  preview: string
+  category: string
+  colors?: { primary: string; secondary: string; accent: string; background: string }
+  fonts?: { heading: string; body: string }
+  preview_image?: string
+  style_notes?: string
+  page_count_range?: string
+  source?: string
 }
 
-const TEMPLATES: Template[] = [
-  {
-    id: 'minimal-student',
-    name: 'Minimal Student',
-    description: 'Clean, minimal design for architecture students. Perfect for portfolios and thesis projects.',
-    category: 'student',
-    rating: 4.8,
-    reviews: 342,
-    price: 'free',
-    thumbnail: '🎓',
-    preview: 'minimal-light-bg-with-typography-focus',
-  },
-  {
-    id: 'competition-board',
-    name: 'Competition Board',
-    description: 'Professional competition presentation format. Includes rigid grid structure and technical layouts.',
-    category: 'competition',
-    rating: 4.9,
-    reviews: 218,
-    price: 'premium',
-    thumbnail: '🏆',
-    preview: 'dark-background-with-accent-highlights',
-  },
-  {
-    id: 'studio-dark',
-    name: 'Studio Dark',
-    description: 'Premium dark mode template for professional architecture studios. Sophisticated and modern.',
-    category: 'studio',
-    rating: 4.7,
-    reviews: 156,
-    price: 'premium',
-    thumbnail: '🏢',
-    preview: 'dark-elegant-with-gold-accents',
-  },
-  {
-    id: 'thesis-serif',
-    name: 'Thesis Serif',
-    description: 'Academic serif typography for thesis projects. Emphasizes content and analysis.',
-    category: 'thesis',
-    rating: 4.6,
-    reviews: 89,
-    price: 'free',
-    thumbnail: '📚',
-    preview: 'cream-background-serif-typography',
-  },
-  {
-    id: 'interior-minimal',
-    name: 'Interior Minimal',
-    description: 'Specialized template for interior design portfolios. Focused on imagery and space.',
-    category: 'interior',
-    rating: 4.8,
-    reviews: 127,
-    price: 'free',
-    thumbnail: '🛋️',
-    preview: 'white-gallery-style-layout',
-  },
-  {
-    id: 'landscape-editorial',
-    name: 'Landscape Editorial',
-    description: 'Editorial-style template for landscape architecture. Dynamic grid with large imagery.',
-    category: 'landscape',
-    rating: 4.7,
-    reviews: 95,
-    price: 'premium',
-    thumbnail: '🌿',
-    preview: 'editorial-magazine-style',
-  },
-  {
-    id: 'urban-parametric',
-    name: 'Urban Parametric',
-    description: 'Technical parametric design showcase. Perfect for computational architecture work.',
-    category: 'urban',
-    rating: 4.9,
-    reviews: 203,
-    price: 'premium',
-    thumbnail: '🏗️',
-    preview: 'dark-with-technical-grid',
-  },
-  {
-    id: 'student-journal',
-    name: 'Student Journal',
-    description: 'Journal-style portfolio for student work. Narrative-focused with beautiful typography.',
-    category: 'student',
-    rating: 4.6,
-    reviews: 134,
-    price: 'free',
-    thumbnail: '📖',
-    preview: 'warm-cream-journal-layout',
-  },
-]
+interface TemplateListResponse {
+  total: number
+  templates: Template[]
+}
+
+interface Portfolio {
+  id: string
+  project_id: string
+  variant_num: number
+}
 
 const CATEGORIES = [
-  { id: 'student', label: 'Student', emoji: '🎓' },
-  { id: 'thesis', label: 'Thesis', emoji: '📚' },
+  { id: 'minimalist', label: 'Minimalist', emoji: '⊟' },
+  { id: 'editorial', label: 'Editorial', emoji: '📄' },
   { id: 'competition', label: 'Competition', emoji: '🏆' },
-  { id: 'studio', label: 'Studio', emoji: '🏢' },
-  { id: 'interior', label: 'Interior', emoji: '🛋️' },
-  { id: 'landscape', label: 'Landscape', emoji: '🌿' },
-  { id: 'urban', label: 'Urban Design', emoji: '🏗️' },
+  { id: 'technical', label: 'Technical', emoji: '📐' },
+  { id: 'luxury', label: 'Luxury', emoji: '✨' },
+  { id: 'student', label: 'Student', emoji: '🎓' },
 ]
 
 export default function TemplateMarketplace() {
   const router = useRouter()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, token } = useAuthStore()
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [filteredTemplates, setFilteredTemplates] = useState(TEMPLATES)
+  const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([])
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([])
+  const [applyingTo, setApplyingTo] = useState<string | null>(null)
+  const [applying, setApplying] = useState(false)
 
+  // Load favorites from localStorage
   useEffect(() => {
-    if (!isAuthenticated) router.push('/signin')
+    const saved = localStorage.getItem('template_favorites')
+    if (saved) setFavorites(new Set(JSON.parse(saved)))
+  }, [])
+
+  // Save favorites to localStorage
+  useEffect(() => {
+    localStorage.setItem('template_favorites', JSON.stringify(Array.from(favorites)))
+  }, [favorites])
+
+  // Fetch templates
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/signin')
+      return
+    }
+    fetchTemplates()
+    fetchPortfolios()
   }, [isAuthenticated])
 
+  // Filter templates
   useEffect(() => {
-    let filtered = TEMPLATES
+    let filtered = templates
 
     if (selectedCategory) {
       filtered = filtered.filter(t => t.category === selectedCategory)
@@ -146,10 +94,87 @@ export default function TemplateMarketplace() {
     }
 
     setFilteredTemplates(filtered)
-  }, [searchQuery, selectedCategory])
+  }, [searchQuery, selectedCategory, templates])
 
-  const useTemplate = (templateId: string) => {
-    router.push(`/dashboard?template=${templateId}`)
+  const fetchTemplates = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/templates/portfolios?limit=100`, {
+        headers: { 'Authorization': `Bearer ${token || localStorage.getItem('auth_token')}` }
+      })
+      if (res.ok) {
+        const data: TemplateListResponse = await res.json()
+        setTemplates(data.templates)
+      } else {
+        console.error('Failed to fetch templates')
+        setTemplates([])
+      }
+    } catch (e) {
+      console.error('Error fetching templates:', e)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchPortfolios = async () => {
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/portfolios`, {
+        headers: { 'Authorization': `Bearer ${savedToken}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPortfolios(data.portfolios || [])
+      }
+    } catch (e) {
+      console.error('Error fetching portfolios:', e)
+    }
+  }
+
+  const toggleFavorite = (templateId: string) => {
+    const newFavorites = new Set(favorites)
+    if (newFavorites.has(templateId)) {
+      newFavorites.delete(templateId)
+    } else {
+      newFavorites.add(templateId)
+    }
+    setFavorites(newFavorites)
+  }
+
+  const applyTemplateToPortfolio = async (templateId: string, portfolioId: string) => {
+    setApplying(true)
+    try {
+      const savedToken = token || localStorage.getItem('auth_token')
+      const res = await fetch(
+        `${API_URL}/api/templates/portfolios/${templateId}/apply/${portfolioId}`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${savedToken}` }
+        }
+      )
+      if (res.ok) {
+        alert('Template applied successfully!')
+        setApplyingTo(null)
+        setShowPreview(false)
+      } else {
+        alert('Failed to apply template')
+      }
+    } catch (e) {
+      console.error('Error applying template:', e)
+      alert('Error applying template')
+    } finally {
+      setApplying(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary dark:bg-dark-bg-primary">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-border-light border-t-primary rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-text-secondary dark:text-dark-text-secondary">Loading templates...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -158,7 +183,7 @@ export default function TemplateMarketplace() {
       <header className="sticky top-0 z-30 bg-surface-base dark:bg-dark-surface-base border-b border-border-subtle dark:border-dark-border-subtle shadow-elevation-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors">
+            <Link href="/dashboard" className="text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors text-sm">
               ← Dashboard
             </Link>
             <div className="flex items-center gap-3">
@@ -174,7 +199,7 @@ export default function TemplateMarketplace() {
         <div className="mb-16">
           <h2 className="text-h2 text-text-primary dark:text-dark-text-primary mb-4">Professional Design Templates</h2>
           <p className="text-h4 text-text-secondary dark:text-dark-text-secondary font-normal mb-8">
-            Choose from our curated collection of premium architecture portfolio templates. All templates are fully customizable and ready to use.
+            Browse 100+ curated architecture portfolio templates. Apply to new portfolios or existing projects.
           </p>
 
           {/* Search */}
@@ -182,8 +207,8 @@ export default function TemplateMarketplace() {
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search templates..."
-            className="input-field w-full max-w-md"
+            placeholder="Search templates by name or description..."
+            className="input-field w-full max-w-md px-4 py-2 border border-border-light rounded-lg"
           />
         </div>
 
@@ -193,72 +218,80 @@ export default function TemplateMarketplace() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-lg text-caption font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 selectedCategory === null
-                  ? 'bg-accent-primary dark:bg-dark-surface-elevated text-white dark:text-dark-text-primary'
-                  : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary'
+                  ? 'bg-primary text-white'
+                  : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
               }`}>
-              All Templates
+              All Templates ({templates.length})
             </button>
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-lg text-caption font-medium transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-accent-primary dark:bg-dark-surface-elevated text-white dark:text-dark-text-primary'
-                    : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary'
-                }`}>
-                {cat.emoji} {cat.label}
-              </button>
-            ))}
+            {CATEGORIES.map(cat => {
+              const count = templates.filter(t => t.category === cat.id).length
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    selectedCategory === cat.id
+                      ? 'bg-primary text-white'
+                      : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
+                  }`}>
+                  {cat.emoji} {cat.label} {count > 0 && `(${count})`}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* Templates Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTemplates.map(template => (
-            <div key={template.id} className="card overflow-hidden hover:shadow-elevation-3 transition-all duration-200 group">
+            <div key={template.id} className="card overflow-hidden hover:shadow-elevation-3 transition-all duration-200 group flex flex-col">
               {/* Thumbnail */}
               <div className="h-48 bg-gradient-to-br from-accent-primary to-accent-light dark:from-dark-surface-elevated dark:to-dark-surface-overlay flex items-center justify-center text-6xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-                {template.thumbnail}
+                {template.preview_image || '🏗️'}
               </div>
 
               {/* Content */}
-              <div className="p-6">
+              <div className="p-6 flex-1 flex flex-col">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-h4 text-text-primary dark:text-dark-text-primary font-semibold">
+                  <h3 className="text-h4 text-text-primary dark:text-dark-text-primary font-semibold flex-1">
                     {template.name}
                   </h3>
-                  <span className={`px-3 py-1 rounded-full text-caption font-semibold ${
-                    template.price === 'free'
-                      ? 'bg-green-100 dark:bg-green-950 text-color-success'
-                      : 'bg-accent-primary/10 dark:bg-accent-gold/10 text-accent-primary dark:text-accent-gold'
-                  }`}>
-                    {template.price === 'free' ? 'Free' : 'Premium'}
-                  </span>
+                  <button
+                    onClick={() => toggleFavorite(template.id)}
+                    className="text-xl ml-2 flex-shrink-0 transition-transform hover:scale-125"
+                  >
+                    {favorites.has(template.id) ? '❤️' : '🤍'}
+                  </button>
                 </div>
 
-                <p className="text-body-sm text-text-secondary dark:text-dark-text-secondary mb-4">
+                <p className="text-body-sm text-text-secondary dark:text-dark-text-secondary mb-4 line-clamp-2">
                   {template.description}
                 </p>
 
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex text-accent-gold">
-                    {'⭐'.repeat(Math.floor(template.rating))}
+                {/* Color Preview */}
+                {template.colors && (
+                  <div className="flex gap-1 mb-4">
+                    {[template.colors.primary, template.colors.secondary, template.colors.accent].map((color, idx) => (
+                      <div key={idx} className="w-8 h-8 rounded border border-border-light" style={{ background: color }} title={color} />
+                    ))}
                   </div>
-                  <span className="text-caption text-text-secondary dark:text-dark-text-secondary">
-                    {template.rating} ({template.reviews} reviews)
-                  </span>
-                </div>
+                )}
 
-                {/* Action Button */}
-                <button
-                  onClick={() => useTemplate(template.id)}
-                  className="btn-primary w-full">
-                  Use Template
-                </button>
+                {/* Actions */}
+                <div className="flex gap-2 mt-auto">
+                  <button
+                    onClick={() => { setSelectedTemplate(template); setShowPreview(true) }}
+                    className="flex-1 px-3 py-2 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition">
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => { setSelectedTemplate(template); setApplyingTo('new') }}
+                    className="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition">
+                    Use Template
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -275,6 +308,87 @@ export default function TemplateMarketplace() {
           </div>
         )}
       </main>
+
+      {/* Preview Modal */}
+      {showPreview && selectedTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowPreview(false)}>
+          <div className="bg-white dark:bg-dark-surface-base rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white dark:bg-dark-surface-base border-b border-border-light p-6 flex items-center justify-between">
+              <h2 className="text-h3 font-bold text-text-primary dark:text-dark-text-primary">{selectedTemplate.name}</h2>
+              <button onClick={() => setShowPreview(false)} className="text-2xl text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="h-64 bg-gradient-to-br from-accent-primary to-accent-light rounded-lg flex items-center justify-center text-8xl">
+                {selectedTemplate.preview_image || '🏗️'}
+              </div>
+              <p className="text-body text-text-secondary dark:text-dark-text-secondary">{selectedTemplate.description}</p>
+              {selectedTemplate.style_notes && (
+                <div>
+                  <h4 className="font-semibold text-text-primary dark:text-dark-text-primary mb-2">Style Notes</h4>
+                  <p className="text-body text-text-secondary dark:text-dark-text-secondary">{selectedTemplate.style_notes}</p>
+                </div>
+              )}
+              {selectedTemplate.colors && (
+                <div>
+                  <h4 className="font-semibold text-text-primary dark:text-dark-text-primary mb-3">Color Palette</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.entries(selectedTemplate.colors).map(([key, color]) => (
+                      <div key={key} className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded border border-border-light" style={{ background: color as string }} />
+                        <span className="text-sm capitalize text-text-secondary dark:text-dark-text-secondary">{key}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-3 pt-6 border-t border-border-light">
+                <button
+                  onClick={() => { setShowPreview(false); setApplyingTo('new') }}
+                  className="flex-1 bg-primary text-white px-4 py-3 rounded-lg font-semibold hover:bg-primary-dark transition">
+                  Use This Template
+                </button>
+                {portfolios.length > 0 && (
+                  <button
+                    onClick={() => { setShowPreview(false); setApplyingTo('existing') }}
+                    className="flex-1 border border-primary text-primary px-4 py-3 rounded-lg font-semibold hover:bg-primary/10 transition">
+                    Apply to Portfolio
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply to Existing Portfolio Modal */}
+      {applyingTo === 'existing' && selectedTemplate && portfolios.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setApplyingTo(null)}>
+          <div className="bg-white dark:bg-dark-surface-base rounded-2xl shadow-2xl max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-border-light">
+              <h2 className="text-h3 font-bold text-text-primary dark:text-dark-text-primary">Apply to Portfolio</h2>
+              <p className="text-sm text-text-secondary dark:text-dark-text-secondary mt-1">Select a portfolio to apply this template to</p>
+            </div>
+            <div className="p-6 space-y-2 max-h-96 overflow-y-auto">
+              {portfolios.map(portfolio => (
+                <button
+                  key={portfolio.id}
+                  onClick={() => applyTemplateToPortfolio(selectedTemplate.id, portfolio.id)}
+                  disabled={applying}
+                  className="w-full text-left p-4 border border-border-light rounded-lg hover:bg-bg-subtle dark:hover:bg-dark-surface-overlay transition disabled:opacity-50"
+                >
+                  <div className="font-medium text-text-primary dark:text-dark-text-primary">Portfolio #{portfolio.variant_num}</div>
+                  <div className="text-sm text-text-secondary dark:text-dark-text-secondary">Project ID: {portfolio.project_id.slice(0, 8)}...</div>
+                </button>
+              ))}
+            </div>
+            <div className="p-6 border-t border-border-light flex gap-3">
+              <button onClick={() => setApplyingTo(null)} className="flex-1 px-4 py-2 border border-border-light rounded-lg text-sm font-medium hover:bg-bg-subtle">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
