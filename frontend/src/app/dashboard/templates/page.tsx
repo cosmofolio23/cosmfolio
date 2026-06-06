@@ -58,7 +58,7 @@ export default function TemplateMarketplace() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
   const [pageCountRange, setPageCountRange] = useState<string | null>(null)
   const [sourceFilter, setSourceFilter] = useState<string | null>(null)
-  const [templates, setFilteredTemplates] = useState<Template[]>([])
+  const [templates, setTemplates] = useState<Template[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [showPreview, setShowPreview] = useState(false)
