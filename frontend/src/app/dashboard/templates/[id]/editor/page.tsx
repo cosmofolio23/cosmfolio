@@ -55,10 +55,42 @@ export default function TemplateEditor() {
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
 
   const [projectId, setProjectId] = useState<string | null>(null)
+  const [history, setHistory] = useState<{ pages: Page[]; tokens: DesignTokens; title: string }[]>([])
+  const [historyIdx, setHistoryIdx] = useState(-1)
   const loadedRef = useRef(false)            // becomes true once initial data is ready
   const dirtyRef = useRef(false)             // true after the first real user edit (gates autosave)
   const ensurePromiseRef = useRef<Promise<string> | null>(null)
   const markDirty = () => { dirtyRef.current = true }
+
+  // Push state to history (called after mutations)
+  const pushHistory = () => {
+    const newHist = history.slice(0, historyIdx + 1)
+    newHist.push({ pages: structuredClone(pages), tokens: structuredClone(tokens), title: portfolioTitle || 'Untitled' })
+    setHistory(newHist)
+    setHistoryIdx(newHist.length - 1)
+  }
+
+  const undo = () => {
+    if (historyIdx > 0) {
+      const prev = history[historyIdx - 1]
+      setPages(structuredClone(prev.pages))
+      setTokens(structuredClone(prev.tokens))
+      setPortfolioTitle(prev.title)
+      setHistoryIdx(historyIdx - 1)
+      markDirty()
+    }
+  }
+
+  const redo = () => {
+    if (historyIdx < history.length - 1) {
+      const next = history[historyIdx + 1]
+      setPages(structuredClone(next.pages))
+      setTokens(structuredClone(next.tokens))
+      setPortfolioTitle(next.title)
+      setHistoryIdx(historyIdx + 1)
+      markDirty()
+    }
+  }
 
   const [tokens, setTokens] = useState<DesignTokens>({
     background: '#FFFFFF', text: '#1a1a1a', primary: '#111111', accent: '#888888', muted: '#dddddd',
@@ -107,6 +139,11 @@ export default function TemplateEditor() {
     if (doc.tokens) setTokens(doc.tokens)
     if (doc.title) setPortfolioTitle(doc.title)
     if (Array.isArray(doc.pages)) setPages(doc.pages)
+    // Initialize history with the loaded state
+    if (doc.pages && doc.tokens && doc.title) {
+      setHistory([{ pages: doc.pages, tokens: doc.tokens, title: doc.title }])
+      setHistoryIdx(0)
+    }
   }
 
   const fetchTemplate = async () => {
@@ -221,20 +258,57 @@ export default function TemplateEditor() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [saveStatus])
 
+  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z (redo)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' && !e.shiftKey) {
+          e.preventDefault()
+          undo()
+        } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
+          e.preventDefault()
+          redo()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [history, historyIdx])
+
   const currentPage = pages[currentIdx]
-  const updatePage = (p: Page) => { markDirty(); setPages(prev => prev.map((x, i) => i === currentIdx ? p : x)) }
-  const setTok = (patch: Partial<DesignTokens>) => { markDirty(); setTokens(prev => ({ ...prev, ...patch })) }
+  const updatePage = (p: Page) => {
+    markDirty()
+    const next = pages.map((x, i) => i === currentIdx ? p : x)
+    setPages(next)
+  }
+  const setTok = (patch: Partial<DesignTokens>) => {
+    markDirty()
+    setTokens(prev => ({ ...prev, ...patch }))
+  }
+
+  // Track major changes in history (moves, adds, removes, duplicates)
+  const recordHistorySnapshot = () => {
+    const newHist = history.slice(0, historyIdx + 1)
+    newHist.push({ pages: structuredClone(pages), tokens: structuredClone(tokens), title: portfolioTitle || 'Untitled' })
+    setHistory(newHist)
+    setHistoryIdx(newHist.length - 1)
+  }
 
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
 
   const addBlock = (type: BlockType) => {
     if (!currentPage) return
-    updatePage({ ...currentPage, blocks: [...currentPage.blocks, createBlock(type)] })
+    const next = { ...currentPage, blocks: [...currentPage.blocks, createBlock(type)] }
+    updatePage(next)
+    // Record after a tick so state has updated
+    setTimeout(() => recordHistorySnapshot(), 10)
   }
 
   const removeBlock = (blockId: string) => {
     if (!currentPage) return
-    updatePage({ ...currentPage, blocks: currentPage.blocks.filter(b => b.id !== blockId) })
+    const next = { ...currentPage, blocks: currentPage.blocks.filter(b => b.id !== blockId) }
+    updatePage(next)
+    setTimeout(() => recordHistorySnapshot(), 10)
   }
 
   const moveBlock = (blockId: string, dir: -1 | 1) => {
@@ -244,7 +318,20 @@ export default function TemplateEditor() {
     if (idx < 0 || swap < 0 || swap >= currentPage.blocks.length) return
     const next = [...currentPage.blocks]
     ;[next[idx], next[swap]] = [next[swap], next[idx]]
-    updatePage({ ...currentPage, blocks: next })
+    markDirty(); updatePage({ ...currentPage, blocks: next })
+    setTimeout(() => recordHistorySnapshot(), 10)
+  }
+
+  const duplicateBlock = (blockId: string) => {
+    if (!currentPage) return
+    const idx = currentPage.blocks.findIndex(b => b.id === blockId)
+    if (idx < 0) return
+    const orig = currentPage.blocks[idx]
+    const dup = { ...orig, id: uid() }
+    const next = [...currentPage.blocks]
+    next.splice(idx + 1, 0, dup)
+    markDirty(); updatePage({ ...currentPage, blocks: next })
+    setTimeout(() => recordHistorySnapshot(), 10)
   }
 
   const addPage = (type: Page['type']) => {
@@ -376,6 +463,8 @@ export default function TemplateEditor() {
             }`}>
               {saveStatus === 'saving' ? '⏳ Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? '✗ Error' : ''}
             </span>
+            <button onClick={undo} disabled={historyIdx <= 0} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Undo (Ctrl+Z)">↶</button>
+            <button onClick={redo} disabled={historyIdx >= history.length - 1} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Redo (Ctrl+Shift+Z)">↷</button>
             <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">📄 PDF</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
@@ -507,8 +596,9 @@ export default function TemplateEditor() {
                         <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded" style={{ background: tokens.accent, color: '#fff' }}>{blockLabel(b.type)}</span>
                         <span className="flex-1 text-xs text-gray-600 truncate">{b.text || b.label || (b.fields ? 'Metadata' : b.legendItems ? `${b.legendItems.length} items` : '—')}</span>
                         <div className="flex items-center gap-1">
-                          <button disabled={idx === 0} onClick={() => moveBlock(b.id, -1)} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs" title="Move up">▲</button>
-                          <button disabled={idx === currentPage.blocks.length - 1} onClick={() => moveBlock(b.id, 1)} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs" title="Move down">▼</button>
+                          <button disabled={idx === 0} onClick={() => moveBlock(b.id, -1)} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs" title="Move up (↑)">▲</button>
+                          <button disabled={idx === currentPage.blocks.length - 1} onClick={() => moveBlock(b.id, 1)} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs" title="Move down (↓)">▼</button>
+                          <button onClick={() => duplicateBlock(b.id)} className="text-gray-400 hover:text-blue-500 text-xs" title="Duplicate (Ctrl+D)">⎘</button>
                           <button onClick={() => removeBlock(b.id)} className="text-gray-400 hover:text-red-500 text-xs" title="Delete">✕</button>
                         </div>
                       </div>
