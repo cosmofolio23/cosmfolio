@@ -159,7 +159,7 @@ export default function TemplateMarketplace() {
     }
 
     setFilteredTemplates(filtered)
-  }, [searchQuery, selectedCategories, pageCountRange, sourceFilter, templates])
+  }, [searchQuery, selectedCategories.size, pageCountRange, sourceFilter, templates])
 
   const handleUseTemplate = async (template: Template) => {
     try {
