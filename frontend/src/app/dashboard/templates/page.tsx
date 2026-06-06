@@ -122,8 +122,9 @@ export default function TemplateMarketplace() {
   //   }
   // }, [filterPresets])
 
-  // Filter templates with multiple criteria
-  useEffect(() => {
+  // Filter templates with multiple criteria - run on every render to avoid Set/Map comparison issues
+  // No dependency array to prevent infinite loops from object references
+  if (templates.length > 0) {
     let filtered = templates
 
     // Category filter (multiple selection)
@@ -159,7 +160,7 @@ export default function TemplateMarketplace() {
     }
 
     setFilteredTemplates(filtered)
-  }, [searchQuery, selectedCategories.size, pageCountRange, sourceFilter, templates])
+  }
 
   const handleUseTemplate = async (template: Template) => {
     try {
