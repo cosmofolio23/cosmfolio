@@ -48,7 +48,7 @@ export default function TemplateEditor() {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
   const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style'>('layout')
   const [layoutSearch, setLayoutSearch] = useState('')
@@ -184,19 +184,42 @@ export default function TemplateEditor() {
       headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(document),
     })
-    if (!res.ok) { setSaveStatus('idle'); throw new Error('Save failed') }
+    if (!res.ok) {
+      const err = await res.text()
+      setSaveStatus('error')
+      throw new Error(`Save failed (${res.status}): ${err.slice(0, 100)}`)
+    }
     setSaveStatus('saved')
   }
 
-  // Debounced autosave — only after the first real edit (so merely opening a
-  // template never creates a draft project)
+  // Debounced autosave — only after the first real edit
   useEffect(() => {
     if (!loadedRef.current || !dirtyRef.current) return
     setSaveStatus('saving')
-    const t = setTimeout(() => { saveDocument().catch(e => console.error('Autosave failed:', e)) }, 1500)
+    const t = setTimeout(async () => {
+      try {
+        await saveDocument()
+      } catch (e) {
+        console.error('Autosave failed:', e)
+        setSaveStatus('error')
+      }
+    }, 1500)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, tokens, portfolioTitle])
+
+  // Warn if user navigates away with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (dirtyRef.current && saveStatus !== 'saved') {
+        e.preventDefault()
+        e.returnValue = 'You have unsaved changes. Leave without saving?'
+        return e.returnValue
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [saveStatus])
 
   const currentPage = pages[currentIdx]
   const updatePage = (p: Page) => { markDirty(); setPages(prev => prev.map((x, i) => i === currentIdx ? p : x)) }
@@ -291,8 +314,13 @@ export default function TemplateEditor() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-gray-400 min-w-[64px] text-right">
-              {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : ''}
+            <span className={`text-[11px] min-w-[64px] text-right font-medium ${
+              saveStatus === 'saving' ? 'text-gray-400' :
+              saveStatus === 'saved' ? 'text-green-600' :
+              saveStatus === 'error' ? 'text-red-600' :
+              'text-transparent'
+            }`}>
+              {saveStatus === 'saving' ? '⏳ Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? '✗ Error' : ''}
             </span>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>

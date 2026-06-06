@@ -148,6 +148,10 @@ async def upload_asset(
     except (ResourceNotFoundException, AuthorizationException, ValidationException, DatabaseException):
         raise
     except Exception as e:
+        # Better error messages for frontend
+        msg = str(e).lower()
+        if 'bucket' in msg or 'permission' in msg or 'access denied' in msg:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Storage service unavailable. Try again later.")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)

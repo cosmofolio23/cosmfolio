@@ -48,14 +48,37 @@ export function ImageBlock({
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    // Validate file before upload
+    const valid = file.type.startsWith('image/')
+    const size = file.size / 1024 / 1024
+    if (!valid) {
+      alert(`❌ Not an image: ${file.type || 'unknown type'}`)
+      return
+    }
+    if (size < 0.1) {
+      alert(`❌ File too small (${size.toFixed(2)}MB). Min 100KB.`)
+      return
+    }
+    if (size > 100) {
+      alert(`❌ File too large (${size.toFixed(1)}MB). Max 100MB.`)
+      return
+    }
+
     if (onUpload) {
       setUploading(true)
       try {
         const url = await onUpload(file)
         onChange({ imageUrl: url })
-      } catch (err) {
+      } catch (err: any) {
         console.error('Image upload failed:', err)
-        alert('Image upload failed. Please try again.')
+        const msg = err?.message || 'Unknown error'
+        const details = msg.includes('401') ? 'Your session expired. Please refresh.' :
+                       msg.includes('413') ? 'File is too large (max 100MB).' :
+                       msg.includes('400') ? 'Invalid file format.' :
+                       msg.includes('network') ? 'Network error. Check your connection.' :
+                       `${msg.slice(0, 80)}`
+        alert(`❌ Upload failed: ${details}`)
       } finally {
         setUploading(false)
       }
