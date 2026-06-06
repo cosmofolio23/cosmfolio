@@ -1,14 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
-import PageComposer from '@/components/composer/PageComposer'
+import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
 import {
-  type Page, type Block, type BlockType, type DesignTokens, type LayoutId,
-  LAYOUTS, createBlock, blockLabel, seedPagesFromTemplate, uid,
+  type Page, type Block, type BlockType, type DesignTokens,
+  createBlock, blockLabel, uid,
 } from '@/components/composer/types'
+import {
+  seedPagesFromTemplate, getSpec, LAYOUT_CATALOG, LAYOUT_CATEGORIES, LAYOUT_COUNT,
+  type LayoutCategory,
+} from '@/components/composer/layoutSpecs'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -45,6 +49,8 @@ export default function TemplateEditor() {
   const [isSaving, setIsSaving] = useState(false)
   const [portfolioTitle, setPortfolioTitle] = useState('')
   const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style'>('layout')
+  const [layoutSearch, setLayoutSearch] = useState('')
+  const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
 
   const [tokens, setTokens] = useState<DesignTokens>({
     background: '#FFFFFF', text: '#1a1a1a', primary: '#111111', accent: '#888888', muted: '#dddddd',
@@ -90,7 +96,7 @@ export default function TemplateEditor() {
   const currentPage = pages[currentIdx]
   const updatePage = (p: Page) => setPages(prev => prev.map((x, i) => i === currentIdx ? p : x))
 
-  const setLayout = (layoutId: LayoutId) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
+  const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
 
   const addBlock = (type: BlockType) => {
     if (!currentPage) return
@@ -113,7 +119,7 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    const layoutId: LayoutId = type === 'cover' ? 'cover-minimal' : type === 'about' ? 'statement' : type === 'contact' ? 'contact-center' : 'render-showcase'
+    const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : 'twoThirdsStack.titleMetaInline'
     const blocks: Block[] = [{ ...createBlock('title'), text: type === 'project' ? `Project ${pages.filter(p => p.type === 'project').length + 1}` : 'New Page' }]
     if (type === 'project') { blocks.push(createBlock('meta'), createBlock('render'), createBlock('description')) }
     else { blocks.push(createBlock('description')) }
@@ -163,8 +169,17 @@ export default function TemplateEditor() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-center"><p className="text-gray-600 mb-4">Template not found</p><Link href="/dashboard/templates" className="text-blue-600 hover:underline">← Back to Templates</Link></div></div>
   }
 
-  const suitableLayouts = LAYOUTS.filter(l => l.suits.includes(currentPage.type))
-  const otherLayouts = LAYOUTS.filter(l => !l.suits.includes(currentPage.type))
+  const filteredLayouts = useMemo(() => {
+    let list = LAYOUT_CATALOG
+    if (layoutCat !== 'All') list = list.filter(s => s.category === layoutCat)
+    if (layoutSearch.trim()) {
+      const q = layoutSearch.toLowerCase()
+      list = list.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
+    }
+    // surface layouts that suit the current page type first
+    return [...list].sort((a, b) =>
+      (b.suits.includes(currentPage.type) ? 1 : 0) - (a.suits.includes(currentPage.type) ? 1 : 0))
+  }, [layoutCat, layoutSearch, currentPage.type])
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -195,7 +210,7 @@ export default function TemplateEditor() {
                     <div className="min-w-0">
                       <div className="text-[10px] text-gray-400 uppercase">{idx + 1} · {page.type}</div>
                       <div className="text-xs font-medium truncate">{page.blocks.find(b => b.type === 'title')?.text || 'Untitled'}</div>
-                      <div className="text-[10px] text-gray-400">{LAYOUTS.find(l => l.id === page.layoutId)?.name}</div>
+                      <div className="text-[10px] text-gray-400 truncate">{getSpec(page.layoutId).name}</div>
                     </div>
                     <div className="flex flex-col opacity-0 group-hover:opacity-100 transition">
                       <button onClick={e => { e.stopPropagation(); movePage(idx, -1) }} className="text-gray-400 hover:text-gray-700 text-[10px] leading-none">▲</button>
@@ -240,22 +255,42 @@ export default function TemplateEditor() {
           <div className="p-4">
             {/* LAYOUT TAB */}
             {rightTab === 'layout' && (
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Recommended for {currentPage.type}</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {suitableLayouts.map(l => (
-                      <LayoutCard key={l.id} l={l} active={currentPage.layoutId === l.id} onClick={() => setLayout(l.id)} />
-                    ))}
-                  </div>
+              <div className="space-y-3">
+                <input
+                  value={layoutSearch}
+                  onChange={e => setLayoutSearch(e.target.value)}
+                  placeholder={`Search ${LAYOUT_COUNT} layouts…`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="flex flex-wrap gap-1">
+                  {(['All', ...LAYOUT_CATEGORIES] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setLayoutCat(cat as any)}
+                      className={`px-2 py-1 rounded text-[10px] font-semibold transition ${layoutCat === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">All layouts</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {otherLayouts.map(l => (
-                      <LayoutCard key={l.id} l={l} active={currentPage.layoutId === l.id} onClick={() => setLayout(l.id)} />
-                    ))}
-                  </div>
+                <div className="text-[11px] text-gray-400">{filteredLayouts.length} layouts · click to apply</div>
+                <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                  {filteredLayouts.map(spec => {
+                    const active = currentPage.layoutId === spec.id
+                    return (
+                      <button
+                        key={spec.id}
+                        onClick={() => setLayout(spec.id)}
+                        className={`group text-left rounded-lg p-1.5 border-2 transition ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
+                      >
+                        <LayoutThumb spec={spec} tokens={tokens} active={active} />
+                        <div className="mt-1 px-0.5">
+                          <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight">{spec.name}</div>
+                          <div className="text-[9px] text-gray-400">{spec.category}{spec.imageCount > 0 ? ` · ${spec.imageCount} img` : ''}</div>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -331,16 +366,5 @@ export default function TemplateEditor() {
         </aside>
       </div>
     </div>
-  )
-}
-
-function LayoutCard({ l, active, onClick }: { l: { id: string; name: string; description: string; icon: string }; active: boolean; onClick: () => void }) {
-  return (
-    <button onClick={onClick}
-      className={`p-3 border-2 rounded-lg text-left transition ${active ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-      <div className="text-xl mb-1">{l.icon}</div>
-      <div className="text-xs font-semibold text-gray-800">{l.name}</div>
-      <div className="text-[10px] text-gray-400 leading-tight mt-0.5">{l.description}</div>
-    </button>
   )
 }

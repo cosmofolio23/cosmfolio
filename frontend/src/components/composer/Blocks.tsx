@@ -32,13 +32,14 @@ export function EditableText({
 /* ------------------------------- Image Block ------------------------------ */
 
 export function ImageBlock({
-  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true,
+  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false,
 }: {
   block: Block
   tokens: DesignTokens
   onChange: (patch: Partial<Block>) => void
   aspect?: string
   showLabel?: boolean
+  fill?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -54,8 +55,8 @@ export function ImageBlock({
   }
 
   return (
-    <div className="group/img relative w-full h-full flex flex-col">
-      <div className={`relative w-full ${aspect} overflow-hidden`} style={{ background: 'rgba(0,0,0,0.05)' }}>
+    <div className="group/img relative w-full h-full flex flex-col min-h-0">
+      <div className={`relative w-full overflow-hidden ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
         {block.imageUrl ? (
           <>
             <img src={block.imageUrl} alt={block.label || ''} className="w-full h-full object-cover" />
