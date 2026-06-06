@@ -61,8 +61,15 @@ export default function TemplateEditor() {
   const [packName, setPackName] = useState('')
   const [assets, setAssets] = useState<Asset[]>([])
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null)
+  const [showGeneratePackModal, setShowGeneratePackModal] = useState(false)
+  const [generateMode, setGenerateMode] = useState<'mood' | 'color' | 'assets'>('mood')
+  const [generateInput, setGenerateInput] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [inspectorOpen, setInspectorOpen] = useState(true)
+  const [draggedPageIdx, setDraggedPageIdx] = useState<number | null>(null)
+  const [documentVersion, setDocumentVersion] = useState<number>(0)
+  const [isStale, setIsStale] = useState(false)
 
   const [projectId, setProjectId] = useState<string | null>(null)
   const [history, setHistory] = useState<{ pages: Page[]; tokens: DesignTokens; title: string }[]>([])
@@ -167,6 +174,7 @@ export default function TemplateEditor() {
     if (doc.tokens) setTokens(doc.tokens)
     if (doc.title) setPortfolioTitle(doc.title)
     if (Array.isArray(doc.pages)) setPages(doc.pages)
+    if (doc.documentVersion) setDocumentVersion(doc.documentVersion)
     // Initialize history with the loaded state
     if (doc.pages && doc.tokens && doc.title) {
       setHistory([{ pages: doc.pages, tokens: doc.tokens, title: doc.title }])
@@ -255,7 +263,19 @@ export default function TemplateEditor() {
   const saveDocument = async (): Promise<void> => {
     const pid = await ensureProject()
     setSaveStatus('saving')
-    const document = { version: 1, templateId, templateName: template?.name, templateCategory: template?.category, title: portfolioTitle, tokens, pages }
+    // Include version for collaborative editing conflict detection
+    const now = new Date().toISOString()
+    const document = {
+      version: 2,
+      documentVersion: Math.floor(Date.now() / 1000), // Unix timestamp for conflict detection
+      templateId,
+      templateName: template?.name,
+      templateCategory: template?.category,
+      title: portfolioTitle,
+      tokens,
+      pages,
+      lastSavedAt: now,
+    }
     const res = await fetch(`${API_URL}/api/projects/${pid}/document`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
@@ -324,6 +344,32 @@ export default function TemplateEditor() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Periodically check if another tab/browser has modified the document (collaborative editing)
+  useEffect(() => {
+    if (!projectId || !loadedRef.current) return
+    const checkForStaleDoc = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/projects/${projectId}/document`, {
+          headers: { Authorization: `Bearer ${authToken()}` },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.exists && data.document && data.document.documentVersion) {
+            if (data.document.documentVersion > documentVersion) {
+              // Another tab/user has updated the document
+              setIsStale(true)
+            }
+          }
+        }
+      } catch (e) {
+        // Silently fail, don't interrupt the editor
+      }
+    }
+    const interval = setInterval(checkForStaleDoc, 10000)
+    return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, documentVersion])
 
   const currentPage = pages[currentIdx]
   const updatePage = (p: Page) => {
@@ -406,6 +452,36 @@ export default function TemplateEditor() {
     ;[next[idx], next[swap]] = [next[swap], next[idx]]
     markDirty(); setPages(next)
     setCurrentIdx(swap)
+    setTimeout(() => recordHistorySnapshot(), 10)
+  }
+
+  const handlePageDragStart = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
+    setDraggedPageIdx(idx)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handlePageDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handlePageDrop = (e: React.DragEvent<HTMLDivElement>, targetIdx: number) => {
+    e.preventDefault()
+    if (draggedPageIdx === null || draggedPageIdx === targetIdx) {
+      setDraggedPageIdx(null)
+      return
+    }
+    const next = [...pages]
+    const [page] = next.splice(draggedPageIdx, 1)
+    next.splice(targetIdx, 0, page)
+    markDirty(); setPages(next)
+    setCurrentIdx(targetIdx)
+    setDraggedPageIdx(null)
+    setTimeout(() => recordHistorySnapshot(), 10)
+  }
+
+  const handlePageDragEnd = () => {
+    setDraggedPageIdx(null)
   }
 
   const savePortfolio = async () => {
@@ -479,6 +555,47 @@ export default function TemplateEditor() {
     if (confirm('Delete all unused assets? This cannot be undone.')) {
       setAssets([])
       localStorage.removeItem('uploadedAssets')
+    }
+  }
+
+  const generateStylePack = async () => {
+    if (!generateInput.trim()) {
+      alert(`Please enter a ${generateMode}`);
+      return
+    }
+    if (!projectId) {
+      alert('Please save your portfolio first')
+      return
+    }
+    setIsGenerating(true)
+    try {
+      const res = await fetch(`${API_URL}/api/portfolios/${projectId}/style-packs/generate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: generateMode, value: generateInput }),
+      })
+      if (!res.ok) throw new Error(`Generate failed: ${res.statusText}`)
+      const data = await res.json()
+      // Apply the generated pack
+      const generatedTokens = data.generated_pack
+      if (generatedTokens) {
+        setTok({
+          background: generatedTokens.colors?.background || tokens.background,
+          text: generatedTokens.colors?.text || tokens.text,
+          primary: generatedTokens.colors?.primary || tokens.primary,
+          accent: generatedTokens.colors?.accent || tokens.accent,
+          muted: generatedTokens.colors?.muted || tokens.muted,
+          headingFont: generatedTokens.typography?.headingFont || tokens.headingFont,
+          bodyFont: generatedTokens.typography?.bodyFont || tokens.bodyFont,
+        })
+        alert(`✓ Style pack generated from ${generateMode}!`)
+        setShowGeneratePackModal(false)
+        setGenerateInput('')
+      }
+    } catch (e: any) {
+      alert(`Failed to generate pack: ${e.message}`)
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -564,6 +681,23 @@ export default function TemplateEditor() {
         </div>
       </header>
 
+      {/* Stale document warning (collaborative editing) */}
+      {isStale && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-yellow-700 text-sm font-medium">⚠️ Your portfolio was updated in another tab or browser. Your changes may conflict.</span>
+          </div>
+          <button
+            onClick={() => {
+              window.location.reload()
+            }}
+            className="px-3 py-1.5 bg-yellow-600 text-white text-sm font-medium rounded hover:bg-yellow-700 transition"
+          >
+            Reload
+          </button>
+        </div>
+      )}
+
       <div className={`flex flex-1 min-h-0 ${isMobile ? 'flex-col' : ''}`}>
         {/* Left: pages */}
         <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
@@ -571,10 +705,21 @@ export default function TemplateEditor() {
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
             <div className="space-y-1.5">
               {pages.map((page, idx) => (
-                <div key={page.id} onClick={() => setCurrentIdx(idx)}
-                  className={`group p-2.5 rounded-lg cursor-pointer border-2 transition ${currentIdx === idx ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
+                <div
+                  key={page.id}
+                  draggable
+                  onDragStart={(e) => handlePageDragStart(e, idx)}
+                  onDragOver={handlePageDragOver}
+                  onDrop={(e) => handlePageDrop(e, idx)}
+                  onDragEnd={handlePageDragEnd}
+                  onClick={() => setCurrentIdx(idx)}
+                  className={`group p-2.5 rounded-lg cursor-move border-2 transition ${
+                    draggedPageIdx === idx ? 'opacity-50 bg-gray-100 border-gray-300' :
+                    currentIdx === idx ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-transparent hover:bg-gray-100'
+                  }`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-gray-400 text-lg leading-none select-none cursor-grab active:cursor-grabbing">⋮</div>
+                    <div className="min-w-0 flex-1">
                       <div className="text-[10px] text-gray-400 uppercase">{idx + 1} · {page.type}</div>
                       <div className="text-xs font-medium truncate">{page.blocks.find(b => b.type === 'title')?.text || 'Untitled'}</div>
                       <div className="text-[10px] text-gray-400 truncate">{getSpec(page.layoutId).name}</div>
@@ -736,7 +881,10 @@ export default function TemplateEditor() {
                 </div>
                 <div className="border-t pt-3">
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Design Packs</h4>
-                  <button onClick={() => setShowSavePackModal(true)} className="w-full px-3 py-2 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700 mb-2">💾 Save as Pack</button>
+                  <div className="flex gap-1.5 mb-2">
+                    <button onClick={() => setShowSavePackModal(true)} className="flex-1 px-3 py-2 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">💾 Save</button>
+                    <button onClick={() => setShowGeneratePackModal(true)} className="flex-1 px-3 py-2 bg-purple-600 text-white rounded text-xs font-medium hover:bg-purple-700">✨ Generate</button>
+                  </div>
                   {designPacks.length > 0 && (
                     <div className="space-y-1">
                       {designPacks.map(pack => (
@@ -756,6 +904,42 @@ export default function TemplateEditor() {
                       <div className="flex gap-2">
                         <button onClick={() => { setShowSavePackModal(false); setPackName('') }} className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
                         <button onClick={savePack} className="flex-1 px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">Save</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {showGeneratePackModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-lg p-4 max-w-sm w-full mx-4">
+                      <h3 className="font-semibold mb-3">✨ Generate Design Pack with AI</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-[10px] text-gray-500 uppercase font-semibold mb-1.5">Mode</p>
+                          <div className="flex gap-1">
+                            {(['mood', 'color', 'assets'] as const).map(m => (
+                              <button key={m} onClick={() => setGenerateMode(m)} className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition ${generateMode === m ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{m}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-500 uppercase font-semibold mb-1.5">
+                            {generateMode === 'mood' ? 'Mood (e.g., bold, minimal, luxury)' :
+                             generateMode === 'color' ? 'Base Color (hex)' :
+                             'Description'}
+                          </p>
+                          <input
+                            type="text"
+                            placeholder={generateMode === 'mood' ? 'e.g., bold, minimal, luxury' : generateMode === 'color' ? '#000000' : 'Describe your style...'}
+                            value={generateInput}
+                            onChange={e => setGenerateInput(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-400">AI will generate colors, fonts, and spacing based on your input.</p>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <button onClick={() => { setShowGeneratePackModal(false); setGenerateInput('') }} className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
+                        <button onClick={generateStylePack} disabled={isGenerating} className="flex-1 px-3 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 disabled:opacity-50">{isGenerating ? 'Generating…' : 'Generate'}</button>
                       </div>
                     </div>
                   </div>
