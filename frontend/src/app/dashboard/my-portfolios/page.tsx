@@ -247,12 +247,6 @@ export default function MyPortfoliosPage() {
                 <div className="bg-gray-50 px-4 py-3 border-t space-y-2">
                   <div className="flex gap-2">
                     <Link
-                      href={`/dashboard/portfolio-preview/${project.id}`}
-                      className="flex-1 px-3 py-2 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700 text-center"
-                    >
-                      👁️ Preview
-                    </Link>
-                    <Link
                       href={`/dashboard/templates/default/editor?project=${project.id}`}
                       className="flex-1 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 text-center"
                     >
