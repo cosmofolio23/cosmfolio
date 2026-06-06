@@ -14,6 +14,8 @@ import {
   type LayoutCategory,
 } from '@/components/composer/layoutSpecs'
 
+type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 interface Template {
@@ -53,6 +55,9 @@ export default function TemplateEditor() {
   const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style'>('layout')
   const [layoutSearch, setLayoutSearch] = useState('')
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
+  const [designPacks, setDesignPacks] = useState<DesignPack[]>([])
+  const [showSavePackModal, setShowSavePackModal] = useState(false)
+  const [packName, setPackName] = useState('')
 
   const [projectId, setProjectId] = useState<string | null>(null)
   const [history, setHistory] = useState<{ pages: Page[]; tokens: DesignTokens; title: string }[]>([])
@@ -102,6 +107,15 @@ export default function TemplateEditor() {
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
     init()
+    // Load design packs from localStorage
+    const saved = localStorage.getItem('designPacks')
+    if (saved) {
+      try {
+        setDesignPacks(JSON.parse(saved))
+      } catch (e) {
+        console.error('Failed to load design packs:', e)
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated])
 
@@ -389,6 +403,28 @@ export default function TemplateEditor() {
     }
   }
 
+  const savePack = () => {
+    if (!packName.trim()) { alert('Enter a pack name'); return }
+    const newPack: DesignPack = { name: packName, tokens: structuredClone(tokens), createdAt: new Date().toISOString() }
+    const updated = [...designPacks.filter(p => p.name !== packName), newPack]
+    setDesignPacks(updated)
+    localStorage.setItem('designPacks', JSON.stringify(updated))
+    setPackName('')
+    setShowSavePackModal(false)
+    alert(`✓ Design pack "${packName}" saved!`)
+  }
+
+  const loadPack = (pack: DesignPack) => {
+    setTok(pack.tokens)
+    alert(`✓ Loaded design pack "${pack.name}"`)
+  }
+
+  const deletePack = (name: string) => {
+    const updated = designPacks.filter(p => p.name !== name)
+    setDesignPacks(updated)
+    localStorage.setItem('designPacks', JSON.stringify(updated))
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -486,10 +522,10 @@ export default function TemplateEditor() {
                       <div className="text-xs font-medium truncate">{page.blocks.find(b => b.type === 'title')?.text || 'Untitled'}</div>
                       <div className="text-[10px] text-gray-400 truncate">{getSpec(page.layoutId).name}</div>
                     </div>
-                    <div className="flex flex-col opacity-0 group-hover:opacity-100 transition">
-                      <button onClick={e => { e.stopPropagation(); movePage(idx, -1) }} className="text-gray-400 hover:text-gray-700 text-[10px] leading-none">▲</button>
-                      <button onClick={e => { e.stopPropagation(); movePage(idx, 1) }} className="text-gray-400 hover:text-gray-700 text-[10px] leading-none">▼</button>
-                      <button onClick={e => { e.stopPropagation(); deletePage(idx) }} className="text-gray-400 hover:text-red-500 text-[10px] leading-none mt-0.5">✕</button>
+                    <div className="flex flex-col gap-0.5">
+                      <button disabled={idx === 0} onClick={e => { e.stopPropagation(); movePage(idx, -1) }} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-[10px] leading-none" title="Move up">▲</button>
+                      <button disabled={idx === pages.length - 1} onClick={e => { e.stopPropagation(); movePage(idx, 1) }} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-[10px] leading-none" title="Move down">▼</button>
+                      <button onClick={e => { e.stopPropagation(); deletePage(idx) }} className="text-gray-400 hover:text-red-500 text-[10px] leading-none mt-0.5" title="Delete">✕</button>
                     </div>
                   </div>
                 </div>
@@ -636,8 +672,34 @@ export default function TemplateEditor() {
                     {BODY_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
+                <div className="border-t pt-3">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Design Packs</h4>
+                  <button onClick={() => setShowSavePackModal(true)} className="w-full px-3 py-2 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700 mb-2">💾 Save as Pack</button>
+                  {designPacks.length > 0 && (
+                    <div className="space-y-1">
+                      {designPacks.map(pack => (
+                        <div key={pack.name} className="flex items-center gap-2 p-2 bg-gray-100 rounded text-xs">
+                          <button onClick={() => loadPack(pack)} className="flex-1 text-left hover:text-blue-600 truncate">{pack.name}</button>
+                          <button onClick={() => deletePack(pack.name)} className="text-gray-400 hover:text-red-500 text-xs">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {showSavePackModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-lg p-4 max-w-sm w-full mx-4">
+                      <h3 className="font-semibold mb-3">Save Design Pack</h3>
+                      <input type="text" placeholder="Pack name (e.g., 'Dark Minimal')" value={packName} onChange={e => setPackName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3" />
+                      <div className="flex gap-2">
+                        <button onClick={() => { setShowSavePackModal(false); setPackName('') }} className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
+                        <button onClick={savePack} className="flex-1 px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">Save</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="p-3 bg-blue-50 rounded-lg text-[11px] text-blue-800">
-                  Colors & fonts apply to every page instantly.
+                  Colors & fonts apply instantly. Save as a pack to reuse later.
                 </div>
               </div>
             )}
