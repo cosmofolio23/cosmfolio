@@ -372,6 +372,24 @@ export default function TemplateEditor() {
   }, [projectId, documentVersion])
 
   const currentPage = pages[currentIdx]
+
+  // NOTE: This hook MUST stay above the early returns (isLoading / !template)
+  // below, otherwise it runs a different number of times between renders and
+  // triggers React error #310 ("Rendered more hooks than during the previous
+  // render"). currentPage may be undefined here, so guard with optional chaining.
+  const filteredLayouts = useMemo(() => {
+    let list = LAYOUT_CATALOG
+    if (layoutCat !== 'All') list = list.filter(s => s.category === layoutCat)
+    if (layoutSearch.trim()) {
+      const q = layoutSearch.toLowerCase()
+      list = list.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
+    }
+    // surface layouts that suit the current page type first
+    const pageType = currentPage?.type
+    return [...list].sort((a, b) =>
+      (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
+  }, [layoutCat, layoutSearch, currentPage?.type])
+
   const updatePage = (p: Page) => {
     markDirty()
     const next = pages.map((x, i) => i === currentIdx ? p : x)
@@ -639,18 +657,6 @@ export default function TemplateEditor() {
   if (!template || !currentPage) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-center"><p className="text-gray-600 mb-4">Template not found</p><Link href="/dashboard/templates" className="text-blue-600 hover:underline">← Back to Templates</Link></div></div>
   }
-
-  const filteredLayouts = useMemo(() => {
-    let list = LAYOUT_CATALOG
-    if (layoutCat !== 'All') list = list.filter(s => s.category === layoutCat)
-    if (layoutSearch.trim()) {
-      const q = layoutSearch.toLowerCase()
-      list = list.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
-    }
-    // surface layouts that suit the current page type first
-    return [...list].sort((a, b) =>
-      (b.suits.includes(currentPage.type) ? 1 : 0) - (a.suits.includes(currentPage.type) ? 1 : 0))
-  }, [layoutCat, layoutSearch, currentPage.type])
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
