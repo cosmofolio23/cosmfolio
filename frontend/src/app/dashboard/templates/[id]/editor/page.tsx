@@ -15,6 +15,7 @@ import {
 } from '@/components/composer/layoutSpecs'
 
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
+type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -58,6 +59,10 @@ export default function TemplateEditor() {
   const [designPacks, setDesignPacks] = useState<DesignPack[]>([])
   const [showSavePackModal, setShowSavePackModal] = useState(false)
   const [packName, setPackName] = useState('')
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [selectedAsset, setSelectedAsset] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [inspectorOpen, setInspectorOpen] = useState(true)
 
   const [projectId, setProjectId] = useState<string | null>(null)
   const [history, setHistory] = useState<{ pages: Page[]; tokens: DesignTokens; title: string }[]>([])
@@ -114,6 +119,15 @@ export default function TemplateEditor() {
         setDesignPacks(JSON.parse(saved))
       } catch (e) {
         console.error('Failed to load design packs:', e)
+      }
+    }
+    // Load assets from localStorage
+    const assetsSaved = localStorage.getItem('uploadedAssets')
+    if (assetsSaved) {
+      try {
+        setAssets(JSON.parse(assetsSaved))
+      } catch (e) {
+        console.error('Failed to load assets:', e)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,7 +237,19 @@ export default function TemplateEditor() {
     })
     if (!res.ok) throw new Error('Upload failed')
     const data = await res.json()
-    return data.url || data.preview_url
+    const url = data.url || data.preview_url
+    // Save to asset library
+    const newAsset: Asset = {
+      id: uid('a'),
+      url,
+      name: file.name,
+      uploadedAt: new Date().toISOString(),
+      size: file.size,
+    }
+    const updated = [...assets, newAsset]
+    setAssets(updated)
+    localStorage.setItem('uploadedAssets', JSON.stringify(updated))
+    return url
   }
 
   const saveDocument = async (): Promise<void> => {
@@ -288,6 +314,16 @@ export default function TemplateEditor() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [history, historyIdx])
+
+  // Detect mobile/tablet and adjust layout
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const currentPage = pages[currentIdx]
   const updatePage = (p: Page) => {
@@ -425,6 +461,27 @@ export default function TemplateEditor() {
     localStorage.setItem('designPacks', JSON.stringify(updated))
   }
 
+  const insertAsset = (assetUrl: string) => {
+    if (!currentPage) return
+    const block = { ...createBlock('render'), imageUrl: assetUrl }
+    updatePage({ ...currentPage, blocks: [...currentPage.blocks, block] })
+    setTimeout(() => recordHistorySnapshot(), 10)
+    alert('Image inserted!')
+  }
+
+  const deleteAsset = (assetId: string) => {
+    const updated = assets.filter(a => a.id !== assetId)
+    setAssets(updated)
+    localStorage.setItem('uploadedAssets', JSON.stringify(updated))
+  }
+
+  const clearAllAssets = () => {
+    if (confirm('Delete all unused assets? This cannot be undone.')) {
+      setAssets([])
+      localStorage.removeItem('uploadedAssets')
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -507,9 +564,9 @@ export default function TemplateEditor() {
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0">
+      <div className={`flex flex-1 min-h-0 ${isMobile ? 'flex-col' : ''}`}>
         {/* Left: pages */}
-        <aside className="w-56 bg-white border-r overflow-y-auto flex-shrink-0">
+        <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
           <div className="p-3">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
             <div className="space-y-1.5">
@@ -543,15 +600,20 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main className="flex-1 overflow-y-auto p-8 bg-gray-300/40">
+        <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
           <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
-          <div className="max-w-[760px] mx-auto mt-3 text-center text-[11px] text-gray-400">
-            Page {currentIdx + 1} of {pages.length} · Click any text or image to edit it directly
+          <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400`}>
+            Page {currentIdx + 1}/{pages.length} · {!isMobile && 'Click any text or image to edit'}
           </div>
         </main>
 
-        {/* Right: inspector */}
-        <aside className="w-80 bg-white border-l overflow-y-auto flex-shrink-0">
+        {/* Right: inspector - toggle on mobile */}
+        {isMobile && (
+          <button onClick={() => setInspectorOpen(!inspectorOpen)} className="fixed bottom-4 right-4 z-40 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-lg">
+            {inspectorOpen ? '✕ Close' : '⚙️ Settings'}
+          </button>
+        )}
+        <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10">
             {(['layout', 'blocks', 'style'] as const).map(t => (
@@ -698,6 +760,25 @@ export default function TemplateEditor() {
                     </div>
                   </div>
                 )}
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase">Asset Library ({assets.length})</h4>
+                    {assets.length > 0 && <button onClick={clearAllAssets} className="text-[9px] text-gray-400 hover:text-red-500">clear</button>}
+                  </div>
+                  {assets.length === 0 ? (
+                    <p className="text-[11px] text-gray-400">Upload images → they appear here</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {assets.map(asset => (
+                        <div key={asset.id} className="group relative aspect-square bg-gray-100 rounded overflow-hidden">
+                          <img src={asset.url} alt={asset.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100" />
+                          <button onClick={() => insertAsset(asset.url)} className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold">Insert</button>
+                          <button onClick={() => deleteAsset(asset.id)} className="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[9px] opacity-0 group-hover:opacity-100 transition">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="p-3 bg-blue-50 rounded-lg text-[11px] text-blue-800">
                   Colors & fonts apply instantly. Save as a pack to reuse later.
                 </div>

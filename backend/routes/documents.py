@@ -123,50 +123,96 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
 
 
 def _render_document_to_html(doc: dict) -> str:
-    """Render composer document to HTML for PDF export."""
+    """Render composer document to HTML for PDF export with advanced styling."""
     title = html.escape(doc.get('title', 'Portfolio'))
     tokens = doc.get('tokens', {})
     pages = doc.get('pages', [])
 
+    bg = tokens.get('background', '#ffffff')
+    text_color = tokens.get('text', '#1a1a1a')
+    primary = tokens.get('primary', '#111111')
+    accent = tokens.get('accent', '#888888')
+    heading_font = tokens.get('headingFont', 'Georgia, serif')
+    body_font = tokens.get('bodyFont', 'system-ui, -apple-system, sans-serif')
+
     html_parts = [
         '<!DOCTYPE html><html><head>',
-        '<meta charset="UTF-8"><meta name="viewport" content="width=device-width">',
-        '<title>' + title + '</title>',
+        '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">',
+        f'<title>{title}</title>',
         '<style>',
         '  * { margin: 0; padding: 0; box-sizing: border-box; }',
-        '  body { font-family: Arial, sans-serif; background: ' + tokens.get('background', '#fff') + '; color: ' + tokens.get('text', '#000') + '; }',
-        '  .page { page-break-after: always; padding: 40px; min-height: 297mm; }',
-        '  h1 { color: ' + tokens.get('primary', '#000') + '; font-size: 36px; margin: 20px 0; }',
-        '  h2 { color: ' + tokens.get('accent', '#666') + '; font-size: 24px; margin: 15px 0; }',
-        '  p { font-size: 14px; line-height: 1.6; margin: 10px 0; }',
-        '  img { max-width: 100%; height: auto; margin: 10px 0; }',
-        '  @media print { body { background: white; } }',
+        f'  html, body {{ font-family: {body_font}; background: {bg}; color: {text_color}; line-height: 1.6; }}',
+        '  .portfolio { width: 210mm; margin: 0 auto; }',
+        '  .page { page-break-after: always; padding: 20mm; min-height: 297mm; background: ' + bg + '; }',
+        '  .page:first-child { page-break-before: avoid; }',
+        f'  h1 {{ font-family: {heading_font}; color: {primary}; font-size: 42px; font-weight: 600; line-height: 1.2; margin-bottom: 20px; }}',
+        f'  h2 {{ font-family: {heading_font}; color: {accent}; font-size: 28px; font-weight: 500; margin-top: 30px; margin-bottom: 15px; }}',
+        f'  .subtitle {{ color: {accent}; font-size: 18px; margin-bottom: 30px; }}',
+        '  .section-title { border-bottom: 2px solid ' + accent + '; padding-bottom: 10px; margin-bottom: 20px; }',
+        '  p { font-size: 14px; margin-bottom: 12px; color: ' + text_color + '; }',
+        '  figure { margin: 20px 0; }',
+        '  img { max-width: 100%; height: auto; border: 1px solid #eee; }',
+        '  figcaption { font-size: 12px; color: #666; margin-top: 8px; font-style: italic; }',
+        '  .meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.02); border-left: 3px solid ' + accent + '; }',
+        '  .meta-item { }',
+        '  .meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 600; }',
+        '  .meta-value { font-size: 16px; font-weight: 500; margin-top: 5px; }',
+        '  .legend { margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 4px; }',
+        '  .legend-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 10px; }',
+        '  .legend-item { font-size: 13px; margin-bottom: 6px; }',
+        '  .legend-key { display: inline-block; min-width: 24px; padding: 2px 6px; background: ' + accent + '; color: white; border-radius: 2px; font-weight: 600; margin-right: 8px; }',
+        '  @page { size: A4; margin: 0; }',
+        '  @media print { body { background: white; margin: 0; padding: 0; } .page { background: white; } }',
         '</style></head><body>',
-        f'<div class="page"><h1>{title}</h1>',
+        '<div class="portfolio">',
     ]
 
-    for page in pages:
-        if page.get('type') == 'cover':
-            html_parts.append('<div style="page-break-before: always;"></div>')
+    for page_num, page in enumerate(pages):
+        html_parts.append('<div class="page">')
+        page_type = page.get('type', 'project')
 
-        for block in page.get('blocks', []):
+        blocks = page.get('blocks', [])
+        for block_idx, block in enumerate(blocks):
             btype = block.get('type')
-            if btype in ('title', 'subtitle'):
-                tag = 'h1' if btype == 'title' else 'h2'
-                text = html.escape(block.get('text', ''))
-                html_parts.append(f'<{tag}>{text}</{tag}>')
+            text = block.get('text', '')
+
+            if btype == 'title':
+                html_parts.append(f'<h1>{html.escape(text)}</h1>')
+            elif btype == 'subtitle':
+                html_parts.append(f'<p class="subtitle">{html.escape(text)}</p>')
             elif btype == 'description':
-                text = html.escape(block.get('text', '')).replace('\n', '<br>')
-                html_parts.append(f'<p>{text}</p>')
-            elif btype == 'render' and block.get('imageUrl'):
-                url = html.escape(block.get('imageUrl', ''))
-                label = html.escape(block.get('label', ''))
-                html_parts.append(f'<figure><img src="{url}" alt="{label}"><figcaption>{label}</figcaption></figure>')
+                formatted = html.escape(text).replace('\n', '<br>')
+                html_parts.append(f'<p>{formatted}</p>')
             elif btype == 'meta':
-                for field in block.get('fields', []):
-                    label = html.escape(field.get('label', ''))
-                    value = html.escape(field.get('value', ''))
-                    html_parts.append(f'<p><strong>{label}:</strong> {value}</p>')
+                fields = block.get('fields', [])
+                if fields:
+                    html_parts.append('<div class="meta">')
+                    for field in fields:
+                        label = html.escape(field.get('label', ''))
+                        value = html.escape(field.get('value', ''))
+                        html_parts.append(f'<div class="meta-item"><div class="meta-label">{label}</div><div class="meta-value">{value}</div></div>')
+                    html_parts.append('</div>')
+            elif btype == 'legend':
+                label = html.escape(block.get('label', 'LEGEND'))
+                items = block.get('legendItems', [])
+                if items:
+                    html_parts.append(f'<div class="legend"><div class="legend-title">{label}</div>')
+                    for item in items:
+                        key = html.escape(item.get('key', ''))
+                        item_label = html.escape(item.get('label', ''))
+                        html_parts.append(f'<div class="legend-item"><span class="legend-key">{key}</span>{item_label}</div>')
+                    html_parts.append('</div>')
+            elif btype in ('render', 'plan', 'section', 'diagram'):
+                url = block.get('imageUrl', '')
+                if url:
+                    img_label = html.escape(block.get('label', f'{btype.title()}'))
+                    scale = block.get('scale', '')
+                    if scale:
+                        img_label += f' • {html.escape(scale)}'
+                    url_safe = html.escape(url)
+                    html_parts.append(f'<figure><img src="{url_safe}" alt="{img_label}" loading="lazy"><figcaption>{img_label}</figcaption></figure>')
+
+        html_parts.append('</div>')
 
     html_parts.extend(['</div></body></html>'])
     return ''.join(html_parts)
