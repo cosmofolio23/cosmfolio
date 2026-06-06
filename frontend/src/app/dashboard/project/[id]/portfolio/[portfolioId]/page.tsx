@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
-import { PRESET_PACKS, StylePack } from '@/components/design-system/StylePackGallery'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -30,100 +29,23 @@ const LAYOUT_OPTIONS = [
   { id: 'project-story-timeline', name: 'Story', icon: '⟶', desc: 'Process narrative' },
 ]
 
-export default function PortfolioFlipbookPage() {
+export default function PortfolioEditorPage() {
   const params = useParams()
   const router = useRouter()
   const { token, isAuthenticated } = useAuthStore()
+
   const [portfolio, setPortfolio] = useState<any>(null)
   const [pages, setPages] = useState<Page[]>([])
-  const [headHtml, setHeadHtml] = useState<string>('')
-  const [spreadIndex, setSpreadIndex] = useState<number>(0)
+  const [currentIdx, setCurrentIdx] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-  const touchStartRef = useRef(0)
-  const [isRendering, setIsRendering] = useState(false)
+  const [rightTab, setRightTab] = useState<'layout'>('layout')
   const [error, setError] = useState<string | null>(null)
-  const [selectedPack, setSelectedPack] = useState<StylePack>(PRESET_PACKS[0])
-  const [flipDirection, setFlipDirection] = useState<'next' | 'prev'>('next')
-  const [isFlipping, setIsFlipping] = useState(false)
-  const [showPacks, setShowPacks] = useState(false)
-  const [showJump, setShowJump] = useState(false)
-  const [showLayoutPicker, setShowLayoutPicker] = useState<string | null>(null)  // page ID being edited
-  const [pageLayouts, setPageLayouts] = useState<Record<string, string>>({})  // pageId → layoutId
-  const [editingPage, setEditingPage] = useState<{ id: string; index: number } | null>(null)  // open content editor for this project
-  const [editTab, setEditTab] = useState<'content' | 'images'>('content')
-  const [editForm, setEditForm] = useState<{ name: string; location: string; year: string; typology: string; description: string }>({
-    name: '', location: '', year: '', typology: '', description: ''
-  })
-  const [editAssets, setEditAssets] = useState<Record<string, string[]>>({
-    renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: []
-  })
-  const [editProjects, setEditProjects] = useState<any[]>([])  // cache of design_projects from wizard config
-  const [aiGenerating, setAiGenerating] = useState<string | null>(null)  // mode being generated
-  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null)
-  const [shareModalOpen, setShareModalOpen] = useState(false)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
-  const [shareEnabled, setShareEnabled] = useState(false)
-  const [shareLoading, setShareLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [exporting, setExporting] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const hasLoadedInitialRef = useRef(false)
+  const [pageLayouts, setPageLayouts] = useState<Record<string, string>>({})
 
-  // Debounced auto-save
-  const scheduleSave = useCallback((pack: StylePack, layouts: Record<string, string>) => {
-    if (!hasLoadedInitialRef.current) return  // Don't save on initial load
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
-    setSaveStatus('saving')
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        const savedToken = token || localStorage.getItem('auth_token')
-        const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/customization`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${savedToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            style_pack_data: pack,
-            page_layouts: layouts,
-          }),
-        })
-        if (res.ok) {
-          setSaveStatus('saved')
-          setTimeout(() => setSaveStatus('idle'), 2000)
-        } else {
-          setSaveStatus('error')
-        }
-      } catch {
-        setSaveStatus('error')
-      }
-    }, 1200)
-  }, [token, params.portfolioId])
-
-  // Total spreads: cover is single, then pairs, last might be single
-  // Spread 0 = [cover, page-1]
-  // Spread 1 = [page-2, page-3]
-  // etc.
-  const totalSpreads = Math.max(1, Math.ceil((pages.length + 1) / 2))
-
-  // Get pages for current spread
-  const getSpreadPages = (spread: number): { left: Page | null; right: Page | null } => {
-    if (spread === 0) {
-      // First spread: only right (cover)
-      return { left: null, right: pages[0] || null }
-    }
-    const leftIdx = spread * 2 - 1
-    const rightIdx = spread * 2
-    return {
-      left: pages[leftIdx] || null,
-      right: pages[rightIdx] || null,
-    }
-  }
+  const currentPage = pages[currentIdx]
 
   useEffect(() => {
-    // Detect mobile/tablet on mount and window resize
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024)
     }
@@ -135,40 +57,7 @@ export default function PortfolioFlipbookPage() {
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
     loadPortfolio()
-    // Log view event
-    logAnalyticsEvent('view')
   }, [isAuthenticated, token])
-
-  const logAnalyticsEvent = (eventType: 'view' | 'share' | 'download', data?: any) => {
-    try {
-      const endpoint = `${API_URL}/api/portfolios/${params.portfolioId}/analytics/${eventType}`
-      const body = data ? JSON.stringify(data) : '{}'
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body
-      }).catch(() => {}) // Fail silently
-    } catch (e) {}
-  }
-
-  // Touch swipe handling for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartRef.current = e.touches[0].clientX
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEnd = e.changedTouches[0].clientX
-    const diff = touchStartRef.current - touchEnd
-
-    // Swipe left = next, swipe right = prev
-    if (Math.abs(diff) > 50) {  // min swipe distance
-      if (diff > 0) {
-        flipTo(spreadIndex + 1)
-      } else {
-        flipTo(spreadIndex - 1)
-      }
-    }
-  }
 
   const loadPortfolio = async () => {
     setIsLoading(true)
@@ -184,31 +73,15 @@ export default function PortfolioFlipbookPage() {
       if (metaRes.ok) {
         const meta = await metaRes.json()
         setPortfolio(meta)
-        // Restore saved customizations
-        const ps = meta.page_structure || {}
-        const savedPack = ps.style_pack
-        if (savedPack && savedPack.colors) {
-          // Use saved pack directly (handles custom + AI-generated)
-          setSelectedPack(savedPack as StylePack)
-        } else {
-          const currentPack = PRESET_PACKS.find(p => p.id === meta.style_pack) || PRESET_PACKS[0]
-          setSelectedPack(currentPack)
-        }
         // Restore per-page layouts
+        const ps = meta.page_structure || {}
         const savedLayouts = ps.page_layouts || {}
         if (Object.keys(savedLayouts).length > 0) {
           setPageLayouts(savedLayouts)
         }
-        // Restore share state
-        const share = ps.share || {}
-        if (share.enabled && share.slug) {
-          setShareEnabled(true)
-          const origin = typeof window !== 'undefined' ? window.location.origin : ''
-          setShareUrl(`${origin}/p/${share.slug}`)
-        }
       }
 
-      // Get paged data (new endpoint - may not be deployed yet)
+      // Get paged data
       let gotPages = false
       try {
         const pagesRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
@@ -222,12 +95,11 @@ export default function PortfolioFlipbookPage() {
         if (pagesRes.ok) {
           const data = await pagesRes.json()
           setPages(data.pages || [])
-          setHeadHtml(data.head_html || '')
           gotPages = true
         }
       } catch (e) { console.warn('Pages endpoint unavailable, falling back to preview') }
 
-      // FALLBACK: use /preview endpoint and parse pages client-side
+      // FALLBACK: use /preview endpoint
       if (!gotPages) {
         const previewRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/preview`, {
           headers: { 'Authorization': `Bearer ${savedToken}` }
@@ -235,11 +107,9 @@ export default function PortfolioFlipbookPage() {
         if (previewRes.ok) {
           const data = await previewRes.json()
           const html = data.html || ''
-          // Parse pages from full HTML
           const parser = new DOMParser()
           const doc = parser.parseFromString(html, 'text/html')
           const sections = Array.from(doc.querySelectorAll('section.page'))
-          const head = doc.head?.innerHTML || ''
           const parsedPages = sections.map((sec, idx) => {
             const heading = sec.querySelector('h1, h2')?.textContent?.trim() || `Page ${idx + 1}`
             const cls = sec.className || ''
@@ -256,7 +126,6 @@ export default function PortfolioFlipbookPage() {
             }
           })
           setPages(parsedPages)
-          setHeadHtml(`<head>${head}<style>* {margin:0; padding:0; box-sizing:border-box;} body{background:white;} .page{width:100%;min-height:100vh;} img{display:block;max-width:100%;}</style></head>`)
         } else {
           setError(`Failed to render: ${previewRes.status}`)
         }
@@ -265,247 +134,13 @@ export default function PortfolioFlipbookPage() {
       setError(e.message || 'Failed to load')
     } finally {
       setIsLoading(false)
-      // Allow auto-save after initial load completes
-      setTimeout(() => { hasLoadedInitialRef.current = true }, 500)
     }
   }
 
-  // Toggle public share
-  const toggleShare = async (enable: boolean) => {
-    setShareLoading(true)
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/share`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${savedToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ enabled: enable }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setShareEnabled(data.is_public)
-        if (data.share_slug) {
-          const origin = typeof window !== 'undefined' ? window.location.origin : ''
-          setShareUrl(`${origin}/p/${data.share_slug}`)
-        } else {
-          setShareUrl(null)
-        }
-      } else {
-        alert('Failed to update share settings')
-      }
-    } catch (e: any) {
-      alert(`Share error: ${e.message}`)
-    } finally {
-      setShareLoading(false)
-    }
-  }
-
-  const copyShareLink = async () => {
-    if (!shareUrl) return
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      // Log share event
-      logAnalyticsEvent('share', { platform: 'link' })
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback for older browsers
-      const ta = document.createElement('textarea')
-      ta.value = shareUrl
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-      setCopied(true)
-      logAnalyticsEvent('share', { platform: 'link' })
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  // Open content editor for a project page
-  const openEditor = async (pageId: string) => {
-    // Extract project index from pageId (e.g. "project-2" → 2)
-    const match = pageId.match(/^project-(\d+)$/)
-    if (!match) return
-    const idx = parseInt(match[1])
-
-    // Fetch current wizard config for this project
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/portfolios/${params.id}/wizard-config`, {
-        headers: { 'Authorization': `Bearer ${savedToken}` }
-      })
-      let dpList: any[] = []
-      if (res.ok) {
-        const data = await res.json()
-        const cfg = data.config || data.config_data || data
-        dpList = cfg?.design_projects || []
-      }
-      setEditProjects(dpList)
-      const dp = dpList[idx] || {}
-      setEditForm({
-        name: dp.name || '',
-        location: dp.location || '',
-        year: dp.year || '',
-        typology: dp.typology || '',
-        description: dp.description || '',
-      })
-      setEditAssets({
-        renders: dp.assets?.renders || [],
-        plans: dp.assets?.plans || [],
-        sections: dp.assets?.sections || [],
-        elevations: dp.assets?.elevations || [],
-        concepts: dp.assets?.concepts || [],
-        diagrams: dp.assets?.diagrams || [],
-      })
-      setEditTab('content')
-      setEditingPage({ id: pageId, index: idx })
-    } catch (e) {
-      console.error('Failed to load project for edit:', e)
-      setEditForm({ name: '', location: '', year: '', typology: '', description: '' })
-      setEditAssets({ renders: [], plans: [], sections: [], elevations: [], concepts: [], diagrams: [] })
-      setEditingPage({ id: pageId, index: idx })
-    }
-  }
-
-  // Upload a new image to a category
-  const uploadAssetToCategory = async (category: string, file: File) => {
-    setUploadingCategory(category)
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const formData = new FormData()
-      formData.append('files', file)
-      const assetType = category.slice(0, -1)  // "renders" → "render"
-      const res = await fetch(
-        `${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=${assetType}`,
-        { method: 'POST', headers: { 'Authorization': `Bearer ${savedToken}` }, body: formData }
-      )
-      if (res.ok) {
-        const data = await res.json()
-        const uploadedUrl = data.assets?.[0]?.file_url
-        if (uploadedUrl) {
-          setEditAssets(prev => ({
-            ...prev,
-            [category]: [...(prev[category] || []), uploadedUrl]
-          }))
-        }
-      } else {
-        alert(`Upload failed: ${res.status}`)
-      }
-    } catch (e: any) {
-      alert(`Upload error: ${e.message}`)
-    } finally {
-      setUploadingCategory(null)
-    }
-  }
-
-  const removeAsset = (category: string, url: string) => {
-    setEditAssets(prev => ({
-      ...prev,
-      [category]: prev[category].filter(u => u !== url)
-    }))
-  }
-
-  const moveAsset = (category: string, idx: number, direction: 'up' | 'down') => {
-    setEditAssets(prev => {
-      const arr = [...(prev[category] || [])]
-      const newIdx = direction === 'up' ? idx - 1 : idx + 1
-      if (newIdx < 0 || newIdx >= arr.length) return prev
-      ;[arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]]
-      return { ...prev, [category]: arr }
-    })
-  }
-
-  // Save content edits
-  const saveEdits = async () => {
-    if (!editingPage) return
-    setSaveStatus('saving')
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(
-        `${API_URL}/api/portfolios/${params.id}/wizard-config/project/${editingPage.index}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${savedToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ ...editForm, assets: editAssets }),
-        }
-      )
-      if (res.ok) {
-        setSaveStatus('saved')
-        setTimeout(() => setSaveStatus('idle'), 2000)
-        setEditingPage(null)
-        // Re-fetch pages with new content
-        setIsRendering(true)
-        try {
-          const pagesRes = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${savedToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ style_pack_data: selectedPack, page_layouts: pageLayouts }),
-          })
-          if (pagesRes.ok) {
-            const data = await pagesRes.json()
-            setPages(data.pages || [])
-          }
-        } finally { setIsRendering(false) }
-      } else {
-        setSaveStatus('error')
-        const err = await res.text()
-        alert(`Save failed: ${err.slice(0, 200)}`)
-      }
-    } catch (e: any) {
-      setSaveStatus('error')
-      alert(`Save error: ${e.message}`)
-    }
-  }
-
-  // AI generate/improve description
-  const aiHelp = async (mode: 'generate' | 'improve' | 'shorten' | 'expand') => {
-    setAiGenerating(mode)
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/portfolios/${params.id}/ai/generate-description`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${savedToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mode,
-          project_name: editForm.name,
-          typology: editForm.typology,
-          location: editForm.location,
-          year: editForm.year,
-          current_description: editForm.description,
-        }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setEditForm(prev => ({ ...prev, description: data.description || prev.description }))
-      } else {
-        alert('AI generation failed. Try again.')
-      }
-    } catch (e: any) {
-      alert(`AI error: ${e.message}`)
-    } finally {
-      setAiGenerating(null)
-    }
-  }
-
-  // Swap layout for a single page (preserve current pack + other page layouts)
   const switchPageLayout = async (pageId: string, newLayoutId: string) => {
     const nextLayouts = { ...pageLayouts, [pageId]: newLayoutId }
     setPageLayouts(nextLayouts)
-    setShowLayoutPicker(null)
-    setIsRendering(true)
-    scheduleSave(selectedPack, nextLayouts)
+
     try {
       const savedToken = token || localStorage.getItem('auth_token')
       const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
@@ -515,928 +150,178 @@ export default function PortfolioFlipbookPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          style_pack_data: selectedPack,
           page_layouts: nextLayouts,
         }),
       })
       if (res.ok) {
         const data = await res.json()
         setPages(data.pages || [])
-        setHeadHtml(data.head_html || '')
-      } else {
-        // Fallback: revert if server doesn't support per-page layouts yet
-        console.warn('Per-page layout not supported, keeping local state')
       }
     } catch (e) {
       console.error('Layout switch failed:', e)
-    } finally {
-      setIsRendering(false)
-    }
-  }
-
-  // Re-fetch pages with a new pack
-  const switchPack = async (pack: StylePack) => {
-    setSelectedPack(pack)
-    setShowPacks(false)
-    setIsRendering(true)
-    scheduleSave(pack, pageLayouts)
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-
-      // Try new pages endpoint
-      let gotPages = false
-      try {
-        const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${savedToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ style_pack_data: pack, page_layouts: pageLayouts }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setPages(data.pages || [])
-          setHeadHtml(data.head_html || '')
-          gotPages = true
-        }
-      } catch {}
-
-      // Fallback: render-with-pack returns full HTML, parse pages
-      if (!gotPages) {
-        const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/render-with-pack`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${savedToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ style_pack_data: pack }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const html = data.html || ''
-          const parser = new DOMParser()
-          const doc = parser.parseFromString(html, 'text/html')
-          const sections = Array.from(doc.querySelectorAll('section.page'))
-          const head = doc.head?.innerHTML || ''
-          const parsedPages = sections.map((sec, idx) => {
-            const heading = sec.querySelector('h1, h2')?.textContent?.trim() || `Page ${idx + 1}`
-            const cls = sec.className || ''
-            const type = cls.includes('cover') ? 'cover'
-              : cls.includes('about') ? 'about'
-              : cls.includes('contents') ? 'contents'
-              : cls.includes('end') ? 'end'
-              : 'project'
-            return {
-              id: `${type}-${idx}`,
-              type,
-              name: heading.slice(0, 30),
-              html: sec.outerHTML,
-            }
-          })
-          setPages(parsedPages)
-          setHeadHtml(`<head>${head}<style>* {margin:0; padding:0; box-sizing:border-box;} body{background:white;} .page{width:100%;min-height:100vh;} img{display:block;max-width:100%;}</style></head>`)
-        }
-      }
-    } catch (e) {
-      console.error('Switch pack failed:', e)
-    } finally {
-      setIsRendering(false)
-    }
-  }
-
-  const flipTo = useCallback((targetSpread: number) => {
-    if (isFlipping) return
-    if (targetSpread < 0 || targetSpread >= totalSpreads) return
-    setFlipDirection(targetSpread > spreadIndex ? 'next' : 'prev')
-    setIsFlipping(true)
-    setTimeout(() => {
-      setSpreadIndex(targetSpread)
-      setTimeout(() => setIsFlipping(false), 50)
-    }, 300)
-  }, [spreadIndex, totalSpreads, isFlipping])
-
-  const next = () => flipTo(spreadIndex + 1)
-  const prev = () => flipTo(spreadIndex - 1)
-
-  // Keyboard navigation
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') next()
-      if (e.key === 'ArrowLeft') prev()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [spreadIndex, totalSpreads])
-
-  const handlePrint = () => {
-    const allPagesHtml = pages.map(p => p.html).join('\n')
-    const printDoc = `<!DOCTYPE html><html>${headHtml}<body>${allPagesHtml}<style>
-      @media print { .page { page-break-after: always; } }
-    </style></body></html>`
-    const w = window.open('', '_blank')
-    if (w) {
-      w.document.write(printDoc)
-      w.document.close()
-      setTimeout(() => w.print(), 500)
-    }
-  }
-
-  const handleExportPDF = async () => {
-    setExporting(true)
-    try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/export/pdf`, {
-        headers: { 'Authorization': `Bearer ${savedToken}` }
-      })
-      if (!res.ok) {
-        alert(`Export failed: ${res.status}`)
-        setExporting(false)
-        return
-      }
-      const blob = await res.blob()
-      const filename = `portfolio-${new Date().toISOString().slice(0, 10)}.pdf`
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      // Log download event
-      logAnalyticsEvent('download', { format: 'pdf' })
-    } catch (e: any) {
-      alert(`Export error: ${e.message}`)
-    } finally {
-      setExporting(false)
     }
   }
 
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <div className="text-center text-white">
-        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4 mx-auto"></div>
-        <p className="text-white/70">Opening your portfolio book...</p>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <header className="bg-white border-b shadow-sm px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse" />
+        </div>
+      </header>
+      <div className="flex flex-1 min-h-0">
+        <aside className="w-56 bg-white border-r p-4">
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        </aside>
+        <main className="flex-1 p-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4 mx-auto" />
+            <p className="text-gray-600 text-sm">Loading portfolio…</p>
+          </div>
+        </main>
+        <aside className="w-80 bg-white border-l p-4">
+          <div className="space-y-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+            ))}
+          </div>
+        </aside>
       </div>
     </div>
   )
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
       <div className="bg-white rounded-xl shadow-md p-8 max-w-lg">
         <h2 className="text-xl font-bold text-red-700 mb-3">⚠️ Error</h2>
         <pre className="text-sm bg-red-50 p-4 rounded text-red-800 overflow-auto">{error}</pre>
-        <button onClick={loadPortfolio} className="btn-primary mt-4">Retry</button>
+        <button onClick={loadPortfolio} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">Retry</button>
       </div>
     </div>
   )
 
-  const { left, right } = getSpreadPages(spreadIndex)
-  const isFirstSpread = spreadIndex === 0
-  const isLastSpread = spreadIndex === totalSpreads - 1
+  if (!portfolio || pages.length === 0) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <p className="text-gray-600 mb-4">Portfolio not found</p>
+        <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
+      </div>
+    </div>
+  )
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-800 via-slate-900 to-black overflow-hidden">
-
-      {/* Top Toolbar - Responsive */}
-      <div className="bg-black/40 backdrop-blur-lg border-b border-white/10 flex-shrink-0 z-50 px-3 md:px-4 py-2 md:py-2.5 flex items-center justify-between gap-2 md:gap-3 text-white overflow-x-auto">
-        {/* Left: Back + Title */}
-        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink-0">
-          <Link
-            href={`/dashboard/project/${params.id}/generate`}
-            className="text-white/70 hover:text-white transition-colors text-xs md:text-sm flex items-center gap-1 whitespace-nowrap"
-          >
-            ← {!isMobile && 'Back'}
-          </Link>
-          <div className="h-3 md:h-4 w-px bg-white/20"></div>
-          <span className="text-xs md:text-sm font-bold whitespace-nowrap">📖 {!isMobile && 'Portfolio'} Book</span>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Top bar */}
+      <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+        <div className="px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href={`/dashboard/project/${params.id}/generate`} className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
+            <div>
+              <h1 className="text-base font-semibold">{portfolio?.name || 'Portfolio'}</h1>
+              <p className="text-[11px] text-gray-400">Generated · Variant Preview</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] text-gray-400">Page {currentIdx + 1}/{pages.length}</span>
+          </div>
         </div>
+      </header>
 
-        {/* Center/Right: Action Buttons - Responsive Layout */}
-        <div className="flex gap-1.5 md:gap-2 items-center flex-wrap justify-end">
-          {/* Save status - always visible but compact on mobile */}
-          {saveStatus === 'saving' && (
-            <span className="text-[10px] md:text-xs text-yellow-300 flex items-center gap-0.5 whitespace-nowrap">
-              <span className="animate-pulse">●</span> {!isMobile && 'Saving...'}
-            </span>
-          )}
-          {saveStatus === 'saved' && (
-            <span className="text-[10px] md:text-xs text-green-400 flex items-center gap-0.5">
-              ✓ {!isMobile && 'Saved'}
-            </span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="text-[10px] md:text-xs text-red-400 flex items-center gap-0.5">
-              ⚠ {!isMobile && 'Error'}
-            </span>
-          )}
-          {isRendering && saveStatus === 'idle' && (
-            <span className="text-[10px] md:text-xs text-blue-300 flex items-center gap-0.5">
-              <span className="animate-spin">⟳</span>
-            </span>
-          )}
-
-          {/* Jump to page - icon only on mobile */}
-          <div className="relative">
-            <button
-              onClick={() => setShowJump(!showJump)}
-              title={`Spread ${spreadIndex + 1} of ${totalSpreads}`}
-              className="text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-0.5 md:gap-1 whitespace-nowrap"
-            >
-              📑 {!isMobile && <span>{spreadIndex + 1}/{totalSpreads}</span>}
-            </button>
-            {showJump && (
-              <div className={`absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 ${isMobile ? 'w-48' : 'w-64'} max-h-80 overflow-y-auto z-50`}>
-                {pages.map((p, idx) => {
-                  const targetSpread = idx === 0 ? 0 : Math.floor((idx + 1) / 2)
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => { flipTo(targetSpread); setShowJump(false) }}
-                      className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 rounded text-charcoal text-xs md:text-sm hover:bg-bg-subtle transition flex items-center gap-2"
-                    >
-                      <span className="flex-shrink-0">{
-                        p.type === 'cover' ? '🏠' :
-                        p.type === 'about' ? '👤' :
-                        p.type === 'contents' ? '📋' :
-                        p.type === 'end' ? '📞' : '🏗️'
-                      }</span>
-                      <span className="truncate flex-1 text-xs">{p.name}</span>
-                      <span className="text-xs text-stone-light flex-shrink-0">p.{idx + 1}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Style picker - color swatch only on mobile */}
-          <div className="relative">
-            <button
-              onClick={() => setShowPacks(!showPacks)}
-              title="Change design pack"
-              className="text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded bg-white/10 hover:bg-white/20 transition flex items-center gap-0.5 md:gap-1"
-            >
-              <div className="flex h-2 md:h-3 w-8 md:w-12 rounded overflow-hidden">
-                <div style={{ background: selectedPack.colors.primary, width: '30%' }} />
-                <div style={{ background: selectedPack.colors.accent, width: '20%' }} />
-                <div style={{ background: selectedPack.colors.background, width: '50%' }} />
-              </div>
-              {!isMobile && <span>🎨</span>}
-            </button>
-            {showPacks && (
-              <div className={`absolute right-0 top-full mt-2 bg-white rounded-lg shadow-2xl p-2 ${isMobile ? 'w-56' : 'w-72'} max-h-96 overflow-y-auto z-50`}>
-                <div className="text-xs font-bold text-stone uppercase tracking-wider mb-2 px-2">Design Packs</div>
-                {PRESET_PACKS.map(pack => (
-                  <button
-                    key={pack.id}
-                    onClick={() => switchPack(pack)}
-                    className={`w-full text-left rounded mb-1 overflow-hidden border ${selectedPack.id === pack.id ? 'border-primary ring-1 ring-primary' : 'border-transparent hover:border-border-light'}`}
-                  >
-                    <div className="flex h-5 md:h-6">
-                      <div style={{ background: pack.colors.primary, width: '30%' }} />
-                      <div style={{ background: pack.colors.secondary, width: '20%' }} />
-                      <div style={{ background: pack.colors.accent, width: '15%' }} />
-                      <div style={{ background: pack.colors.background, width: '35%' }} />
-                    </div>
-                    <div className="p-1.5 md:p-2 bg-white">
-                      <div className="text-xs font-bold text-charcoal truncate" style={{ fontFamily: pack.typography.heading_font }}>
-                        {pack.name}
-                      </div>
-                      <div className="text-[10px] text-stone-light truncate">{pack.description}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Share button */}
-          <button
-            onClick={() => setShareModalOpen(true)}
-            className={`px-2 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-semibold transition flex items-center gap-0.5 md:gap-1 whitespace-nowrap ${
-              shareEnabled
-                ? 'bg-green-500/30 hover:bg-green-500/40 text-green-200 border border-green-400/30'
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-            title={shareEnabled ? 'Public' : 'Share'}
-          >
-            {shareEnabled ? '🌐' : '🔗'} {!isMobile && (shareEnabled ? 'Public' : 'Share')}
-          </button>
-
-          {/* PDF Export */}
-          <button
-            onClick={handleExportPDF}
-            disabled={exporting}
-            title="Download as PDF"
-            className="bg-amber-500 text-white px-2 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-semibold hover:bg-amber-600 disabled:opacity-50 flex items-center gap-0.5 md:gap-1 whitespace-nowrap"
-          >
-            {exporting ? '⟳' : '📥'} {!isMobile && 'PDF'}
-          </button>
-
-          {/* Print button - hide on mobile if space is tight */}
-          {!isMobile && (
-            <button
-              onClick={handlePrint}
-              className="bg-white text-charcoal px-3 py-1.5 rounded text-xs font-semibold hover:bg-white/90"
-            >
-              🖨️ Print
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Book Stage */}
-      <div className="flex-1 relative flex items-center justify-center px-2 md:px-4 py-4 md:py-6 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-
-        {/* Previous Edge - Larger on Mobile */}
-        {!isFirstSpread && (
-          <button
-            onClick={prev}
-            className={`absolute top-1/2 -translate-y-1/2 z-30 ${isMobile ? 'left-2 w-14 h-14 text-3xl' : 'left-4 w-12 h-12 text-2xl'} bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white flex items-center justify-center transition group touch-manipulation`}
-            title="Previous spread"
-          >
-            <span className="group-hover:-translate-x-0.5 transition-transform">‹</span>
-          </button>
-        )}
-
-        {/* Next Edge - Larger on Mobile */}
-        {!isLastSpread && (
-          <button
-            onClick={next}
-            className={`absolute top-1/2 -translate-y-1/2 z-30 ${isMobile ? 'right-2 w-14 h-14 text-3xl' : 'right-4 w-12 h-12 text-2xl'} bg-white/10 hover:bg-white/20 backdrop-blur rounded-full text-white flex items-center justify-center transition group touch-manipulation`}
-            title="Next spread"
-          >
-            <span className="group-hover:translate-x-0.5 transition-transform">›</span>
-          </button>
-        )}
-
-        {/* The Book */}
-        <div
-          className={`book-container ${isFlipping ? `flipping flip-${flipDirection}` : ''}`}
-          style={{
-            display: 'flex',
-            maxWidth: isMobile ? '100%' : '95%',
-            maxHeight: '92%',
-            aspectRatio: isMobile ? '0.707/1' : (isFirstSpread || isLastSpread ? '0.707/1' : '1.414/1'),
-            background: '#1a1a1a',
-            borderRadius: isMobile ? '0px' : '4px',
-            boxShadow: isMobile ? 'none' : '0 30px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
-            position: 'relative',
-            transition: 'all 0.3s ease',
-          }}
-        >
-          {/* Center spine shadow */}
-          {!isFirstSpread && !isLastSpread && (
-            <div
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: 0,
-                bottom: 0,
-                width: '40px',
-                marginLeft: '-20px',
-                background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.25) 50%, transparent)',
-                pointerEvents: 'none',
-                zIndex: 5,
-              }}
-            />
-          )}
-
-          {/* LEFT PAGE */}
-          {left && (
-            <div style={{ width: '50%', height: '100%', background: 'white', overflow: 'hidden', borderRight: '1px solid rgba(0,0,0,0.1)', position: 'relative' }}>
-              <iframe
-                srcDoc={`<!DOCTYPE html><html>${headHtml}<body>${left.html}</body></html>`}
-                sandbox="allow-same-origin"
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                title={left.name}
-              />
-              {/* Page action buttons (project pages only) - Mobile Optimized */}
-              {left.type === 'project' && (
-                <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2 flex gap-1.5' : 'top-2 left-2 flex gap-1'}`}>
-                  <button
-                    onClick={() => setShowLayoutPicker(left.id)}
-                    className={`${isMobile ? 'flex-1' : ''} bg-black/70 hover:bg-black/90 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
-                    title="Change layout"
-                  >
-                    {isMobile ? '📐' : '📐 Layout'}
-                  </button>
-                  <button
-                    onClick={() => openEditor(left.id)}
-                    className={`${isMobile ? 'flex-1' : ''} bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
-                    title="Edit content"
-                  >
-                    {isMobile ? '✏️' : '✏️ Edit'}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* RIGHT PAGE (always shows on first spread = cover) */}
-          {right && (
-            <div style={{
-              width: isFirstSpread || isLastSpread ? '100%' : '50%',
-              height: '100%',
-              background: 'white',
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
-              <iframe
-                srcDoc={`<!DOCTYPE html><html>${headHtml}<body>${right.html}</body></html>`}
-                sandbox="allow-same-origin"
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                title={right.name}
-              />
-              {/* Page action buttons (project pages only) - Mobile Optimized */}
-              {right.type === 'project' && (
-                <div className={`absolute ${isMobile ? 'bottom-2 left-2 right-2 flex gap-1.5' : 'top-2 right-2 flex gap-1'}`}>
-                  <button
-                    onClick={() => openEditor(right.id)}
-                    className={`${isMobile ? 'flex-1' : ''} bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
-                    title="Edit content"
-                  >
-                    {isMobile ? '✏️' : '✏️ Edit'}
-                  </button>
-                  <button
-                    onClick={() => setShowLayoutPicker(right.id)}
-                    className={`${isMobile ? 'flex-1' : ''} bg-black/70 hover:bg-black/90 backdrop-blur text-white ${isMobile ? 'text-xs px-3 py-2' : 'text-[11px] px-2.5 py-1.5'} rounded-full font-medium flex items-center justify-center gap-1 transition touch-manipulation`}
-                    title="Change layout"
-                  >
-                    {isMobile ? '📐' : '📐 Layout'}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Layout Picker Modal - Mobile Optimized */}
-        {showLayoutPicker && (
-          <div
-            className="fixed inset-0 z-40 flex items-end md:items-center md:justify-center bg-black/60 backdrop-blur-sm md:absolute p-0 md:p-4"
-            onClick={() => setShowLayoutPicker(null)}
-          >
-            <div
-              className={`bg-white ${isMobile ? 'w-full rounded-t-3xl max-h-[90vh]' : 'rounded-2xl max-w-3xl w-full'} shadow-2xl p-4 md:p-6 overflow-y-auto flex flex-col`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-3 md:mb-4 flex-shrink-0">
-                <div className="min-w-0">
-                  <h3 className="text-base md:text-lg font-bold text-charcoal">📐 Choose Layout</h3>
-                  <p className="text-xs text-stone-light mt-1 hidden md:block">
-                    Each page can have a different layout — design style stays the same
-                  </p>
-                </div>
+      <div className={`flex flex-1 min-h-0 ${isMobile ? 'flex-col' : ''}`}>
+        {/* Left: pages list */}
+        <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
+          <div className="p-3">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
+            <div className="space-y-1.5">
+              {pages.map((page, idx) => (
                 <button
-                  onClick={() => setShowLayoutPicker(null)}
-                  className="text-stone-light hover:text-charcoal p-2 flex-shrink-0 text-xl"
-                >
-                  {isMobile ? '▼' : '✕'}
-                </button>
-              </div>
-              <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'} gap-2 md:gap-3 flex-1`}>
-                {LAYOUT_OPTIONS.map((layout) => {
-                  const isActive = (pageLayouts[showLayoutPicker] || pages.find(p => p.id === showLayoutPicker)?.current_layout) === layout.id
-                  return (
-                    <button
-                      key={layout.id}
-                      onClick={() => switchPageLayout(showLayoutPicker, layout.id)}
-                      className={`text-left p-2 md:p-3 rounded-xl border-2 transition touch-manipulation ${
-                        isActive
-                          ? 'border-primary bg-blue-50 ring-2 ring-primary/30'
-                          : 'border-border-light hover:border-stone-light hover:bg-bg-subtle'
-                      }`}
-                    >
-                      <div className="text-2xl md:text-3xl mb-1 md:mb-2">{layout.icon}</div>
-                      <div className="font-bold text-xs md:text-sm text-charcoal">{layout.name}</div>
-                      <div className="text-[10px] md:text-xs text-stone-light mt-0.5 md:mt-1 hidden md:block">{layout.desc}</div>
-                      {isActive && (
-                        <div className="text-xs text-primary font-semibold mt-1 md:mt-2">✓</div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-              <p className="text-xs text-stone-light text-center mt-3 md:mt-4 flex-shrink-0">
-                💡 Mix layouts for visual variety
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* CONTENT EDIT PANEL - Mobile Optimized */}
-        {editingPage && (
-          <div
-            className="fixed inset-0 z-40 flex items-end md:items-stretch md:justify-end bg-black/60 backdrop-blur-sm md:absolute"
-            onClick={() => setEditingPage(null)}
-          >
-            <div
-              className={`bg-white ${isMobile ? 'w-full rounded-t-2xl max-h-[85vh]' : 'w-full max-w-md h-full'} overflow-y-auto shadow-2xl flex flex-col`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="px-4 md:px-5 py-3 md:py-4 border-b border-border-light sticky top-0 bg-white z-10 flex-shrink-0">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <div className="min-w-0">
-                    <h3 className="text-base md:text-lg font-bold text-charcoal">✏️ Edit Page</h3>
-                    <p className="text-xs text-stone-light mt-0.5">Project #{editingPage.index + 1}</p>
-                  </div>
-                  <button
-                    onClick={() => setEditingPage(null)}
-                    className="text-stone-light hover:text-charcoal p-2 flex-shrink-0 text-xl"
-                  >
-                    {isMobile ? '▼' : '✕'}
-                  </button>
-                </div>
-                {/* Tabs */}
-                <div className="flex gap-1 md:gap-2 -mb-3 md:-mb-4 overflow-x-auto">
-                  <button
-                    onClick={() => setEditTab('content')}
-                    className={`px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
-                      editTab === 'content'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-stone-light hover:text-charcoal'
-                    }`}
-                  >
-                    📝 Content
-                  </button>
-                  <button
-                    onClick={() => setEditTab('images')}
-                    className={`px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0 ${
-                      editTab === 'images'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-stone-light hover:text-charcoal'
-                    }`}
-                  >
-                    🖼️ {Object.values(editAssets).reduce((s, a) => s + a.length, 0)}
-                  </button>
-                </div>
-              </div>
-
-              {/* Tab Content */}
-              {editTab === 'content' && (
-              <div className="flex-1 p-4 md:p-5 space-y-3 md:space-y-4 overflow-y-auto">
-                <div>
-                  <label className="block text-xs md:text-xs font-bold text-stone uppercase tracking-wider mb-1">Project Name</label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                    className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
-                    placeholder="e.g. Museum Redesign"
-                  />
-                </div>
-
-                <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
-                  <div>
-                    <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Location</label>
-                    <input
-                      type="text"
-                      value={editForm.location}
-                      onChange={e => setEditForm({ ...editForm, location: e.target.value })}
-                      className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
-                      placeholder="Mumbai, India"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Year</label>
-                    <input
-                      type="text"
-                      value={editForm.year}
-                      onChange={e => setEditForm({ ...editForm, year: e.target.value })}
-                      className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
-                      placeholder="2025"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1">Typology</label>
-                  <input
-                    type="text"
-                    value={editForm.typology}
-                    onChange={e => setEditForm({ ...editForm, typology: e.target.value })}
-                    className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm touch-manipulation"
-                    placeholder="Cultural / Residential / etc"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-stone uppercase tracking-wider">Description</label>
-                    <span className="text-[10px] text-stone-light">{editForm.description.length} chars</span>
-                  </div>
-                  <textarea
-                    value={editForm.description}
-                    onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                    rows={isMobile ? 4 : 5}
-                    className="w-full px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-base md:text-sm resize-none touch-manipulation"
-                    placeholder="A concise project description..."
-                  />
-
-                  {/* AI helper buttons - stack on mobile */}
-                  <div className={`mt-2 flex ${isMobile ? 'flex-col' : 'flex-wrap'} gap-2`}>
-                    <button
-                      onClick={() => aiHelp('generate')}
-                      disabled={!!aiGenerating}
-                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
-                    >
-                      {aiGenerating === 'generate' ? '⟳' : '✨'} Generate
-                    </button>
-                    <button
-                      onClick={() => aiHelp('improve')}
-                      disabled={!!aiGenerating || !editForm.description}
-                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
-                    >
-                      {aiGenerating === 'improve' ? '⟳' : '🔧'} Improve
-                    </button>
-                    <button
-                      onClick={() => aiHelp('shorten')}
-                      disabled={!!aiGenerating || !editForm.description}
-                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
-                    >
-                      {aiGenerating === 'shorten' ? '⟳' : '✂️'} Shorten
-                    </button>
-                    <button
-                      onClick={() => aiHelp('expand')}
-                      disabled={!!aiGenerating || !editForm.description}
-                      className={`${isMobile ? 'w-full' : ''} text-xs md:text-xs px-3 md:px-2.5 py-2 md:py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded font-medium transition disabled:opacity-50 flex items-center justify-center md:justify-start gap-1 touch-manipulation`}
-                    >
-                      {aiGenerating === 'expand' ? '⟳' : '📝'} Expand
-                    </button>
-                  </div>
-                  <p className="text-[10px] text-stone-light mt-2">
-                    💡 AI will use project details to generate text
-                  </p>
-                </div>
-              </div>
-              )}
-
-              {/* IMAGES TAB - Mobile Optimized */}
-              {editTab === 'images' && (
-              <div className="flex-1 p-4 md:p-5 space-y-3 md:space-y-4 overflow-y-auto">
-                {[
-                  { key: 'renders', label: '🎨 Renders', desc: 'Photorealistic visuals' },
-                  { key: 'plans', label: '📐 Plans', desc: 'Floor & site plans' },
-                  { key: 'sections', label: '📏 Sections', desc: 'Building sections' },
-                  { key: 'elevations', label: '🏢 Elevations', desc: 'Building elevations' },
-                  { key: 'concepts', label: '💡 Concepts', desc: 'Concept diagrams' },
-                  { key: 'diagrams', label: '📊 Diagrams', desc: 'Technical diagrams' },
-                ].map(cat => {
-                  const items = editAssets[cat.key] || []
-                  return (
-                    <div key={cat.key} className="border border-border-light rounded-lg p-3 md:p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="min-w-0">
-                          <div className="text-sm md:text-sm font-bold text-charcoal">{cat.label} <span className="text-xs text-stone-light font-normal">({items.length})</span></div>
-                          <div className="text-[10px] md:text-[10px] text-stone-light">{cat.desc}</div>
-                        </div>
-                        <label className="text-xs md:text-xs px-3 py-2 md:py-1.5 bg-primary text-white rounded font-semibold hover:bg-primary-dark cursor-pointer transition disabled:opacity-50 flex-shrink-0 ml-2 touch-manipulation">
-                          {uploadingCategory === cat.key ? '⟳' : '+ Add'}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            disabled={!!uploadingCategory}
-                            className="hidden"
-                            onChange={async (e) => {
-                              const files = e.target.files
-                              if (!files) return
-                              for (const f of Array.from(files)) {
-                                await uploadAssetToCategory(cat.key, f)
-                              }
-                              e.target.value = ''
-                            }}
-                          />
-                        </label>
-                      </div>
-
-                      {items.length === 0 ? (
-                        <div className="text-center py-4 text-xs text-stone-light bg-bg-subtle rounded">
-                          No images — click "+ Add" to upload
-                        </div>
-                      ) : (
-                        <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-3 gap-2'}`}>
-                          {items.map((url, idx) => (
-                            <div key={`${url}-${idx}`} className="relative group aspect-square bg-bg-subtle rounded overflow-hidden border border-border-light">
-                              <img src={url} alt="" className="w-full h-full object-cover" />
-                              {/* Overlay buttons - always visible on mobile, hover on desktop */}
-                              <div className={`absolute inset-0 bg-black/60 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} flex items-center justify-center gap-1 transition`}>
-                                <button
-                                  onClick={() => moveAsset(cat.key, idx, 'up')}
-                                  disabled={idx === 0}
-                                  className="bg-white text-charcoal w-7 h-7 md:w-8 md:h-8 rounded-full text-sm md:text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle transition touch-manipulation"
-                                  title="Move earlier"
-                                >
-                                  ←
-                                </button>
-                                <button
-                                  onClick={() => moveAsset(cat.key, idx, 'down')}
-                                  disabled={idx === items.length - 1}
-                                  className="bg-white text-charcoal w-7 h-7 md:w-8 md:h-8 rounded-full text-sm md:text-xs font-bold disabled:opacity-30 hover:bg-bg-subtle transition touch-manipulation"
-                                  title="Move later"
-                                >
-                                  →
-                                </button>
-                                <button
-                                  onClick={() => removeAsset(cat.key, url)}
-                                  className="bg-red-600 text-white w-7 h-7 md:w-8 md:h-8 rounded-full text-sm md:text-xs font-bold hover:bg-red-700 transition touch-manipulation"
-                                  title="Remove"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              {/* Order badge */}
-                              <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-mono">
-                                {idx + 1}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                  key={page.id}
+                  onClick={() => setCurrentIdx(idx)}
+                  className={`w-full text-left p-2.5 rounded-lg border-2 transition ${
+                    currentIdx === idx ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-transparent hover:bg-gray-100'
+                  }`}>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="text-xs font-medium flex-shrink-0">{idx + 1}.</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] text-gray-400 uppercase">{page.type}</div>
+                      <div className="text-xs font-medium truncate">{page.name}</div>
                     </div>
-                  )
-                })}
-
-                <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
-                  💡 <strong>Tip:</strong> Image order matters. Use ← → to reorder.
-                </div>
-              </div>
-              )}
-
-              {/* Footer - Mobile Optimized */}
-              <div className="px-4 md:px-5 py-3 md:py-4 border-t border-border-light flex gap-2 sticky bottom-0 bg-white flex-shrink-0 z-10">
-                <button
-                  onClick={() => setEditingPage(null)}
-                  className="flex-1 px-3 md:px-4 py-2.5 md:py-2 border border-border-light rounded-lg text-sm md:text-sm font-semibold text-stone hover:bg-bg-subtle transition touch-manipulation"
-                >
-                  Cancel
+                  </div>
                 </button>
-                <button
-                  onClick={saveEdits}
-                  disabled={saveStatus === 'saving'}
-                  className="flex-1 bg-primary text-white px-3 md:px-4 py-2.5 md:py-2 rounded-lg text-sm md:text-sm font-bold hover:bg-primary-dark disabled:opacity-50 transition touch-manipulation"
-                >
-                  {saveStatus === 'saving' ? '⟳ Saving...' : '💾 Save'}
-                </button>
-              </div>
+              ))}
             </div>
           </div>
-        )}
-      </div>
+        </aside>
 
-      {/* Bottom indicator - Responsive */}
-      <div className="bg-black/40 backdrop-blur-lg border-t border-white/10 flex-shrink-0 px-3 md:px-4 py-2 md:py-2.5 flex items-center justify-center gap-2 md:gap-4 text-white/60 text-[10px] md:text-xs flex-wrap">
-        {!isMobile && (
-          <>
-            <span><span className="text-white/90">← →</span> Flip pages</span>
-            <span className="mx-1">·</span>
-            <span><span className="text-white/90">📐</span> Layout each page</span>
-            <span className="mx-1">·</span>
-            <span><span className="text-white/90">🎨</span> Change design pack</span>
-          </>
-        )}
+        {/* Center: canvas preview */}
+        <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
+          {currentPage && (
+            <div className="max-w-[760px] mx-auto">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <iframe
+                  srcDoc={`<!DOCTYPE html><html><body>${currentPage.html}</body></html>`}
+                  sandbox="allow-same-origin"
+                  style={{ width: '100%', height: '600px', border: 'none' }}
+                  title={currentPage.name}
+                />
+              </div>
+              <div className={`mt-3 text-center ${isMobile ? 'text-[9px]' : 'text-[11px]'} text-gray-400`}>
+                {currentPage.name} · {currentPage.type}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Right: inspector */}
         {isMobile && (
-          <span>← → Swipe or tap arrows to flip</span>
+          <button onClick={() => {}} className="fixed bottom-4 right-4 z-40 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-lg">
+            ⚙️ Layout
+          </button>
         )}
-      </div>
+        <aside className={`${isMobile ? 'hidden' : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
+          {/* Tab header */}
+          <div className="flex border-b sticky top-0 bg-white z-10">
+            <button
+              onClick={() => setRightTab('layout')}
+              className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition ${rightTab === 'layout' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
+              Layout
+            </button>
+          </div>
 
-      {/* Backdrop for dropdowns */}
-      {(showPacks || showJump) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => { setShowPacks(false); setShowJump(false) }}
-        />
-      )}
-
-      {/* Share Modal - Mobile Optimized */}
-      {shareModalOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-end md:items-center md:justify-center bg-black/70 backdrop-blur-sm p-0 md:p-4"
-          onClick={() => setShareModalOpen(false)}
-        >
-          <div
-            className={`bg-white ${isMobile ? 'w-full rounded-t-3xl max-h-[90vh]' : 'rounded-2xl max-w-md w-full'} shadow-2xl p-4 md:p-6 overflow-y-auto`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="min-w-0">
-                <h3 className="text-base md:text-lg font-bold text-charcoal">🔗 Share Portfolio</h3>
-                <p className="text-xs text-stone-light mt-0.5 hidden md:block">Send your portfolio to anyone with a link</p>
-              </div>
-              <button
-                onClick={() => setShareModalOpen(false)}
-                className="text-stone-light hover:text-charcoal p-2 flex-shrink-0 text-xl"
-              >
-                {isMobile ? '▼' : '✕'}
-              </button>
-            </div>
-
-            {/* Toggle - More touch-friendly on mobile */}
-            <div className="bg-bg-subtle rounded-xl p-3 md:p-4 mb-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm md:text-sm text-charcoal">
-                    {shareEnabled ? '✅ Public' : '🔒 Private'}
-                  </div>
-                  <div className="text-xs text-stone-light mt-0.5 hidden md:block">
-                    {shareEnabled
-                      ? 'Anyone with the link can view'
-                      : 'Generate a public link'}
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleShare(!shareEnabled)}
-                  disabled={shareLoading}
-                  className={`relative w-14 h-8 md:w-12 md:h-7 rounded-full transition disabled:opacity-50 flex-shrink-0 touch-manipulation ${
-                    shareEnabled ? 'bg-green-500' : 'bg-stone-light'
-                  }`}
-                >
-                  <div className={`absolute top-1.5 md:top-1 w-6 md:w-5 h-6 md:h-5 bg-white rounded-full transition ${
-                    shareEnabled ? 'left-7 md:left-6' : 'left-1'
-                  }`} />
-                </button>
-              </div>
-            </div>
-
-            {/* Link - Stack on mobile */}
-            {shareEnabled && shareUrl && (
+          <div className="p-4">
+            {/* LAYOUT TAB */}
+            {rightTab === 'layout' && (
               <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-stone uppercase tracking-wider mb-1.5">
-                    Your Link
-                  </label>
-                  <div className={`flex ${isMobile ? 'flex-col' : 'gap-2'} gap-2`}>
-                    <input
-                      type="text"
-                      value={shareUrl}
-                      readOnly
-                      className="flex-1 px-3 py-2.5 md:py-2 border border-border-light rounded-lg text-sm md:text-sm font-mono bg-bg-subtle touch-manipulation"
-                      onFocus={(e) => e.target.select()}
-                    />
-                    <button
-                      onClick={copyShareLink}
-                      className={`${isMobile ? 'w-full' : ''} px-3 py-2.5 md:py-2 rounded-lg text-sm md:text-sm font-semibold transition touch-manipulation ${
-                        copied
-                          ? 'bg-green-500 text-white'
-                          : 'bg-primary text-white hover:bg-primary-dark'
-                      }`}
-                    >
-                      {copied ? '✓ Copied' : '📋 Copy'}
-                    </button>
-                  </div>
+                <p className="text-[11px] text-gray-400">{LAYOUT_OPTIONS.length} layouts · click to apply</p>
+                <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+                  {LAYOUT_OPTIONS.map(layout => {
+                    const isActive = (pageLayouts[currentPage?.id] || currentPage?.current_layout) === layout.id
+                    return (
+                      <button
+                        key={layout.id}
+                        onClick={() => currentPage && switchPageLayout(currentPage.id, layout.id)}
+                        className={`text-left rounded-lg p-2 border-2 transition ${isActive ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
+                      >
+                        <div className="text-2xl mb-1">{layout.icon}</div>
+                        <div className="text-[10px] font-semibold text-gray-700">{layout.name}</div>
+                        <div className="text-[9px] text-gray-400">{layout.desc}</div>
+                        {isActive && (
+                          <div className="text-xs text-blue-600 font-semibold mt-1">✓ Active</div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
-
-                <a
-                  href={shareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-center px-4 py-2.5 md:py-2 border border-border-light rounded-lg text-sm md:text-sm font-semibold text-charcoal hover:bg-bg-subtle transition touch-manipulation"
-                >
-                  Open in new tab ↗
-                </a>
-
-                <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
-                  💡 <strong>Anyone with the link can view</strong> your portfolio. They can't edit. Toggle off to stop sharing.
-                </div>
-              </div>
-            )}
-
-            {!shareEnabled && (
-              <div className="text-center py-2 text-xs text-stone-light">
-                Toggle on to generate a unique link you can share
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Animations */}
-      <style jsx>{`
-        .book-container {
-          transform-style: preserve-3d;
-          transform-origin: center center;
-        }
-        .book-container.flipping.flip-next {
-          animation: flipNext 0.5s ease-out;
-        }
-        .book-container.flipping.flip-prev {
-          animation: flipPrev 0.5s ease-out;
-        }
-        @keyframes flipNext {
-          0% { transform: rotateY(0deg) scale(1); opacity: 1; }
-          50% { transform: rotateY(-12deg) scale(0.97); opacity: 0.85; }
-          100% { transform: rotateY(0deg) scale(1); opacity: 1; }
-        }
-        @keyframes flipPrev {
-          0% { transform: rotateY(0deg) scale(1); opacity: 1; }
-          50% { transform: rotateY(12deg) scale(0.97); opacity: 0.85; }
-          100% { transform: rotateY(0deg) scale(1); opacity: 1; }
-        }
-      `}</style>
+        </aside>
+      </div>
     </div>
   )
 }
