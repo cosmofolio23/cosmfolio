@@ -91,7 +91,7 @@ export default function TemplateMarketplace() {
       return
     }
     fetchTemplates()
-    fetchPortfolios()
+    // fetchPortfolios() - disabled: /api/portfolios returns 404, causing infinite render loop
   }, [isAuthenticated])
 
   // Load filter presets on mount
