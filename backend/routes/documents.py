@@ -56,3 +56,24 @@ async def get_document(project_id: str, authorization: str = Header(None)):
         return {"exists": doc is not None, "document": doc}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Failed to load document: {e}")
+
+
+@router.post("/{project_id}/document/health")
+async def check_storage_health(project_id: str, authorization: str = Header(None)):
+    """Check if storage is healthy (can write JSON documents). Used by frontend to validate config."""
+    current_user = get_current_user(authorization)
+    _verify_owner(project_id, current_user["user_id"])
+    try:
+        storage = get_storage_client()
+        # Try to write a tiny health-check document
+        test_doc = {"health": "ok", "timestamp": datetime.utcnow().isoformat()}
+        test_path = f"_health/{project_id}.json"
+        await storage.upload_json(test_path, test_doc)
+        return {"ok": True, "message": "Storage is healthy"}
+    except Exception as e:
+        error_msg = str(e).lower()
+        if "permission" in error_msg or "denied" in error_msg:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Storage access denied. Check bucket configuration.")
+        if "bucket" in error_msg or "not found" in error_msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Storage bucket not found.")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Storage error: {str(e)[:100]}")
