@@ -282,6 +282,26 @@ export default function TemplateEditor() {
     } finally { setIsSaving(false) }
   }
 
+  const exportToPDF = async () => {
+    if (!projectId) { alert('Please save your portfolio first'); return }
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-pdf`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` },
+      })
+      if (!res.ok) throw new Error(`Export failed: ${res.statusText}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${portfolioTitle || 'portfolio'}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e: any) {
+      alert(`PDF export failed: ${e.message}`)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -356,6 +376,7 @@ export default function TemplateEditor() {
             }`}>
               {saveStatus === 'saving' ? '⏳ Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? '✗ Error' : ''}
             </span>
+            <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">📄 PDF</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
         </div>
