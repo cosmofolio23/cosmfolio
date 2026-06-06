@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Header
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 import uuid
+import re
 from models import ProjectCreate, ProjectUpdate, ProjectResponse
 from .deps import get_current_user
 from database import supabase
@@ -70,5 +71,107 @@ async def delete_project(project_id: str, authorization: str = Header(None)):
     try:
         supabase.table("projects").delete().eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
         return {"message": "Project deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+# ==================== Publishing ====================
+
+def generate_slug(title: str, project_id: str) -> str:
+    """Generate URL-friendly slug from title"""
+    # Convert to lowercase, replace spaces with hyphens, remove special chars
+    slug = re.sub(r'[^a-z0-9\s-]', '', title.lower())
+    slug = re.sub(r'\s+', '-', slug.strip())
+    slug = re.sub(r'-+', '-', slug)  # collapse multiple hyphens
+    # Add first 8 chars of project_id for uniqueness
+    slug = f"{slug}-{project_id[:8]}" if slug else project_id[:8]
+    return slug
+
+@router.post("/{project_id}/publish")
+async def publish_project(project_id: str, authorization: str = Header(None)):
+    """Publish project and make it publicly viewable"""
+    current_user = get_current_user(authorization)
+    try:
+        # Verify ownership
+        response = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+        project = response.data[0]
+        slug = generate_slug(project["title"], project_id)
+
+        # Update project
+        update_data = {
+            "is_published": True,
+            "published_at": datetime.utcnow().isoformat(),
+            "slug": slug,
+            "view_count": 0,
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+        updated = supabase.table("projects").update(update_data).eq("id", project_id).execute()
+
+        return {
+            "project_id": project_id,
+            "slug": slug,
+            "share_url": f"/portfolio/{slug}",
+            "is_published": True,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.post("/{project_id}/unpublish")
+async def unpublish_project(project_id: str, authorization: str = Header(None)):
+    """Unpublish project (make private)"""
+    current_user = get_current_user(authorization)
+    try:
+        # Verify ownership
+        supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+
+        # Update project
+        update_data = {
+            "is_published": False,
+            "slug": None,
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+        supabase.table("projects").update(update_data).eq("id", project_id).execute()
+
+        return {"message": "Project unpublished", "is_published": False}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.get("/public/{slug}")
+async def get_public_portfolio(slug: str):
+    """Get published portfolio by slug (no auth required)"""
+    try:
+        response = supabase.table("projects").select("*").eq("slug", slug).eq("is_published", True).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio not found")
+
+        project = response.data[0]
+
+        # Increment view count
+        supabase.table("projects").update({"view_count": (project.get("view_count", 0) or 0) + 1}).eq("id", project["id"]).execute()
+
+        # Load the document
+        from services.storage import get_storage_client
+        doc_path = f"documents/{project['id']}.json"
+        storage_client = get_storage_client()
+        document = await storage_client.download_json(doc_path)
+
+        return {
+            "project": {
+                "id": project["id"],
+                "title": project["title"],
+                "description": project.get("description"),
+                "slug": slug,
+                "created_at": project["created_at"],
+                "updated_at": project["updated_at"],
+                "view_count": project.get("view_count", 0),
+            },
+            "document": document,
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

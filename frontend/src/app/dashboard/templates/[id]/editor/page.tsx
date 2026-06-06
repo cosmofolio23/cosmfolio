@@ -489,7 +489,7 @@ export default function TemplateEditor() {
     setIsSaving(true)
     try {
       await saveDocument()
-      router.push('/dashboard')
+      router.push('/dashboard/my-portfolios')
     } catch (e: any) {
       alert(`Failed to save: ${e.message}`)
     } finally { setIsSaving(false) }
@@ -658,7 +658,7 @@ export default function TemplateEditor() {
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard/templates" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
+            <Link href="/dashboard/my-portfolios" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
             <div>
               <input value={portfolioTitle} onChange={e => { markDirty(); setPortfolioTitle(e.target.value) }} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded" placeholder="Untitled" />
               <p className="text-[11px] text-gray-400 px-2">Template: {template.name} · {template.category}</p>

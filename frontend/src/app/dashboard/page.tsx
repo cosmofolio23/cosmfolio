@@ -126,7 +126,7 @@ export default function Dashboard() {
             🎨 Browse Templates (319) →
           </Link>
           <Link
-            href="/dashboard/portfolios"
+            href="/dashboard/my-portfolios"
             className="inline-block bg-gradient-to-br from-green-500 to-green-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
           >
             📚 My Portfolios →
