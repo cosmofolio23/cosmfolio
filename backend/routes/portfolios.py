@@ -263,6 +263,30 @@ async def generate_portfolio(
             detail=f"{type(e).__name__}: {str(e)}"
         )
 
+@router.get("")
+async def list_all_portfolios(current_user: dict = Depends(get_current_user)):
+    """List all portfolios owned by the current user (across all their projects).
+
+    Used by the template gallery's "Apply to Existing" picker. Returns an empty
+    list rather than 404 when the user has no portfolios yet.
+    """
+    try:
+        projects = supabase.table("projects").select("id").eq("user_id", current_user["user_id"]).execute()
+        project_ids = [p["id"] for p in (projects.data or [])]
+        if not project_ids:
+            return {"portfolios": []}
+
+        response = (
+            supabase.table("portfolios")
+            .select("*")
+            .in_("project_id", project_ids)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return {"portfolios": response.data or []}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 @router.get("/{project_id}/list")
 async def list_portfolios(project_id: str, current_user: dict = Depends(get_current_user)):
     """List all portfolios for a project"""
