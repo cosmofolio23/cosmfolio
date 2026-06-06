@@ -131,11 +131,18 @@ async def upload_asset(
             ]
             supabase.table("asset_tags").insert(tag_data).execute()
 
+        # Build public URLs the frontend can render directly
+        storage = get_storage_client()
+        public_url = await storage.get_public_url(upload_result["storage_path"])
+        preview_path = upload_result.get("preview_path") or upload_result["storage_path"]
+        preview_public = await storage.get_public_url(preview_path)
+
         # Return asset with tags
         return {
             **asset,
             "tags": tag_list,
-            "preview_url": upload_result["storage_path"],
+            "url": public_url,
+            "preview_url": preview_public,
         }
 
     except (ResourceNotFoundException, AuthorizationException, ValidationException, DatabaseException):

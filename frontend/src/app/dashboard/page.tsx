@@ -331,13 +331,16 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex items-center justify-between text-xs">
                                   <span className="badge badge-info">Portfolio</span>
-                                  <span className="text-stone-light">
-                                    {new Date(project.created_at).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric'
-                                    })}
-                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      router.push(`/dashboard/templates/saved/editor?project=${project.id}`)
+                                    }}
+                                    className="px-2.5 py-1 rounded-md bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition"
+                                  >
+                                    ✏️ Edit
+                                  </button>
                                 </div>
                               </div>
                             </div>

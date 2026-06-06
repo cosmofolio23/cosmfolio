@@ -11,13 +11,14 @@ interface Props {
   page: Page
   tokens: DesignTokens
   onChange: (page: Page) => void
+  onUploadImage?: (file: File) => Promise<string>
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta',
 }
 
-export default function PageComposer({ page, tokens, onChange }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
 
@@ -54,6 +55,7 @@ export default function PageComposer({ page, tokens, onChange }: Props) {
             patchBlock={patchBlock}
             addBlock={addBlock}
             firstOfType={firstOfType}
+            onUploadImage={onUploadImage}
           />
         ))}
       </div>
@@ -71,7 +73,7 @@ function gridStyle(r: Region): React.CSSProperties {
 }
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType,
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage,
 }: {
   region: Region
   spec: LayoutSpec
@@ -81,6 +83,7 @@ function RegionView({
   patchBlock: (id: string, patch: Partial<Block>) => void
   addBlock: (type: BlockType) => Block
   firstOfType: (type: BlockType) => Block | undefined
+  onUploadImage?: (file: File) => Promise<string>
 }) {
   const style = gridStyle(region)
 
@@ -91,7 +94,7 @@ function RegionView({
     if (block) {
       return (
         <div style={style} className={overlay ? 'z-0' : ''}>
-          <ImageBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} fill showLabel={!overlay} />
+          <ImageBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} fill showLabel={!overlay} onUpload={onUploadImage} />
         </div>
       )
     }

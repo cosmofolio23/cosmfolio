@@ -61,13 +61,14 @@ except Exception as e:
 # Try to load routes (but don't crash if they fail)
 print("[STARTUP] Loading routes...")
 try:
-    from routes import auth, projects, assets, portfolios, publication
+    from routes import auth, projects, assets, portfolios, publication, documents
     print("[OK] Core routes loaded")
 
     # Include routers - each prefix carefully chosen based on routes inside the file
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])  # routes: /signup, /me, etc.
     app.include_router(projects.router, prefix="/api/projects", tags=["projects"])  # routes: "", /{id}
     app.include_router(assets.router, prefix="/api/projects", tags=["assets"])  # routes: /{portfolio_id}/assets/...
+    app.include_router(documents.router, prefix="/api/projects", tags=["documents"])  # routes: /{project_id}/document
     app.include_router(portfolios.router, prefix="/api/portfolios", tags=["portfolios"])  # routes: /{project_id}/generate
     app.include_router(publication.router, prefix="/api/portfolios", tags=["publication"])  # routes: /{portfolio_id}/publish
 

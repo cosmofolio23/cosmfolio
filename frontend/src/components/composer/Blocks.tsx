@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { Block, DesignTokens, LegendItem, MetaField } from './types'
 
 /* ----------------------------- Editable Text ----------------------------- */
@@ -32,7 +32,7 @@ export function EditableText({
 /* ------------------------------- Image Block ------------------------------ */
 
 export function ImageBlock({
-  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false,
+  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload,
 }: {
   block: Block
   tokens: DesignTokens
@@ -40,14 +40,28 @@ export function ImageBlock({
   aspect?: string
   showLabel?: boolean
   fill?: boolean
+  onUpload?: (file: File) => Promise<string>
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    onChange({ imageUrl: url })
+    if (onUpload) {
+      setUploading(true)
+      try {
+        const url = await onUpload(file)
+        onChange({ imageUrl: url })
+      } catch (err) {
+        console.error('Image upload failed:', err)
+        alert('Image upload failed. Please try again.')
+      } finally {
+        setUploading(false)
+      }
+    } else {
+      onChange({ imageUrl: URL.createObjectURL(file) })
+    }
   }
 
   const typeBadge: Record<string, string> = {
@@ -56,6 +70,11 @@ export function ImageBlock({
 
   return (
     <div className="group/img relative w-full h-full flex flex-col min-h-0">
+      {uploading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70">
+          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+        </div>
+      )}
       <div className={`relative w-full overflow-hidden ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
         {block.imageUrl ? (
           <>

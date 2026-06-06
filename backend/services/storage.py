@@ -4,6 +4,7 @@ Phase 2: Task 2.2 - File storage, thumbnails, optimization
 """
 
 import os
+import json
 import asyncio
 from typing import Optional, Tuple
 from pathlib import Path
@@ -416,6 +417,27 @@ class StorageClient:
             public_url = f"{supabase_url}/storage/v1/object/public/{bucket}/{clean_path}"
             logger.info(f"Generated public URL: {public_url}")
             return public_url
+
+    # ==================== JSON DOCUMENT STORAGE ====================
+
+    async def upload_json(self, path: str, obj) -> str:
+        """Store an arbitrary JSON document in storage (upsert). Returns public URL."""
+        data = json.dumps(obj).encode("utf-8")
+        await self._upload_to_supabase(data, path, "application/json")
+        return await self.get_public_url(path)
+
+    async def download_json(self, path: str):
+        """Fetch a JSON document from storage. Returns parsed object or None if missing."""
+        try:
+            res = self.supabase.storage.from_(self.config.SUPABASE_BUCKET).download(path)
+            if res is None:
+                return None
+            if isinstance(res, (bytes, bytearray)):
+                return json.loads(res.decode("utf-8"))
+            return json.loads(res)
+        except Exception as e:
+            logger.info(f"No document at {path}: {e}")
+            return None
 
         raise Exception("No SUPABASE_URL configured - cannot generate public URL")
 

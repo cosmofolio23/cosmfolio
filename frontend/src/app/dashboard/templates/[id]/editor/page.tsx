@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
@@ -39,6 +39,7 @@ const BODY_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', '
 export default function TemplateEditor() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const { isAuthenticated, token } = useAuthStore()
   const templateId = params.id as string
 
@@ -47,54 +48,159 @@ export default function TemplateEditor() {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
   const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style'>('layout')
   const [layoutSearch, setLayoutSearch] = useState('')
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
+
+  const [projectId, setProjectId] = useState<string | null>(null)
+  const loadedRef = useRef(false)            // becomes true once initial data is ready
+  const dirtyRef = useRef(false)             // true after the first real user edit (gates autosave)
+  const ensurePromiseRef = useRef<Promise<string> | null>(null)
+  const markDirty = () => { dirtyRef.current = true }
 
   const [tokens, setTokens] = useState<DesignTokens>({
     background: '#FFFFFF', text: '#1a1a1a', primary: '#111111', accent: '#888888', muted: '#dddddd',
     headingFont: 'Montserrat', bodyFont: 'Inter',
   })
 
+  const authToken = () => token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
+
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
-    fetchTemplate()
-  }, [isAuthenticated, templateId])
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
-  const fetchTemplate = async () => {
+  const init = async () => {
+    const existingProject = searchParams.get('project')
     try {
-      let data: Template | null = null
-      const res = await fetch(`${API_URL}/api/templates/portfolios/${templateId}`)
-      if (res.ok) data = await res.json()
-      else {
-        const sres = await fetch(`${API_URL}/api/templates/sheets/${templateId}`)
-        if (sres.ok) data = await sres.json()
-      }
-      if (data) {
-        setTemplate(data)
-        setPortfolioTitle(`${data.name} Portfolio`)
-        const c = data.colors || {}
-        setTokens({
-          background: c.background || '#FFFFFF',
-          text: c.text || '#1a1a1a',
-          primary: c.primary || c.text || '#111111',
-          accent: c.accent || '#888888',
-          muted: c.muted || '#dddddd',
-          headingFont: data.fonts?.heading || 'Montserrat',
-          bodyFont: data.fonts?.body || 'Inter',
+      if (existingProject) {
+        setProjectId(existingProject)
+        const res = await fetch(`${API_URL}/api/projects/${existingProject}/document`, {
+          headers: { Authorization: `Bearer ${authToken()}` },
         })
-        setPages(seedPagesFromTemplate(data))
+        if (res.ok) {
+          const data = await res.json()
+          if (data.exists && data.document) {
+            hydrate(data.document)
+            setIsLoading(false)
+            loadedRef.current = true
+            return
+          }
+        }
       }
+      // Fresh start: seed from the template in the route
+      await fetchTemplate()
     } catch (e) {
-      console.error('Error loading template:', e)
+      console.error('Init error:', e)
+      await fetchTemplate()
     } finally {
       setIsLoading(false)
+      loadedRef.current = true
     }
   }
 
+  const hydrate = (doc: any) => {
+    setTemplate({ id: doc.templateId || templateId, name: doc.templateName || 'Saved Portfolio', category: doc.templateCategory || '' })
+    if (doc.tokens) setTokens(doc.tokens)
+    if (doc.title) setPortfolioTitle(doc.title)
+    if (Array.isArray(doc.pages)) setPages(doc.pages)
+  }
+
+  const fetchTemplate = async () => {
+    let data: Template | null = null
+    const res = await fetch(`${API_URL}/api/templates/portfolios/${templateId}`)
+    if (res.ok) data = await res.json()
+    else {
+      const sres = await fetch(`${API_URL}/api/templates/sheets/${templateId}`)
+      if (sres.ok) data = await sres.json()
+    }
+    if (data) {
+      setTemplate(data)
+      setPortfolioTitle(`${data.name} Portfolio`)
+      const c = data.colors || {}
+      setTokens({
+        background: c.background || '#FFFFFF',
+        text: c.text || '#1a1a1a',
+        primary: c.primary || c.text || '#111111',
+        accent: c.accent || '#888888',
+        muted: c.muted || '#dddddd',
+        headingFont: data.fonts?.heading || 'Montserrat',
+        bodyFont: data.fonts?.body || 'Inter',
+      })
+      setPages(seedPagesFromTemplate(data))
+    } else {
+      // Template unavailable (e.g. reopening a project with no saved doc) — start blank
+      setTemplate({ id: templateId, name: 'Portfolio', category: '' })
+      setPortfolioTitle('Untitled Portfolio')
+      setPages(seedPagesFromTemplate({ name: 'Portfolio', placeholders: { renders: 2, plans: 1, sections: 1, diagrams: 0 } }))
+    }
+  }
+
+  /* ---- persistence ---- */
+
+  const ensureProject = (): Promise<string> => {
+    if (projectId) return Promise.resolve(projectId)
+    if (ensurePromiseRef.current) return ensurePromiseRef.current
+    ensurePromiseRef.current = (async () => {
+      const res = await fetch(`${API_URL}/api/projects`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: portfolioTitle || 'Untitled Portfolio', project_type: 'portfolio', description: `From template: ${template?.name || ''}` }),
+      })
+      if (!res.ok) { ensurePromiseRef.current = null; throw new Error('Could not create project') }
+      const proj = await res.json()
+      setProjectId(proj.id)
+      // keep the project id in the URL so a refresh reloads the saved work
+      router.replace(`/dashboard/templates/${templateId}/editor?project=${proj.id}`)
+      return proj.id as string
+    })()
+    return ensurePromiseRef.current
+  }
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const pid = await ensureProject()
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('asset_type', 'render')
+    const res = await fetch(`${API_URL}/api/projects/${pid}/assets`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${authToken()}` },
+      body: fd,
+    })
+    if (!res.ok) throw new Error('Upload failed')
+    const data = await res.json()
+    return data.url || data.preview_url
+  }
+
+  const saveDocument = async (): Promise<void> => {
+    const pid = await ensureProject()
+    setSaveStatus('saving')
+    const document = { version: 1, templateId, templateName: template?.name, templateCategory: template?.category, title: portfolioTitle, tokens, pages }
+    const res = await fetch(`${API_URL}/api/projects/${pid}/document`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(document),
+    })
+    if (!res.ok) { setSaveStatus('idle'); throw new Error('Save failed') }
+    setSaveStatus('saved')
+  }
+
+  // Debounced autosave — only after the first real edit (so merely opening a
+  // template never creates a draft project)
+  useEffect(() => {
+    if (!loadedRef.current || !dirtyRef.current) return
+    setSaveStatus('saving')
+    const t = setTimeout(() => { saveDocument().catch(e => console.error('Autosave failed:', e)) }, 1500)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages, tokens, portfolioTitle])
+
   const currentPage = pages[currentIdx]
-  const updatePage = (p: Page) => setPages(prev => prev.map((x, i) => i === currentIdx ? p : x))
+  const updatePage = (p: Page) => { markDirty(); setPages(prev => prev.map((x, i) => i === currentIdx ? p : x)) }
+  const setTok = (patch: Partial<DesignTokens>) => { markDirty(); setTokens(prev => ({ ...prev, ...patch })) }
 
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
 
@@ -124,12 +230,12 @@ export default function TemplateEditor() {
     if (type === 'project') { blocks.push(createBlock('meta'), createBlock('render'), createBlock('description')) }
     else { blocks.push(createBlock('description')) }
     const newPage: Page = { id: uid('p'), type, layoutId, blocks }
-    setPages([...pages, newPage]); setCurrentIdx(pages.length)
+    markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
   }
 
   const deletePage = (idx: number) => {
     if (pages.length <= 1) return
-    setPages(pages.filter((_, i) => i !== idx))
+    markDirty(); setPages(pages.filter((_, i) => i !== idx))
     if (currentIdx >= idx && currentIdx > 0) setCurrentIdx(currentIdx - 1)
   }
 
@@ -138,7 +244,7 @@ export default function TemplateEditor() {
     if (swap < 0 || swap >= pages.length) return
     const next = [...pages]
     ;[next[idx], next[swap]] = [next[swap], next[idx]]
-    setPages(next)
+    markDirty(); setPages(next)
     setCurrentIdx(swap)
   }
 
@@ -146,17 +252,8 @@ export default function TemplateEditor() {
     if (!portfolioTitle.trim()) { alert('Please enter a portfolio title'); return }
     setIsSaving(true)
     try {
-      const savedToken = token || localStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/projects`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${savedToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: portfolioTitle, project_type: 'portfolio', description: `From template: ${template?.name}` }),
-      })
-      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.detail || res.statusText) }
-      const project = await res.json()
-      localStorage.setItem(`portfolio_${project.id}`, JSON.stringify({ template_id: templateId, tokens, pages, title: portfolioTitle }))
-      alert(`✅ Portfolio "${portfolioTitle}" saved!`)
-      router.push(`/dashboard/project/${project.id}`)
+      await saveDocument()
+      router.push('/dashboard')
     } catch (e: any) {
       alert(`Failed to save: ${e.message}`)
     } finally { setIsSaving(false) }
@@ -189,11 +286,16 @@ export default function TemplateEditor() {
           <div className="flex items-center gap-4">
             <Link href="/dashboard/templates" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
             <div>
-              <input value={portfolioTitle} onChange={e => setPortfolioTitle(e.target.value)} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded" placeholder="Untitled" />
+              <input value={portfolioTitle} onChange={e => { markDirty(); setPortfolioTitle(e.target.value) }} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded" placeholder="Untitled" />
               <p className="text-[11px] text-gray-400 px-2">Template: {template.name} · {template.category}</p>
             </div>
           </div>
-          <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : '💾 Save Portfolio'}</button>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] text-gray-400 min-w-[64px] text-right">
+              {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : ''}
+            </span>
+            <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
+          </div>
         </div>
       </header>
 
@@ -234,7 +336,7 @@ export default function TemplateEditor() {
 
         {/* Center: canvas */}
         <main className="flex-1 overflow-y-auto p-8 bg-gray-300/40">
-          <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} />
+          <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
           <div className="max-w-[760px] mx-auto mt-3 text-center text-[11px] text-gray-400">
             Page {currentIdx + 1} of {pages.length} · Click any text or image to edit it directly
           </div>
@@ -337,10 +439,10 @@ export default function TemplateEditor() {
                   <div className="space-y-2">
                     {(['background', 'text', 'primary', 'accent', 'muted'] as const).map(key => (
                       <div key={key} className="flex items-center gap-2">
-                        <input type="color" value={tokens[key]} onChange={e => setTokens({ ...tokens, [key]: e.target.value })} className="w-9 h-9 rounded border border-gray-300 cursor-pointer" />
+                        <input type="color" value={tokens[key]} onChange={e => setTok({ [key]: e.target.value })} className="w-9 h-9 rounded border border-gray-300 cursor-pointer" />
                         <div className="flex-1">
                           <label className="text-[10px] text-gray-400 uppercase">{key}</label>
-                          <input type="text" value={tokens[key]} onChange={e => setTokens({ ...tokens, [key]: e.target.value })} className="w-full px-2 py-1 text-xs border border-gray-200 rounded font-mono" />
+                          <input type="text" value={tokens[key]} onChange={e => setTok({ [key]: e.target.value })} className="w-full px-2 py-1 text-xs border border-gray-200 rounded font-mono" />
                         </div>
                       </div>
                     ))}
@@ -349,11 +451,11 @@ export default function TemplateEditor() {
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Typography</h4>
                   <label className="text-[10px] text-gray-400 uppercase block mb-1">Heading</label>
-                  <select value={tokens.headingFont} onChange={e => setTokens({ ...tokens, headingFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3">
+                  <select value={tokens.headingFont} onChange={e => setTok({ headingFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3">
                     {HEADING_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                   <label className="text-[10px] text-gray-400 uppercase block mb-1">Body</label>
-                  <select value={tokens.bodyFont} onChange={e => setTokens({ ...tokens, bodyFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                  <select value={tokens.bodyFont} onChange={e => setTok({ bodyFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm">
                     {BODY_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
