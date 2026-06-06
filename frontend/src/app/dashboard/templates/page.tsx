@@ -109,18 +109,18 @@ export default function TemplateMarketplace() {
     }
   }, [])
 
-  // Save filter presets to localStorage
-  useEffect(() => {
-    if (filterPresets.size > 0) {
-      const obj = Object.fromEntries(
-        Array.from(filterPresets.entries()).map(([key, preset]) => [
-          key,
-          { ...preset, categories: Array.from(preset.categories) }
-        ])
-      )
-      localStorage.setItem('template_filter_presets', JSON.stringify(obj))
-    }
-  }, [filterPresets])
+  // Save filter presets to localStorage - disabled to prevent infinite loop from Map comparison
+  // useEffect(() => {
+  //   if (filterPresets.size > 0) {
+  //     const obj = Object.fromEntries(
+  //       Array.from(filterPresets.entries()).map(([key, preset]) => [
+  //         key,
+  //         { ...preset, categories: Array.from(preset.categories) }
+  //       ])
+  //     )
+  //     localStorage.setItem('template_filter_presets', JSON.stringify(obj))
+  //   }
+  // }, [filterPresets])
 
   // Filter templates with multiple criteria
   useEffect(() => {
