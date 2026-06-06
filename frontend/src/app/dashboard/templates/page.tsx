@@ -161,6 +161,31 @@ export default function TemplateMarketplace() {
     setFilteredTemplates(filtered)
   }, [searchQuery, selectedCategories, pageCountRange, sourceFilter, templates])
 
+  const handleUseTemplate = async (template: Template) => {
+    try {
+      // Create a new project from template
+      const res = await fetch(`${API_URL}/api/projects`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token || localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: template.name,
+          description: template.description || '',
+          project_type: 'portfolio',
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to create project')
+      const newProject = await res.json()
+      // Redirect to editor with the new project
+      router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}`)
+    } catch (e) {
+      alert('Failed to create portfolio from template')
+      console.error(e)
+    }
+  }
+
   const fetchTemplates = async () => {
     try {
       const res = await fetch(`${API_URL}/api/templates/portfolios?limit=100`, {
@@ -506,7 +531,7 @@ export default function TemplateMarketplace() {
                     Preview
                   </button>
                   <button
-                    onClick={() => router.push(`/dashboard/templates/${template.id}/editor`)}
+                    onClick={() => handleUseTemplate(template)}
                     className="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition">
                     Use Template
                   </button>
