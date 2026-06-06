@@ -283,7 +283,41 @@ export default function TemplateEditor() {
   }
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-center"><div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4 mx-auto" /><p className="text-gray-600">Loading template…</p></div></div>
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        <header className="bg-white border-b shadow-sm px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-40 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse" />
+          </div>
+        </header>
+        <div className="flex flex-1 min-h-0">
+          <aside className="w-56 bg-white border-r p-4">
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          </aside>
+          <main className="flex-1 p-8 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4 mx-auto" />
+              <p className="text-gray-600 text-sm">Loading your portfolio…</p>
+            </div>
+          </main>
+          <aside className="w-80 bg-white border-l p-4">
+            <div className="space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+          </aside>
+        </div>
+      </div>
+    )
   }
   if (!template || !currentPage) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-center"><p className="text-gray-600 mb-4">Template not found</p><Link href="/dashboard/templates" className="text-blue-600 hover:underline">← Back to Templates</Link></div></div>
@@ -407,12 +441,16 @@ export default function TemplateEditor() {
                 <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 280px)' }}>
                   {filteredLayouts.map(spec => {
                     const active = currentPage.layoutId === spec.id
+                    const recommended = spec.suits.includes(currentPage.type)
                     return (
                       <button
                         key={spec.id}
                         onClick={() => setLayout(spec.id)}
-                        className={`group text-left rounded-lg p-1.5 border-2 transition ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
+                        className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
                       >
+                        {recommended && (
+                          <div className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-900 text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐</div>
+                        )}
                         <LayoutThumb spec={spec} tokens={tokens} active={active} />
                         <div className="mt-1 px-0.5">
                           <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight">{spec.name}</div>
@@ -443,14 +481,14 @@ export default function TemplateEditor() {
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Elements on this page ({currentPage.blocks.length})</h4>
                   <div className="space-y-1.5">
-                    {currentPage.blocks.map(b => (
-                      <div key={b.id} className="group flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
+                    {currentPage.blocks.map((b, idx) => (
+                      <div key={b.id} className="group flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100 hover:border-gray-300 transition">
                         <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded" style={{ background: tokens.accent, color: '#fff' }}>{blockLabel(b.type)}</span>
                         <span className="flex-1 text-xs text-gray-600 truncate">{b.text || b.label || (b.fields ? 'Metadata' : b.legendItems ? `${b.legendItems.length} items` : '—')}</span>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                          <button onClick={() => moveBlock(b.id, -1)} className="text-gray-400 hover:text-gray-700 text-xs">▲</button>
-                          <button onClick={() => moveBlock(b.id, 1)} className="text-gray-400 hover:text-gray-700 text-xs">▼</button>
-                          <button onClick={() => removeBlock(b.id)} className="text-gray-400 hover:text-red-500 text-xs">✕</button>
+                        <div className="flex items-center gap-1">
+                          <button disabled={idx === 0} onClick={() => moveBlock(b.id, -1)} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs" title="Move up">▲</button>
+                          <button disabled={idx === currentPage.blocks.length - 1} onClick={() => moveBlock(b.id, 1)} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed text-xs" title="Move down">▼</button>
+                          <button onClick={() => removeBlock(b.id)} className="text-gray-400 hover:text-red-500 text-xs" title="Delete">✕</button>
                         </div>
                       </div>
                     ))}
