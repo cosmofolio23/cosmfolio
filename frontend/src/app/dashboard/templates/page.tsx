@@ -122,9 +122,8 @@ export default function TemplateMarketplace() {
   //   }
   // }, [filterPresets])
 
-  // Filter templates with multiple criteria - run on every render to avoid Set/Map comparison issues
-  // No dependency array to prevent infinite loops from object references
-  if (templates.length > 0) {
+  // Filter templates - only when templates array changes
+  useEffect(() => {
     let filtered = templates
 
     // Category filter (multiple selection)
@@ -150,17 +149,9 @@ export default function TemplateMarketplace() {
       filtered = filtered.filter(t => t.source === sourceFilter)
     }
 
-    // Search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(t =>
-        t.name.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query)
-      )
-    }
-
+    // Search query - only filter by query, other filters handled above
     setFilteredTemplates(filtered)
-  }
+  }, [templates])
 
   const handleUseTemplate = async (template: Template) => {
     try {
