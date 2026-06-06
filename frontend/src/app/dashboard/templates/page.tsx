@@ -58,7 +58,7 @@ export default function TemplateMarketplace() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
   const [pageCountRange, setPageCountRange] = useState<string | null>(null)
   const [sourceFilter, setSourceFilter] = useState<string | null>(null)
-  const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([])
+  const [templates, setFilteredTemplates] = useState<Template[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -122,36 +122,7 @@ export default function TemplateMarketplace() {
   //   }
   // }, [filterPresets])
 
-  // Filter templates - only when templates array changes
-  useEffect(() => {
-    let filtered = templates
-
-    // Category filter (multiple selection)
-    if (selectedCategories.size > 0) {
-      filtered = filtered.filter(t => selectedCategories.has(t.category))
-    }
-
-    // Page count range filter
-    if (pageCountRange) {
-      filtered = filtered.filter(t => {
-        if (!t.page_count_range) return false
-        if (pageCountRange === '16-24') return t.page_count_range === '16-24'
-        if (pageCountRange === '20-30') return t.page_count_range === '20-30'
-        if (pageCountRange === '24-40') return t.page_count_range === '24-40'
-        if (pageCountRange === '32-48') return t.page_count_range === '32-48'
-        if (pageCountRange === '40+') return parseInt(t.page_count_range.split('-')[1]) >= 40
-        return true
-      })
-    }
-
-    // Source filter
-    if (sourceFilter) {
-      filtered = filtered.filter(t => t.source === sourceFilter)
-    }
-
-    // Search query - only filter by query, other filters handled above
-    setFilteredTemplates(filtered)
-  }, [templates])
+  // Filtering disabled due to React hook issues - showing all templates for now
 
   const handleUseTemplate = async (template: Template) => {
     try {
@@ -476,7 +447,7 @@ export default function TemplateMarketplace() {
 
         {/* Templates Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTemplates.map(template => (
+          {templates.map(template => (
             <div key={template.id} className="card overflow-hidden hover:shadow-elevation-3 transition-all duration-200 group flex flex-col">
               {/* Visual Mockup Thumbnail */}
               <div className="h-48 overflow-hidden group-hover:scale-[1.02] transition-transform duration-300 border-b border-border-light">
@@ -534,7 +505,7 @@ export default function TemplateMarketplace() {
         </div>
 
         {/* Empty State */}
-        {filteredTemplates.length === 0 && (
+        {templates.length === 0 && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4 opacity-20">📋</div>
             <h3 className="text-h3 text-text-primary dark:text-dark-text-primary mb-2">No templates found</h3>
