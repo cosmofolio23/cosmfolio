@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
-import TemplateMockup from '@/components/templates/TemplateMockup'
+import TemplateSpread from '@/components/templates/TemplateSpread'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -20,6 +20,8 @@ interface Template {
   style_notes?: string
   page_count_range?: string
   source?: string
+  layouts?: any
+  placeholders?: any
 }
 
 interface TemplateListResponse {
@@ -488,12 +490,7 @@ export default function TemplateMarketplace() {
             <div key={template.id} className="card overflow-hidden hover:shadow-elevation-3 transition-all duration-200 group flex flex-col">
               {/* Visual Mockup Thumbnail */}
               <div className="h-48 overflow-hidden group-hover:scale-[1.02] transition-transform duration-300 border-b border-border-light">
-                <TemplateMockup
-                  colors={template.colors as any}
-                  fonts={template.fonts as any}
-                  name={template.name}
-                  variant="portfolio"
-                />
+                <TemplateSpread template={template} />
               </div>
 
               {/* Content */}
@@ -563,12 +560,7 @@ export default function TemplateMarketplace() {
             </div>
             <div className="p-6 space-y-6">
               <div className="h-64 rounded-lg overflow-hidden border border-border-light">
-                <TemplateMockup
-                  colors={selectedTemplate.colors as any}
-                  fonts={selectedTemplate.fonts as any}
-                  name={selectedTemplate.name}
-                  variant="portfolio"
-                />
+                <TemplateSpread template={selectedTemplate} />
               </div>
               {selectedTemplate.preview_image && (
                 <p className="text-sm italic text-text-secondary dark:text-dark-text-secondary">

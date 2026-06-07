@@ -390,6 +390,17 @@ export default function TemplateEditor() {
       (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
   }, [layoutCat, layoutSearch, currentPage?.type])
 
+  // When the selected page changes type, surface the most relevant layout
+  // category first (cover pages → the 50+ covers, etc.). Hook stays above the
+  // early returns to keep the render hook-count stable (React #310).
+  useEffect(() => {
+    const t = currentPage?.type
+    if (t === 'cover') setLayoutCat('Cover')
+    else if (t === 'contact') setLayoutCat('Contact')
+    else if (t === 'about') setLayoutCat('Text')
+    else setLayoutCat('All')
+  }, [currentPage?.type])
+
   const updatePage = (p: Page) => {
     markDirty()
     const next = pages.map((x, i) => i === currentIdx ? p : x)

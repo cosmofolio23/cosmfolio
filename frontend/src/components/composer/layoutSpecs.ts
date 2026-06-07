@@ -134,6 +134,29 @@ const FAMILIES: Family[] = [
       return [top, ...bottom]
     },
   },
+  {
+    key: 'mosaicLeft', name: 'Mosaic', category: 'Asymmetric', count: 5, build: r => {
+      const lw = Math.round(r.cs * 0.6)
+      const left = img(0, r.c0, lw, r.r0, r.rs)
+      const right = gridCells({ c0: r.c0 + lw, cs: r.cs - lw, r0: r.r0, rs: r.rs }, 4, 1, 1)
+      return [left, ...right]
+    },
+  },
+  {
+    key: 'mondrian3', name: 'Mondrian', category: 'Asymmetric', count: 3, build: r => {
+      const lw = Math.round(r.cs * 0.6)
+      const th = Math.round(r.rs * 0.6)
+      return [
+        img(0, r.c0, lw, r.r0, th),                          // big top-left
+        img(1, r.c0 + lw, r.cs - lw, r.r0, r.rs),            // tall right
+        img(2, r.c0, lw, r.r0 + th, r.rs - th),              // wide bottom-left
+      ]
+    },
+  },
+  {
+    key: 'bandsThree', name: 'Three Bands', category: 'Strip', count: 3, build: r => gridCells(r, 3, 1) },
+  {
+    key: 'gridSixTall', name: '3×2 Grid', category: 'Grid', count: 6, build: r => gridCells(r, 3, 2) },
 ]
 
 /* --------------------------------- frames -------------------------------- */
@@ -221,28 +244,108 @@ function buildImageSpecs(): LayoutSpec[] {
   return specs
 }
 
-const COVER_SPECS: LayoutSpec[] = [
-  {
-    id: 'cover.hero', name: 'Hero Cover · Overlay', category: 'Cover', suits: ['cover'], imageCount: 1, kind: 'overlay',
-    regions: [img(0, 1, 12, 1, 12), { role: 'title', c0: 1, cs: 10, r0: 9, rs: 2 }, { role: 'subtitle', c0: 1, cs: 10, r0: 11, rs: 1 }],
-  },
-  {
-    id: 'cover.minimal', name: 'Minimal Cover', category: 'Cover', suits: ['cover'], imageCount: 0,
-    regions: [{ role: 'title', c0: 2, cs: 10, r0: 5, rs: 2 }, { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 1 }],
-  },
-  {
-    id: 'cover.splitRight', name: 'Split Cover (R)', category: 'Cover', suits: ['cover'], imageCount: 1,
-    regions: [img(0, 7, 6, 1, 12), { role: 'title', c0: 1, cs: 5, r0: 5, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 7, rs: 1 }],
-  },
-  {
-    id: 'cover.splitLeft', name: 'Split Cover (L)', category: 'Cover', suits: ['cover'], imageCount: 1,
-    regions: [img(0, 1, 6, 1, 12), { role: 'title', c0: 7, cs: 5, r0: 5, rs: 2 }, { role: 'subtitle', c0: 7, cs: 5, r0: 7, rs: 1 }],
-  },
-  {
-    id: 'cover.bandTop', name: 'Band Cover', category: 'Cover', suits: ['cover'], imageCount: 1, kind: 'overlay',
-    regions: [img(0, 1, 12, 1, 8), { role: 'title', c0: 1, cs: 12, r0: 9, rs: 2 }, { role: 'subtitle', c0: 1, cs: 12, r0: 11, rs: 1 }],
-  },
+/* --------------------------------- covers -------------------------------- */
+/**
+ * Covers are generated parametrically too: a COMPOSITION decides where the
+ * image(s) sit and leaves a free "text zone"; a PLACEMENT positions the
+ * title/subtitle inside that zone. comp × placement => 50+ covers.
+ */
+
+interface CoverComp {
+  key: string
+  name: string
+  overlay: boolean        // does the text sit on top of the image?
+  tall: boolean           // tall text zone (full height) → allows the 'display' placement
+  images: Region[]
+  zone: Rect              // where title/subtitle go
+  imageCount: number
+}
+
+const COVER_COMPS: CoverComp[] = [
+  // ---- wide text zone (band along top/bottom or overlay) ----
+  { key: 'fullBleed', name: 'Full Bleed', overlay: true, tall: false, imageCount: 1, images: [img(0, 1, 12, 1, 12)], zone: { c0: 1, cs: 12, r0: 8, rs: 5 } },
+  { key: 'fullBleedCenter', name: 'Full Bleed Center', overlay: true, tall: false, imageCount: 1, images: [img(0, 1, 12, 1, 12)], zone: { c0: 2, cs: 10, r0: 4, rs: 5 } },
+  { key: 'bandTop', name: 'Image Band Top', overlay: false, tall: false, imageCount: 1, images: [img(0, 1, 12, 1, 7)], zone: { c0: 1, cs: 12, r0: 8, rs: 5 } },
+  { key: 'bandBottom', name: 'Image Band Bottom', overlay: false, tall: false, imageCount: 1, images: [img(0, 1, 12, 6, 7)], zone: { c0: 1, cs: 12, r0: 1, rs: 5 } },
+  { key: 'framed', name: 'Framed', overlay: false, tall: false, imageCount: 1, images: [img(0, 2, 10, 2, 7)], zone: { c0: 1, cs: 12, r0: 9, rs: 4 } },
+  { key: 'mondrian', name: 'Mondrian', overlay: false, tall: false, imageCount: 3, images: [img(0, 1, 7, 1, 8), img(1, 8, 5, 1, 5), img(2, 8, 5, 6, 3)], zone: { c0: 1, cs: 12, r0: 9, rs: 4 } },
+  { key: 'contactSheet', name: 'Contact Sheet', overlay: false, tall: false, imageCount: 6, images: gridCells({ c0: 1, cs: 12, r0: 7, rs: 6 }, 2, 3), zone: { c0: 1, cs: 12, r0: 1, rs: 6 } },
+  // ---- tall text zone (full-height column beside image) ----
+  { key: 'splitLeft', name: 'Split Left', overlay: false, tall: true, imageCount: 1, images: [img(0, 1, 6, 1, 12)], zone: { c0: 7, cs: 6, r0: 1, rs: 12 } },
+  { key: 'splitRight', name: 'Split Right', overlay: false, tall: true, imageCount: 1, images: [img(0, 7, 6, 1, 12)], zone: { c0: 1, cs: 6, r0: 1, rs: 12 } },
+  { key: 'splitWideLeft', name: 'Wide Split Left', overlay: false, tall: true, imageCount: 1, images: [img(0, 1, 8, 1, 12)], zone: { c0: 9, cs: 4, r0: 1, rs: 12 } },
+  { key: 'splitWideRight', name: 'Wide Split Right', overlay: false, tall: true, imageCount: 1, images: [img(0, 5, 8, 1, 12)], zone: { c0: 1, cs: 4, r0: 1, rs: 12 } },
+  { key: 'typographic', name: 'Typographic', overlay: false, tall: true, imageCount: 0, images: [], zone: { c0: 2, cs: 10, r0: 1, rs: 12 } },
 ]
+
+type CoverPlacement = 'topLeft' | 'center' | 'bottom' | 'eyebrow' | 'display'
+const PLACE_NAME: Record<CoverPlacement, string> = {
+  topLeft: 'Title Top', center: 'Centered', bottom: 'Title Bottom', eyebrow: 'Eyebrow', display: 'Display',
+}
+const WIDE_PLACEMENTS: CoverPlacement[] = ['topLeft', 'center', 'bottom', 'eyebrow']
+const TALL_PLACEMENTS: CoverPlacement[] = ['topLeft', 'center', 'bottom', 'eyebrow', 'display']
+
+function rrow(z: Rect, r0: number, rs: number): { r0: number; rs: number } {
+  const top = clamp(r0, z.r0, z.r0 + z.rs - 1)
+  const span = clamp(rs, 1, z.r0 + z.rs - top)
+  return { r0: top, rs: span }
+}
+
+function placeCoverText(p: CoverPlacement, z: Rect): Region[] {
+  switch (p) {
+    case 'topLeft': {
+      const t = rrow(z, z.r0, 2), s = rrow(z, z.r0 + 2, 1)
+      return [{ role: 'title', c0: z.c0, cs: z.cs, ...t }, { role: 'subtitle', c0: z.c0, cs: z.cs, ...s }]
+    }
+    case 'center': {
+      const mid = z.r0 + Math.max(0, Math.floor((z.rs - 3) / 2))
+      const t = rrow(z, mid, 2), s = rrow(z, mid + 2, 1)
+      return [{ role: 'title', c0: z.c0, cs: z.cs, ...t }, { role: 'subtitle', c0: z.c0, cs: z.cs, ...s }]
+    }
+    case 'bottom': {
+      const t = rrow(z, z.r0 + z.rs - 3, 2), s = rrow(z, z.r0 + z.rs - 1, 1)
+      return [{ role: 'title', c0: z.c0, cs: z.cs, ...t }, { role: 'subtitle', c0: z.c0, cs: z.cs, ...s }]
+    }
+    case 'eyebrow': {
+      const s = rrow(z, z.r0, 1), t = rrow(z, z.r0 + 1, 2)
+      return [{ role: 'subtitle', c0: z.c0, cs: z.cs, ...s }, { role: 'title', c0: z.c0, cs: z.cs, ...t }]
+    }
+    case 'display': {
+      const t = rrow(z, z.r0, z.rs - 1), s = rrow(z, z.r0 + z.rs - 1, 1)
+      return [{ role: 'title', c0: z.c0, cs: z.cs, ...t }, { role: 'subtitle', c0: z.c0, cs: z.cs, ...s }]
+    }
+  }
+}
+
+function buildCoverSpecs(): LayoutSpec[] {
+  const specs: LayoutSpec[] = []
+  for (const comp of COVER_COMPS) {
+    const placements = comp.tall ? TALL_PLACEMENTS : WIDE_PLACEMENTS
+    for (const p of placements) {
+      specs.push({
+        id: `cover.${comp.key}.${p}`,
+        name: `${comp.name} · ${PLACE_NAME[p]}`,
+        category: 'Cover',
+        suits: ['cover'],
+        regions: [...comp.images, ...placeCoverText(p, comp.zone)],
+        imageCount: comp.imageCount,
+        kind: comp.overlay ? 'overlay' : undefined,
+      })
+    }
+  }
+  return specs
+}
+
+const COVER_SPECS: LayoutSpec[] = buildCoverSpecs()
+
+/** Legacy cover ids → nearest new cover, so already-saved portfolios still resolve. */
+const COVER_ALIAS: Record<string, string> = {
+  'cover.hero': 'cover.fullBleed.bottom',
+  'cover.minimal': 'cover.typographic.center',
+  'cover.splitRight': 'cover.splitRight.center',
+  'cover.splitLeft': 'cover.splitLeft.center',
+  'cover.bandTop': 'cover.bandTop.bottom',
+}
 
 const TEXT_SPECS: LayoutSpec[] = [
   {
@@ -275,7 +378,8 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))
 
 export function getSpec(id: string): LayoutSpec {
-  return SPEC_BY_ID.get(id) || LAYOUT_CATALOG.find(s => s.category === 'Single')! || LAYOUT_CATALOG[0]
+  const resolved = SPEC_BY_ID.get(id) || SPEC_BY_ID.get(COVER_ALIAS[id])
+  return resolved || LAYOUT_CATALOG.find(s => s.category === 'Single')! || LAYOUT_CATALOG[0]
 }
 
 export function specsForType(type: PageType): LayoutSpec[] {
@@ -306,6 +410,35 @@ function pickProjectSpec(grid: string, c: { renders: number; plans: number; sect
   return 'duoV.titleTopText'
 }
 
+/** Choose a cover layout that matches the template's described cover structure. */
+export function pickCoverSpec(template: TemplateLike): string {
+  const cov = template.layouts?.cover
+  const s = `${cov?.structure || ''} ${cov?.grid || ''}`.toLowerCase()
+  const renders = template.placeholders?.renders ?? 1
+
+  if (s.includes('contact') || s.includes('thumbnail') || s.includes('mosaic')) return 'cover.contactSheet.topLeft'
+  if (s.includes('mondrian')) return 'cover.mondrian.bottom'
+  if (s.includes('full-bleed') || s.includes('full bleed') || s.includes('overlay')) return 'cover.fullBleed.bottom'
+  if (s.includes('split')) return s.includes('right') ? 'cover.splitRight.center' : 'cover.splitLeft.center'
+  if (s.includes('frame') || s.includes('border')) return 'cover.framed.bottom'
+  if (s.includes('band')) return s.includes('bottom') ? 'cover.bandBottom.topLeft' : 'cover.bandTop.bottom'
+  if (s.includes('center')) return 'cover.fullBleedCenter.center'
+  if (s.includes('minimal') || s.includes('white space') || s.includes('typographic') || renders === 0) return 'cover.typographic.center'
+  // fallback by available imagery
+  return renders > 0 ? 'cover.fullBleed.bottom' : 'cover.typographic.center'
+}
+
+/** Choose a project/content layout for a template (template-shaped wrapper around pickProjectSpec). */
+export function pickProjectSpecForTemplate(template: TemplateLike): string {
+  const ph = template.placeholders || {}
+  const renders = clamp(ph.renders ?? 2, 0, 9)
+  const plans = clamp(ph.plans ?? 1, 0, 9)
+  const sections = clamp(ph.sections ?? 1, 0, 9)
+  const diagrams = clamp((ph as any).diagrams ?? 0, 0, 6)
+  const grid = template.layouts?.project?.grid || ''
+  return pickProjectSpec(grid, { renders, plans, sections, diagrams })
+}
+
 export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   const ph = template.placeholders || {}
   const renders = clamp(ph.renders ?? 2, 0, 9)
@@ -316,12 +449,14 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   const grid = template.layouts?.project?.grid || ''
   const pages: Page[] = []
 
+  const coverId = pickCoverSpec(template)
+  const coverHasImage = getSpec(coverId).imageCount > 0
   pages.push({
-    id: uid('p'), type: 'cover', layoutId: renders > 0 ? 'cover.hero' : 'cover.minimal',
+    id: uid('p'), type: 'cover', layoutId: coverId,
     blocks: [
       { ...createBlock('title'), text: template.name || 'Portfolio' },
       { ...createBlock('subtitle'), text: 'Architecture & Design — 2026' },
-      ...(renders > 0 ? [{ ...createBlock('render'), label: 'Cover Image' }] : []),
+      ...(coverHasImage ? [{ ...createBlock('render'), label: 'Cover Image' }] : []),
     ],
   })
 
