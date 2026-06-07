@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 import { StylePackGallery, StylePack, PRESET_PACKS } from '@/components/design-system/StylePackGallery'
 import { StylePackPreview } from '@/components/design-system/StylePackPreview'
 import { StylePackGenerator } from '@/components/design-system/StylePackGenerator'
@@ -137,6 +138,7 @@ export default function GeneratePage() {
           <div className="flex items-center gap-3">
             <Link href={`/dashboard/project/${params.id}`} className="text-gray-500 hover:text-gray-700">← Back</Link>
             <span className="text-gray-300">/</span>
+            <Logo size="sm" variant="gold" />
             <h1 className="text-lg font-bold">Generate Portfolio</h1>
           </div>
           <button

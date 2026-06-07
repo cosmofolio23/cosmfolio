@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -98,8 +99,9 @@ export default function AnalyticsDashboard() {
               ← Back
             </Link>
             <div className="h-6 w-px bg-border-light"></div>
+            <Logo size="sm" variant="gold" />
             <div>
-              <h1 className="text-2xl font-bold text-charcoal">📊 Analytics</h1>
+              <h1 className="text-2xl font-bold text-charcoal">Analytics</h1>
               <p className="text-xs text-stone-light mt-0.5">Track views, shares, and downloads</p>
             </div>
           </div>
