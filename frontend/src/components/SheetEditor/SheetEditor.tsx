@@ -98,6 +98,8 @@ export interface SheetState {
   gridColumns: 5 | 8 | 12;
   gridRows:    number;
   snapToGrid:  boolean;
+  margin:      number;   // % inset margin guide
+  bgColor:     string;   // sheet background
   elements:    SheetElement[];
   selectedIds: string[];
   history:     SheetElement[][];   // undo stack (snapshots)
@@ -124,6 +126,7 @@ type Action =
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'TOGGLE_SNAP' }
+  | { type: 'SET_CANVAS';    patch: Partial<Pick<SheetState, 'pageSize' | 'orientation' | 'gridColumns' | 'gridRows' | 'margin' | 'bgColor'>> }
   | { type: 'MARK_SAVED';    ts: string }
   | { type: 'SET_TITLE';     title: string }
   | { type: 'LOAD_SHEET';    sheet: Partial<SheetState> };
@@ -282,6 +285,9 @@ function reducer(state: SheetState, action: Action): SheetState {
     case 'TOGGLE_SNAP':
       return { ...state, snapToGrid: !state.snapToGrid };
 
+    case 'SET_CANVAS':
+      return { ...state, ...action.patch, isDirty: true };
+
     case 'MARK_SAVED':
       return { ...state, isDirty: false, lastSaved: action.ts };
 
@@ -310,6 +316,8 @@ function makeInitialState(sheetId: string): SheetState {
     gridColumns: 12,
     gridRows:    8,
     snapToGrid:  true,
+    margin:      4,
+    bgColor:     '#ffffff',
     elements:    [],
     selectedIds: [],
     history:     [],
@@ -555,6 +563,45 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
         </div>
       </header>
 
+      {/* ── SETTINGS BAR: page size / orientation / grid / margins / bg ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', padding: '6px 12px', background: '#f7f7fa', borderBottom: '1px solid #e5e5ea', fontSize: 12, color: '#444' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Size
+          <select value={state.pageSize} onChange={e => dispatch({ type: 'SET_CANVAS', patch: { pageSize: e.target.value as any } })}
+            style={{ padding: '2px 4px', borderRadius: 4, border: '1px solid #ccc' }}>
+            {['A1', 'A2', 'A3', 'A4'].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </label>
+        <div style={{ display: 'flex', gap: 2 }}>
+          {(['landscape', 'portrait'] as const).map(o => (
+            <button key={o} onClick={() => dispatch({ type: 'SET_CANVAS', patch: { orientation: o } })}
+              style={{ padding: '3px 8px', fontSize: 11, borderRadius: 4, border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: state.orientation === o ? '#7c3aed' : '#e5e5ea', color: state.orientation === o ? '#fff' : '#555' }}>
+              {o}
+            </button>
+          ))}
+        </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Cols
+          <select value={state.gridColumns} onChange={e => dispatch({ type: 'SET_CANVAS', patch: { gridColumns: +e.target.value as 5 | 8 | 12 } })}
+            style={{ padding: '2px 4px', borderRadius: 4, border: '1px solid #ccc' }}>
+            {[5, 8, 12].map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Rows
+          <input type="number" min={2} max={16} value={state.gridRows}
+            onChange={e => dispatch({ type: 'SET_CANVAS', patch: { gridRows: Math.max(2, Math.min(16, +e.target.value)) } })}
+            style={{ width: 44, padding: '2px 4px', borderRadius: 4, border: '1px solid #ccc' }} />
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Margin
+          <input type="range" min={0} max={12} value={state.margin}
+            onChange={e => dispatch({ type: 'SET_CANVAS', patch: { margin: +e.target.value } })} />
+          <span style={{ width: 30 }}>{state.margin}%</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Sheet
+          <input type="color" value={state.bgColor}
+            onChange={e => dispatch({ type: 'SET_CANVAS', patch: { bgColor: e.target.value } })}
+            style={{ width: 28, height: 22, padding: 0, border: '1px solid #ccc', borderRadius: 4 }} />
+        </label>
+      </div>
+
       <div className="se-body">
 
         {/* ── LEFT PANEL: element palette ── */}
@@ -624,6 +671,7 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
             style={{
               width:       `${zoom}%`,
               aspectRatio: `1 / ${canvasAspect}`,
+              background:  state.bgColor,
             }}
             onDragOver={e => e.preventDefault()}
             onDrop={handleCanvasDrop}
@@ -637,6 +685,11 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
                   backgroundSize: `${100 / state.gridColumns}% ${100 / state.gridRows}%`,
                 }}
               />
+            )}
+
+            {/* Margin guide */}
+            {state.margin > 0 && (
+              <div style={{ position: 'absolute', inset: `${state.margin}%`, border: '1px dashed rgba(124,58,237,0.45)', pointerEvents: 'none', zIndex: 0 }} />
             )}
 
             {/* Rendered elements */}
@@ -805,6 +858,26 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
                   patch: { style: { ...selected.style, color: e.target.value } },
                 })}
               />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, margin: '4px 0 8px' }}>
+                {['#1a1a1a', '#ffffff', '#7c3aed', '#2563eb', '#dc2626', '#d97706', '#059669', '#0891b2', '#be185d', '#D4AF37', '#64748b', '#000000'].map(c => (
+                  <button key={c} title={c}
+                    onClick={() => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, color: c } } })}
+                    style={{ width: 18, height: 18, borderRadius: 4, background: c, border: '1px solid rgba(0,0,0,0.2)', cursor: 'pointer' }} />
+                ))}
+              </div>
+
+              {selected.kind !== 'image' && (<>
+                <label>Fill</label>
+                <input
+                  type="color"
+                  value={selected.style.bgColor && selected.style.bgColor !== 'transparent' ? selected.style.bgColor : '#ffffff'}
+                  onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, bgColor: e.target.value } } })}
+                />
+                <button onClick={() => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, bgColor: 'transparent' } } })}
+                  style={{ fontSize: 11, padding: '3px 6px', marginBottom: 8, border: '1px solid #ccc', borderRadius: 4, background: '#fff', cursor: 'pointer' }}>
+                  Clear fill
+                </button>
+              </>)}
 
               <label>Text align</label>
               <select
