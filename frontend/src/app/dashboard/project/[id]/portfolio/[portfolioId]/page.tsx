@@ -80,6 +80,7 @@ export default function PortfolioEditorPage() {
   const [layoutSearch, setLayoutSearch] = useState('')
   const [savedNote, setSavedNote] = useState('')
   const [mode, setMode] = useState<'view' | 'edit'>('view')   // spec: show output first, edit on click
+  const [analyzing, setAnalyzing] = useState('')              // on-device AI vision status
   const composeInput = useRef<{ assets: Record<string, any[]>; project: any } | null>(null)
 
   const currentPage = pages[currentIdx]
@@ -220,6 +221,40 @@ export default function PortfolioEditorPage() {
     setSavedNote('Saving…')
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => void saveDoc(nextPages, nextTokens), 1200)
+  }
+
+  // Phase 4 (free, in-browser): detect each image's real type with on-device
+  // CLIP, then recompose from the DETECTED types (not just upload folders).
+  const composeFrom = (assets: Record<string, any[]>): Page[] => {
+    const ci = composeInput.current
+    return composePages({
+      project: {
+        name: portfolio?.name || ci?.project?.title,
+        location: ci?.project?.location, year: ci?.project?.year,
+        typology: ci?.project?.typology || ci?.project?.project_type,
+        description: ci?.project?.description,
+      },
+      assetsByCategory: assets,
+    })
+  }
+  const aiAnalyze = async () => {
+    const ci = composeInput.current
+    if (!ci || !Object.values(ci.assets).some((a: any) => Array.isArray(a) && a.length)) {
+      alert('Upload some project assets first.')
+      return
+    }
+    setAnalyzing('Starting on-device AI…')
+    try {
+      const { analyzeAssets } = await import('@/lib/assetVision')
+      const { regrouped } = await analyzeAssets(ci.assets, (_d, _t, status) => setAnalyzing(status))
+      const next = composeFrom(regrouped)
+      setPages(next); setCurrentIdx(0); queueSave(next, tokens)
+    } catch (e) {
+      console.error('AI analyze failed:', e)
+      alert('On-device AI could not run here — keeping your uploaded categories.')
+    } finally {
+      setAnalyzing('')
+    }
   }
 
   // Phase 2: regenerate the composition from the project's assets
@@ -367,11 +402,12 @@ export default function PortfolioEditorPage() {
               <Logo size="sm" variant="gold" />
               <div>
                 <h1 className="text-base font-semibold">{portfolio?.name || 'Portfolio'}</h1>
-                <p className="text-[11px] text-gray-400">Your portfolio is ready · {pages.length} pages</p>
+                <p className="text-[11px] text-gray-400">{analyzing || `Your portfolio is ready · ${pages.length} pages`}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
+              <button onClick={aiAnalyze} disabled={!!analyzing} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-purple-600 hover:bg-purple-50 disabled:opacity-50" title="Detect each image's type with free on-device AI, then recompose">{analyzing ? '🧠 Analyzing…' : '🔍 AI Analyze'}</button>
               <button onClick={regenerate} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50" title="Recompose from your assets">🔄 Regenerate</button>
               <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
               <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
