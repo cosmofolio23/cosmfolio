@@ -341,6 +341,21 @@ async def delete_portfolio(portfolio_id: str, current_user: dict = Depends(get_c
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
+def _get_composer_doc(portfolio: dict):
+    """Extract a saved parametric composer_doc from a portfolio's page_structure."""
+    ps = portfolio.get("page_structure") or {}
+    if isinstance(ps, str):
+        import json as _json
+        try:
+            ps = _json.loads(ps)
+        except Exception:
+            ps = {}
+    doc = ps.get("composer_doc") if isinstance(ps, dict) else None
+    if doc and isinstance(doc, dict) and doc.get("pages"):
+        return doc
+    return None
+
+
 @router.get("/{portfolio_id}/preview")
 async def get_portfolio_preview(portfolio_id: str, current_user: dict = Depends(get_current_user)):
     """Get portfolio HTML preview (Batch 3: renders with selected layouts + design pack)"""
@@ -359,6 +374,15 @@ async def get_portfolio_preview(portfolio_id: str, current_user: dict = Depends(
         if not project_resp.data:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your portfolio")
         project = project_resp.data[0]
+
+        # If the parametric editor saved a composer_doc, render THAT so the
+        # output matches the editor (what you edit is what you ship).
+        _cdoc = _get_composer_doc(portfolio)
+        if _cdoc:
+            from services.composer_renderer import render_composer_doc
+            _chtml = render_composer_doc(_cdoc)
+            if _chtml:
+                return {"portfolio_id": portfolio_id, "html": _chtml}
 
         # Get all assets for this project
         assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
@@ -628,14 +652,21 @@ async def export_portfolio_pdf(
         except Exception:
             pass
 
-        # Render full portfolio HTML
-        from services.portfolio_renderer import render_full_portfolio_safe
-        html = render_full_portfolio_safe(
-            portfolio=portfolio,
-            project=project,
-            assets=assets,
-            wizard_config=wizard_config,
-        )
+        # Render full portfolio HTML — prefer the parametric composer_doc so the
+        # exported PDF matches the editor.
+        html = None
+        _cdoc = _get_composer_doc(portfolio)
+        if _cdoc:
+            from services.composer_renderer import render_composer_doc
+            html = render_composer_doc(_cdoc)
+        if not html:
+            from services.portfolio_renderer import render_full_portfolio_safe
+            html = render_full_portfolio_safe(
+                portfolio=portfolio,
+                project=project,
+                assets=assets,
+                wizard_config=wizard_config,
+            )
 
         # Generate PDF
         pdf_bytes = await generate_pdf_from_html(
@@ -823,12 +854,19 @@ async def public_portfolio_pages(slug: str):
         except Exception:
             pass
 
-        result = render_portfolio_pages_safe(
-            portfolio=portfolio,
-            project=project,
-            assets=assets,
-            wizard_config=wizard_config,
-        )
+        # Prefer the parametric composer_doc so the public view matches the editor.
+        result = None
+        _cdoc = _get_composer_doc(portfolio)
+        if _cdoc:
+            from services.composer_renderer import render_composer_pages
+            result = render_composer_pages(_cdoc)
+        if not result:
+            result = render_portfolio_pages_safe(
+                portfolio=portfolio,
+                project=project,
+                assets=assets,
+                wizard_config=wizard_config,
+            )
         # Add minimal metadata for display
         result["meta"] = {
             "title": (wizard_config or {}).get("front_cover", {}).get("title") or project.get("title", "Portfolio"),

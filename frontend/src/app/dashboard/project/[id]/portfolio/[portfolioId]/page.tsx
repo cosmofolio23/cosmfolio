@@ -171,7 +171,15 @@ export default function PortfolioEditorPage() {
         headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           page_layouts: Object.fromEntries(nextPages.map(p => [p.id, p.layoutId])),
-          composer_doc: { pages: nextPages, tokens: nextTokens },
+          // include resolved regions + overlay kind so the backend can render
+          // this doc identically (export / public share consistency).
+          composer_doc: {
+            pages: nextPages.map(p => {
+              const s = getSpec(p.layoutId)
+              return { ...p, regions: s.regions, kind: s.kind }
+            }),
+            tokens: nextTokens,
+          },
         }),
       })
       setSavedNote('✓ Saved'); setTimeout(() => setSavedNote(''), 1500)
