@@ -44,6 +44,7 @@ import {
   DIAGRAM_CATEGORIES, itemsByCategory, itemDataUri, itemSvg,
   type DiagramCategory, type DiagramItem,
 } from './diagramPacks';
+import { SHEET_TEMPLATES, type SheetTemplate } from './sheetTemplates';
 
 const FONT_FAMILIES = ['Inter', 'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New', 'Montserrat', 'Roboto', 'Playfair Display', 'Oswald'];
 
@@ -129,6 +130,7 @@ type Action =
   | { type: 'REDO' }
   | { type: 'TOGGLE_SNAP' }
   | { type: 'SET_CANVAS';    patch: Partial<Pick<SheetState, 'pageSize' | 'orientation' | 'gridColumns' | 'gridRows' | 'margin' | 'bgColor'>> }
+  | { type: 'APPLY_TEMPLATE'; templateId: string; elements: SheetElement[] }
   | { type: 'MARK_SAVED';    ts: string }
   | { type: 'SET_TITLE';     title: string }
   | { type: 'LOAD_SHEET';    sheet: Partial<SheetState> };
@@ -290,6 +292,11 @@ function reducer(state: SheetState, action: Action): SheetState {
     case 'SET_CANVAS':
       return { ...state, ...action.patch, isDirty: true };
 
+    case 'APPLY_TEMPLATE': {
+      const next = pushHistory(state);
+      return { ...next, templateId: action.templateId, elements: action.elements, selectedIds: [] };
+    }
+
     case 'MARK_SAVED':
       return { ...state, isDirty: false, lastSaved: action.ts };
 
@@ -350,7 +357,7 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
   const [zoom,   setZoom]   = useState(75);    // %
   const [panel,  setPanel]  = useState<'layers' | 'properties' | null>('layers');
   const [saving, setSaving] = useState(false);
-  const [leftTab, setLeftTab] = useState<'elements' | 'diagrams'>('elements');
+  const [leftTab, setLeftTab] = useState<'elements' | 'diagrams' | 'templates'>('elements');
   const [dcat, setDcat] = useState<DiagramCategory>('trees');
 
   const canvasRef   = useRef<HTMLDivElement>(null);
@@ -508,6 +515,17 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
     dispatch({ type: 'ADD_ELEMENT', el });
   }, [state.elements.length]);
 
+  // ── apply a sheet template preset (replaces elements) ──
+  const applyTemplate = useCallback((tpl: SheetTemplate) => {
+    if (state.elements.length && !window.confirm(`Apply the "${tpl.name}" template? This replaces the current elements.`)) return;
+    const elements: SheetElement[] = tpl.els.map((e, i) => ({
+      id: `el_${Date.now()}_${i}`,
+      kind: e.kind, x: e.x, y: e.y, w: e.w, h: e.h, z: i + 1,
+      content: e.content ?? '', locked: false, visible: true, style: e.style ?? {},
+    }));
+    dispatch({ type: 'APPLY_TEMPLATE', templateId: tpl.id, elements });
+  }, [state.elements.length]);
+
   // ── element drag inside canvas ────────────
   const startDrag = useCallback((
     e: React.MouseEvent,
@@ -654,14 +672,12 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
         <aside className="se-palette" style={{ overflowY: 'auto' }}>
           {/* tabs */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
-            <button onClick={() => setLeftTab('elements')}
-              style={{ flex: 1, fontSize: 11, fontWeight: 600, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', background: leftTab === 'elements' ? '#7c3aed' : '#ececf1', color: leftTab === 'elements' ? '#fff' : '#555' }}>
-              Elements
-            </button>
-            <button onClick={() => setLeftTab('diagrams')}
-              style={{ flex: 1, fontSize: 11, fontWeight: 600, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', background: leftTab === 'diagrams' ? '#7c3aed' : '#ececf1', color: leftTab === 'diagrams' ? '#fff' : '#555' }}>
-              Diagram Packs
-            </button>
+            {([['elements', 'Elements'], ['diagrams', 'Diagrams'], ['templates', 'Templates']] as const).map(([id, label]) => (
+              <button key={id} onClick={() => setLeftTab(id)}
+                style={{ flex: 1, fontSize: 10.5, fontWeight: 600, padding: '6px 2px', borderRadius: 6, border: 'none', cursor: 'pointer', background: leftTab === id ? '#7c3aed' : '#ececf1', color: leftTab === id ? '#fff' : '#555' }}>
+                {label}
+              </button>
+            ))}
           </div>
 
           {leftTab === 'elements' && (<>
@@ -703,6 +719,19 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
                   style={{ background: '#fff', border: '1px solid #e5e5ea', borderRadius: 8, padding: 6, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                   <span style={{ width: 40, height: 40 }} dangerouslySetInnerHTML={{ __html: itemSvg(item) }} />
                   <span style={{ fontSize: 9, color: '#666', textAlign: 'center', lineHeight: 1.1 }}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </>)}
+
+          {leftTab === 'templates' && (<>
+            <p className="se-panel-heading" style={{ marginBottom: 8 }}>Start from a layout</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {SHEET_TEMPLATES.map(tpl => (
+                <button key={tpl.id} onClick={() => applyTemplate(tpl)} title={tpl.description}
+                  style={{ textAlign: 'left', background: state.templateId === tpl.id ? '#f3edff' : '#fff', border: `1px solid ${state.templateId === tpl.id ? '#7c3aed' : '#e5e5ea'}`, borderRadius: 8, padding: '8px 10px', cursor: 'pointer' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>{tpl.icon} {tpl.name}</div>
+                  <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>{tpl.description}</div>
                 </button>
               ))}
             </div>
