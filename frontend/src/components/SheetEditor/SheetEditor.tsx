@@ -40,13 +40,20 @@ import {
   Undo,
 } from 'lucide-react';
 import './SheetEditor.css';
+import {
+  DIAGRAM_CATEGORIES, itemsByCategory, itemDataUri, itemSvg,
+  type DiagramCategory, type DiagramItem,
+} from './diagramPacks';
+
+const FONT_FAMILIES = ['Inter', 'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New', 'Montserrat', 'Roboto', 'Playfair Display', 'Oswald'];
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
 
 export type ElementKind = 'image' | 'text' | 'title' | 'caption' | 'label'
-  | 'divider' | 'north_arrow' | 'scale_bar' | 'page_number' | 'placeholder';
+  | 'divider' | 'north_arrow' | 'scale_bar' | 'page_number' | 'placeholder'
+  | 'shape' | 'arrow' | 'diagram_tag';
 
 export interface SheetElement {
   id:       string;
@@ -64,15 +71,22 @@ export interface SheetElement {
 }
 
 export interface ElementStyle {
-  fontSize?:   number;
-  fontWeight?: 'normal' | 'bold';
-  fontFamily?: string;
-  color?:      string;
-  bgColor?:    string;
-  textAlign?:  'left' | 'center' | 'right';
-  padding?:    number;
-  borderTop?:  boolean;
-  opacity?:    number;
+  fontSize?:    number;
+  fontWeight?:  'normal' | 'bold';
+  fontFamily?:  string;
+  color?:       string;
+  bgColor?:     string;
+  textAlign?:   'left' | 'center' | 'right';
+  padding?:     number;
+  borderTop?:   boolean;
+  opacity?:     number;
+  letterSpacing?: number;
+  lineHeight?:  number;
+  writingMode?: 'horizontal' | 'vertical';
+  shape?:       'rect' | 'ellipse' | 'line';
+  borderColor?: string;
+  borderWidth?: number;
+  filter?:      string;   // CSS filter for image elements
 }
 
 export interface SheetState {
@@ -326,6 +340,8 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
   const [zoom,   setZoom]   = useState(75);    // %
   const [panel,  setPanel]  = useState<'layers' | 'properties' | null>('layers');
   const [saving, setSaving] = useState(false);
+  const [leftTab, setLeftTab] = useState<'elements' | 'diagrams'>('elements');
+  const [dcat, setDcat] = useState<DiagramCategory>('trees');
 
   const canvasRef   = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -413,6 +429,28 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
       visible: true,
       style:   {},
     };
+    dispatch({ type: 'ADD_ELEMENT', el });
+  }, [state.elements.length]);
+
+  // ── add a diagram-pack entourage item as an image element ──
+  const addDiagram = useCallback((item: DiagramItem) => {
+    const el: SheetElement = {
+      id: `el_${Date.now()}`, kind: 'image',
+      x: 40, y: 40, w: 14, h: 14, z: state.elements.length + 1,
+      content: item.label, src: itemDataUri(item),
+      locked: false, visible: true,
+      style: { filter: 'none' },
+    };
+    dispatch({ type: 'ADD_ELEMENT', el });
+  }, [state.elements.length]);
+
+  // ── add a primitive (shape / arrow / diagram tag) at center ──
+  const addPrimitive = useCallback((kind: ElementKind) => {
+    const base = { id: `el_${Date.now()}`, x: 40, y: 42, z: state.elements.length + 1, locked: false, visible: true };
+    const el: SheetElement =
+      kind === 'shape'   ? { ...base, kind, w: 18, h: 14, content: '', style: { shape: 'rect', borderColor: '#1a1a1a', borderWidth: 2, bgColor: 'transparent' } }
+    : kind === 'arrow'   ? { ...base, kind, w: 22, h: 6,  content: '', style: { borderColor: '#1a1a1a', borderWidth: 2 } }
+    : /* diagram_tag */    { ...base, kind, w: 14, h: 6,  content: 'A', style: { color: '#fff', bgColor: '#1a1a1a', fontSize: 14, textAlign: 'center', fontWeight: 'bold' } };
     dispatch({ type: 'ADD_ELEMENT', el });
   }, [state.elements.length]);
 
@@ -520,29 +558,62 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
       <div className="se-body">
 
         {/* ── LEFT PANEL: element palette ── */}
-        <aside className="se-palette">
-          <p className="se-panel-heading">Elements</p>
-          {([
-            ['image',      '🖼',  'Image'],
-            ['title',      'T',   'Title'],
-            ['text',       '¶',   'Text'],
-            ['caption',    'c',   'Caption'],
-            ['label',      'L',   'Label'],
-            ['divider',    '—',   'Divider'],
-            ['north_arrow','↑N',  'North Arrow'],
-            ['scale_bar',  '⊨',   'Scale Bar'],
-            ['page_number','#',   'Page No.'],
-          ] as [ElementKind, string, string][]).map(([kind, icon, label]) => (
-            <div
-              key={kind}
-              className="se-palette-item"
-              draggable
-              onDragStart={e => e.dataTransfer.setData('elementKind', kind)}
-            >
-              <span className="se-palette-icon">{icon}</span>
-              <span>{label}</span>
+        <aside className="se-palette" style={{ overflowY: 'auto' }}>
+          {/* tabs */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+            <button onClick={() => setLeftTab('elements')}
+              style={{ flex: 1, fontSize: 11, fontWeight: 600, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', background: leftTab === 'elements' ? '#7c3aed' : '#ececf1', color: leftTab === 'elements' ? '#fff' : '#555' }}>
+              Elements
+            </button>
+            <button onClick={() => setLeftTab('diagrams')}
+              style={{ flex: 1, fontSize: 11, fontWeight: 600, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', background: leftTab === 'diagrams' ? '#7c3aed' : '#ececf1', color: leftTab === 'diagrams' ? '#fff' : '#555' }}>
+              Diagram Packs
+            </button>
+          </div>
+
+          {leftTab === 'elements' && (<>
+            {([
+              ['image', '🖼', 'Image'], ['title', 'T', 'Title'], ['text', '¶', 'Text'],
+              ['caption', 'c', 'Caption'], ['label', 'L', 'Label'], ['divider', '—', 'Divider'],
+              ['north_arrow', '↑N', 'North Arrow'], ['scale_bar', '⊨', 'Scale Bar'], ['page_number', '#', 'Page No.'],
+            ] as [ElementKind, string, string][]).map(([kind, icon, label]) => (
+              <div key={kind} className="se-palette-item" draggable
+                title="Drag onto the canvas"
+                onDragStart={e => e.dataTransfer.setData('elementKind', kind)}>
+                <span className="se-palette-icon">{icon}</span><span>{label}</span>
+              </div>
+            ))}
+            <p className="se-panel-heading" style={{ marginTop: 12 }}>Shapes</p>
+            {([
+              ['shape', '▭', 'Shape'], ['arrow', '→', 'Arrow'], ['diagram_tag', '◆', 'Diagram Tag'],
+            ] as [ElementKind, string, string][]).map(([kind, icon, label]) => (
+              <div key={kind} className="se-palette-item" style={{ cursor: 'pointer' }}
+                title="Click to add" onClick={() => addPrimitive(kind)}>
+                <span className="se-palette-icon">{icon}</span><span>{label}</span>
+              </div>
+            ))}
+          </>)}
+
+          {leftTab === 'diagrams' && (<>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+              {DIAGRAM_CATEGORIES.map(c => (
+                <button key={c.id} onClick={() => setDcat(c.id)}
+                  title={c.label}
+                  style={{ fontSize: 11, padding: '4px 6px', borderRadius: 6, border: 'none', cursor: 'pointer', background: dcat === c.id ? '#7c3aed' : '#ececf1', color: dcat === c.id ? '#fff' : '#555' }}>
+                  {c.icon}
+                </button>
+              ))}
             </div>
-          ))}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              {itemsByCategory(dcat).map(item => (
+                <button key={item.id} onClick={() => addDiagram(item)} title={`Add ${item.label}`}
+                  style={{ background: '#fff', border: '1px solid #e5e5ea', borderRadius: 8, padding: 6, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <span style={{ width: 40, height: 40 }} dangerouslySetInnerHTML={{ __html: itemSvg(item) }} />
+                  <span style={{ fontSize: 9, color: '#666', textAlign: 'center', lineHeight: 1.1 }}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </>)}
         </aside>
 
         {/* ── CANVAS ── */}
@@ -583,17 +654,30 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
                     opacity: el.style.opacity ?? 1,
                     fontSize:   el.style.fontSize ? `${el.style.fontSize * (zoom / 100)}px` : undefined,
                     fontWeight: el.style.fontWeight,
+                    fontFamily: el.style.fontFamily,
                     color:      el.style.color,
-                    background: el.style.bgColor,
+                    background: el.kind === 'shape' || el.kind === 'arrow' ? 'transparent' : el.style.bgColor,
                     textAlign:  el.style.textAlign,
+                    letterSpacing: el.style.letterSpacing != null ? `${el.style.letterSpacing}px` : undefined,
+                    lineHeight: el.style.lineHeight,
+                    writingMode: el.style.writingMode === 'vertical' ? ('vertical-rl' as any) : undefined,
                   }}
                   onMouseDown={e => startDrag(e, el.id)}
                   onClick={e => { e.stopPropagation(); dispatch({ type: 'SELECT', ids: [el.id] }); }}
                 >
                   {el.kind === 'image' && el.src
-                    ? <img src={el.src} alt={el.content} draggable={false} />
+                    ? <img src={el.src} alt={el.content} draggable={false} style={{ filter: el.style.filter && el.style.filter !== 'none' ? el.style.filter : undefined }} />
                     : el.kind === 'image'
                     ? <div className="se-img-placeholder">{el.content || 'Drop image here'}</div>
+                    : el.kind === 'shape'
+                    ? <div style={{ width: '100%', height: '100%', border: `${el.style.borderWidth ?? 2}px solid ${el.style.borderColor ?? '#1a1a1a'}`, borderRadius: el.style.shape === 'ellipse' ? '50%' : 0, background: el.style.bgColor && el.style.bgColor !== 'transparent' ? el.style.bgColor : 'transparent' }} />
+                    : el.kind === 'arrow'
+                    ? <svg width="100%" height="100%" viewBox="0 0 100 20" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                        <line x1="2" y1="10" x2="92" y2="10" stroke={el.style.borderColor ?? '#1a1a1a'} strokeWidth={el.style.borderWidth ?? 2} />
+                        <path d={`M92 10 L82 4 M92 10 L82 16`} stroke={el.style.borderColor ?? '#1a1a1a'} strokeWidth={el.style.borderWidth ?? 2} fill="none" />
+                      </svg>
+                    : el.kind === 'diagram_tag'
+                    ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', borderRadius: 4 }}>{el.content}</span>
                     : <span>{el.content}</span>
                   }
 
@@ -690,6 +774,16 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
                 })}
               />
 
+              <label>Font family</label>
+              <select
+                value={selected.style.fontFamily ?? 'Inter'}
+                onChange={e => dispatch({
+                  type: 'UPDATE_ELEMENT', id: selected.id,
+                  patch: { style: { ...selected.style, fontFamily: e.target.value } },
+                })}>
+                {FONT_FAMILIES.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+
               <label>Font size</label>
               <input
                 type="number" min={8} max={200}
@@ -735,6 +829,56 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
                   patch: { style: { ...selected.style, opacity: +e.target.value } },
                 })}
               />
+
+              <label>Letter spacing</label>
+              <input type="number" min={-2} max={20} step={0.5}
+                value={selected.style.letterSpacing ?? 0}
+                onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, letterSpacing: +e.target.value } } })} />
+
+              <label>Line height</label>
+              <input type="number" min={0.8} max={3} step={0.1}
+                value={selected.style.lineHeight ?? 1.3}
+                onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, lineHeight: +e.target.value } } })} />
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input type="checkbox"
+                  checked={selected.style.writingMode === 'vertical'}
+                  onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, writingMode: e.target.checked ? 'vertical' : 'horizontal' } } })} />
+                Vertical text
+              </label>
+
+              {selected.kind === 'image' && (<>
+                <label>Image filter</label>
+                <select
+                  value={selected.style.filter ?? 'none'}
+                  onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, filter: e.target.value } } })}>
+                  <option value="none">None</option>
+                  <option value="grayscale(1)">Grayscale</option>
+                  <option value="sepia(0.6)">Sepia</option>
+                  <option value="contrast(1.3)">High contrast</option>
+                  <option value="brightness(1.15)">Brighten</option>
+                  <option value="saturate(1.5)">Vivid</option>
+                  <option value="blur(1px)">Soft blur</option>
+                </select>
+              </>)}
+
+              {(selected.kind === 'shape' || selected.kind === 'arrow') && (<>
+                <label>Stroke color</label>
+                <input type="color" value={selected.style.borderColor ?? '#1a1a1a'}
+                  onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, borderColor: e.target.value } } })} />
+                <label>Stroke width</label>
+                <input type="number" min={1} max={20}
+                  value={selected.style.borderWidth ?? 2}
+                  onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, borderWidth: +e.target.value } } })} />
+                {selected.kind === 'shape' && (<>
+                  <label>Shape</label>
+                  <select value={selected.style.shape ?? 'rect'}
+                    onChange={e => dispatch({ type: 'UPDATE_ELEMENT', id: selected.id, patch: { style: { ...selected.style, shape: e.target.value as any } } })}>
+                    <option value="rect">Rectangle</option>
+                    <option value="ellipse">Ellipse</option>
+                  </select>
+                </>)}
+              </>)}
 
               <div className="se-layer-order-btns">
                 <button onClick={() => dispatch({ type: 'REORDER', id: selected.id, dir: 'top' })}>Bring to Front</button>

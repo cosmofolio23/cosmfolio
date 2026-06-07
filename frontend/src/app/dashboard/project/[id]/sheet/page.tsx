@@ -638,11 +638,15 @@ export default function SheetPage() {
               ))}
             </div>
 
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-3 justify-center flex-wrap">
               <button onClick={() => { setStep('type'); setSelectedSheetType(null); setSheetId(null) }}
                 className="border px-6 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50">
                 Create Another Sheet
               </button>
+              <Link href={`/dashboard/project/${params.id}/sheet/editor`}
+                className="border-2 border-purple-600 text-purple-700 px-6 py-2.5 rounded-lg font-medium hover:bg-purple-50">
+                🎨 Open Advanced Editor
+              </Link>
               <Link href="/dashboard"
                 className="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-purple-700">
                 Back to Dashboard
