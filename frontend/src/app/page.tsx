@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect } from 'react'
+import Logo from '@/components/Logo'
 import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
 
@@ -56,7 +57,10 @@ export default function Home() {
       {/* Navigation */}
       <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
         <div className="container-centered py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold text-primary">CosmoFolio</div>
+          <div className="flex items-center gap-2">
+            <Logo size="sm" variant="gold" />
+            <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
+          </div>
           <div className="flex gap-3">
             <Link href="/signin" className="btn-secondary btn-small">
               Sign In
@@ -70,8 +74,8 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-bg-primary dark:bg-dark-bg-primary"></div>
+        {/* Cosmic aurora background */}
+        <div className="absolute inset-0 aurora-bg"></div>
 
         {/* Floating Elements for Glassmorphism Background */}
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-accent-primary/20 dark:bg-accent-gold/20 rounded-full blur-[100px] animate-pulse"></div>
@@ -84,7 +88,7 @@ export default function Home() {
               Professional Architecture Portfolios, Generated in Seconds
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Upload your renders, plans, and diagrams. AI arranges them into stunning portfolio variations with 50+ sophisticated layouts and 7 design systems.
+              Upload your renders, plans, and diagrams. AI arranges them into stunning portfolio variations with 280+ sophisticated layouts and curated design systems.
             </p>
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
