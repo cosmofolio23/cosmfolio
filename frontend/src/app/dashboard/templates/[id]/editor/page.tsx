@@ -14,6 +14,7 @@ import {
   type LayoutCategory,
 } from '@/components/composer/layoutSpecs'
 import { analyzeTemplate, autoFillTemplate, summaryLine } from '@/components/composer/templateDNA'
+import { STYLE_DNA } from '@/components/composer/styleDNA'
 
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
@@ -409,6 +410,45 @@ export default function TemplateEditor() {
     for (const a of assets) { const t = typeFromName(a.name); (byType[t] ||= []).push(a.url) }
     const next = autoFillTemplate(pages, byType)
     markDirty(); setPages(next)
+  }
+
+  // Guided upload: drop an image straight into one specific slot.
+  const fillSlotUpload = (pageIndex: number, blockId: string) => {
+    const input = document.createElement('input')
+    input.type = 'file'; input.accept = 'image/*'
+    input.onchange = async () => {
+      const file = input.files?.[0]; if (!file) return
+      const url = await uploadImage(file); if (!url) return
+      const next = pages.map((p, i) => i === pageIndex
+        ? { ...p, blocks: p.blocks.map(b => b.id === blockId ? { ...b, imageUrl: url } : b) }
+        : p)
+      markDirty(); setPages(next)
+    }
+    input.click()
+  }
+
+  // Project multiplication: grow/shrink the project pages to N projects.
+  const setProjectCount = (n: number) => {
+    n = Math.max(1, Math.min(12, n))
+    const projIdx = pages.map((p, i) => ({ t: p.type, i })).filter(x => x.t === 'project').map(x => x.i)
+    if (!projIdx.length) return
+    const first = projIdx[0], last = projIdx[projIdx.length - 1]
+    const tmpl = pages[first]
+    const before = pages.slice(0, first)
+    const after = pages.slice(last + 1)
+    const projects: Page[] = []
+    for (let k = 0; k < n; k++) {
+      const clone: Page = structuredClone(tmpl)
+      clone.id = `project-${Date.now()}-${k}`
+      clone.blocks = clone.blocks.map((b, bi) => {
+        const nb: Block = { ...b, id: `b-${Date.now()}-${k}-${bi}` }
+        if (b.type === 'title') nb.text = `Project ${String(k + 1).padStart(2, '0')}`
+        if (['render', 'plan', 'section', 'diagram'].includes(b.type)) nb.imageUrl = undefined
+        return nb
+      })
+      projects.push(clone)
+    }
+    markDirty(); setPages([...before, ...projects, ...after]); setCurrentIdx(before.length)
   }
 
   // When the selected page changes type, surface the most relevant layout
@@ -831,6 +871,37 @@ export default function TemplateEditor() {
                     ✨ Auto-fill from my assets
                   </button>
                   <p className="text-[10px] text-gray-400">Cosmo guides you: upload the right image into each slot.</p>
+
+                  {/* Template Variations (Style DNA) */}
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Variations</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {STYLE_DNA.map(st => (
+                        <button key={st.id} onClick={() => { markDirty(); setTokens(st.tokens) }} title={st.description}
+                          className="flex items-center gap-1 px-1.5 py-1 rounded border text-left hover:border-blue-400 transition">
+                          <span className="flex gap-0.5 flex-shrink-0">
+                            <span className="w-2 h-2 rounded-full" style={{ background: st.tokens.background, border: '1px solid #ddd' }} />
+                            <span className="w-2 h-2 rounded-full" style={{ background: st.tokens.primary }} />
+                            <span className="w-2 h-2 rounded-full" style={{ background: st.tokens.accent }} />
+                          </span>
+                          <span className="text-[8px] font-medium text-gray-600 truncate">{st.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Project multiplication */}
+                  {req.pages.some(p => p.type === 'project') && (
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                      <span className="text-[10px] uppercase tracking-wider text-gray-500">Projects</span>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setProjectCount(req.pages.filter(p => p.type === 'project').length - 1)} className="w-6 h-6 rounded border bg-white text-sm leading-none hover:bg-gray-100">−</button>
+                        <span className="text-xs font-semibold w-4 text-center">{req.pages.filter(p => p.type === 'project').length}</span>
+                        <button onClick={() => setProjectCount(req.pages.filter(p => p.type === 'project').length + 1)} className="w-6 h-6 rounded border bg-white text-sm leading-none hover:bg-gray-100">+</button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     {req.pages.map((pg, i) => (
                       <div key={pg.pageId} className="border rounded-lg p-2.5">
@@ -839,7 +910,9 @@ export default function TemplateEditor() {
                           <div key={s.blockId} className="flex items-center gap-1.5 text-[11px] mt-1">
                             <span className={s.filled ? 'text-green-600' : 'text-gray-300'}>{s.filled ? '✓' : '○'}</span>
                             <span className="font-medium text-gray-700 truncate">{s.name}</span>
-                            <span className="text-[8px] text-gray-400 ml-auto uppercase whitespace-nowrap">{s.importance}</span>
+                            {s.filled
+                              ? <span className="text-[8px] text-gray-400 ml-auto uppercase whitespace-nowrap">{s.importance}</span>
+                              : <button onClick={() => fillSlotUpload(pg.pageIndex, s.blockId)} className="ml-auto text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 whitespace-nowrap">⬆ Upload</button>}
                           </div>
                         ))}
                         {pg.textSlots.map(s => (
