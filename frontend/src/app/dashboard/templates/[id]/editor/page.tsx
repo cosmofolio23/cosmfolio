@@ -13,6 +13,7 @@ import {
   seedPagesFromTemplate, getSpec, LAYOUT_CATALOG, LAYOUT_CATEGORIES, LAYOUT_COUNT,
   type LayoutCategory,
 } from '@/components/composer/layoutSpecs'
+import { analyzeTemplate, autoFillTemplate, summaryLine } from '@/components/composer/templateDNA'
 
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
@@ -53,7 +54,7 @@ export default function TemplateEditor() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
-  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style'>('layout')
+  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide'>('guide')
   const [layoutSearch, setLayoutSearch] = useState('')
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
   const [designPacks, setDesignPacks] = useState<DesignPack[]>([])
@@ -389,6 +390,26 @@ export default function TemplateEditor() {
     return [...list].sort((a, b) =>
       (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
   }, [layoutCat, layoutSearch, currentPage?.type])
+
+  // ── Template Intelligence: smart auto-fill from the asset library ──
+  const typeFromName = (name: string): string => {
+    const n = (name || '').toLowerCase()
+    if (/site\s*plan|master/.test(n)) return 'site_plan'
+    if (/plan|floor/.test(n)) return 'plan'
+    if (/section/.test(n)) return 'section'
+    if (/elevation/.test(n)) return 'elevation'
+    if (/diagram|concept/.test(n)) return 'diagram'
+    if (/interior/.test(n)) return 'interior_render'
+    if (/exterior|aerial|render|view|visual/.test(n)) return 'render'
+    return 'render'
+  }
+  const autoFillFromLibrary = () => {
+    if (!assets.length) { alert('Upload images to the Asset library first (Blocks tab → upload).'); return }
+    const byType: Record<string, string[]> = {}
+    for (const a of assets) { const t = typeFromName(a.name); (byType[t] ||= []).push(a.url) }
+    const next = autoFillTemplate(pages, byType)
+    markDirty(); setPages(next)
+  }
 
   // When the selected page changes type, surface the most relevant layout
   // category first (cover pages → the 50+ covers, etc.). Hook stays above the
@@ -781,7 +802,7 @@ export default function TemplateEditor() {
         <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10">
-            {(['layout', 'blocks', 'style'] as const).map(t => (
+            {(['guide', 'layout', 'blocks', 'style'] as const).map(t => (
               <button key={t} onClick={() => setRightTab(t)}
                 className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
                 {t}
@@ -790,6 +811,50 @@ export default function TemplateEditor() {
           </div>
 
           <div className="p-4">
+            {/* GUIDE TAB — Template Intelligence: what this template needs */}
+            {rightTab === 'guide' && (() => {
+              const req = analyzeTemplate(pages)
+              const pct = req.totalSlots ? Math.round((req.filledSlots / req.totalSlots) * 100) : 0
+              return (
+                <div className="space-y-3">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-blue-900">📋 This template needs</p>
+                    <p className="text-[11px] text-blue-700 mt-0.5">{summaryLine(req) || 'text content only'}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-[10px] text-blue-700 whitespace-nowrap">{req.filledSlots}/{req.totalSlots} filled</span>
+                    </div>
+                  </div>
+                  <button onClick={autoFillFromLibrary} className="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700">
+                    ✨ Auto-fill from my assets
+                  </button>
+                  <p className="text-[10px] text-gray-400">Cosmo guides you: upload the right image into each slot.</p>
+                  <div className="space-y-2">
+                    {req.pages.map((pg, i) => (
+                      <div key={pg.pageId} className="border rounded-lg p-2.5">
+                        <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{i + 1}. {pg.purpose}</div>
+                        {pg.imageSlots.map(s => (
+                          <div key={s.blockId} className="flex items-center gap-1.5 text-[11px] mt-1">
+                            <span className={s.filled ? 'text-green-600' : 'text-gray-300'}>{s.filled ? '✓' : '○'}</span>
+                            <span className="font-medium text-gray-700 truncate">{s.name}</span>
+                            <span className="text-[8px] text-gray-400 ml-auto uppercase whitespace-nowrap">{s.importance}</span>
+                          </div>
+                        ))}
+                        {pg.textSlots.map(s => (
+                          <div key={s.blockId} className="flex items-center gap-1.5 text-[11px] mt-1" title={s.prompt}>
+                            <span className={s.filled ? 'text-green-600' : 'text-gray-300'}>{s.filled ? '✓' : '○'}</span>
+                            <span className="text-gray-500 truncate">✎ {s.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* LAYOUT TAB */}
             {rightTab === 'layout' && (
               <div className="space-y-3">
