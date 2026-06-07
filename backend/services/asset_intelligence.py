@@ -96,16 +96,55 @@ def _detect_orientation(filename: str, ctype: str) -> str:
     return "landscape"
 
 
-def _vision_analyze(image_url: str):  # pragma: no cover - hook for a Replicate vision model
-    """Optional pixel-level analysis. Returns a partial dict or None.
+_VISION_MODEL = "yorickvp/llava-13b"
+_vision_version = None  # cached latest version id
 
-    Plug a Replicate multimodal model here (gated on REPLICATE_API_TOKEN). Kept
-    disabled by default so the heuristic baseline is always used until the
-    vision path is tuned + tested.
+_VISION_PROMPT = (
+    "You are analysing an architecture portfolio image. Classify it. Reply with ONLY "
+    'compact JSON: {"type": one of [exterior_render, interior_render, render, plan, '
+    "site_plan, section, elevation, axonometric, exploded_diagram, massing_diagram, "
+    'concept_diagram, diagram, sketch, physical_model, material_board], '
+    '"orientation": one of [landscape, portrait, square]}. No prose.'
+)
+
+
+def _vision_analyze(image_url: str, filename: str = ""):
+    """Pixel-level analysis via a Replicate multimodal model (LLaVA).
+
+    Gated on REPLICATE_API_TOKEN + ENABLE_VISION_TAGGING=1 so it only runs when
+    the account is funded and the operator opts in. Any failure (no credit,
+    timeout, unparseable output) returns None → caller uses the heuristic.
     """
+    if not image_url or not os.getenv("REPLICATE_API_TOKEN"):
+        return None
     if os.getenv("ENABLE_VISION_TAGGING") != "1":
         return None
-    return None
+    try:
+        import replicate
+        import json
+        import re
+        global _vision_version
+        if _vision_version is None:
+            _vision_version = list(replicate.models.get(_VISION_MODEL).versions.list())[0].id
+        out = replicate.run(
+            f"{_VISION_MODEL}:{_vision_version}",
+            input={"image": image_url, "prompt": _VISION_PROMPT, "max_tokens": 150, "temperature": 0.1},
+        )
+        text = "".join(out) if isinstance(out, (list, tuple)) else str(out)
+        m = re.search(r"\{.*\}", text, re.S)
+        if not m:
+            return None
+        data = json.loads(m.group(0))
+        result = {}
+        t = (data.get("type") or "").strip().lower().replace(" ", "_")
+        o = (data.get("orientation") or "").strip().lower()
+        if t:
+            result["type"] = t
+        if o in ("landscape", "portrait", "square"):
+            result["orientation"] = o
+        return result or None
+    except Exception:
+        return None
 
 
 def analyze_asset(image_url: str = "", filename: str = "", category: str | None = None) -> dict:
