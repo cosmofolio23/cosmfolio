@@ -10,7 +10,7 @@ import {
   seedPagesFromTemplate, LAYOUT_CATALOG, LAYOUT_CATEGORIES, getSpec,
   type LayoutCategory,
 } from '@/components/composer/layoutSpecs'
-import { allImages, type Page, type DesignTokens } from '@/components/composer/types'
+import { createBlock, type Page, type DesignTokens } from '@/components/composer/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -219,6 +219,49 @@ export default function PortfolioEditorPage() {
     return first?.file_url || first?.url || ''
   }
 
+  // ---- page management ----
+  const addPage = () => {
+    const newPage: Page = {
+      id: `project-${Date.now()}`, type: 'project', layoutId: 'duoV.titleTopText',
+      blocks: [{ ...createBlock('title'), text: 'New Project' }, createBlock('meta'), createBlock('description'), { ...createBlock('render'), label: 'Render' }],
+    }
+    const next = [...pages, newPage]
+    setPages(next); setCurrentIdx(next.length - 1); queueSave(next, tokens)
+  }
+  const deletePage = (idx: number) => {
+    if (pages.length <= 1) return
+    if (!window.confirm('Delete this page?')) return
+    const next = pages.filter((_, i) => i !== idx)
+    setPages(next); setCurrentIdx(Math.max(0, Math.min(currentIdx, next.length - 1))); queueSave(next, tokens)
+  }
+  const movePage = (idx: number, dir: -1 | 1) => {
+    const j = idx + dir
+    if (j < 0 || j >= pages.length) return
+    const next = [...pages]
+    ;[next[idx], next[j]] = [next[j], next[idx]]
+    setPages(next); setCurrentIdx(j); queueSave(next, tokens)
+  }
+  const setToken = (patch: Partial<DesignTokens>) => {
+    const next = { ...tokens, ...patch }
+    setTokens(next); queueSave(pages, next)
+  }
+
+  // ---- export PDF (backend renders from composer_doc → matches editor) ----
+  const exportPDF = async () => {
+    setSavedNote('Exporting…')
+    try {
+      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/export/pdf`, { headers: { Authorization: `Bearer ${authToken()}` } })
+      if (!res.ok) { setSavedNote(''); alert('Export failed'); return }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `${(portfolio?.name || 'portfolio').replace(/\s+/g, '_')}.pdf`; a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1500); setSavedNote('✓ Exported'); setTimeout(() => setSavedNote(''), 1500)
+    } catch { setSavedNote(''); alert('Export failed') }
+  }
+
+  const HEADING_FONTS = ['Georgia, serif', 'Inter, sans-serif', 'Montserrat, sans-serif', 'Playfair Display, serif', 'Oswald, sans-serif', 'Cormorant Garamond, serif']
+  const BODY_FONTS = ['Inter, sans-serif', 'Roboto, sans-serif', 'Georgia, serif', 'Source Sans Pro, sans-serif', 'Lato, sans-serif']
+
   // filtered + suitability-sorted layouts for the picker
   const filteredLayouts = useMemo(() => {
     let list = LAYOUT_CATALOG
@@ -265,8 +308,9 @@ export default function PortfolioEditorPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-green-600 min-w-[52px] text-right">{savedNote}</span>
+            <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
             <span className="text-[11px] text-gray-400">Page {currentIdx + 1}/{pages.length}</span>
+            <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
           </div>
         </div>
       </header>
@@ -278,13 +322,25 @@ export default function PortfolioEditorPage() {
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
             <div className={`${isMobile ? 'flex gap-2' : 'space-y-1.5'}`}>
               {pages.map((page, idx) => (
-                <button key={page.id} onClick={() => setCurrentIdx(idx)}
-                  className={`w-full text-left p-2.5 rounded-lg border-2 transition ${currentIdx === idx ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}>
-                  <div className="text-[10px] text-gray-400 uppercase">{page.type}</div>
-                  <div className="text-xs font-medium truncate">{idx + 1}. {getSpec(page.layoutId).name}</div>
-                </button>
+                <div key={page.id}
+                  className={`group rounded-lg border-2 transition ${currentIdx === idx ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}>
+                  <button onClick={() => setCurrentIdx(idx)} className="w-full text-left p-2.5">
+                    <div className="text-[10px] text-gray-400 uppercase">{page.type}</div>
+                    <div className="text-xs font-medium truncate">{idx + 1}. {getSpec(page.layoutId).name}</div>
+                  </button>
+                  {!isMobile && (
+                    <div className="flex gap-0.5 px-1.5 pb-1.5 opacity-0 group-hover:opacity-100 transition">
+                      <button onClick={() => movePage(idx, -1)} disabled={idx === 0} title="Move up" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▲</button>
+                      <button onClick={() => movePage(idx, 1)} disabled={idx === pages.length - 1} title="Move down" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▼</button>
+                      <button onClick={() => deletePage(idx)} disabled={pages.length <= 1} title="Delete" className="text-[11px] px-1.5 py-0.5 bg-white rounded border text-red-500 disabled:opacity-30 hover:bg-red-50 ml-auto">✕</button>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
+            {!isMobile && (
+              <button onClick={addPage} className="w-full mt-2 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Add page</button>
+            )}
           </div>
         </aside>
 
@@ -302,6 +358,27 @@ export default function PortfolioEditorPage() {
 
         {/* Right: layout catalog picker */}
         <aside className={`${isMobile ? 'w-full border-t' : 'w-80 border-l'} bg-white overflow-y-auto flex-shrink-0`}>
+          {/* Design tokens */}
+          <div className="p-3 border-b">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Design</h3>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              {([['background', 'Background'], ['text', 'Text'], ['primary', 'Primary'], ['accent', 'Accent']] as const).map(([k, label]) => (
+                <label key={k} className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                  <input type="color" value={(tokens as any)[k] || '#000000'} onChange={e => setToken({ [k]: e.target.value } as any)}
+                    className="w-6 h-6 rounded border cursor-pointer p-0" />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <select value={tokens.headingFont} onChange={e => setToken({ headingFont: e.target.value })}
+              className="w-full mb-1.5 px-2 py-1 text-[11px] border rounded">
+              {HEADING_FONTS.map(f => <option key={f} value={f}>Heading: {f.split(',')[0]}</option>)}
+            </select>
+            <select value={tokens.bodyFont} onChange={e => setToken({ bodyFont: e.target.value })}
+              className="w-full px-2 py-1 text-[11px] border rounded">
+              {BODY_FONTS.map(f => <option key={f} value={f}>Body: {f.split(',')[0]}</option>)}
+            </select>
+          </div>
           <div className="p-3 border-b sticky top-0 bg-white z-10">
             <input value={layoutSearch} onChange={e => setLayoutSearch(e.target.value)}
               placeholder="Search layouts…"
