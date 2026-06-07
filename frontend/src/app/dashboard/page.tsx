@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { apiClient } from '@/lib/api'
+import Logo from '@/components/Logo'
 
 interface Project {
   id: string
@@ -102,9 +103,12 @@ export default function Dashboard() {
       {/* Header */}
       <header className="glass-nav shadow-elevation-1 sticky top-0 z-40">
         <div className="container-centered py-6 md:py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary">CosmoFolio</h1>
-            <p className="text-text-secondary dark:text-dark-text-secondary mt-2">Welcome back, <span className="font-semibold text-text-primary dark:text-dark-text-primary">{user?.name || user?.email}</span></p>
+          <div className="flex items-center gap-4">
+            <Logo size="lg" variant="gold" />
+            <div>
+              <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary">Cosmo<span className="text-gold-gradient">Folio</span></h1>
+              <p className="text-text-secondary dark:text-dark-text-secondary mt-2">Welcome back, <span className="font-semibold text-text-primary dark:text-dark-text-primary">{user?.name || user?.email}</span></p>
+            </div>
           </div>
           <button
             onClick={() => router.push('/signin')}

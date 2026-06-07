@@ -1,108 +1,119 @@
 import React from 'react'
 
 interface LogoProps {
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   animated?: boolean
   variant?: 'light' | 'dark' | 'gold'
   className?: string
+  /** Render the "COSMO / FOLIO" wordmark beneath the mark. */
+  showWordmark?: boolean
 }
 
 /**
- * COSMO FOLIO Official Logo
- * VR Glasses + Cosmic Nodes Design
- * Gold color: #D4AF37
+ * COSMO·FOLIO official logo.
+ * A lustrous gold gradient ring framing a portfolio "spread / goggles" glyph,
+ * with two orbital nodes on a diagonal axis. Matches the brand mark.
  */
 export default function Logo({
   size = 'md',
   animated = false,
   variant = 'gold',
   className = '',
+  showWordmark = false,
 }: LogoProps) {
   const sizeMap = {
-    sm: { width: 32, height: 32 },
-    md: { width: 48, height: 48 },
-    lg: { width: 80, height: 80 },
+    sm: 32, md: 48, lg: 80, xl: 128,
   }
+  const px = sizeMap[size]
 
-  const colorMap = {
-    light: '#111111',
-    dark: '#FFFFFF',
-    gold: '#D4AF37',
-  }
+  // Unique gradient id so multiple logos on a page don't collide.
+  const gid = React.useId().replace(/[:]/g, '')
 
-  const { width, height } = sizeMap[size]
-  const color = colorMap[variant]
+  // Stroke/fill color. `gold` uses the gradient; others use a flat color.
+  const flat = variant === 'light' ? '#111111' : variant === 'dark' ? '#FFFFFF' : '#D4AF37'
+  const stroke = variant === 'gold' ? `url(#grad-${gid})` : flat
+  // The glyph interior reads against the ring — dark on gold, inverse otherwise.
+  const glyphBg = variant === 'gold' ? '#0B0B0B' : 'transparent'
 
   return (
-    <svg
-      width={width}
-      height={height}
-      viewBox="0 0 200 240"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`${animated ? 'animate-spin' : ''} ${className}`}
-    >
-      {/* Cosmic Node Top Left */}
-      <circle cx="35" cy="30" r="6" fill={color} />
-      <line x1="35" y1="36" x2="70" y2="70" stroke={color} strokeWidth="1.5" />
-
-      {/* Main Circle - Outer Ring */}
-      <circle cx="100" cy="100" r="70" stroke={color} strokeWidth="4" fill="none" />
-
-      {/* VR Glasses Frame */}
-      <g fill="none" stroke={variant === 'gold' ? '#000000' : color} strokeWidth="3">
-        {/* Left Lens */}
-        <rect x="45" y="80" width="30" height="28" rx="4" ry="4" />
-        {/* Right Lens */}
-        <rect x="125" y="80" width="30" height="28" rx="4" ry="4" />
-        {/* Bridge */}
-        <line x1="75" y1="94" x2="125" y2="94" />
-      </g>
-
-      {/* Left Lens Details - Grid Pattern */}
-      <g
-        stroke={variant === 'gold' ? '#000000' : color}
-        strokeWidth="1.5"
+    <div className={`inline-flex flex-col items-center ${className}`}>
+      <svg
+        width={px}
+        height={px}
+        viewBox="0 0 200 200"
         fill="none"
-        opacity="0.6"
+        xmlns="http://www.w3.org/2000/svg"
+        className={animated ? 'animate-[spin_18s_linear_infinite]' : ''}
       >
-        <line x1="52" y1="80" x2="52" y2="108" />
-        <line x1="60" y1="80" x2="60" y2="100" />
-        <line x1="45" y1="88" x2="75" y2="88" />
-        <line x1="45" y1="96" x2="70" y2="96" />
-      </g>
+        <defs>
+          <linearGradient id={`grad-${gid}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FBE7A1" />
+            <stop offset="35%" stopColor="#E5C66B" />
+            <stop offset="65%" stopColor="#C99B30" />
+            <stop offset="100%" stopColor="#9C7416" />
+          </linearGradient>
+        </defs>
 
-      {/* Right Lens Details - Lines Pattern */}
-      <g
-        stroke={variant === 'gold' ? '#000000' : color}
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.6"
-      >
-        <line x1="130" y1="82" x2="150" y2="82" />
-        <line x1="130" y1="88" x2="150" y2="88" />
-        <line x1="130" y1="94" x2="150" y2="94" />
-        <line x1="130" y1="100" x2="150" y2="100" />
-        <line x1="130" y1="106" x2="145" y2="106" />
-      </g>
+        {/* Orbital axis + nodes (top-left, bottom-right) */}
+        <line x1="44" y1="40" x2="78" y2="74" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="40" cy="36" r="8" fill={stroke} />
+        <line x1="122" y1="126" x2="156" y2="160" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="160" cy="164" r="8" fill={stroke} />
 
-      {/* Cosmic Node Bottom Right */}
-      <circle cx="165" cy="170" r="6" fill={color} />
-      <line x1="165" y1="164" x2="130" y2="130" stroke={color} strokeWidth="1.5" />
+        {/* Outer ring */}
+        <circle cx="100" cy="100" r="66" stroke={stroke} strokeWidth="5" fill="none" />
 
-      {/* Optional Glow Effect for Animated State */}
-      {animated && (
-        <circle
-          cx="100"
-          cy="100"
-          r="75"
-          stroke={color}
-          strokeWidth="2"
-          fill="none"
-          opacity="0.3"
-          className="animate-pulse"
-        />
+        {/* Portfolio "spread / goggles" glyph */}
+        <g>
+          {/* body */}
+          <path
+            d="M58 78 H142 a8 8 0 0 1 8 8 V112 a8 8 0 0 1 -8 8 H112 l-12 12 l-12 -12 H58 a8 8 0 0 1 -8 -8 V86 a8 8 0 0 1 8 -8 Z"
+            fill={glyphBg}
+            stroke={stroke}
+            strokeWidth="4"
+            strokeLinejoin="round"
+          />
+          {/* left page: little layout grid */}
+          <g stroke={stroke} strokeWidth="2.4" fill="none">
+            <rect x="64" y="86" width="30" height="26" rx="2" />
+            <line x1="74" y1="86" x2="74" y2="112" />
+            <line x1="74" y1="99" x2="94" y2="99" />
+          </g>
+          {/* right page: text lines */}
+          <g stroke={stroke} strokeWidth="2.4" strokeLinecap="round">
+            <line x1="108" y1="90" x2="136" y2="90" />
+            <line x1="108" y1="97" x2="136" y2="97" />
+            <line x1="108" y1="104" x2="128" y2="104" />
+          </g>
+        </g>
+
+        {animated && (
+          <circle cx="100" cy="100" r="72" stroke={stroke} strokeWidth="1.5" fill="none" opacity="0.25" className="animate-pulse" />
+        )}
+      </svg>
+
+      {showWordmark && (
+        <div className="mt-2 text-center leading-none select-none">
+          <div
+            className="font-semibold tracking-[0.32em]"
+            style={{
+              fontSize: px * 0.22,
+              backgroundImage: variant === 'gold' ? 'linear-gradient(135deg,#FBE7A1,#C99B30,#9C7416)' : undefined,
+              WebkitBackgroundClip: variant === 'gold' ? 'text' : undefined,
+              WebkitTextFillColor: variant === 'gold' ? 'transparent' : undefined,
+              color: variant === 'gold' ? undefined : flat,
+            }}
+          >
+            COSMO
+          </div>
+          <div
+            className="tracking-[0.5em] mt-0.5"
+            style={{ fontSize: px * 0.12, color: variant === 'gold' ? '#C99B30' : flat }}
+          >
+            FOLIO
+          </div>
+        </div>
       )}
-    </svg>
+    </div>
   )
 }
