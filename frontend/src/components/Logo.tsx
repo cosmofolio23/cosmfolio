@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -7,12 +8,14 @@ interface LogoProps {
   className?: string
   /** Render the "COSMO / FOLIO" wordmark beneath the mark. */
   showWordmark?: boolean
+  /** Use the uploaded image logo instead of SVG */
+  useImage?: boolean
 }
 
 /**
  * COSMO·FOLIO official logo.
- * A lustrous gold gradient ring framing a portfolio "spread / goggles" glyph,
- * with two orbital nodes on a diagonal axis. Matches the brand mark.
+ * Uses the custom uploaded logo.png by default; falls back to the original
+ * gold gradient ring SVG glyph if needed.
  */
 export default function Logo({
   size = 'md',
@@ -20,11 +23,38 @@ export default function Logo({
   variant = 'gold',
   className = '',
   showWordmark = false,
+  useImage = true,
 }: LogoProps) {
   const sizeMap = {
     sm: 32, md: 48, lg: 80, xl: 128,
   }
   const px = sizeMap[size]
+
+  // Use the image logo by default
+  if (useImage) {
+    return (
+      <div className={`inline-flex flex-col items-center ${className}`}>
+        <Image
+          src="/logo.png"
+          alt="COSMO FOLIO"
+          width={px}
+          height={px}
+          className={animated ? 'animate-[spin_18s_linear_infinite]' : ''}
+          priority
+        />
+        {showWordmark && (
+          <div className="mt-2 text-center leading-none select-none">
+            <div className="font-semibold tracking-[0.32em]" style={{ fontSize: px * 0.22, color: '#C99B30' }}>
+              COSMO
+            </div>
+            <div className="tracking-[0.5em] mt-0.5" style={{ fontSize: px * 0.12, color: '#C99B30' }}>
+              FOLIO
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // Unique gradient id so multiple logos on a page don't collide.
   const gid = React.useId().replace(/[:]/g, '')
