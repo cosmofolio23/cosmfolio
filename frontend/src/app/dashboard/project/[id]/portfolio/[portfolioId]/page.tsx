@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
 import {
   seedPagesFromTemplate, LAYOUT_CATALOG, LAYOUT_CATEGORIES, getSpec,
@@ -249,6 +250,7 @@ export default function PortfolioEditorPage() {
         <div className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href={`/dashboard/project/${params.id}/generate`} className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
+            <Logo size="sm" variant="gold" />
             <div>
               <h1 className="text-base font-semibold">{portfolio?.name || 'Portfolio'}</h1>
               <p className="text-[11px] text-gray-400">Parametric editor · {LAYOUT_CATALOG.length} layouts available</p>

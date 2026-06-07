@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 
 interface Project {
   id: string
@@ -66,6 +67,7 @@ export default function ProjectPage() {
               Back
             </Link>
             <div className="divider h-6"></div>
+            <Logo size="sm" variant="gold" />
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-charcoal">{project?.title || 'Loading...'}</h1>
             </div>

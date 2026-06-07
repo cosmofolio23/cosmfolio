@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -380,7 +381,7 @@ export default function SheetPage() {
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 text-sm">← Dashboard</Link>
             <span className="text-gray-200">|</span>
-            <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center text-sm">📄</div>
+            <Logo size="sm" variant="gold" />
             <span className="font-semibold text-gray-900">{project?.title || 'Sheet Creator'}</span>
           </div>
           <span className="text-xs bg-purple-100 text-purple-600 px-3 py-1 rounded-full font-medium">Presentation Sheet Creator</span>
