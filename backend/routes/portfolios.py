@@ -878,6 +878,9 @@ async def save_customization(
             ps["style_pack"] = body["style_pack_data"]
         if body.get("page_layouts") is not None:
             ps["page_layouts"] = body["page_layouts"]
+        # Full parametric composer document (pages + tokens) from the editor
+        if body.get("composer_doc") is not None:
+            ps["composer_doc"] = body["composer_doc"]
 
         # Save back
         update_data = {"page_structure": ps}

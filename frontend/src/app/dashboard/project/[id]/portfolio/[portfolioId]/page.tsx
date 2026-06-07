@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
@@ -120,6 +120,15 @@ export default function PortfolioEditorPage() {
       const pack = ps.style_pack || meta.style_pack
       setTokens(tokensFromPack(pack))
 
+      // If a full parametric document was saved (text + image edits), restore
+      // it directly so edits survive reloads. (finally sets isLoading=false)
+      const savedDoc = ps.composer_doc
+      if (savedDoc && Array.isArray(savedDoc.pages) && savedDoc.pages.length) {
+        setPages(savedDoc.pages)
+        if (savedDoc.tokens) setTokens(savedDoc.tokens)
+        return
+      }
+
       // 2) project assets to fill images
       let assetsByCat: Record<string, any[]> = {}
       try {
@@ -152,28 +161,53 @@ export default function PortfolioEditorPage() {
     }
   }
 
-  const persistLayouts = async (next: Page[]) => {
-    const map: Record<string, string> = {}
-    next.forEach(p => { map[p.id] = p.layoutId })
+  // Persist the FULL parametric document (pages + tokens) so text/image edits
+  // survive reloads — not just layout choices.
+  const saveDoc = async (nextPages: Page[], nextTokens: DesignTokens) => {
     try {
-      await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/pages`, {
-        method: 'POST',
+      await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/customization`, {
+        method: 'PATCH',
         headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page_layouts: map }),
+        body: JSON.stringify({
+          page_layouts: Object.fromEntries(nextPages.map(p => [p.id, p.layoutId])),
+          composer_doc: { pages: nextPages, tokens: nextTokens },
+        }),
       })
       setSavedNote('✓ Saved'); setTimeout(() => setSavedNote(''), 1500)
     } catch { /* best-effort */ }
+  }
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const queueSave = (nextPages: Page[], nextTokens: DesignTokens) => {
+    setSavedNote('Saving…')
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => void saveDoc(nextPages, nextTokens), 1200)
   }
 
   const switchLayout = (layoutId: string) => {
     if (!currentPage) return
     const next = pages.map((p, i) => i === currentIdx ? { ...p, layoutId } : p)
     setPages(next)
-    void persistLayouts(next)
+    queueSave(next, tokens)
   }
 
   const updatePage = (updated: Page) => {
-    setPages(prev => prev.map((p, i) => i === currentIdx ? updated : p))
+    const next = pages.map((p, i) => i === currentIdx ? updated : p)
+    setPages(next)
+    queueSave(next, tokens)
+  }
+
+  // Upload a brand-new image from inside the editor; returns its hosted URL.
+  const uploadImage = async (file: File): Promise<string> => {
+    const fd = new FormData()
+    fd.append('files', file)
+    const res = await fetch(`${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=render`, {
+      method: 'POST', headers: { Authorization: `Bearer ${authToken()}` }, body: fd,
+    })
+    if (!res.ok) throw new Error('Upload failed')
+    const data = await res.json().catch(() => null)
+    const first = Array.isArray(data) ? data[0] : (data?.assets?.[0] || data?.files?.[0] || data)
+    return first?.file_url || first?.url || ''
   }
 
   // filtered + suitability-sorted layouts for the picker
@@ -248,7 +282,7 @@ export default function PortfolioEditorPage() {
         <main className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-8'} bg-gray-300/40`}>
           {currentPage && (
             <div className="max-w-[680px] mx-auto">
-              <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} />
+              <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
               <div className="mt-3 text-center text-[11px] text-gray-400">
                 {currentPage.type} · {getSpec(currentPage.layoutId).name}
               </div>
