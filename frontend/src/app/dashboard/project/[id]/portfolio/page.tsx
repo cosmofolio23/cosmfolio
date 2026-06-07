@@ -46,6 +46,9 @@ export default function PortfolioWizardPage() {
 
   return (
     <div className="min-h-screen bg-bg-subtle">
+      <div className="max-w-7xl mx-auto px-6 pt-4">
+        <button onClick={() => router.push(`/dashboard/project/${projectId}`)} className="text-gray-500 hover:text-gray-900 text-sm">← Back to Project</button>
+      </div>
       <PortfolioWizard
         projectId={projectId}
         onComplete={handleWizardComplete}

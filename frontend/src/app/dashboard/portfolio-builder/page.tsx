@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { usePortfolioBuilder } from '@/store/portfolioBuilder'
 import { DesignTokenProvider } from '@/components/design-system/DesignTokenProvider'
 import { StylePackSelector } from '@/components/preview/StylePackSelector'
@@ -29,7 +30,8 @@ export default function PortfolioBuilder() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
         <div className="bg-white border-b shadow-sm">
           <div className="max-w-7xl mx-auto px-8 py-6">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Portfolio Generator</h1>
+            <Link href="/dashboard" className="text-gray-400 hover:text-gray-700 text-sm">← Dashboard</Link>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4 mt-2">Portfolio Generator</h1>
             <div className="flex items-center justify-between">
               <div className="text-gray-600">Step <span className="font-bold text-blue-600">{builder.currentStep}</span> of <span className="font-bold">{builder.getTotalSteps()}</span></div>
               <div className="w-64 bg-gray-200 rounded-full h-2">
