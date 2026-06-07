@@ -24,7 +24,7 @@ export interface Region {
   imageIndex?: number
 }
 
-export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact'
+export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume'
 
 export interface LayoutSpec {
   id: string
@@ -36,7 +36,7 @@ export interface LayoutSpec {
   kind?: 'overlay'   // cover overlay rendering
 }
 
-export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact']
+export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume']
 
 /* ------------------------------- geometry -------------------------------- */
 
@@ -157,6 +157,50 @@ const FAMILIES: Family[] = [
     key: 'bandsThree', name: 'Three Bands', category: 'Strip', count: 3, build: r => gridCells(r, 3, 1) },
   {
     key: 'gridSixTall', name: '3×2 Grid', category: 'Grid', count: 6, build: r => gridCells(r, 3, 2) },
+  { key: 'gridEight', name: '2×4 Grid', category: 'Grid', count: 8, build: r => gridCells(r, 2, 4) },
+  { key: 'gridTwelve', name: 'Contact XL', category: 'Grid', count: 12, build: r => gridCells(r, 3, 4) },
+  {
+    key: 'sidebarLeft', name: 'Sidebar + Feature', category: 'Asymmetric', count: 4, build: r => {
+      const sw = Math.round(r.cs * 0.32)
+      const side = gridCells({ c0: r.c0, cs: sw, r0: r.r0, rs: r.rs }, 3, 1, 1)
+      const main = img(0, r.c0 + sw, r.cs - sw, r.r0, r.rs)
+      return [main, ...side]
+    },
+  },
+  {
+    key: 'sidebarRight', name: 'Feature + Sidebar', category: 'Asymmetric', count: 4, build: r => {
+      const sw = Math.round(r.cs * 0.32)
+      const main = img(0, r.c0, r.cs - sw, r.r0, r.rs)
+      const side = gridCells({ c0: r.c0 + r.cs - sw, cs: sw, r0: r.r0, rs: r.rs }, 3, 1, 1)
+      return [main, ...side]
+    },
+  },
+  {
+    key: 'topBannerQuad', name: 'Banner + Quad', category: 'Hero', count: 5, build: r => {
+      const topH = Math.round(r.rs * 0.42)
+      const banner = img(0, r.c0, r.cs, r.r0, topH)
+      const quad = gridCells({ c0: r.c0, cs: r.cs, r0: r.r0 + topH, rs: r.rs - topH }, 2, 2, 1)
+      return [banner, ...quad]
+    },
+  },
+  {
+    key: 'centerStage', name: 'Center Stage', category: 'Single', count: 1, build: r => {
+      const cm = Math.round(r.cs * 0.16), rm = Math.round(r.rs * 0.14)
+      return [img(0, r.c0 + cm, r.cs - cm * 2, r.r0 + rm, r.rs - rm * 2)]
+    },
+  },
+  {
+    key: 'pinwheel', name: 'Pinwheel', category: 'Grid', count: 4, build: r => {
+      const cMid = r.c0 + Math.round(r.cs * 0.55)
+      const rMid = r.r0 + Math.round(r.rs * 0.55)
+      return [
+        img(0, r.c0, cMid - r.c0, r.r0, rMid - r.r0),
+        img(1, cMid, r.c0 + r.cs - cMid, r.r0, Math.round(r.rs * 0.45)),
+        img(2, cMid, r.c0 + r.cs - cMid, rMid, r.r0 + r.rs - rMid),
+        img(3, r.c0, cMid - r.c0, rMid, r.r0 + r.rs - rMid),
+      ]
+    },
+  },
 ]
 
 /* --------------------------------- frames -------------------------------- */
@@ -368,11 +412,67 @@ const CONTACT_SPECS: LayoutSpec[] = [
   { id: 'contact.split', name: 'Contact · With Image', category: 'Contact', suits: ['contact'], imageCount: 1, regions: [{ role: 'title', c0: 1, cs: 5, r0: 4, rs: 2 }, { role: 'text', c0: 1, cs: 5, r0: 6, rs: 4 }, img(0, 7, 6, 1, 12)] },
 ]
 
+/* --------------------------------- resume -------------------------------- */
+/** CV / resume page layouts. Roles map: title=name, subtitle=role/tagline,
+ *  meta=contact or skills key/values, text=experience/education body,
+ *  legend=skills list, image=headshot. */
+const RESUME_SPECS: LayoutSpec[] = [
+  { id: 'resume.classic', name: 'Resume · Classic', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 },
+      { role: 'meta', c0: 1, cs: 4, r0: 5, rs: 8 }, { role: 'text', c0: 6, cs: 7, r0: 5, rs: 8 },
+    ] },
+  { id: 'resume.sidebar', name: 'Resume · Sidebar', category: 'Resume', suits: ['resume'], imageCount: 1,
+    regions: [
+      img(0, 1, 4, 1, 4), { role: 'meta', c0: 1, cs: 4, r0: 5, rs: 4 }, { role: 'legend', c0: 1, cs: 4, r0: 9, rs: 4 },
+      { role: 'title', c0: 5, cs: 8, r0: 1, rs: 2 }, { role: 'subtitle', c0: 5, cs: 8, r0: 3, rs: 1 }, { role: 'text', c0: 5, cs: 8, r0: 4, rs: 9 },
+    ] },
+  { id: 'resume.modern', name: 'Resume · Modern Header', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 8, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 8, r0: 3, rs: 1 }, { role: 'meta', c0: 9, cs: 4, r0: 1, rs: 3 },
+      { role: 'text', c0: 1, cs: 6, r0: 5, rs: 8 }, { role: 'legend', c0: 7, cs: 6, r0: 5, rs: 8 },
+    ] },
+  { id: 'resume.minimal', name: 'Resume · Minimal', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 2, cs: 10, r0: 2, rs: 2 }, { role: 'subtitle', c0: 2, cs: 10, r0: 4, rs: 1 }, { role: 'text', c0: 2, cs: 10, r0: 6, rs: 6 },
+    ] },
+  { id: 'resume.photoTop', name: 'Resume · Photo Top', category: 'Resume', suits: ['resume'], imageCount: 1,
+    regions: [
+      img(0, 1, 12, 1, 4), { role: 'title', c0: 1, cs: 8, r0: 5, rs: 2 }, { role: 'subtitle', c0: 1, cs: 8, r0: 7, rs: 1 },
+      { role: 'meta', c0: 9, cs: 4, r0: 5, rs: 3 }, { role: 'text', c0: 1, cs: 12, r0: 8, rs: 5 },
+    ] },
+  { id: 'resume.twoColumn', name: 'Resume · Two Column', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'text', c0: 1, cs: 6, r0: 4, rs: 9 }, { role: 'meta', c0: 7, cs: 6, r0: 4, rs: 9 },
+    ] },
+  { id: 'resume.timeline', name: 'Resume · Timeline', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 4, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 4, r0: 3, rs: 2 }, { role: 'meta', c0: 1, cs: 4, r0: 6, rs: 6 },
+      { role: 'text', c0: 6, cs: 7, r0: 1, rs: 12 },
+    ] },
+  { id: 'resume.skillsRail', name: 'Resume · Skills Rail', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 9, r0: 3, rs: 1 },
+      { role: 'text', c0: 1, cs: 9, r0: 5, rs: 8 }, { role: 'legend', c0: 10, cs: 3, r0: 5, rs: 8 },
+    ] },
+  { id: 'resume.split', name: 'Resume · Split', category: 'Resume', suits: ['resume'], imageCount: 1,
+    regions: [
+      { role: 'title', c0: 1, cs: 5, r0: 2, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 4, rs: 1 }, { role: 'meta', c0: 1, cs: 5, r0: 6, rs: 6 },
+      img(0, 7, 6, 1, 4), { role: 'text', c0: 7, cs: 6, r0: 5, rs: 8 },
+    ] },
+  { id: 'resume.compact', name: 'Resume · Compact', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 8, r0: 1, rs: 2 }, { role: 'meta', c0: 9, cs: 4, r0: 1, rs: 2 },
+      { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 12, r0: 5, rs: 8 },
+    ] },
+]
+
 export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...COVER_SPECS,
   ...buildImageSpecs(),
   ...TEXT_SPECS,
   ...CONTACT_SPECS,
+  ...RESUME_SPECS,
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))

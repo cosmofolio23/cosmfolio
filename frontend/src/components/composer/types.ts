@@ -42,7 +42,7 @@ export interface Block {
   fields?: MetaField[]
 }
 
-export type PageType = 'cover' | 'about' | 'project' | 'contact'
+export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume'
 
 export interface Page {
   id: string
