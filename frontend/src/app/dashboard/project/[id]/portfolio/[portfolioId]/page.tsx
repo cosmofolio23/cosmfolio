@@ -228,6 +228,19 @@ export default function PortfolioEditorPage() {
     const next = [...pages, newPage]
     setPages(next); setCurrentIdx(next.length - 1); queueSave(next, tokens)
   }
+  const addResumePage = () => {
+    const newPage: Page = {
+      id: `resume-${Date.now()}`, type: 'resume', layoutId: 'resume.classic',
+      blocks: [
+        { ...createBlock('title'), text: 'Your Name' },
+        { ...createBlock('subtitle'), text: 'Architect · Designer' },
+        createBlock('meta'),
+        { ...createBlock('description'), text: 'Experience, education, and skills…' },
+      ],
+    }
+    const next = [...pages, newPage]
+    setPages(next); setCurrentIdx(next.length - 1); queueSave(next, tokens)
+  }
   const deletePage = (idx: number) => {
     if (pages.length <= 1) return
     if (!window.confirm('Delete this page?')) return
@@ -339,7 +352,10 @@ export default function PortfolioEditorPage() {
               ))}
             </div>
             {!isMobile && (
-              <button onClick={addPage} className="w-full mt-2 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Add page</button>
+              <div className="mt-2 flex gap-1.5">
+                <button onClick={addPage} className="flex-1 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Page</button>
+                <button onClick={addResumePage} className="flex-1 py-2 text-xs font-medium text-purple-600 border-2 border-dashed border-purple-200 rounded-lg hover:bg-purple-50">+ Resume</button>
+              </div>
             )}
           </div>
         </aside>

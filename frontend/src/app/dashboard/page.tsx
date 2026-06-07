@@ -364,7 +364,7 @@ export default function Dashboard() {
                       {projects
                         .filter((p) => p.project_type === 'sheet')
                         .map((project) => (
-                          <Link key={project.id} href={`/dashboard/project/${project.id}`}>
+                          <Link key={project.id} href={`/dashboard/project/${project.id}/sheet`}>
                             <div className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10">
                               <div className="h-48 bg-gradient-to-br from-amber-100/50 to-amber-200/50 dark:from-amber-900/30 dark:to-amber-800/30 flex items-center justify-center overflow-hidden relative">
                                 <div className="text-5xl opacity-40">🎨</div>
