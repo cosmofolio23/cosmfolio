@@ -74,6 +74,25 @@ async def delete_project(project_id: str, authorization: str = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
+
+@router.post("/{project_id}/analyze-assets")
+async def analyze_project_assets(project_id: str, authorization: str = Header(None)):
+    """Phase 4: auto-tag a project's assets (type / subtype / orientation /
+    priority / best_usage) for the composition engine."""
+    current_user = get_current_user(authorization)
+    try:
+        proj = supabase.table("projects").select("id").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not proj.data:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your project")
+        assets = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+        from services.asset_intelligence import analyze_assets
+        tags = analyze_assets(assets.data or [])
+        return {"project_id": project_id, "count": len(tags), "assets": tags}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 # ==================== Publishing ====================
 
 def generate_slug(title: str, project_id: str) -> str:
