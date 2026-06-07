@@ -56,6 +56,7 @@ export default function TemplateEditor() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
   const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide'>('guide')
+  const [mode, setMode] = useState<'view' | 'edit'>('edit')   // spec: Preview ↔ Edit
   const [layoutSearch, setLayoutSearch] = useState('')
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
   const [designPacks, setDesignPacks] = useState<DesignPack[]>([])
@@ -451,6 +452,26 @@ export default function TemplateEditor() {
     markDirty(); setPages([...before, ...projects, ...after]); setCurrentIdx(before.length)
   }
 
+  // Content Intelligence: free, deterministic "AI" draft per text slot.
+  const fillSlotText = (pageIndex: number, blockId: string, text: string) => {
+    const next = pages.map((p, i) => i === pageIndex
+      ? { ...p, blocks: p.blocks.map(b => b.id === blockId ? { ...b, text } : b) }
+      : p)
+    markDirty(); setPages(next)
+  }
+  const draftText = (slotName: string): string => {
+    const proj = portfolioTitle || (template?.name) || 'this project'
+    const n = slotName.toLowerCase()
+    if (/concept/.test(n)) return `The concept for ${proj} responds to its site through a clear spatial idea — organising light, circulation, and material into a coherent architectural experience.`
+    if (/philosophy/.test(n)) return `My work explores the relationship between space, light, and human experience, pursuing clarity and a strong dialogue between form and context.`
+    if (/sustainab/.test(n)) return `Passive strategies — orientation, natural ventilation, and daylight — reduce energy demand, while durable, low-impact materials support a sustainable lifecycle.`
+    if (/bio|about/.test(n)) return `A designer focused on thoughtful, context-driven architecture across scales, with an interest in materiality, drawing, and spatial narrative.`
+    if (/title|name/.test(n)) return proj
+    if (/subtitle|tagline|role/.test(n)) return 'Architecture & Design'
+    if (/info|location|year/.test(n)) return 'Location · Year · Typology'
+    return `A concise, professional statement about ${proj} for an architecture portfolio.`
+  }
+
   // When the selected page changes type, surface the most relevant layout
   // category first (cover pages → the 50+ covers, etc.). Hook stays above the
   // early returns to keep the render hook-count stable (React #310).
@@ -730,6 +751,39 @@ export default function TemplateEditor() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-center"><p className="text-gray-600 mb-4">Template not found</p><Link href="/dashboard/templates" className="text-blue-600 hover:underline">← Back to Templates</Link></div></div>
   }
 
+  // ── VIEW / PREVIEW MODE: show the finished portfolio, edit on click ──
+  if (mode === 'view') {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+          <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard/my-portfolios" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
+              <div>
+                <h1 className="text-base font-semibold">{portfolioTitle || template?.name || 'Portfolio'}</h1>
+                <p className="text-[11px] text-gray-400">Preview · {pages.length} pages</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900 disabled:opacity-50">📄 Export PDF</button>
+              <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-300/40">
+          <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
+            {pages.map((page) => (
+              <div key={page.id}>
+                <PageComposer page={page} tokens={tokens} onChange={() => {}} />
+                <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Top bar */}
@@ -756,6 +810,7 @@ export default function TemplateEditor() {
             {projectId && (
               <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700" title="View as book">📖 Book</Link>
             )}
+            <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
             <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">📄 PDF</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
@@ -919,6 +974,7 @@ export default function TemplateEditor() {
                           <div key={s.blockId} className="flex items-center gap-1.5 text-[11px] mt-1" title={s.prompt}>
                             <span className={s.filled ? 'text-green-600' : 'text-gray-300'}>{s.filled ? '✓' : '○'}</span>
                             <span className="text-gray-500 truncate">✎ {s.name}</span>
+                            <button onClick={() => fillSlotText(pg.pageIndex, s.blockId, draftText(s.name))} className="ml-auto text-[9px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 whitespace-nowrap" title={s.prompt}>✨ AI</button>
                           </div>
                         ))}
                       </div>
