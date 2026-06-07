@@ -157,6 +157,8 @@ export default function MyPortfoliosPage() {
         <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              <Link href="/dashboard" className="text-gray-400 hover:text-gray-700 text-sm whitespace-nowrap">← Dashboard</Link>
+              <div className="h-8 w-px bg-gray-200" />
               <Logo size="md" variant="gold" />
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">My Portfolios</h1>
