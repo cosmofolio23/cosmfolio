@@ -254,31 +254,120 @@ export default function SheetPage() {
 
   const generateSheet = async () => {
     setGenerating(true)
+    // Persist best-effort to the real backend endpoint (non-blocking). The sheet
+    // is fully represented client-side, so export works regardless of backend.
     try {
-      const res = await fetch(`${API_URL}/api/sheets/create`, {
+      await fetch(`${API_URL}/api/projects/${params.id}/sheets`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${savedToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          project_id: params.id,
-          sheet_type: selectedSheetType,
-          size: selectedSize,
-          orientation: selectedOrientation,
-          theme: selectedTheme,
-          title: sheetTitle,
-          caption: sheetCaption,
-        })
-      })
-      if (res.ok) {
-        const d = await res.json()
-        setSheetId(d.id || d.sheet_id)
-        setStep('export')
-      } else {
-        // fallback - go to export anyway
-        setSheetId('preview')
-        setStep('export')
-      }
-    } catch { setSheetId('preview'); setStep('export') }
-    finally { setGenerating(false) }
+          title: sheetTitle, template_id: '', page_size: selectedSize,
+          orientation: selectedOrientation, semester: '',
+        }),
+      }).then(r => r.ok ? r.json() : null).then(d => { if (d?.id) setSheetId(d.id) }).catch(() => {})
+    } catch { /* ignore — export is client-side */ }
+    setSheetId(prev => prev || `sheet_${Date.now()}`)
+    setStep('export')
+    setGenerating(false)
+  }
+
+  /* ---------------- client-side export (PDF / PNG / HTML) ---------------- */
+  const SIZE_MM: Record<string, [number, number]> = { A1: [841, 594], A2: [594, 420], A3: [420, 297] }
+
+  const escapeHtml = (s: string) =>
+    (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  const sheetImages = (): string[] =>
+    Object.values(assets).flat().map((a: any) => a.file_url).filter((u: any) => u?.startsWith('http'))
+
+  const buildGridHTML = (type: string | null, imgs: string[], accent: string): string => {
+    if (imgs.length === 0) {
+      const cells = [0, 1, 2].map(() =>
+        `<div class="cell ph">🖼️</div>`).join('')
+      return `<div class="grid" style="grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr">${cells}</div>`
+    }
+    const cols = type === 'floor_plans' || type === 'details' ? 3 : type === 'renders' || type === 'process' ? 3 : 2
+    const max = cols * 3
+    const used = imgs.slice(0, max)
+    const cells = used.map((u, i) =>
+      `<div class="cell${i === 0 && used.length > 2 ? ' hero' : ''}"><img src="${u}" crossorigin="anonymous"/></div>`).join('')
+    return `<div class="grid" style="grid-template-columns:repeat(${cols},1fr);grid-auto-rows:1fr">${cells}</div>`
+  }
+
+  const buildSheetDocument = (): string => {
+    const themeData = THEMES.find(t => t.id === selectedTheme)
+    const [bg, text, accent] = themeData?.colors || ['#FFFFFF', '#111111', '#0057FF']
+    const [w, h] = SIZE_MM[selectedSize] || SIZE_MM.A1
+    const isLandscape = selectedOrientation === 'landscape'
+    const pw = isLandscape ? w : h, ph = isLandscape ? h : w
+    const typeName = SHEET_TYPES.find(s => s.id === selectedSheetType)?.name || 'Presentation Sheet'
+    const grid = buildGridHTML(selectedSheetType, sheetImages(), accent)
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(sheetTitle || 'Sheet')}</title>
+<style>
+  @page { size: ${selectedSize} ${isLandscape ? 'landscape' : 'portrait'}; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { background: #e5e5e5; }
+  .sheet { width: ${pw}mm; height: ${ph}mm; background: ${bg}; color: ${text}; position: relative; overflow: hidden; font-family: Arial, Helvetica, sans-serif; margin: 0 auto; }
+  .hdr { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 7mm 10mm; background: ${accent}; color: #fff; }
+  .hdr h1 { font-size: 6mm; letter-spacing: .3px; } .hdr p { font-size: 3mm; opacity: .85; }
+  .body { position: absolute; top: 22mm; left: 8mm; right: 8mm; bottom: 13mm; }
+  .ftr { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; padding: 4mm 10mm; font-size: 3mm; color: ${text}99; border-top: 1px solid ${accent}40; }
+  .grid { width: 100%; height: 100%; display: grid; gap: 4mm; }
+  .cell { overflow: hidden; border-radius: 2mm; background: ${accent}12; }
+  .cell.hero { grid-column: span 2; grid-row: span 2; }
+  .cell.ph { display: flex; align-items: center; justify-content: center; font-size: 14mm; border: 1px dashed ${accent}55; }
+  .cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media print { html, body { background: #fff; } .sheet { margin: 0; } }
+</style></head><body><div class="sheet">
+  <div class="hdr"><div><h1>${escapeHtml(sheetTitle || 'Architecture Project')}</h1><p>${escapeHtml(typeName)}</p></div>
+  <div style="text-align:right"><p>${selectedSize} • ${selectedOrientation}</p><p>${escapeHtml(themeData?.name || '')}</p></div></div>
+  <div class="body">${grid}</div>
+  <div class="ftr"><span>${escapeHtml(sheetCaption || '')}</span><span style="color:${accent}">CosmoFolio</span></div>
+</div></body></html>`
+  }
+
+  const downloadBlob = (content: BlobPart, filename: string, type: string) => {
+    const url = URL.createObjectURL(new Blob([content], { type }))
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1500)
+  }
+
+  const fileBase = () => (sheetTitle || 'sheet').replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') || 'sheet'
+
+  const exportHTML = () => downloadBlob(buildSheetDocument(), `${fileBase()}.html`, 'text/html')
+
+  const exportPDF = () => {
+    const win = window.open('', '_blank')
+    if (!win) { alert('Please allow pop-ups for this site to export as PDF.'); return }
+    win.document.write(buildSheetDocument())
+    win.document.close()
+    const go = () => { try { win.focus(); win.print() } catch { /* user closed */ } }
+    // give images time to load before printing
+    win.onload = () => setTimeout(go, 700)
+    setTimeout(go, 1800) // fallback if onload already fired
+  }
+
+  const exportPNG = async () => {
+    const node = document.getElementById('sheet-capture')
+    if (!node) { alert('Open the preview first.'); return }
+    setUploadProgress('Rendering PNG…')
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const canvas = await html2canvas(node as HTMLElement, { useCORS: true, scale: 2, backgroundColor: null, logging: false })
+      canvas.toBlob(blob => {
+        if (!blob) { alert('PNG export failed — please use PDF instead.'); return }
+        downloadBlob(blob, `${fileBase()}.png`, 'image/png')
+      }, 'image/png')
+    } catch (e) {
+      console.error('PNG export failed:', e)
+      alert('PNG export ran into a cross-origin image issue. Please use PDF or HTML export instead.')
+    } finally { setUploadProgress('') }
+  }
+
+  const handleExport = (format: string) => {
+    if (format === 'PDF') return exportPDF()
+    if (format === 'PNG') return exportPNG()
+    if (format === 'HTML') return exportHTML()
   }
 
   const totalAssets = Object.values(assets).reduce((s: number, a: any) => s + (a?.length || 0), 0)
@@ -518,17 +607,19 @@ export default function SheetPage() {
                 </div>
                 <span className="text-xs text-gray-500">Sheet Preview — {selectedSize} {selectedOrientation}</span>
               </div>
-                <SheetPreview
-                  sheetType={selectedSheetType}
-                  sheetTitle={sheetTitle}
-                  caption={sheetCaption}
-                  theme={selectedTheme}
-                  size={selectedSize}
-                  orientation={selectedOrientation}
-                  assets={assets}
-                  sheetTypes={SHEET_TYPES}
-                  themes={THEMES}
-                />
+                <div id="sheet-capture">
+                  <SheetPreview
+                    sheetType={selectedSheetType}
+                    sheetTitle={sheetTitle}
+                    caption={sheetCaption}
+                    theme={selectedTheme}
+                    size={selectedSize}
+                    orientation={selectedOrientation}
+                    assets={assets}
+                    sheetTypes={SHEET_TYPES}
+                    themes={THEMES}
+                  />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -538,15 +629,7 @@ export default function SheetPage() {
                 { format: 'HTML', icon: '🌐', desc: 'Web version' },
               ].map(dl => (
                 <button key={dl.format}
-                  onClick={async () => {
-                    if (!sheetId || sheetId === 'preview') { alert('Sheet export coming soon!'); return }
-                    const res = await fetch(`${API_URL}/api/sheets/${sheetId}/export`, {
-                      method: 'POST',
-                      headers: { 'Authorization': `Bearer ${savedToken}`, 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ format: dl.format.toLowerCase() })
-                    })
-                    if (res.ok) { const d = await res.json(); window.open(d.download_url, '_blank') }
-                  }}
+                  onClick={() => handleExport(dl.format)}
                   className="bg-white border rounded-xl p-5 text-center hover:border-purple-400 hover:shadow-sm transition-all">
                   <div className="text-3xl mb-2">{dl.icon}</div>
                   <div className="font-semibold text-gray-900">{dl.format}</div>
