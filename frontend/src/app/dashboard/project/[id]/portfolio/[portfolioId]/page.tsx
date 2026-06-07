@@ -12,6 +12,7 @@ import {
 } from '@/components/composer/layoutSpecs'
 import { createBlock, type Page, type DesignTokens } from '@/components/composer/types'
 import { composePages } from '@/components/composer/composition'
+import { STYLE_DNA } from '@/components/composer/styleDNA'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -78,6 +79,8 @@ export default function PortfolioEditorPage() {
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
   const [layoutSearch, setLayoutSearch] = useState('')
   const [savedNote, setSavedNote] = useState('')
+  const [mode, setMode] = useState<'view' | 'edit'>('view')   // spec: show output first, edit on click
+  const composeInput = useRef<{ assets: Record<string, any[]>; project: any } | null>(null)
 
   const currentPage = pages[currentIdx]
 
@@ -144,6 +147,7 @@ export default function PortfolioEditorPage() {
         const pRes = await fetch(`${API_URL}/api/projects/${params.id}`, { headers: { Authorization: `Bearer ${t}` } })
         if (pRes.ok) projectRec = await pRes.json()
       } catch { /* optional */ }
+      composeInput.current = { assets: assetsByCat, project: projectRec }
 
       const counts = (k: string) => (assetsByCat[k]?.length || 0)
       const seedTemplate = {
@@ -216,6 +220,26 @@ export default function PortfolioEditorPage() {
     setSavedNote('Saving…')
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => void saveDoc(nextPages, nextTokens), 1200)
+  }
+
+  // Phase 2: regenerate the composition from the project's assets
+  const regenerate = () => {
+    const ci = composeInput.current
+    if (!ci || !Object.values(ci.assets).some((a: any) => Array.isArray(a) && a.length)) {
+      alert('Upload some project assets first, then regenerate.')
+      return
+    }
+    if (pages.length && !window.confirm('Regenerate the portfolio from your assets? This replaces the current pages.')) return
+    const next = composePages({
+      project: {
+        name: portfolio?.name || ci.project?.title,
+        location: ci.project?.location, year: ci.project?.year,
+        typology: ci.project?.typology || ci.project?.project_type,
+        description: ci.project?.description,
+      },
+      assetsByCategory: ci.assets,
+    })
+    setPages(next); setCurrentIdx(0); queueSave(next, tokens)
   }
 
   const switchLayout = (layoutId: string) => {
@@ -332,6 +356,42 @@ export default function PortfolioEditorPage() {
     </div>
   )
 
+  // ── VIEW-ONLY MODE (default): show the finished portfolio first ──
+  if (mode === 'view') {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+          <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href={`/dashboard/project/${params.id}/generate`} className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
+              <Logo size="sm" variant="gold" />
+              <div>
+                <h1 className="text-base font-semibold">{portfolio?.name || 'Portfolio'}</h1>
+                <p className="text-[11px] text-gray-400">Your portfolio is ready · {pages.length} pages</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
+              <button onClick={regenerate} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50" title="Recompose from your assets">🔄 Regenerate</button>
+              <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
+              <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-300/40">
+          <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
+            {pages.map((page) => (
+              <div key={page.id}>
+                <PageComposer page={page} tokens={tokens} onChange={() => {}} />
+                <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Top bar */}
@@ -348,6 +408,7 @@ export default function PortfolioEditorPage() {
           <div className="flex items-center gap-3">
             <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
             <span className="text-[11px] text-gray-400">Page {currentIdx + 1}/{pages.length}</span>
+            <button onClick={() => setMode('view')} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50">👁 Preview</button>
             <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
           </div>
         </div>
@@ -399,9 +460,27 @@ export default function PortfolioEditorPage() {
 
         {/* Right: layout catalog picker */}
         <aside className={`${isMobile ? 'w-full border-t' : 'w-80 border-l'} bg-white overflow-y-auto flex-shrink-0`}>
+          {/* Style DNA presets */}
+          <div className="p-3 border-b">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Style</h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {STYLE_DNA.map(s => (
+                <button key={s.id} onClick={() => setToken(s.tokens)} title={s.description}
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border text-left hover:border-blue-400 transition">
+                  <span className="flex gap-0.5 flex-shrink-0">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.tokens.background, border: '1px solid #ddd' }} />
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.tokens.primary }} />
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.tokens.accent }} />
+                  </span>
+                  <span className="text-[9px] font-medium text-gray-700 truncate">{s.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Design tokens */}
           <div className="p-3 border-b">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Design</h3>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Colors &amp; Fonts</h3>
             <div className="grid grid-cols-2 gap-2 mb-2">
               {([['background', 'Background'], ['text', 'Text'], ['primary', 'Primary'], ['accent', 'Accent']] as const).map(([k, label]) => (
                 <label key={k} className="flex items-center gap-1.5 text-[10px] text-gray-600">

@@ -61,7 +61,8 @@ async def upload_asset(
             raise AuthorizationException()
 
         # Validate asset type
-        valid_types = ["render", "plan", "section", "diagram", "detail", "material"]
+        valid_types = ["render", "plan", "section", "diagram", "detail", "material",
+                       "cover", "elevation", "concept", "model", "process", "site", "other"]
         if asset_type not in valid_types:
             raise ValidationException(
                 f"Invalid asset_type. Must be one of: {', '.join(valid_types)}",
@@ -529,7 +530,8 @@ async def update_asset(
             update_data["description"] = req.description
 
         if req.asset_type is not None:
-            valid_types = ["render", "plan", "section", "diagram", "detail", "material"]
+            valid_types = ["render", "plan", "section", "diagram", "detail", "material",
+                       "cover", "elevation", "concept", "model", "process", "site", "other"]
             if req.asset_type.value not in valid_types:
                 raise ValidationException(f"Invalid asset_type: {req.asset_type}")
             update_data["asset_type"] = req.asset_type.value
