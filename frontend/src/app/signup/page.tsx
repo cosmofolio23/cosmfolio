@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 
 export default function SignUp() {
   const [name, setName] = useState('')
@@ -54,13 +55,11 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary flex items-center justify-center relative overflow-hidden">
-      {/* Floating Elements for Glassmorphism Background */}
-      <div className="absolute top-10 left-10 w-96 h-96 bg-accent-primary/20 dark:bg-accent-gold/20 rounded-full blur-[100px] animate-pulse"></div>
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-accent-gold/20 dark:bg-accent-primary/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-      
-      <div className="glass-card rounded-2xl p-8 max-w-md w-full relative z-10 border border-white/50 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
-        <h1 className="text-3xl font-bold text-center mb-2 text-text-primary dark:text-dark-text-primary">CosmoFolio</h1>
+    <div className="min-h-screen aurora-bg flex items-center justify-center relative overflow-hidden">
+      <div className="glass-card rounded-2xl p-8 max-w-md w-full relative z-10 shadow-2xl">
+        <div className="flex flex-col items-center mb-5">
+          <Logo size="lg" variant="gold" showWordmark />
+        </div>
         <p className="text-center text-text-secondary dark:text-dark-text-secondary mb-8">Create your free account</p>
 
         {error && (
