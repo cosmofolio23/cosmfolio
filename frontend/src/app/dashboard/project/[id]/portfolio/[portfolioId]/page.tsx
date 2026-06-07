@@ -11,6 +11,7 @@ import {
   type LayoutCategory,
 } from '@/components/composer/layoutSpecs'
 import { createBlock, type Page, type DesignTokens } from '@/components/composer/types'
+import { composePages } from '@/components/composer/composition'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -137,6 +138,13 @@ export default function PortfolioEditorPage() {
         if (aRes.ok) assetsByCat = await aRes.json()
       } catch { /* assets optional */ }
 
+      // project record (title / description / typology) for composition text
+      let projectRec: any = {}
+      try {
+        const pRes = await fetch(`${API_URL}/api/projects/${params.id}`, { headers: { Authorization: `Bearer ${t}` } })
+        if (pRes.ok) projectRec = await pRes.json()
+      } catch { /* optional */ }
+
       const counts = (k: string) => (assetsByCat[k]?.length || 0)
       const seedTemplate = {
         name: meta.name || meta.title || 'Portfolio',
@@ -148,13 +156,30 @@ export default function PortfolioEditorPage() {
         },
       }
 
-      // 3) seed parametric pages, give them STABLE ids, fill images, restore layouts
-      let seeded = seedPagesFromTemplate(seedTemplate as any)
-      seeded = seeded.map((p, i) => ({ ...p, id: `${p.type}-${i}` }))
-      seeded = fillImages(seeded, assetsByCat)
-      seeded = seeded.map(p => savedLayouts[p.id] ? { ...p, layoutId: savedLayouts[p.id] } : p)
+      // 3) COMPOSE pages intelligently from the project's categorized assets
+      //    (architectural hierarchy + layout DNA). Falls back to template
+      //    seeding when there are no assets yet.
+      const hasAssets = Object.values(assetsByCat).some((arr: any) => Array.isArray(arr) && arr.length)
+      let composed: Page[]
+      if (hasAssets) {
+        composed = composePages({
+          project: {
+            name: meta.name || meta.title || projectRec?.title,
+            location: projectRec?.location,
+            year: projectRec?.year,
+            typology: projectRec?.typology || projectRec?.project_type,
+            description: projectRec?.description,
+          },
+          assetsByCategory: assetsByCat,
+        })
+      } else {
+        composed = seedPagesFromTemplate(seedTemplate as any).map((p, i) => ({ ...p, id: `${p.type}-${i}` }))
+        composed = fillImages(composed, assetsByCat)
+      }
+      // restore any saved per-page layout choices
+      composed = composed.map(p => savedLayouts[p.id] ? { ...p, layoutId: savedLayouts[p.id] } : p)
 
-      setPages(seeded)
+      setPages(composed)
     } catch (e: any) {
       setError(e?.message || 'Failed to load')
     } finally {
