@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import Logo from '@/components/Logo'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -155,9 +156,12 @@ export default function MyPortfoliosPage() {
       <header className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Portfolios</h1>
-              <p className="text-gray-600 mt-1">Create, edit, and share your portfolios</p>
+            <div className="flex items-center gap-3">
+              <Logo size="md" variant="gold" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">My Portfolios</h1>
+                <p className="text-gray-600 mt-1">Create, edit, and share your portfolios</p>
+              </div>
             </div>
             <button
               onClick={() => setShowNewModal(true)}
