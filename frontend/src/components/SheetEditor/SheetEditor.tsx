@@ -47,6 +47,8 @@ import {
 
 const FONT_FAMILIES = ['Inter', 'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New', 'Montserrat', 'Roboto', 'Playfair Display', 'Oswald'];
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
@@ -394,23 +396,67 @@ const SheetEditor: React.FC<SheetEditorProps> = ({
   const save = useCallback(async () => {
     setSaving(true);
     try {
-      await fetch(`/api/sheets/${sheetId}`, {
-        method:  'PATCH',
+      // A sheet is its own project, so persist into the project document slot
+      // (storage-backed, reused from the portfolio composer). No DB migration.
+      await fetch(`${API_URL}/api/projects/${projectId}/document`, {
+        method:  'PUT',
         headers: {
           'Content-Type':  'application/json',
           Authorization:   `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({
-          title:    state.title,
-          content:  { elements: state.elements },
-          page_size: state.pageSize,
+          kind:        'sheet',
+          title:       state.title,
+          elements:    state.elements,
+          pageSize:    state.pageSize,
+          orientation: state.orientation,
+          gridColumns: state.gridColumns,
+          gridRows:    state.gridRows,
+          margin:      state.margin,
+          bgColor:     state.bgColor,
         }),
       });
       dispatch({ type: 'MARK_SAVED', ts: new Date().toISOString() });
+    } catch {
+      /* offline / not signed in — keep working in memory */
     } finally {
       setSaving(false);
     }
-  }, [sheetId, state]);
+  }, [projectId, state]);
+
+  // ── load persisted sheet on mount ─────────
+  const loadedRef = useRef(false);
+  useEffect(() => {
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/projects/${projectId}/document`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const doc = data?.document;
+        if (data?.exists && doc && doc.kind === 'sheet') {
+          dispatch({
+            type: 'LOAD_SHEET',
+            sheet: {
+              title:       doc.title ?? 'Untitled Sheet',
+              elements:    Array.isArray(doc.elements) ? doc.elements : [],
+              pageSize:    doc.pageSize ?? 'A2',
+              orientation: doc.orientation ?? 'landscape',
+              gridColumns: doc.gridColumns ?? 12,
+              gridRows:    doc.gridRows ?? 8,
+              margin:      doc.margin ?? 4,
+              bgColor:     doc.bgColor ?? '#ffffff',
+            },
+          });
+        }
+      } catch {
+        /* ignore — start fresh */
+      }
+    })();
+  }, [projectId]);
 
   // ── drag-drop on canvas ───────────────────
   const handleCanvasDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
