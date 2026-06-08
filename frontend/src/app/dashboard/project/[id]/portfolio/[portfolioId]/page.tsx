@@ -13,6 +13,9 @@ import {
 import { createBlock, type Page, type DesignTokens } from '@/components/composer/types'
 import { composePages } from '@/components/composer/composition'
 import { STYLE_DNA } from '@/components/composer/styleDNA'
+import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
+import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
+import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -81,6 +84,16 @@ export default function PortfolioEditorPage() {
   const [savedNote, setSavedNote] = useState('')
   const [mode, setMode] = useState<'view' | 'edit'>('view')   // spec: show output first, edit on click
   const [analyzing, setAnalyzing] = useState('')              // on-device AI vision status
+  const [publishingTab, setPublishingTab] = useState<'style' | 'publishing'>('style')
+  const [publishingPortfolio, setPublishingPortfolio] = useState<PublishingPortfolio>({
+    id: 'portfolio-' + params.portfolioId,
+    name: portfolio?.name || 'Portfolio',
+    spreads: [],
+    pageSize: PAGE_SIZES['a4-portrait'],
+    masterPages: [],
+    backgrounds: [],
+    designTokens: tokens,
+  })
   const composeInput = useRef<{ assets: Record<string, any[]>; project: any } | null>(null)
 
   const currentPage = pages[currentIdx]
@@ -514,9 +527,36 @@ export default function PortfolioEditorPage() {
             </div>
           </div>
 
+          {/* Publishing vs Style tabs */}
+          <div className="flex border-b bg-gray-50">
+            <button onClick={() => setPublishingTab('style')} className={`flex-1 px-3 py-2 text-xs font-semibold transition ${publishingTab === 'style' ? 'bg-white border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>
+              🎨 Style
+            </button>
+            <button onClick={() => setPublishingTab('publishing')} className={`flex-1 px-3 py-2 text-xs font-semibold transition ${publishingTab === 'publishing' ? 'bg-white border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>
+              📄 Publishing
+            </button>
+          </div>
+
+          {/* Publishing mode */}
+          {publishingTab === 'publishing' && (
+            <div className="p-3 border-b space-y-3 max-h-96 overflow-y-auto">
+              <ProfessionalPublishingSettings
+                portfolio={publishingPortfolio}
+                onUpdate={setPublishingPortfolio}
+              />
+              <AIDesignAssistant
+                onCommand={cmd => {
+                  console.log('AI command:', cmd)
+                  // Hook for future AI implementation
+                }}
+              />
+            </div>
+          )}
+
           {/* Design tokens */}
-          <div className="p-3 border-b">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Colors &amp; Fonts</h3>
+          {publishingTab === 'style' && (
+            <div className="p-3 border-b">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Colors &amp; Fonts</h3>
             <div className="grid grid-cols-2 gap-2 mb-2">
               {([['background', 'Background'], ['text', 'Text'], ['primary', 'Primary'], ['accent', 'Accent']] as const).map(([k, label]) => (
                 <label key={k} className="flex items-center gap-1.5 text-[10px] text-gray-600">
@@ -534,7 +574,9 @@ export default function PortfolioEditorPage() {
               className="w-full px-2 py-1 text-[11px] border rounded">
               {BODY_FONTS.map(f => <option key={f} value={f}>Body: {f.split(',')[0]}</option>)}
             </select>
-          </div>
+            </div>
+          )}
+
           <div className="p-3 border-b sticky top-0 bg-white z-10">
             <input value={layoutSearch} onChange={e => setLayoutSearch(e.target.value)}
               placeholder="Search layouts…"
