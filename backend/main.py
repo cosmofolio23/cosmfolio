@@ -88,6 +88,14 @@ try:
     app.include_router(style_pack.router, prefix="/api/portfolios", tags=["style-packs"])  # routes: /{portfolio_id}/style-packs
     app.include_router(templates.router, tags=["templates"])  # routes: /api/templates/... (Phase 4)
     print("[OK] Additional routes loaded")
+
+    # Library (premium) — routes already carry their own /api/library prefix
+    try:
+        from routes import library
+        app.include_router(library.router, tags=["library"])
+        print("[OK] Library routes loaded")
+    except Exception as e:
+        print(f"[WARNING] Library routes failed to load: {e}")
 except Exception as e:
     print(f"[WARNING] Some additional routes failed: {e}")
 

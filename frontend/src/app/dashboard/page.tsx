@@ -142,6 +142,12 @@ export default function Dashboard() {
             📄 Sheet Composer →
           </Link>
           <Link
+            href="/dashboard/library"
+            className="inline-block bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+          >
+            🗂️ Project Library →
+          </Link>
+          <Link
             href="/dashboard/analytics"
             className="inline-block bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
           >
