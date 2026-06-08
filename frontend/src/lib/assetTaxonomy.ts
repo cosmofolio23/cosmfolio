@@ -218,8 +218,24 @@ export function toSheetDrawingType(type: AssetType): string {
 // Forgiving — students dump files; we suggest, they correct in one click.
 // ─────────────────────────────────────────────────────────────
 
-const ARCH_SCALES = ['1:1', '1:5', '1:10', '1:20', '1:50', '1:100', '1:200', '1:500', '1:1000'] as const
+// Descending so longer scales are tested first (avoids "1-1" matching inside "1-100").
+const ARCH_SCALES = ['1:1000', '1:500', '1:200', '1:100', '1:50', '1:20', '1:10', '1:5', '1:1'] as const
 export type InferredScale = (typeof ARCH_SCALES)[number]
+
+const isDigitChar = (ch?: string) => ch !== undefined && ch >= '0' && ch <= '9'
+
+/** Detect an architectural scale token in a filename, guarding against partial
+ *  matches: "1-1" must NOT match inside "1-100" (the neighbouring chars can't be digits). */
+function detectScale(n: string): InferredScale | undefined {
+  for (const s of ARCH_SCALES) {
+    for (const token of [s, s.replace(':', '-'), s.replace(':', 'to')]) {
+      const i = n.indexOf(token)
+      if (i === -1) continue
+      if (!isDigitChar(n[i - 1]) && !isDigitChar(n[i + token.length])) return s
+    }
+  }
+  return undefined
+}
 
 export function inferFromFilename(fileName: string): {
   category: AssetCategory
@@ -228,14 +244,7 @@ export function inferFromFilename(fileName: string): {
   confident: boolean
 } {
   const n = fileName.toLowerCase()
-
-  // explicit scale mentioned in name e.g. "gf_plan_1-100.pdf" or "1to200"
-  let scale: InferredScale | undefined
-  for (const s of ARCH_SCALES) {
-    const dashed = s.replace(':', '-')
-    const to = s.replace(':', 'to')
-    if (n.includes(s) || n.includes(dashed) || n.includes(to)) { scale = s; break }
-  }
+  const scale = detectScale(n)
 
   const guess = (type: AssetType, confident = true): { category: AssetCategory; type: AssetType; scale?: InferredScale; confident: boolean } =>
     ({ category: categoryOf(type), type, scale, confident })

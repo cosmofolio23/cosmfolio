@@ -43,19 +43,29 @@ CATEGORY_OF = {
 }
 
 SCALED_TYPES = {"plan", "section", "elevation", "detail", "site-plan", "master-plan"}
-ARCH_SCALES = ["1:1", "1:5", "1:10", "1:20", "1:50", "1:100", "1:200", "1:500", "1:1000"]
+# Descending so longer scales test first (avoids "1-1" matching inside "1-100").
+ARCH_SCALES = ["1:1000", "1:500", "1:200", "1:100", "1:50", "1:20", "1:10", "1:5", "1:1"]
+
+
+def _detect_scale(n: str):
+    """Find a scale token, guarding against partial matches via digit boundaries."""
+    for s in ARCH_SCALES:
+        for token in (s, s.replace(":", "-"), s.replace(":", "to")):
+            i = n.find(token)
+            if i == -1:
+                continue
+            before = n[i - 1] if i > 0 else ""
+            after = n[i + len(token)] if i + len(token) < len(n) else ""
+            if not before.isdigit() and not after.isdigit():
+                return s
+    return None
 
 
 def infer_from_filename(file_name: str) -> dict:
     """Guess (category, type, scale) from a filename. Forgiving — we suggest, the
     user corrects. Mirrors the frontend heuristic so client/server agree."""
     n = (file_name or "").lower()
-
-    scale = None
-    for s in ARCH_SCALES:
-        if s in n or s.replace(":", "-") in n or s.replace(":", "to") in n:
-            scale = s
-            break
+    scale = _detect_scale(n)
 
     def g(t):
         return {"category": CATEGORY_OF.get(t, "info"), "asset_type": t, "scale": scale}

@@ -1,112 +1,102 @@
--- CosmoFolio Database Migrations — Phase: LIBRARY (premium tier)
+-- CosmoFolio Database Migrations — Phase: LIBRARY (premium tier)  [v2]
 -- ============================================================================
--- The Library is a SEPARATE premium product. It introduces a project-centric
--- store (upload once → feeds Portfolio + Sheet) on its OWN clean tables, so the
--- existing per-product `assets`/`projects` flow for standalone Portfolio and
--- standalone Sheet stays untouched.
+-- v2 fix: this app authenticates with FIREBASE, so user ids are Firebase
+-- strings (e.g. "eH6322JZD5XOrkq4dcIRk0LYzmG3"), NOT Supabase auth.users UUIDs.
+-- v1 declared user_id as UUID REFERENCES auth.users(id), which made every
+-- insert fail ("invalid input syntax for type uuid"). v2 uses user_id TEXT with
+-- no auth.users FK, and RLS that simply denies anon (the service-role backend
+-- enforces ownership in code, same as the existing /assets routes).
 --
--- Tables:
---   user_entitlements    — who owns what (portfolio / sheet / library)
---   library_projects     — the top-level container a Library user owns
---   library_assets       — canonical-taxonomy assets (the unified store)
---   library_project_text — the Text branch (concept/description/sustainability)
---   + nullable library_project_id on portfolios & sheet_sets (output association)
+-- The v1 tables were created empty, so this safely drops & recreates them.
+-- Re-runnable.
 -- ============================================================================
 
+-- Drop the output-association columns first (removes their FK to library_projects),
+-- so the tables below can be dropped cleanly. They are re-added at the end.
+ALTER TABLE portfolios DROP COLUMN IF EXISTS library_project_id;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'sheet_sets') THEN
+    ALTER TABLE sheet_sets DROP COLUMN IF EXISTS library_project_id;
+  END IF;
+END $$;
+
+DROP TABLE IF EXISTS library_assets CASCADE;
+DROP TABLE IF EXISTS library_project_text CASCADE;
+DROP TABLE IF EXISTS library_projects CASCADE;
+DROP TABLE IF EXISTS user_entitlements CASCADE;
+
 -- ==================== ENTITLEMENTS ====================
--- No billing exists yet. This table is the gate; payments plug in later by
--- writing rows here. Absence of a row = default-granted (see entitlements.py),
--- so nothing breaks pre-paywall.
-CREATE TABLE IF NOT EXISTS user_entitlements (
-  user_id        UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- No billing yet. Absence of a row = default-granted (see entitlements.py).
+CREATE TABLE user_entitlements (
+  user_id        TEXT PRIMARY KEY,                 -- Firebase uid
   has_portfolio  BOOLEAN NOT NULL DEFAULT FALSE,
   has_sheet      BOOLEAN NOT NULL DEFAULT FALSE,
   has_library    BOOLEAN NOT NULL DEFAULT FALSE,   -- superset: implies portfolio + sheet
-  source         VARCHAR(30) NOT NULL DEFAULT 'manual',  -- manual | stripe | promo | dev
+  source         VARCHAR(30) NOT NULL DEFAULT 'manual',
   updated_at     TIMESTAMP NOT NULL DEFAULT NOW(),
   created_at     TIMESTAMP NOT NULL DEFAULT NOW(),
   CONSTRAINT valid_entitlement_source CHECK (source IN ('manual','stripe','promo','dev'))
 );
 
 -- ==================== LIBRARY PROJECTS ====================
-CREATE TABLE IF NOT EXISTS library_projects (
+CREATE TABLE library_projects (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-
-  -- identity
+  user_id       TEXT NOT NULL,                     -- Firebase uid
   name          VARCHAR(255) NOT NULL,
-  typology      VARCHAR(80),     -- residential, cultural, commercial, ...
+  typology      VARCHAR(80),
   year          INT,
-  semester      VARCHAR(40),     -- "Year 3 · Sem 1", "Thesis", ...
+  semester      VARCHAR(40),
   studio_brief  TEXT,
-  status        VARCHAR(40) NOT NULL DEFAULT 'active',  -- active | archived | completed
-
-  -- curation
-  cover_asset_id UUID,           -- soft ref to library_assets (the project thumbnail)
+  status        VARCHAR(40) NOT NULL DEFAULT 'active',
+  cover_asset_id UUID,
   sort_order     INT NOT NULL DEFAULT 0,
-
   created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMP NOT NULL DEFAULT NOW(),
   CONSTRAINT valid_project_status CHECK (status IN ('active','archived','completed'))
 );
-
-CREATE INDEX IF NOT EXISTS idx_library_projects_user ON library_projects(user_id);
-CREATE INDEX IF NOT EXISTS idx_library_projects_status ON library_projects(status);
+CREATE INDEX idx_library_projects_user ON library_projects(user_id);
+CREATE INDEX idx_library_projects_status ON library_projects(status);
 
 -- ==================== LIBRARY ASSETS (the unified store) ====================
-CREATE TABLE IF NOT EXISTS library_assets (
+CREATE TABLE library_assets (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id    UUID NOT NULL REFERENCES library_projects(id) ON DELETE CASCADE,
-  user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-
-  -- canonical taxonomy (see frontend/src/lib/assetTaxonomy.ts)
+  user_id       TEXT NOT NULL,                     -- Firebase uid
   category      VARCHAR(20) NOT NULL DEFAULT 'info',   -- drawing|visual|process|analysis|text|info
-  asset_type    VARCHAR(40) NOT NULL DEFAULT 'other',  -- plan|section|exterior-render|...
+  asset_type    VARCHAR(40) NOT NULL DEFAULT 'other',
   title         VARCHAR(255),
   caption       TEXT,
-
-  -- storage
   storage_path  TEXT NOT NULL,
   url           TEXT,
   thumb_url     TEXT,
-
-  -- architecture metadata (nullable — progressive: only filled when needed)
-  scale         VARCHAR(12),   -- 1:1 .. 1:1000 (drawings only)
-  orientation   VARCHAR(12),   -- portrait | landscape
+  scale         VARCHAR(12),
+  orientation   VARCHAR(12),
   has_north     BOOLEAN DEFAULT FALSE,
   is_vector     BOOLEAN DEFAULT FALSE,
-
-  -- quality signals (computed on upload)
   width_px      INT,
   height_px     INT,
   dpi           INT,
   file_size     INT,
   mime_type     VARCHAR(60),
-
-  -- intelligence (vision tags — populated later)
   ai_tags       JSONB DEFAULT '{}'::jsonb,
-
-  -- curation
-  is_featured   BOOLEAN NOT NULL DEFAULT FALSE,  -- student's "best" picks
+  is_featured   BOOLEAN NOT NULL DEFAULT FALSE,
   sort_order    INT NOT NULL DEFAULT 0,
-
   created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX IF NOT EXISTS idx_library_assets_project ON library_assets(project_id);
-CREATE INDEX IF NOT EXISTS idx_library_assets_user ON library_assets(user_id);
-CREATE INDEX IF NOT EXISTS idx_library_assets_category ON library_assets(category);
-CREATE INDEX IF NOT EXISTS idx_library_assets_type ON library_assets(asset_type);
-CREATE INDEX IF NOT EXISTS idx_library_assets_featured ON library_assets(is_featured) WHERE is_featured = TRUE;
+CREATE INDEX idx_library_assets_project ON library_assets(project_id);
+CREATE INDEX idx_library_assets_user ON library_assets(user_id);
+CREATE INDEX idx_library_assets_category ON library_assets(category);
+CREATE INDEX idx_library_assets_type ON library_assets(asset_type);
+CREATE INDEX idx_library_assets_featured ON library_assets(is_featured) WHERE is_featured = TRUE;
 
 -- ==================== LIBRARY PROJECT TEXT (the Text branch) ====================
--- One row per (project, kind). Stores the smart-length variants up front.
-CREATE TABLE IF NOT EXISTS library_project_text (
+CREATE TABLE library_project_text (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id    UUID NOT NULL REFERENCES library_projects(id) ON DELETE CASCADE,
-  user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  kind          VARCHAR(30) NOT NULL,   -- concept | description | sustainability | abstract
+  user_id       TEXT NOT NULL,                     -- Firebase uid
+  kind          VARCHAR(30) NOT NULL,
   short         TEXT,
   medium        TEXT,
   long          TEXT,
@@ -115,15 +105,10 @@ CREATE TABLE IF NOT EXISTS library_project_text (
   CONSTRAINT unique_text_per_kind UNIQUE(project_id, kind),
   CONSTRAINT valid_text_kind CHECK (kind IN ('concept','description','sustainability','abstract'))
 );
-
-CREATE INDEX IF NOT EXISTS idx_library_text_project ON library_project_text(project_id);
+CREATE INDEX idx_library_text_project ON library_project_text(project_id);
 
 -- ==================== OUTPUT ASSOCIATION ====================
--- Library users: portfolios & sheet sets they create belong to a library project,
--- so the Library can show "all outputs for this project" in one place.
--- Nullable → standalone (non-Library) outputs simply leave it NULL.
-ALTER TABLE portfolios  ADD COLUMN IF NOT EXISTS library_project_id UUID REFERENCES library_projects(id) ON DELETE SET NULL;
--- sheet_sets may not exist yet in all environments; guard with a DO block.
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS library_project_id UUID REFERENCES library_projects(id) ON DELETE SET NULL;
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'sheet_sets') THEN
@@ -132,29 +117,13 @@ BEGIN
 END $$;
 
 -- ==================== ROW LEVEL SECURITY ====================
-ALTER TABLE user_entitlements   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE library_projects    ENABLE ROW LEVEL SECURITY;
-ALTER TABLE library_assets      ENABLE ROW LEVEL SECURITY;
+-- Firebase auth means there is no Supabase auth.uid() session; the backend
+-- accesses these tables with the SERVICE ROLE key (which bypasses RLS) and
+-- enforces ownership in code. Enabling RLS with no policies denies all direct
+-- anon/public access — exactly what we want.
+ALTER TABLE user_entitlements    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE library_projects     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE library_assets       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE library_project_text ENABLE ROW LEVEL SECURITY;
-
--- entitlements: a user may read their own row (writes happen server-side via service role)
-DROP POLICY IF EXISTS "read own entitlements" ON user_entitlements;
-CREATE POLICY "read own entitlements" ON user_entitlements
-  FOR SELECT USING (auth.uid() = user_id);
-
--- library projects: full ownership
-DROP POLICY IF EXISTS "own library projects" ON library_projects;
-CREATE POLICY "own library projects" ON library_projects
-  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
--- library assets: ownership
-DROP POLICY IF EXISTS "own library assets" ON library_assets;
-CREATE POLICY "own library assets" ON library_assets
-  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
--- library text: ownership
-DROP POLICY IF EXISTS "own library text" ON library_project_text;
-CREATE POLICY "own library text" ON library_project_text
-  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- ==================== MIGRATION COMPLETE ====================
