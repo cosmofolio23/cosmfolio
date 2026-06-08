@@ -15,6 +15,9 @@ import {
 } from '@/components/composer/layoutSpecs'
 import { analyzeTemplate, autoFillTemplate, summaryLine } from '@/components/composer/templateDNA'
 import { STYLE_DNA } from '@/components/composer/styleDNA'
+import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
+import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
+import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
@@ -55,7 +58,16 @@ export default function TemplateEditor() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
-  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide'>('guide')
+  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide' | 'publishing'>('guide')
+  const [publishingPortfolio, setPublishingPortfolio] = useState<PublishingPortfolio>({
+    id: 'template-' + params.id,
+    name: 'Template',
+    spreads: [],
+    pageSize: PAGE_SIZES['a4-portrait'],
+    masterPages: [],
+    backgrounds: [],
+    designTokens: { background: '#fff', text: '#000', primary: '#000', accent: '#999', muted: '#eee', headingFont: 'Inter', bodyFont: 'Inter' },
+  })
   const [mode, setMode] = useState<'view' | 'edit'>('edit')   // spec: Preview ↔ Edit
   const [layoutSearch, setLayoutSearch] = useState('')
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
@@ -897,7 +909,7 @@ export default function TemplateEditor() {
         <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10">
-            {(['guide', 'layout', 'blocks', 'style'] as const).map(t => (
+            {(['guide', 'publishing', 'layout', 'blocks', 'style'] as const).map(t => (
               <button key={t} onClick={() => setRightTab(t)}
                 className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
                 {t}
@@ -907,6 +919,19 @@ export default function TemplateEditor() {
 
           <div className="p-4">
             {/* GUIDE TAB — Template Intelligence: what this template needs */}
+            {/* PUBLISHING TAB — Professional publishing settings */}
+            {rightTab === 'publishing' && (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                <ProfessionalPublishingSettings
+                  portfolio={publishingPortfolio}
+                  onUpdate={setPublishingPortfolio}
+                />
+                <AIDesignAssistant
+                  onCommand={cmd => console.log('AI command:', cmd)}
+                />
+              </div>
+            )}
+
             {rightTab === 'guide' && (() => {
               const req = analyzeTemplate(pages)
               const pct = req.totalSlots ? Math.round((req.filledSlots / req.totalSlots) * 100) : 0
