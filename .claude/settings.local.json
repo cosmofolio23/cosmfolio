@@ -172,7 +172,13 @@
       "Bash(curl -s \"https://cosmfolio-backend.onrender.com/api/templates/sheets?limit=2\" -H \"Origin: https://cosmofolio-coral.vercel.app\" -w \"HTTP: %{http_code}\\\\n\" -o /tmp/sheets2.json)",
       "Bash(mkdir -p \"/e/Projects/My Product/BUILDING APP/ArchPortfolio_Generator/frontend/src/app/dashboard/templates/[id]/editor\")",
       "Bash(curl -s \"https://cosmfolio-backend.onrender.com/api/templates/sheets?limit=200\" -o /tmp/s200.json -w \"HTTP: %{http_code}  Size: %{size_download} bytes\\\\n\")",
-      "WebFetch(domain:archifol.io)"
+      "WebFetch(domain:archifol.io)",
+      "Bash(npx tsc *)",
+      "Bash(grep -q \"Ready in\\\\|started server\\\\|Local:\" /tmp/dev_demo.log)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -match 'next dev' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; \"killed next dev servers\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s -o /dev/null -w \"layout-demo status: %{http_code}\\\\n\" \"http://localhost:3000/layout-demo\")",
+      "Bash(curl -s \"http://localhost:3000/layout-demo\")"
     ]
   }
 }

@@ -1,0 +1,116 @@
+'use client'
+
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useAuthStore } from '@/store/auth'
+import { SheetSetEditor } from '@/components/sheetSet/SheetSetEditor'
+import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
+
+/**
+ * Sheet Set Editor Page
+ *
+ * Professional architectural sheet set composer
+ * Handles Thesis, Competition, and Studio submission packages
+ */
+export default function SheetSetEditorPage() {
+  const params = useParams()
+  const router = useRouter()
+  const { isAuthenticated } = useAuthStore()
+  const projectId = params.id as string
+  const setId = params.setId as string
+  const [sheetSet, setSheetSet] = useState<SheetSet | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/signin')
+      return
+    }
+
+    // Load sheet set from API
+    const loadSheetSet = async () => {
+      try {
+        setLoading(true)
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets/${setId}`, {
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Sheet set not found')
+          } else {
+            setError('Failed to load sheet set')
+          }
+          return
+        }
+
+        const data = await response.json()
+        setSheetSet(data)
+      } catch (err) {
+        setError('Error loading sheet set')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadSheetSet()
+  }, [projectId, setId, isAuthenticated])
+
+  const handleSave = async (updatedSet: SheetSet) => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets/${setId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedSet),
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save')
+      }
+
+      setSheetSet(updatedSet)
+    } catch (err) {
+      console.error('Save failed:', err)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          <p className="mt-4 text-gray-600">Loading sheet set...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => router.back()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <SheetSetEditor
+      initialSheetSet={sheetSet!}
+      onSave={handleSave}
+      onClose={() => router.push(`/dashboard/project/${projectId}/sheet-set`)}
+    />
+  )
+}
