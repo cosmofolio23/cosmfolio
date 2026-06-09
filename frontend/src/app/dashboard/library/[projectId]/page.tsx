@@ -9,6 +9,7 @@ import { useEntitlements } from '@/store/entitlements'
 import { libraryApi, type LibraryProject, type LibraryAsset } from '@/lib/libraryApi'
 import { LibraryUpload } from '@/components/library/LibraryUpload'
 import { LibraryAssetGrid } from '@/components/library/LibraryAssetGrid'
+import { LibraryCompleteness } from '@/components/library/LibraryCompleteness'
 
 /**
  * Library Project — the asset store for one project.
@@ -98,11 +99,18 @@ export default function LibraryProjectPage() {
           <LibraryUpload projectId={projectId} onUploaded={() => reload()} />
         </section>
 
-        {/* Asset store */}
-        <section className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Project assets</h2>
-          <LibraryAssetGrid projectId={projectId} assets={assets} onChange={setAssets} />
-        </section>
+        {/* Asset store + completeness side-by-side on wide screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <section className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
+            <h2 className="text-sm font-semibold text-gray-700 mb-4">Project assets</h2>
+            <LibraryAssetGrid projectId={projectId} assets={assets} onChange={setAssets} />
+          </section>
+
+          {/* Project Health — sticky on desktop */}
+          <aside className="bg-white rounded-xl border border-gray-200 p-5 lg:sticky lg:top-6">
+            <LibraryCompleteness assets={assets} />
+          </aside>
+        </div>
       </main>
     </div>
   )
