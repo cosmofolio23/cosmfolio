@@ -10,6 +10,7 @@ import { libraryApi, type LibraryProject, type LibraryAsset } from '@/lib/librar
 import { LibraryUpload } from '@/components/library/LibraryUpload'
 import { LibraryAssetGrid } from '@/components/library/LibraryAssetGrid'
 import { LibraryCompleteness } from '@/components/library/LibraryCompleteness'
+import { LibraryOutputs } from '@/components/library/LibraryOutputs'
 import { buildSheetSetFromLibrary } from '@/lib/buildSheetSet'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 
@@ -169,9 +170,14 @@ export default function LibraryProjectPage() {
             <LibraryAssetGrid projectId={projectId} assets={assets} onChange={setAssets} />
           </section>
 
-          {/* Project Health — sticky on desktop */}
-          <aside className="bg-white rounded-xl border border-gray-200 p-5 lg:sticky lg:top-6">
-            <LibraryCompleteness assets={assets} />
+          {/* Project Health + Outputs — sticky on desktop */}
+          <aside className="space-y-5 lg:sticky lg:top-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <LibraryCompleteness assets={assets} />
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <LibraryOutputs libraryProjectId={projectId} />
+            </div>
           </aside>
         </div>
       </main>
