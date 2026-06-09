@@ -1,18 +1,4 @@
-# Tell Vercel to ignore backend (it lives on Render)
-backend/
-*.py
-Dockerfile
-render.yaml
-.python-version
-
-# Ignore docs and configs
+backend
+.git
+.gitignore
 *.md
-PHASE*
-ROADMAP*
-BATCH*
-
-# Cloudflare/Netlify configs (not for Vercel)
-.cloudflare/
-netlify.toml
-wrangler.toml
-.cfignore
