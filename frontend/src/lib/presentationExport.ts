@@ -5,8 +5,10 @@
  * Format: embed speaker notes (invisible during presentation, visible in presenter view).
  */
 
-import type { Portfolio } from '@/lib/api'
-import type { DesignTokens } from '@/components/composer/designSystem'
+export interface Portfolio {
+  id: string
+  name?: string
+}
 
 export interface PresentationConfig {
   format: 'pdf' | 'html'
@@ -31,7 +33,7 @@ export function generateHTMLPresentation(
   slides: SlideData[],
   portfolio: Portfolio,
   config: PresentationConfig,
-  tokens?: DesignTokens
+  tokens?: any
 ): string {
   const bgColor = tokens?.colors?.background || '#ffffff'
   const textColor = tokens?.colors?.text || '#1f2937'

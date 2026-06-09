@@ -5,8 +5,12 @@
 
 import React, { useState } from 'react'
 import { Play, Loader2, Settings2 } from 'lucide-react'
-import type { Portfolio } from '@/lib/api'
 import { generateHTMLPresentation } from '@/lib/presentationExport'
+
+interface Portfolio {
+  id: string
+  name?: string
+}
 
 interface PresentationButtonProps {
   portfolio: Portfolio
