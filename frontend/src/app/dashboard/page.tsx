@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import { useEntitlements } from '@/store/entitlements'
 import { apiClient } from '@/lib/api'
 import Logo from '@/components/Logo'
 
@@ -18,6 +19,7 @@ interface Project {
 
 export default function Dashboard() {
   const { isAuthenticated, user } = useAuthStore()
+  const { loaded, fetch: fetchEntitlements, has } = useEntitlements()
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showNewProject, setShowNewProject] = useState(false)
@@ -31,6 +33,7 @@ export default function Dashboard() {
       return
     }
 
+    fetchEntitlements()
     loadProjects()
   }, [isAuthenticated, router])
 
@@ -141,12 +144,14 @@ export default function Dashboard() {
           >
             📄 Sheet Composer →
           </Link>
-          <Link
-            href="/dashboard/library"
-            className="inline-block bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
-          >
-            🗂️ Project Library →
-          </Link>
+          {loaded && has('library') && (
+            <Link
+              href="/dashboard/library"
+              className="inline-block bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+            >
+              🗂️ Project Library →
+            </Link>
+          )}
           <Link
             href="/dashboard/analytics"
             className="inline-block bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"

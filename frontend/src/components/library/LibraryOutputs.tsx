@@ -31,13 +31,13 @@ export function LibraryOutputs({ libraryProjectId }: LibraryOutputsProps) {
       try {
         setLoading(true)
         // fetch portfolios linked to this library project
-        const pRes = await apiClient.get(`/api/portfolios?library_project_id=${libraryProjectId}`).catch(() => ({ data: [] }))
-        const portfolios: Output[] = (pRes.data || []).map((p: any) => ({
+        const pRes = await apiClient.get(`/api/portfolios?library_project_id=${libraryProjectId}`).catch(() => ({ data: { portfolios: [] } }))
+        const portfolios: Output[] = ((pRes.data?.portfolios) || []).map((p: any) => ({
           id: p.id,
           type: 'portfolio',
           name: p.name || 'Untitled Portfolio',
           projectId: p.project_id,
-          pages: p.page_count,
+          pages: p.page_count || 0,
           createdAt: p.created_at,
         }))
 
@@ -48,7 +48,7 @@ export function LibraryOutputs({ libraryProjectId }: LibraryOutputsProps) {
           type: 'sheet-set',
           name: s.name || 'Untitled Sheet Set',
           projectId: s.project_id,
-          sheets: s.sheet_count,
+          sheets: s.sheet_count || 0,
           createdAt: s.created_at,
         }))
 

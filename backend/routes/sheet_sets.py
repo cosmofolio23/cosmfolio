@@ -25,6 +25,19 @@ def _summary(row: dict) -> dict:
     return {"id": row["id"]}
 
 
+@router.get("/api/sheet-sets")
+async def list_all_sheet_sets(current_user: dict = Depends(get_current_user), library_project_id: str = None):
+    """List all sheet sets owned by the user, optionally filtered by library_project_id.
+
+    Used by the Library project page to show outputs generated from a specific library project.
+    """
+    query = supabase.table("sheet_sets").select("*").eq("user_id", current_user["user_id"])
+    if library_project_id:
+        query = query.eq("library_project_id", library_project_id)
+    rows = query.order("updated_at", desc=True).execute().data or []
+    return [_summary(r) for r in rows]
+
+
 @router.get("/api/projects/{project_id}/sheet-sets")
 async def list_sheet_sets(project_id: str, current_user: dict = Depends(get_current_user)):
     rows = (

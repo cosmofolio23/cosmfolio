@@ -7,6 +7,7 @@ import { Plus, FolderOpen, Lock, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { useEntitlements } from '@/store/entitlements'
 import { libraryApi, type LibraryProject } from '@/lib/libraryApi'
+import { LibraryStats } from '@/components/library/LibraryStats'
 
 /**
  * Project Library (premium) — the unified project store.
@@ -97,9 +98,12 @@ export default function LibraryPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        {/* Stats */}
+        <LibraryStats />
+
         {/* New project inline */}
-        <div className="mb-8 flex gap-2 max-w-md">
+        <div className="flex gap-2 max-w-md">
           <input
             value={newName}
             onChange={e => setNewName(e.target.value)}

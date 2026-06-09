@@ -264,11 +264,15 @@ async def generate_portfolio(
         )
 
 @router.get("")
-async def list_all_portfolios(current_user: dict = Depends(get_current_user)):
-    """List all portfolios owned by the current user (across all their projects).
+async def list_all_portfolios(
+    current_user: dict = Depends(get_current_user),
+    library_project_id: str = None
+):
+    """List portfolios owned by the current user, optionally filtered by library_project_id.
 
-    Used by the template gallery's "Apply to Existing" picker. Returns an empty
-    list rather than 404 when the user has no portfolios yet.
+    Used by the template gallery's "Apply to Existing" picker, or by the Library
+    project page to show outputs generated from a specific library project.
+    Returns an empty list rather than 404 when the user has no portfolios yet.
     """
     try:
         projects = supabase.table("projects").select("id").eq("user_id", current_user["user_id"]).execute()
@@ -276,13 +280,10 @@ async def list_all_portfolios(current_user: dict = Depends(get_current_user)):
         if not project_ids:
             return {"portfolios": []}
 
-        response = (
-            supabase.table("portfolios")
-            .select("*")
-            .in_("project_id", project_ids)
-            .order("created_at", desc=True)
-            .execute()
-        )
+        query = supabase.table("portfolios").select("*").in_("project_id", project_ids)
+        if library_project_id:
+            query = query.eq("library_project_id", library_project_id)
+        response = query.order("created_at", desc=True).execute()
         return {"portfolios": response.data or []}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
