@@ -16,6 +16,7 @@ import {
   type AssetType,
 } from '@/lib/assetTaxonomy'
 import { libraryApi, type LibraryAsset } from '@/lib/libraryApi'
+import { AssetModal } from './AssetModal'
 
 const SCALES = ['1:1', '1:5', '1:10', '1:20', '1:50', '1:100', '1:200', '1:500', '1:1000']
 
@@ -27,6 +28,7 @@ interface LibraryAssetGridProps {
 
 export function LibraryAssetGrid({ projectId, assets, onChange }: LibraryAssetGridProps) {
   const [busy, setBusy] = useState<string | null>(null)
+  const [selectedAsset, setSelectedAsset] = useState<LibraryAsset | null>(null)
 
   const grouped = useMemo(() => {
     const g: Record<AssetCategory, LibraryAsset[]> = {
@@ -87,7 +89,8 @@ export function LibraryAssetGrid({ projectId, assets, onChange }: LibraryAssetGr
               {items.map(asset => (
                 <div
                   key={asset.id}
-                  className={`group relative rounded-lg border bg-white overflow-hidden ${
+                  onClick={() => setSelectedAsset(asset)}
+                  className={`group relative rounded-lg border bg-white overflow-hidden cursor-pointer hover:shadow-md transition ${
                     busy === asset.id ? 'opacity-60' : ''
                   } ${asset.is_featured ? 'border-amber-400 ring-1 ring-amber-300' : 'border-gray-200'}`}
                 >
@@ -161,6 +164,18 @@ export function LibraryAssetGrid({ projectId, assets, onChange }: LibraryAssetGr
           </section>
         )
       })}
+
+      {/* Asset Details Modal */}
+      <AssetModal
+        asset={selectedAsset}
+        projectId={projectId}
+        onClose={() => setSelectedAsset(null)}
+        onUpdated={updated => {
+          onChange(assets.map(a => a.id === updated.id ? updated : a))
+          setSelectedAsset(updated)
+        }}
+        onDeleted={id => onChange(assets.filter(a => a.id !== id))}
+      />
     </div>
   )
 }
