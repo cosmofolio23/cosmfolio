@@ -96,6 +96,14 @@ try:
         print("[OK] Library routes loaded")
     except Exception as e:
         print(f"[WARNING] Library routes failed to load: {e}")
+
+    # Sheet Sets (COSMO SHEET persistence) — routes carry their own /api prefix
+    try:
+        from routes import sheet_sets
+        app.include_router(sheet_sets.router, tags=["sheet-sets"])
+        print("[OK] Sheet-set routes loaded")
+    except Exception as e:
+        print(f"[WARNING] Sheet-set routes failed to load: {e}")
 except Exception as e:
     print(f"[WARNING] Some additional routes failed: {e}")
 

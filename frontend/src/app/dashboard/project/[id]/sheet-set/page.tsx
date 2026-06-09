@@ -4,8 +4,10 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Eye } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
+import { apiClient } from '@/lib/api'
 import { SheetSetWizard } from '@/components/sheetSet/SheetSetWizard'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
+import { buildEmptySheetSet } from '@/lib/buildSheetSet'
 import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
 
 /**
@@ -36,15 +38,8 @@ export default function SheetSetGalleryPage() {
   const loadSheetSets = async () => {
     try {
       setLoading(true)
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets`, {
-        credentials: 'include',
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setSheetSets(data)
-      }
+      const response = await apiClient.get(`/api/projects/${projectId}/sheet-sets`)
+      setSheetSets(response.data || [])
     } catch (err) {
       console.error('Failed to load sheet sets:', err)
     } finally {
@@ -54,23 +49,15 @@ export default function SheetSetGalleryPage() {
 
   const handleCreateSheetSet = async (config: any) => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const template = SHEET_SET_TEMPLATES.find(t => t.id === config.selectedTemplate)
-
-      const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...config,
-          template: template?.id,
-        }),
-        credentials: 'include',
+      if (!template) return
+      // build the full SheetSet client-side (empty — standalone create), then persist
+      const data = buildEmptySheetSet(template, { name: config.projectName || template.name })
+      const res = await apiClient.post(`/api/projects/${projectId}/sheet-sets`, {
+        name: config.projectName || template.name,
+        data,
       })
-
-      if (response.ok) {
-        const newSet = await response.json()
-        router.push(`/dashboard/project/${projectId}/sheet-set/${newSet.id}/editor`)
-      }
+      router.push(`/dashboard/project/${projectId}/sheet-set/${res.data.id}/editor`)
     } catch (err) {
       console.error('Failed to create sheet set:', err)
     }
@@ -78,18 +65,10 @@ export default function SheetSetGalleryPage() {
 
   const handleDelete = async (setId: string) => {
     if (!confirm('Delete this sheet set? This cannot be undone.')) return
-
     try {
       setDeleting(setId)
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets/${setId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-
-      if (response.ok) {
-        setSheetSets(prev => prev.filter(s => s.id !== setId))
-      }
+      await apiClient.delete(`/api/projects/${projectId}/sheet-sets/${setId}`)
+      setSheetSets(prev => prev.filter(s => s.id !== setId))
     } catch (err) {
       console.error('Failed to delete:', err)
     } finally {

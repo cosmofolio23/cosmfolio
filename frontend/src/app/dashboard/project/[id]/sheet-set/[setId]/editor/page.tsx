@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/auth'
+import { apiClient } from '@/lib/api'
 import { SheetSetEditor } from '@/components/sheetSet/SheetSetEditor'
 import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
 
@@ -28,28 +29,14 @@ export default function SheetSetEditorPage() {
       return
     }
 
-    // Load sheet set from API
+    // Load sheet set from API (apiClient adds the auth token + /api base)
     const loadSheetSet = async () => {
       try {
         setLoading(true)
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-        const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets/${setId}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('Sheet set not found')
-          } else {
-            setError('Failed to load sheet set')
-          }
-          return
-        }
-
-        const data = await response.json()
-        setSheetSet(data)
-      } catch (err) {
-        setError('Error loading sheet set')
+        const response = await apiClient.get(`/api/projects/${projectId}/sheet-sets/${setId}`)
+        setSheetSet(response.data)
+      } catch (err: any) {
+        setError(err?.response?.status === 404 ? 'Sheet set not found' : 'Failed to load sheet set')
         console.error(err)
       } finally {
         setLoading(false)
@@ -61,18 +48,7 @@ export default function SheetSetEditorPage() {
 
   const handleSave = async (updatedSet: SheetSet) => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/projects/${projectId}/sheet-sets/${setId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedSet),
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save')
-      }
-
+      await apiClient.put(`/api/projects/${projectId}/sheet-sets/${setId}`, updatedSet)
       setSheetSet(updatedSet)
     } catch (err) {
       console.error('Save failed:', err)

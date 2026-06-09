@@ -10,6 +10,8 @@ import { libraryApi, type LibraryProject, type LibraryAsset } from '@/lib/librar
 import { LibraryUpload } from '@/components/library/LibraryUpload'
 import { LibraryAssetGrid } from '@/components/library/LibraryAssetGrid'
 import { LibraryCompleteness } from '@/components/library/LibraryCompleteness'
+import { buildSheetSetFromLibrary } from '@/lib/buildSheetSet'
+import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 
 /**
  * Library Project — the asset store for one project.
@@ -26,6 +28,8 @@ export default function LibraryProjectPage() {
   const [assets, setAssets] = useState<LibraryAsset[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [generatingSheet, setGeneratingSheet] = useState(false)
+  const [showPackPicker, setShowPackPicker] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
@@ -57,6 +61,22 @@ export default function LibraryProjectPage() {
     } catch (e: any) {
       alert(e?.response?.data?.detail || 'Could not generate portfolio. Try again.')
       setGenerating(false)
+    }
+  }
+
+  const generateSheetSet = async (templateId: string) => {
+    const template = SHEET_SET_TEMPLATES.find(t => t.id === templateId)
+    if (!template || !project || assets.length === 0) return
+    setGeneratingSheet(true)
+    setShowPackPicker(false)
+    try {
+      // build the SheetSet client-side (slot-filled from this project's assets), then persist
+      const data = buildSheetSetFromLibrary(template, assets, { name: project.name })
+      const res = await libraryApi.generateSheetSet(projectId, { name: project.name, data })
+      router.push(`/dashboard/project/${res.project_id}/sheet-set/${res.set_id}/editor`)
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Could not generate sheet set. Try again.')
+      setGeneratingSheet(false)
     }
   }
 
@@ -104,9 +124,32 @@ export default function LibraryProjectPage() {
                 {generating ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
                 {generating ? 'Generating…' : 'Generate Portfolio'}
               </button>
-              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 text-sm font-medium" title="Sheet generation — coming next">
-                <FileText size={16} /> Sheets (soon)
-              </span>
+              <div className="relative">
+                <button
+                  onClick={() => setShowPackPicker(v => !v)}
+                  disabled={generatingSheet || assets.length === 0}
+                  title={assets.length === 0 ? 'Upload some assets first' : 'Generate a sheet set from this project'}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
+                >
+                  {generatingSheet ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+                  {generatingSheet ? 'Generating…' : 'Generate Sheets'}
+                </button>
+                {showPackPicker && (
+                  <div className="absolute right-0 mt-1 w-60 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-1">
+                    <p className="px-3 py-1.5 text-[11px] uppercase tracking-wide text-gray-400">Choose a pack</p>
+                    {SHEET_SET_TEMPLATES.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => generateSheetSet(t.id)}
+                        className="w-full text-left px-3 py-2 hover:bg-amber-50 rounded text-sm"
+                      >
+                        <div className="font-medium text-gray-800">{t.name}</div>
+                        <div className="text-xs text-gray-500">{t.sheetCount} sheets · {t.submissionType}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

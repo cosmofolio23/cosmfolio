@@ -310,6 +310,30 @@ def _to_portfolio_type(t: str) -> str:
     return _PORTFOLIO_TYPE.get(t, "diagram")
 
 
+def _find_or_create_backing_project(proj: dict, uid: str, now: str) -> str:
+    """A Library project's generated outputs (portfolio + sheet sets) share one
+    backing `projects` row so they live together. Find it via either output type,
+    else create it."""
+    lib_id = proj["id"]
+    for table in ("portfolios", "sheet_sets"):
+        try:
+            found = (
+                supabase.table(table).select("project_id")
+                .eq("library_project_id", lib_id).limit(1).execute()
+            ).data
+            if found and found[0].get("project_id"):
+                return found[0]["project_id"]
+        except Exception:
+            pass  # table may not exist yet
+    backing_id = str(uuid4())
+    supabase.table("projects").insert({
+        "id": backing_id, "user_id": uid, "title": proj["name"],
+        "project_type": proj.get("typology") or "design", "status": "concept",
+        "created_at": now, "updated_at": now,
+    }).execute()
+    return backing_id
+
+
 @router.post("/api/library/projects/{project_id}/generate-portfolio")
 async def generate_portfolio_from_library(
     project_id: str,
@@ -332,20 +356,8 @@ async def generate_portfolio_from_library(
     if not lib_assets:
         raise HTTPException(status_code=400, detail="No assets in this project yet — upload some first.")
 
-    # find-or-create a backing `projects` row (reuse if we generated before)
-    existing = (
-        supabase.table("portfolios").select("project_id")
-        .eq("library_project_id", project_id).limit(1).execute()
-    ).data
-    if existing and existing[0].get("project_id"):
-        backing_id = existing[0]["project_id"]
-    else:
-        backing_id = str(uuid4())
-        supabase.table("projects").insert({
-            "id": backing_id, "user_id": uid, "title": proj["name"],
-            "project_type": proj.get("typology") or "design", "status": "concept",
-            "created_at": now, "updated_at": now,
-        }).execute()
+    # find-or-create a backing `projects` row (shared with sheet-set outputs)
+    backing_id = _find_or_create_backing_project(proj, uid, now)
 
     # sync assets: clear backing project's assets, copy mapped library assets in
     supabase.table("assets").delete().eq("project_id", backing_id).execute()
@@ -400,6 +412,42 @@ async def generate_portfolio_from_library(
         "pages": page_structure.get("total_pages", 0),
         "assets_used": len(rows),
     }
+
+
+@router.post("/api/library/projects/{project_id}/generate-sheet-set")
+async def generate_sheet_set_from_library(
+    project_id: str,
+    payload: dict = None,
+    current_user: dict = Depends(require_library),
+):
+    """Persist a SheetSet that the frontend built (slot-filled from this project's
+    library assets) under a shared backing project, linked back to the library."""
+    payload = payload or {}
+    proj = _own_project(project_id, current_user["user_id"])
+    uid = current_user["user_id"]
+    now = datetime.utcnow().isoformat()
+
+    data = payload.get("data")
+    if not isinstance(data, dict) or not data.get("sheets"):
+        raise HTTPException(status_code=400, detail="Missing built sheet-set data.")
+
+    backing_id = _find_or_create_backing_project(proj, uid, now)
+    set_id = str(uuid4())
+    sheets = data.get("sheets") or []
+    supabase.table("sheet_sets").insert({
+        "id": set_id,
+        "project_id": backing_id,
+        "user_id": uid,
+        "library_project_id": project_id,
+        "name": payload.get("name") or proj["name"],
+        "submission_type": data.get("submissionType"),
+        "sheet_count": len(sheets),
+        "data": data,
+        "created_at": now,
+        "updated_at": now,
+    }).execute()
+
+    return {"set_id": set_id, "project_id": backing_id, "sheets": len(sheets)}
 
 
 @router.put("/api/library/projects/{project_id}/text/{kind}")
