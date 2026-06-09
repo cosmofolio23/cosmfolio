@@ -13,6 +13,7 @@ import { LibraryCompleteness } from '@/components/library/LibraryCompleteness'
 import { LibraryOutputs } from '@/components/library/LibraryOutputs'
 import { buildSheetSetFromLibrary } from '@/lib/buildSheetSet'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
+import Logo from '@/components/Logo'
 
 /**
  * Library Project — the asset store for one project.
@@ -83,8 +84,8 @@ export default function LibraryProjectPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary dark:bg-dark-bg-primary">
+        <Loader2 className="animate-spin text-accent-gold" size={32} />
       </div>
     )
   }
@@ -100,19 +101,22 @@ export default function LibraryProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="glass-nav border-b border-border-subtle dark:border-dark-border-subtle">
         <div className="max-w-6xl mx-auto px-4 py-5 sm:px-6 lg:px-8">
-          <Link href="/dashboard/library" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-3">
+          <Link href="/dashboard/library" className="inline-flex items-center gap-1.5 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary mb-3">
             <ArrowLeft size={16} /> All projects
           </Link>
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {assets.length} assets · {counts.drawings} drawings · {counts.visuals} visuals · {counts.process} process · {counts.analysis} analysis
-              </p>
+            <div className="flex items-center gap-3">
+              <Logo size="sm" variant="gold" />
+              <div>
+                <h1 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">{project.name}</h1>
+                <p className="text-sm text-text-secondary dark:text-dark-text-secondary mt-0.5">
+                  {assets.length} assets · {counts.drawings} drawings · {counts.visuals} visuals · {counts.process} process · {counts.analysis} analysis
+                </p>
+              </div>
             </div>
             {/* Generate outputs FROM this project's library (the payoff) */}
             <div className="flex gap-2">

@@ -50,28 +50,28 @@ export function LibraryStats() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200">
+      <div className="card p-4">
         <div className="flex items-center gap-3 mb-2">
-          <FolderOpen className="text-indigo-600" size={20} />
-          <h3 className="text-sm font-medium text-indigo-700">Projects</h3>
+          <FolderOpen className="text-accent-gold" size={20} />
+          <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Projects</h3>
         </div>
-        <p className="text-3xl font-bold text-indigo-900">{stats.projects}</p>
+        <p className="text-3xl font-bold text-gold-gradient">{stats.projects}</p>
       </div>
 
-      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-4 border border-emerald-200">
+      <div className="card p-4">
         <div className="flex items-center gap-3 mb-2">
-          <Upload className="text-emerald-600" size={20} />
-          <h3 className="text-sm font-medium text-emerald-700">Assets</h3>
+          <Upload className="text-emerald-500" size={20} />
+          <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Assets</h3>
         </div>
-        <p className="text-3xl font-bold text-emerald-900">{stats.assets}</p>
+        <p className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">{stats.assets}</p>
       </div>
 
-      <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
+      <div className="card p-4">
         <div className="flex items-center gap-3 mb-2">
-          <Zap className="text-amber-600" size={20} />
-          <h3 className="text-sm font-medium text-amber-700">Generated</h3>
+          <Zap className="text-accent-gold" size={20} />
+          <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Generated</h3>
         </div>
-        <p className="text-3xl font-bold text-amber-900">{stats.outputs}</p>
+        <p className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">{stats.outputs}</p>
       </div>
     </div>
   )

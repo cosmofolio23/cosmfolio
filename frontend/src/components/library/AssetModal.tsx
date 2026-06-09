@@ -77,7 +77,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
               type="text"
               value={form.title || ''}
               onChange={e => setForm({ ...form, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-gold"
             />
           </div>
 
@@ -88,7 +88,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
               value={form.caption || ''}
               onChange={e => setForm({ ...form, caption: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-gold"
             />
           </div>
 
@@ -103,7 +103,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
                   const firstType = ASSET_TAXONOMY[cat]?.types[0]?.type || 'other'
                   setForm({ ...form, category: cat, asset_type: firstType as AssetType })
                 }}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-gold"
               >
                 {Object.entries(ASSET_TAXONOMY).map(([key, val]) => (
                   <option key={key} value={key}>{val.label}</option>
@@ -116,7 +116,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
               <select
                 value={form.asset_type || 'other'}
                 onChange={e => setForm({ ...form, asset_type: e.target.value as AssetType })}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-gold"
               >
                 {ASSET_TAXONOMY[form.category as AssetCategory]?.types.map(t => (
                   <option key={t.type} value={t.type}>{t.label}</option>
@@ -132,7 +132,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
               <select
                 value={form.scale || ''}
                 onChange={e => setForm({ ...form, scale: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 focus:ring-accent-gold"
               >
                 <option value="">Not specified</option>
                 {SCALES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -146,7 +146,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
             <select
               value={form.orientation || 'landscape'}
               onChange={e => setForm({ ...form, orientation: e.target.value as 'portrait' | 'landscape' })}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-gold"
             >
               <option value="landscape">Landscape</option>
               <option value="portrait">Portrait</option>
@@ -188,7 +188,7 @@ export function AssetModal({ asset, projectId, onClose, onUpdated, onDeleted }: 
             <button
               onClick={handleSave}
               disabled={editing}
-              className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 bg-accent-gold text-[#1A1A1A] rounded-lg font-medium hover:brightness-95 disabled:opacity-50"
             >
               {editing ? 'Saving…' : 'Save'}
             </button>

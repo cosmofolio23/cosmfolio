@@ -45,8 +45,8 @@ export function LibraryCompleteness({ assets }: LibraryCompletenessProps) {
               onClick={() => setTargetId(r.templateId)}
               className={`px-2.5 py-1 rounded text-xs font-medium transition ${
                 r.templateId === current.templateId
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-indigo-300'
+                  ? 'bg-accent-gold text-[#1A1A1A]'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-accent-gold'
               }`}
             >
               {r.templateName.replace(/ (Submission Package|Boards|Review Package)$/, '')}
