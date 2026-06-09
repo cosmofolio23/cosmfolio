@@ -82,6 +82,10 @@ export const libraryApi = {
     return (await apiClient.put(`/api/library/projects/${projectId}/assets/${assetId}`, payload)).data
   },
 
+  async generatePortfolio(projectId: string, opts?: { layout_id?: string; style_pack?: string }): Promise<{ portfolio_id: string; project_id: string; pages: number; assets_used: number }> {
+    return (await apiClient.post(`/api/library/projects/${projectId}/generate-portfolio`, opts || {})).data
+  },
+
   async deleteAsset(projectId: string, assetId: string): Promise<void> {
     await apiClient.delete(`/api/library/projects/${projectId}/assets/${assetId}`)
   },

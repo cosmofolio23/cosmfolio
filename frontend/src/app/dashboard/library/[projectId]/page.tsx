@@ -25,6 +25,7 @@ export default function LibraryProjectPage() {
   const [project, setProject] = useState<LibraryProject | null>(null)
   const [assets, setAssets] = useState<LibraryAsset[]>([])
   const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) { router.push('/signin'); return }
@@ -44,6 +45,19 @@ export default function LibraryProjectPage() {
     const p = await libraryApi.getProject(projectId)
     setProject(p)
     setAssets(p.assets || [])
+  }
+
+  const generatePortfolio = async () => {
+    if (assets.length === 0) return
+    setGenerating(true)
+    try {
+      const res = await libraryApi.generatePortfolio(projectId)
+      // open the generated portfolio in its editor
+      router.push(`/dashboard/project/${res.project_id}/portfolio/${res.portfolio_id}`)
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Could not generate portfolio. Try again.')
+      setGenerating(false)
+    }
   }
 
   if (loading) {
@@ -79,13 +93,19 @@ export default function LibraryProjectPage() {
                 {assets.length} assets · {counts.drawings} drawings · {counts.visuals} visuals · {counts.process} process · {counts.analysis} analysis
               </p>
             </div>
-            {/* Outputs this project can produce (next phase wires these to read from library) */}
+            {/* Generate outputs FROM this project's library (the payoff) */}
             <div className="flex gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium">
-                <ImageIcon size={16} /> Portfolio
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 text-sm font-medium">
-                <FileText size={16} /> Sheets
+              <button
+                onClick={generatePortfolio}
+                disabled={generating || assets.length === 0}
+                title={assets.length === 0 ? 'Upload some assets first' : 'Generate a portfolio from this project'}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+              >
+                {generating ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
+                {generating ? 'Generating…' : 'Generate Portfolio'}
+              </button>
+              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 text-sm font-medium" title="Sheet generation — coming next">
+                <FileText size={16} /> Sheets (soon)
               </span>
             </div>
           </div>

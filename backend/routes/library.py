@@ -292,6 +292,116 @@ async def delete_asset(project_id: str, asset_id: str, current_user: dict = Depe
 # TEXT BRANCH
 # ──────────────────────────────────────────────────────────────
 
+# ──────────────────────────────────────────────────────────────
+# GENERATE FROM LIBRARY — the payoff: upload once → portfolio
+# ──────────────────────────────────────────────────────────────
+
+# canonical asset_type → the portfolio generator's bucket vocabulary
+# (it only understands render | plan | section | diagram)
+_PORTFOLIO_TYPE = {
+    "plan": "plan", "site-plan": "plan", "master-plan": "plan",
+    "section": "section", "elevation": "section",
+    "exterior-render": "render", "interior-render": "render",
+    "aerial": "render", "model-photo": "render", "cover": "render",
+}
+
+
+def _to_portfolio_type(t: str) -> str:
+    return _PORTFOLIO_TYPE.get(t, "diagram")
+
+
+@router.post("/api/library/projects/{project_id}/generate-portfolio")
+async def generate_portfolio_from_library(
+    project_id: str,
+    payload: dict = None,
+    current_user: dict = Depends(require_library),
+):
+    """Materialize a standard project + mapped asset rows from the library, then
+    reuse the existing portfolio generator. The library stays the source of
+    truth; the portfolio is a generated view linked back via library_project_id."""
+    from routes.portfolios import generate_portfolio_structure  # local import avoids any import-order issues
+
+    payload = payload or {}
+    proj = _own_project(project_id, current_user["user_id"])
+    uid = current_user["user_id"]
+    now = datetime.utcnow().isoformat()
+
+    lib_assets = (
+        supabase.table("library_assets").select("*").eq("project_id", project_id).execute()
+    ).data or []
+    if not lib_assets:
+        raise HTTPException(status_code=400, detail="No assets in this project yet — upload some first.")
+
+    # find-or-create a backing `projects` row (reuse if we generated before)
+    existing = (
+        supabase.table("portfolios").select("project_id")
+        .eq("library_project_id", project_id).limit(1).execute()
+    ).data
+    if existing and existing[0].get("project_id"):
+        backing_id = existing[0]["project_id"]
+    else:
+        backing_id = str(uuid4())
+        supabase.table("projects").insert({
+            "id": backing_id, "user_id": uid, "title": proj["name"],
+            "project_type": proj.get("typology") or "design", "status": "concept",
+            "created_at": now, "updated_at": now,
+        }).execute()
+
+    # sync assets: clear backing project's assets, copy mapped library assets in
+    supabase.table("assets").delete().eq("project_id", backing_id).execute()
+    rows = []
+    for a in lib_assets:
+        rows.append({
+            "id": str(uuid4()),
+            "project_id": backing_id,
+            "asset_type": _to_portfolio_type(a["asset_type"]),
+            "file_url": a.get("url") or "",
+            "file_name": a.get("title") or "asset",
+            "file_size": a.get("file_size") or 0,
+            "upload_order": a.get("sort_order") or 0,
+            "analysis": {
+                "storage_path": a.get("storage_path"),
+                "width": a.get("width_px"), "height": a.get("height_px"),
+                "library_asset_id": a["id"],
+            },
+            "created_at": now,
+        })
+    if rows:
+        supabase.table("assets").insert(rows).execute()
+
+    # bucket asset ids for the generator
+    buckets = {"renders": [], "plans": [], "sections": [], "diagrams": []}
+    key_of = {"render": "renders", "plan": "plans", "section": "sections", "diagram": "diagrams"}
+    for r in rows:
+        k = key_of.get(r["asset_type"])
+        if k:
+            buckets[k].append(r["id"])
+
+    layout_id = payload.get("layout_id") or "editorial"
+    style_pack = (payload.get("style_pack") or "minimal_white")[:50]
+    page_structure = generate_portfolio_structure(backing_id, layout_id, style_pack, buckets)
+
+    portfolio_id = str(uuid4())
+    supabase.table("portfolios").insert({
+        "id": portfolio_id,
+        "project_id": backing_id,
+        "layout_id": layout_id,
+        "style_pack": style_pack,
+        "status": "ready",
+        "variant_number": 1,
+        "library_project_id": project_id,
+        "page_structure": page_structure,
+        "created_at": now,
+    }).execute()
+
+    return {
+        "portfolio_id": portfolio_id,
+        "project_id": backing_id,
+        "pages": page_structure.get("total_pages", 0),
+        "assets_used": len(rows),
+    }
+
+
 @router.put("/api/library/projects/{project_id}/text/{kind}")
 async def upsert_text(project_id: str, kind: str, payload: dict, current_user: dict = Depends(require_library)):
     """Upsert a text block (concept|description|sustainability|abstract) with
