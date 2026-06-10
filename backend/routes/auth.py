@@ -1,11 +1,23 @@
 from fastapi import APIRouter, HTTPException, status, Header
+from pydantic import BaseModel
 from datetime import datetime
 import json
+import requests
 from firebase_config import verify_firebase_token, firebase_app
+from config import settings
 from models import UserResponse
 from database import supabase
 
 router = APIRouter()
+
+
+class SignInRequest(BaseModel):
+    email: str
+    password: str
+    # Firebase Web API key is a public identifier (already shipped in the
+    # frontend bundle). The client may pass it so the backend can proxy the
+    # Identity Toolkit call; falls back to the server's configured key.
+    api_key: str | None = None
 
 # ==================== Helper Functions ====================
 
@@ -77,6 +89,95 @@ async def signup(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg
         )
+
+@router.post("/signin")
+async def signin(body: SignInRequest):
+    """
+    Server-side email/password sign-in (Firebase Identity Toolkit proxy).
+
+    The frontend normally signs in directly with the Firebase JS SDK. When a
+    user's browser extension / ad blocker blocks the call to
+    identitytoolkit.googleapis.com, the SDK throws auth/network-request-failed.
+    This endpoint lets the frontend fall back to signing in through the backend
+    (which is not behind any client-side blocker), returning a valid Firebase
+    ID token the rest of the app already understands.
+    """
+    api_key = body.api_key or settings.FIREBASE_API_KEY
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Firebase API key not configured",
+        )
+
+    try:
+        resp = requests.post(
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword",
+            params={"key": api_key},
+            json={
+                "email": body.email,
+                "password": body.password,
+                "returnSecureToken": True,
+            },
+            timeout=20,
+        )
+    except requests.RequestException as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Auth provider unreachable: {e}",
+        )
+
+    data = resp.json()
+
+    if resp.status_code != 200:
+        msg = (data.get("error", {}) or {}).get("message", "SIGNIN_FAILED")
+        if msg in ("INVALID_LOGIN_CREDENTIALS", "EMAIL_NOT_FOUND",
+                   "INVALID_PASSWORD", "INVALID_EMAIL"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+        if msg.startswith("TOO_MANY_ATTEMPTS"):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many attempts. Please try again later.",
+            )
+        if msg == "USER_DISABLED":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This account has been disabled.",
+            )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+
+    user_id = data.get("localId")
+    email = data.get("email")
+    token = data.get("idToken")
+
+    # Best-effort: ensure a users row exists (non-fatal).
+    name = None
+    if supabase:
+        try:
+            existing = supabase.table("users").select("*").eq("id", user_id).execute()
+            if existing.data:
+                name = existing.data[0].get("name")
+            else:
+                supabase.table("users").insert({
+                    "id": user_id,
+                    "email": email,
+                    "created_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat(),
+                }).execute()
+        except Exception as e:
+            print(f"[WARN] signin user sync failed (non-fatal): {e}")
+
+    return {
+        "success": True,
+        "token": token,
+        "user_id": user_id,
+        "email": email,
+        "name": name,
+        "expires_in": data.get("expiresIn"),
+    }
+
 
 @router.post("/verify-token")
 async def verify_token(token: str):

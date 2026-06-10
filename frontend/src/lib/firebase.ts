@@ -43,10 +43,56 @@ export async function firebaseSignUp(email: string, password: string, name: stri
 }
 
 export async function firebaseSignIn(email: string, password: string) {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password)
-  const user = userCredential.user
-  const token = await user.getIdToken()
-  return { user, token }
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user
+    const token = await user.getIdToken()
+    return { user, token }
+  } catch (err: any) {
+    // Ad blockers / privacy extensions can block the direct call to
+    // identitytoolkit.googleapis.com, which surfaces as
+    // auth/network-request-failed. Fall back to signing in through our own
+    // backend (which no client-side blocker can intercept).
+    if (err?.code === 'auth/network-request-failed') {
+      return backendSignIn(email, password)
+    }
+    throw err
+  }
+}
+
+/**
+ * Server-side sign-in fallback. Returns a minimal user-like object compatible
+ * with the auth store ({ uid, email }). The token is a real Firebase ID token
+ * the backend already verifies on every request.
+ */
+async function backendSignIn(email: string, password: string) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const res = await fetch(`${apiUrl}/api/auth/signin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      password,
+      api_key: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    }),
+  })
+
+  if (!res.ok) {
+    let detail = 'Invalid email or password'
+    try {
+      const body = await res.json()
+      if (body?.detail) detail = body.detail
+    } catch {}
+    throw new Error(detail)
+  }
+
+  const data = await res.json()
+  const user = {
+    uid: data.user_id as string,
+    email: (data.email as string) || email,
+    displayName: (data.name as string) || '',
+  }
+  return { user: user as unknown as User, token: data.token as string }
 }
 
 export async function firebaseSignOut() {
