@@ -288,16 +288,16 @@ export default function GeneratePage() {
         )}
 
         {/* Generate CTA */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white text-center">
+        <div className="bg-gradient-to-r from-[#D4AF37] to-[#9C7416] rounded-xl p-8 text-white text-center">
           <h2 className="text-2xl font-bold mb-2">Ready to generate?</h2>
-          <p className="text-blue-100 mb-6">
+          <p className="text-[#FBE7A1] mb-6">
             Selected: <strong>{selectedPack.name}</strong> style
             with <strong>{LAYOUTS.find(l => l.id === selectedLayout)?.name}</strong> layout
           </p>
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="bg-white text-blue-600 px-10 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 disabled:opacity-50 transition"
+            className="bg-white text-[#9C7416] px-10 py-4 rounded-xl font-bold text-lg hover:bg-[#FBE7A1]/30 disabled:opacity-50 transition"
           >
             {isGenerating ? '⟳ Generating...' : `✨ Generate ${variantCount} Portfolio Variants`}
           </button>

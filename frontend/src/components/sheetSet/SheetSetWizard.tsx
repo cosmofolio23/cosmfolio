@@ -52,7 +52,7 @@ export function SheetSetWizard({ onComplete, onCancel }: SheetSetWizardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#FBE7A1]/30 to-[#D4AF37]/20 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8">
         {/* Progress Bar */}
         <div className="mb-8">

@@ -420,7 +420,7 @@ export default function PortfolioEditorPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
-              <button onClick={aiAnalyze} disabled={!!analyzing} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-purple-600 hover:bg-purple-50 disabled:opacity-50" title="Detect each image's type with free on-device AI, then recompose">{analyzing ? '🧠 Analyzing…' : '🔍 AI Analyze'}</button>
+              <button onClick={aiAnalyze} disabled={!!analyzing} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30 disabled:opacity-50" title="Detect each image's type with free on-device AI, then recompose">{analyzing ? '🧠 Analyzing…' : '🔍 AI Analyze'}</button>
               <button onClick={regenerate} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50" title="Recompose from your assets">🔄 Regenerate</button>
               <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
               <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
@@ -489,7 +489,7 @@ export default function PortfolioEditorPage() {
             {!isMobile && (
               <div className="mt-2 flex gap-1.5">
                 <button onClick={addPage} className="flex-1 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Page</button>
-                <button onClick={addResumePage} className="flex-1 py-2 text-xs font-medium text-purple-600 border-2 border-dashed border-purple-200 rounded-lg hover:bg-purple-50">+ Resume</button>
+                <button onClick={addResumePage} className="flex-1 py-2 text-xs font-medium text-[#9C7416] border-2 border-dashed border-[#D4AF37]/40 rounded-lg hover:bg-[#FBE7A1]/30">+ Resume</button>
               </div>
             )}
           </div>

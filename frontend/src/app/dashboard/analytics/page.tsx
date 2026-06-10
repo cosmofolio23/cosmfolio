@@ -144,7 +144,7 @@ export default function AnalyticsDashboard() {
                 icon="📚"
                 label="Portfolios"
                 value={summary.portfolio_count}
-                color="purple"
+                color="gold"
               />
             </div>
 
@@ -247,7 +247,7 @@ function StatCard({ icon, label, value, color }: any) {
     blue: 'bg-blue-50 border-blue-200 text-blue-700',
     green: 'bg-green-50 border-green-200 text-green-700',
     amber: 'bg-amber-50 border-amber-200 text-amber-700',
-    purple: 'bg-purple-50 border-purple-200 text-purple-700',
+    gold: 'bg-[#FBE7A1]/30 border-[#D4AF37]/40 text-[#9C7416]',
   }
   return (
     <div className={`rounded-xl border-2 p-4 ${colors[color as keyof typeof colors]}`}>

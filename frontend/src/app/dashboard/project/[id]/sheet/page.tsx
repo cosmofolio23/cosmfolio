@@ -384,7 +384,7 @@ export default function SheetPage() {
             <Logo size="sm" variant="gold" />
             <span className="font-semibold text-gray-900">{project?.title || 'Sheet Creator'}</span>
           </div>
-          <span className="text-xs bg-purple-100 text-purple-600 px-3 py-1 rounded-full font-medium">Presentation Sheet Creator</span>
+          <span className="text-xs bg-[#FBE7A1]/40 text-[#9C7416] px-3 py-1 rounded-full font-medium">Presentation Sheet Creator</span>
         </div>
 
         {/* Progress Steps */}
@@ -398,7 +398,7 @@ export default function SheetPage() {
             <div key={s.key} className="flex items-center gap-2">
               <button onClick={() => setStep(s.key as any)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                  step === s.key ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-400'
+                  step === s.key ? 'bg-[#D4AF37] text-white' : 'bg-gray-100 text-gray-400'
                 }`}>
                 {s.icon} {s.label}
               </button>
@@ -420,14 +420,14 @@ export default function SheetPage() {
               {SHEET_TYPES.map(sheet => (
                 <div key={sheet.id} onClick={() => setSelectedSheetType(sheet.id)}
                   className={`bg-white rounded-xl p-5 cursor-pointer border-2 transition-all hover:shadow-md ${
-                    selectedSheetType === sheet.id ? 'border-purple-500 shadow-md' : 'border-gray-200 hover:border-purple-300'
+                    selectedSheetType === sheet.id ? 'border-[#D4AF37] shadow-md' : 'border-gray-200 hover:border-[#D4AF37]/50'
                   }`}>
                   <div className="text-3xl mb-3">{sheet.icon}</div>
                   <h3 className="font-semibold text-gray-900 mb-1">{sheet.name}</h3>
                   <p className="text-xs text-gray-500 mb-2">{sheet.desc}</p>
-                  <p className="text-xs text-purple-500 bg-purple-50 px-2 py-1 rounded-full inline-block">{sheet.layout}</p>
+                  <p className="text-xs text-[#9C7416] bg-[#FBE7A1]/30 px-2 py-1 rounded-full inline-block">{sheet.layout}</p>
                   {selectedSheetType === sheet.id && (
-                    <p className="text-xs text-purple-600 font-medium mt-2">✓ Selected</p>
+                    <p className="text-xs text-[#9C7416] font-medium mt-2">✓ Selected</p>
                   )}
                 </div>
               ))}
@@ -435,7 +435,7 @@ export default function SheetPage() {
 
             <div className="flex justify-end">
               <button onClick={() => setStep('upload')} disabled={!selectedSheetType}
-                className="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-medium disabled:opacity-40 hover:bg-purple-700">
+                className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg font-medium disabled:opacity-40 hover:brightness-95">
                 Next: Add Assets →
               </button>
             </div>
@@ -452,11 +452,11 @@ export default function SheetPage() {
               {['render', 'plan', 'section', 'diagram', 'material', 'detail'].map(cat => (
                 <button key={cat} onClick={() => setActiveUploadCat(cat)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all border ${
-                    activeUploadCat === cat ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 hover:shadow-sm'
+                    activeUploadCat === cat ? 'bg-[#D4AF37] text-white border-[#D4AF37]' : 'bg-white text-gray-600 hover:shadow-sm'
                   }`}>
                   {cat}
                   {(assets as any)[cat]?.length > 0 && (
-                    <span className={`ml-1.5 text-xs px-1.5 rounded-full ${activeUploadCat === cat ? 'bg-purple-500' : 'bg-gray-200 text-gray-600'}`}>
+                    <span className={`ml-1.5 text-xs px-1.5 rounded-full ${activeUploadCat === cat ? 'bg-[#C99B30]' : 'bg-gray-200 text-gray-600'}`}>
                       {(assets as any)[cat].length}
                     </span>
                   )}
@@ -464,15 +464,15 @@ export default function SheetPage() {
               ))}
             </div>
 
-            <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center mb-5 hover:border-purple-400 cursor-pointer transition-colors"
+            <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center mb-5 hover:border-[#D4AF37]/70 cursor-pointer transition-colors"
               onClick={() => fileInputRef.current?.click()}
-              onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#9333EA' }}
+              onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#D4AF37' }}
               onDragLeave={e => { e.currentTarget.style.borderColor = '#D1D5DB' }}
               onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#D1D5DB'; handleUpload(e.dataTransfer.files) }}>
               <div className="text-4xl mb-3">📤</div>
               <h3 className="font-semibold text-gray-700 mb-1">Drop images here or click to upload</h3>
               <p className="text-sm text-gray-400">PNG, JPG, PDF supported</p>
-              {uploadProgress && <p className="mt-3 text-sm font-medium text-purple-600">{uploadProgress}</p>}
+              {uploadProgress && <p className="mt-3 text-sm font-medium text-[#9C7416]">{uploadProgress}</p>}
               <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf" className="hidden"
                 onChange={e => e.target.files && handleUpload(e.target.files)} />
             </div>
@@ -489,7 +489,7 @@ export default function SheetPage() {
 
             <div className="flex justify-between">
               <button onClick={() => setStep('type')} className="border px-6 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50">← Back</button>
-              <button onClick={() => setStep('design')} className="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-purple-700">
+              <button onClick={() => setStep('design')} className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg font-medium hover:brightness-95">
                 Next: Design →
               </button>
             </div>
@@ -510,19 +510,19 @@ export default function SheetPage() {
                   <label className="text-sm text-gray-600 mb-1 block">Sheet Title</label>
                   <input value={sheetTitle} onChange={e => setSheetTitle(e.target.value)}
                     placeholder="e.g., Housing Complex - Concept Sheet"
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-400" />
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]" />
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
                     <label className="text-sm text-gray-600">Caption / Subtitle</label>
                     <button onClick={generateAICaption} disabled={aiLoading}
-                      className="text-xs text-purple-600 hover:underline disabled:opacity-40">
+                      className="text-xs text-[#9C7416] hover:underline disabled:opacity-40">
                       {aiLoading ? '⏳ Generating...' : '🤖 Generate with AI'}
                     </button>
                   </div>
                   <textarea value={sheetCaption} onChange={e => setSheetCaption(e.target.value)}
                     placeholder="Short description for this sheet..."
-                    className="w-full border rounded-lg px-3 py-2 text-sm h-16 resize-none focus:outline-none focus:border-purple-400" />
+                    className="w-full border rounded-lg px-3 py-2 text-sm h-16 resize-none focus:outline-none focus:border-[#D4AF37]" />
                 </div>
               </div>
             </div>
@@ -534,7 +534,7 @@ export default function SheetPage() {
                 {SHEET_SIZES.map(size => (
                   <button key={size.id} onClick={() => setSelectedSize(size.id)}
                     className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${
-                      selectedSize === size.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                      selectedSize === size.id ? 'border-[#D4AF37] bg-[#FBE7A1]/30' : 'border-gray-200 hover:border-[#D4AF37]/50'
                     }`}>
                     <div className="text-xl mb-1">{size.icon}</div>
                     <div className="font-bold text-sm">{size.label}</div>
@@ -551,7 +551,7 @@ export default function SheetPage() {
                 {ORIENTATIONS.map(o => (
                   <button key={o.id} onClick={() => setSelectedOrientation(o.id)}
                     className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${
-                      selectedOrientation === o.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                      selectedOrientation === o.id ? 'border-[#D4AF37] bg-[#FBE7A1]/30' : 'border-gray-200 hover:border-[#D4AF37]/50'
                     }`}>
                     <div className="text-2xl mb-1">{o.icon}</div>
                     <div className="font-medium text-sm capitalize">{o.label}</div>
@@ -567,7 +567,7 @@ export default function SheetPage() {
                 {THEMES.map(theme => (
                   <div key={theme.id} onClick={() => setSelectedTheme(theme.id)}
                     className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                      selectedTheme === theme.id ? 'border-purple-500' : 'border-gray-200 hover:border-purple-300'
+                      selectedTheme === theme.id ? 'border-[#D4AF37]' : 'border-gray-200 hover:border-[#D4AF37]/50'
                     }`}>
                     <div className="flex gap-1 mb-2">
                       {theme.colors.map((c, i) => (
@@ -583,7 +583,7 @@ export default function SheetPage() {
             <div className="flex justify-between">
               <button onClick={() => setStep('upload')} className="border px-6 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50">← Back</button>
               <button onClick={generateSheet} disabled={generating}
-                className="bg-purple-600 text-white px-8 py-2.5 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2">
+                className="bg-[#D4AF37] text-white px-8 py-2.5 rounded-lg font-medium hover:brightness-95 disabled:opacity-50 flex items-center gap-2">
                 {generating ? '⏳ Creating Sheet...' : '📄 Create Sheet →'}
               </button>
             </div>
@@ -631,7 +631,7 @@ export default function SheetPage() {
               ].map(dl => (
                 <button key={dl.format}
                   onClick={() => handleExport(dl.format)}
-                  className="bg-white border rounded-xl p-5 text-center hover:border-purple-400 hover:shadow-sm transition-all">
+                  className="bg-white border rounded-xl p-5 text-center hover:border-[#D4AF37]/70 hover:shadow-sm transition-all">
                   <div className="text-3xl mb-2">{dl.icon}</div>
                   <div className="font-semibold text-gray-900">{dl.format}</div>
                   <div className="text-xs text-gray-500 mt-1">{dl.desc}</div>
@@ -645,11 +645,11 @@ export default function SheetPage() {
                 Create Another Sheet
               </button>
               <Link href={`/dashboard/project/${params.id}/sheet/editor`}
-                className="border-2 border-purple-600 text-purple-700 px-6 py-2.5 rounded-lg font-medium hover:bg-purple-50">
+                className="border-2 border-[#D4AF37] text-[#9C7416] px-6 py-2.5 rounded-lg font-medium hover:bg-[#FBE7A1]/30">
                 🎨 Open Advanced Editor
               </Link>
               <Link href="/dashboard"
-                className="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-purple-700">
+                className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg font-medium hover:brightness-95">
                 Back to Dashboard
               </Link>
             </div>

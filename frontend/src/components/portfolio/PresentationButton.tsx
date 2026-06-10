@@ -59,7 +59,7 @@ export function PresentationButton({ portfolio, pages, tokens }: PresentationBut
       <button
         onClick={launch}
         disabled={launching || pages.length === 0}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-50"
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-br from-[#D4AF37] to-[#9C7416] text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-50"
         title="Launch full-screen presentation"
       >
         {launching ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
@@ -115,7 +115,7 @@ export function PresentationButton({ portfolio, pages, tokens }: PresentationBut
           <button
             onClick={launch}
             disabled={launching}
-            className="w-full px-3 py-2 bg-purple-600 text-white rounded font-medium text-sm hover:bg-purple-700 disabled:opacity-50"
+            className="w-full px-3 py-2 bg-[#D4AF37] text-white rounded font-medium text-sm hover:brightness-95 disabled:opacity-50"
           >
             {launching ? 'Launching…' : 'Start Presentation'}
           </button>

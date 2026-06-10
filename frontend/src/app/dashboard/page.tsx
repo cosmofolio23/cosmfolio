@@ -128,33 +128,33 @@ export default function Dashboard() {
         <div className="mb-12 flex gap-3 flex-wrap">
           <Link
             href="/dashboard/templates"
-            className="inline-block bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+            className="inline-block bg-gradient-to-br from-[#D4AF37] to-[#9C7416] rounded-xl px-6 py-4 text-white hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
           >
             🎨 Browse Templates (319) →
           </Link>
           <Link
             href="/dashboard/my-portfolios"
-            className="inline-block bg-gradient-to-br from-green-500 to-green-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+            className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
           >
             📚 My Portfolios →
           </Link>
           <Link
             href="/dashboard/sheets"
-            className="inline-block bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+            className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
           >
             📄 Sheet Composer →
           </Link>
           {loaded && has('library') && (
             <Link
               href="/dashboard/library"
-              className="inline-block bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+              className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
             >
               🗂️ Project Library →
             </Link>
           )}
           <Link
             href="/dashboard/analytics"
-            className="inline-block bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl px-6 py-4 text-white hover:shadow-lg transition font-semibold text-sm"
+            className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
           >
             📊 Analytics →
           </Link>

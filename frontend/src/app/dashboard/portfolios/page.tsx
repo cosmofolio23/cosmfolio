@@ -261,7 +261,7 @@ export default function PortfoliosPage() {
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
               >
                 {/* Card Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-6">
+                <div className="bg-gradient-to-r from-[#FBE7A1]/30 to-[#D4AF37]/15 px-6 py-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-1">{portfolio.title}</h3>
                   <p className="text-sm text-gray-600">{portfolio.architect_name}</p>
                   <div className="flex items-center gap-2 mt-3">

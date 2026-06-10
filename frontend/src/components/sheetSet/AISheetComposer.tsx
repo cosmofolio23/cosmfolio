@@ -74,10 +74,10 @@ export function AISheetComposer({ onCommand, isProcessing = false }: AISheetComp
   const [selectedCmd, setSelectedCmd] = useState<AISheetCommand | null>(null)
 
   return (
-    <div className="space-y-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
+    <div className="space-y-3 p-4 bg-gradient-to-br from-[#FBE7A1]/30 to-[#D4AF37]/10 rounded-lg border-2 border-[#D4AF37]/40">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">🤖 AI Sheet Composer</h3>
-        <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded">Architecture Edition</span>
+        <span className="text-[10px] bg-[#FBE7A1]/50 text-[#9C7416] px-2 py-1 rounded">Architecture Edition</span>
       </div>
 
       <p className="text-xs text-gray-600">Let AI optimize your sheet composition:</p>
@@ -94,8 +94,8 @@ export function AISheetComposer({ onCommand, isProcessing = false }: AISheetComp
             title={cmd.description}
             className={`p-2 rounded text-left text-xs font-medium transition ${
               selectedCmd === cmd.id
-                ? 'bg-purple-600 text-white border-purple-600'
-                : 'bg-white border border-purple-200 text-gray-700 hover:border-purple-400'
+                ? 'bg-[#D4AF37] text-white border-[#D4AF37]'
+                : 'bg-white border border-[#D4AF37]/30 text-gray-700 hover:border-[#D4AF37]/70'
             } disabled:opacity-50`}
           >
             <div className="font-semibold">{cmd.icon}</div>
@@ -105,7 +105,7 @@ export function AISheetComposer({ onCommand, isProcessing = false }: AISheetComp
       </div>
 
       {isProcessing && (
-        <div className="text-center py-2 text-xs text-purple-600">
+        <div className="text-center py-2 text-xs text-[#9C7416]">
           <span>🔄 AI is analyzing...</span>
         </div>
       )}

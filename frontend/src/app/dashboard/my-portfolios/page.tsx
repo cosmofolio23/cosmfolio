@@ -201,7 +201,7 @@ export default function MyPortfoliosPage() {
                 className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition"
               >
                 {/* Card Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b">
+                <div className="bg-gradient-to-r from-[#FBE7A1]/30 to-[#D4AF37]/15 p-4 border-b">
                   <h3 className="font-bold text-lg text-gray-900 truncate">
                     {project.title}
                   </h3>
@@ -278,7 +278,7 @@ export default function MyPortfoliosPage() {
                     {project.is_published && project.slug && (
                       <Link
                         href={`/portfolio/${project.slug}`}
-                        className="flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 text-xs font-medium rounded hover:bg-indigo-200 text-center"
+                        className="flex-1 px-3 py-2 bg-[#FBE7A1]/40 text-[#9C7416] text-xs font-medium rounded hover:bg-[#FBE7A1]/60 text-center"
                       >
                         👁️ View
                       </Link>

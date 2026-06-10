@@ -820,7 +820,7 @@ export default function TemplateEditor() {
             <button onClick={undo} disabled={historyIdx <= 0} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Undo (Ctrl+Z)">↶</button>
             <button onClick={redo} disabled={historyIdx >= history.length - 1} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Redo (Ctrl+Shift+Z)">↷</button>
             {projectId && (
-              <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700" title="View as book">📖 Book</Link>
+              <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
             )}
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
             <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">📄 PDF</button>
@@ -999,7 +999,7 @@ export default function TemplateEditor() {
                           <div key={s.blockId} className="flex items-center gap-1.5 text-[11px] mt-1" title={s.prompt}>
                             <span className={s.filled ? 'text-green-600' : 'text-gray-300'}>{s.filled ? '✓' : '○'}</span>
                             <span className="text-gray-500 truncate">✎ {s.name}</span>
-                            <button onClick={() => fillSlotText(pg.pageIndex, s.blockId, draftText(s.name))} className="ml-auto text-[9px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 whitespace-nowrap" title={s.prompt}>✨ AI</button>
+                            <button onClick={() => fillSlotText(pg.pageIndex, s.blockId, draftText(s.name))} className="ml-auto text-[9px] px-1.5 py-0.5 bg-[#FBE7A1]/40 text-[#9C7416] rounded hover:bg-[#FBE7A1]/60 whitespace-nowrap" title={s.prompt}>✨ AI</button>
                           </div>
                         ))}
                       </div>
@@ -1122,7 +1122,7 @@ export default function TemplateEditor() {
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Design Packs</h4>
                   <div className="flex gap-1.5 mb-2">
                     <button onClick={() => setShowSavePackModal(true)} className="flex-1 px-3 py-2 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">💾 Save</button>
-                    <button onClick={() => setShowGeneratePackModal(true)} className="flex-1 px-3 py-2 bg-purple-600 text-white rounded text-xs font-medium hover:bg-purple-700">✨ Generate</button>
+                    <button onClick={() => setShowGeneratePackModal(true)} className="flex-1 px-3 py-2 bg-[#D4AF37] text-white rounded text-xs font-medium hover:brightness-95">✨ Generate</button>
                   </div>
                   {designPacks.length > 0 && (
                     <div className="space-y-1">
@@ -1156,7 +1156,7 @@ export default function TemplateEditor() {
                           <p className="text-[10px] text-gray-500 uppercase font-semibold mb-1.5">Mode</p>
                           <div className="flex gap-1">
                             {(['mood', 'color', 'assets'] as const).map(m => (
-                              <button key={m} onClick={() => setGenerateMode(m)} className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition ${generateMode === m ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{m}</button>
+                              <button key={m} onClick={() => setGenerateMode(m)} className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition ${generateMode === m ? 'bg-[#D4AF37] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{m}</button>
                             ))}
                           </div>
                         </div>
@@ -1178,7 +1178,7 @@ export default function TemplateEditor() {
                       </div>
                       <div className="flex gap-2 mt-4">
                         <button onClick={() => { setShowGeneratePackModal(false); setGenerateInput('') }} className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
-                        <button onClick={generateStylePack} disabled={isGenerating} className="flex-1 px-3 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 disabled:opacity-50">{isGenerating ? 'Generating…' : 'Generate'}</button>
+                        <button onClick={generateStylePack} disabled={isGenerating} className="flex-1 px-3 py-2 bg-[#D4AF37] text-white rounded text-sm hover:brightness-95 disabled:opacity-50">{isGenerating ? 'Generating…' : 'Generate'}</button>
                       </div>
                     </div>
                   </div>

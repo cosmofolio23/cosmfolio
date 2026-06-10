@@ -134,7 +134,7 @@ export default function SheetSetGalleryPage() {
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden border border-gray-200"
               >
                 {/* Card Header */}
-                <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-[#FBE7A1]/30 to-[#D4AF37]/15">
                   <h3 className="font-semibold text-gray-900 text-lg">{set.projectName}</h3>
                   <p className="text-xs text-gray-600 mt-1 capitalize">{set.submissionType}</p>
                 </div>
