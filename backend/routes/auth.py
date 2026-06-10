@@ -19,6 +19,13 @@ class SignInRequest(BaseModel):
     # Identity Toolkit call; falls back to the server's configured key.
     api_key: str | None = None
 
+
+class SignUpRequest(BaseModel):
+    email: str
+    password: str
+    name: str | None = None
+    api_key: str | None = None
+
 # ==================== Helper Functions ====================
 
 def get_current_user_from_token(authorization: str = None):
@@ -89,6 +96,88 @@ async def signup(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg
         )
+
+@router.post("/register")
+async def register(body: SignUpRequest):
+    """
+    Server-side email/password registration (Firebase Identity Toolkit proxy).
+
+    Fallback for when the Firebase JS SDK's createUserWithEmailAndPassword is
+    blocked by a browser extension / ad blocker (auth/network-request-failed).
+    Creates the Firebase user and returns a valid ID token, mirroring the
+    /signin fallback.
+    """
+    api_key = body.api_key or settings.FIREBASE_API_KEY
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Firebase API key not configured",
+        )
+
+    try:
+        resp = requests.post(
+            "https://identitytoolkit.googleapis.com/v1/accounts:signUp",
+            params={"key": api_key},
+            json={
+                "email": body.email,
+                "password": body.password,
+                "returnSecureToken": True,
+            },
+            timeout=20,
+        )
+    except requests.RequestException as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Auth provider unreachable: {e}",
+        )
+
+    data = resp.json()
+
+    if resp.status_code != 200:
+        msg = (data.get("error", {}) or {}).get("message", "SIGNUP_FAILED")
+        if msg == "EMAIL_EXISTS":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email already exists",
+            )
+        if msg.startswith("WEAK_PASSWORD"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password should be at least 6 characters",
+            )
+        if msg == "INVALID_EMAIL":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email address",
+            )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+
+    user_id = data.get("localId")
+    email = data.get("email")
+    token = data.get("idToken")
+
+    # Best-effort: create the users row (non-fatal).
+    if supabase:
+        try:
+            supabase.table("users").insert({
+                "id": user_id,
+                "email": email,
+                "name": body.name,
+                "created_at": datetime.utcnow().isoformat(),
+                "updated_at": datetime.utcnow().isoformat(),
+            }).execute()
+        except Exception as e:
+            print(f"[WARN] register user sync failed (non-fatal): {e}")
+
+    return {
+        "success": True,
+        "token": token,
+        "user_id": user_id,
+        "email": email,
+        "name": body.name,
+        "expires_in": data.get("expiresIn"),
+    }
+
 
 @router.post("/signin")
 async def signin(body: SignInRequest):

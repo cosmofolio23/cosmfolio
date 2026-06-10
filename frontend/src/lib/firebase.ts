@@ -26,20 +26,62 @@ export const auth = getAuth(app)
 // ==================== Auth Functions ====================
 
 export async function firebaseSignUp(email: string, password: string, name: string) {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-  const user = userCredential.user
-  const token = await user.getIdToken()
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user
+    const token = await user.getIdToken()
 
-  // Tell our backend to save user info in Supabase DB
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-  await fetch(`${apiUrl}/api/auth/signup?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&name=${encodeURIComponent(name)}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`
+    // Tell our backend to save user info in Supabase DB
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    await fetch(`${apiUrl}/api/auth/signup?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&name=${encodeURIComponent(name)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    return { user, token }
+  } catch (err: any) {
+    // Ad blockers / privacy extensions can block the direct call to
+    // identitytoolkit.googleapis.com (auth/network-request-failed). Fall back
+    // to registering through our own backend, which no blocker can intercept.
+    if (err?.code === 'auth/network-request-failed') {
+      return backendSignUp(email, password, name)
     }
+    throw err
+  }
+}
+
+/** Server-side registration fallback (see backendSignIn). */
+async function backendSignUp(email: string, password: string, name: string) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const res = await fetch(`${apiUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      password,
+      name,
+      api_key: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    }),
   })
 
-  return { user, token }
+  if (!res.ok) {
+    let detail = 'Sign up failed. Please try again.'
+    try {
+      const body = await res.json()
+      if (body?.detail) detail = body.detail
+    } catch {}
+    throw new Error(detail)
+  }
+
+  const data = await res.json()
+  const user = {
+    uid: data.user_id as string,
+    email: (data.email as string) || email,
+    displayName: (data.name as string) || name || '',
+  }
+  return { user: user as unknown as User, token: data.token as string }
 }
 
 export async function firebaseSignIn(email: string, password: string) {
