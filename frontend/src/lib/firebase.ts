@@ -10,13 +10,21 @@ import {
   User
 } from 'firebase/auth'
 
+// Strip BOM / zero-width / non-printable chars that can sneak into env vars
+// (e.g. when they're set via PowerShell). A leading U+FEFF silently
+// invalidates the Firebase API key ("API key not valid") and turns absolute
+// URLs into relative paths. Firebase config + URLs are all printable ASCII.
+const clean = (v?: string) => (v ?? '').replace(/[^\x20-\x7E]/g, '').trim()
+const apiBase = () => clean(process.env.NEXT_PUBLIC_API_URL) || 'http://localhost:8000'
+const firebaseApiKey = () => clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY)
+
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: firebaseApiKey(),
+  authDomain: clean(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
+  projectId: clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+  storageBucket: clean(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: clean(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+  appId: clean(process.env.NEXT_PUBLIC_FIREBASE_APP_ID),
 }
 
 // Initialize Firebase only once
@@ -32,7 +40,7 @@ export async function firebaseSignUp(email: string, password: string, name: stri
     const token = await user.getIdToken()
 
     // Tell our backend to save user info in Supabase DB
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const apiUrl = apiBase()
     await fetch(`${apiUrl}/api/auth/signup?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&name=${encodeURIComponent(name)}`, {
       method: 'POST',
       headers: {
@@ -54,7 +62,7 @@ export async function firebaseSignUp(email: string, password: string, name: stri
 
 /** Server-side registration fallback (see backendSignIn). */
 async function backendSignUp(email: string, password: string, name: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const apiUrl = apiBase()
   const res = await fetch(`${apiUrl}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -62,7 +70,7 @@ async function backendSignUp(email: string, password: string, name: string) {
       email,
       password,
       name,
-      api_key: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+      api_key: firebaseApiKey(),
     }),
   })
 
@@ -108,14 +116,14 @@ export async function firebaseSignIn(email: string, password: string) {
  * the backend already verifies on every request.
  */
 async function backendSignIn(email: string, password: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const apiUrl = apiBase()
   const res = await fetch(`${apiUrl}/api/auth/signin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       email,
       password,
-      api_key: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+      api_key: firebaseApiKey(),
     }),
   })
 
@@ -148,7 +156,7 @@ export async function firebaseGoogleSignIn() {
   const token = await user.getIdToken()
 
   // Save user in Supabase DB via backend
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const apiUrl = apiBase()
   try {
     await fetch(`${apiUrl}/api/auth/verify-token?token=${token}`, {
       method: 'POST',

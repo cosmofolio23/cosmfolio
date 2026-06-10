@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Header
 from pydantic import BaseModel
 from datetime import datetime
 import json
+import re
 import requests
 from firebase_config import verify_firebase_token, firebase_app
 from config import settings
@@ -9,6 +10,12 @@ from models import UserResponse
 from database import supabase
 
 router = APIRouter()
+
+
+def _sanitize_key(value: str | None) -> str:
+    """Strip BOM / non-printable chars that can corrupt an API key when it was
+    set via PowerShell (a leading U+FEFF yields 'API key not valid')."""
+    return re.sub(r"[^\x20-\x7E]", "", value or "").strip()
 
 
 class SignInRequest(BaseModel):
@@ -107,7 +114,7 @@ async def register(body: SignUpRequest):
     Creates the Firebase user and returns a valid ID token, mirroring the
     /signin fallback.
     """
-    api_key = body.api_key or settings.FIREBASE_API_KEY
+    api_key = _sanitize_key(body.api_key) or _sanitize_key(settings.FIREBASE_API_KEY)
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -191,7 +198,7 @@ async def signin(body: SignInRequest):
     (which is not behind any client-side blocker), returning a valid Firebase
     ID token the rest of the app already understands.
     """
-    api_key = body.api_key or settings.FIREBASE_API_KEY
+    api_key = _sanitize_key(body.api_key) or _sanitize_key(settings.FIREBASE_API_KEY)
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
