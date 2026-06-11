@@ -160,6 +160,31 @@ export default function Dashboard() {
           </Link>
         </div>
 
+        {/* Student Tools */}
+        <div className="mb-12">
+          <h2 className="text-lg font-semibold text-charcoal mb-4 flex items-center gap-2">
+            🛠️ Student Tools
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FBE7A1]/50 text-[#9C7416] font-medium">New</span>
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { href: '/dashboard/drawing-processor', icon: '🖌️', name: 'Drawing Processor', desc: 'Style CAD exports — no Photoshop' },
+              { href: '/dashboard/tools/entourage', icon: '🌳', name: 'Entourage Studio', desc: 'People, trees, cars at true scale' },
+              { href: '/dashboard/tools/site-analysis', icon: '🗺️', name: 'Site Analysis', desc: 'Sun, wind, land use sheets' },
+              { href: '/dashboard/tools/concept-diagram', icon: '💭', name: 'Concept Diagrams', desc: 'Bubbles, zoning, circulation' },
+              { href: '/dashboard/tools/scale-north', icon: '🧭', name: 'Scale & North', desc: 'Perfect bars + 25 arrows' },
+              { href: '/dashboard/tools/cv', icon: '📄', name: 'CV Generator', desc: 'CV that matches your portfolio' },
+            ].map(t => (
+              <Link key={t.href} href={t.href}
+                className="glass-card rounded-xl p-4 hover:shadow-lg transition group">
+                <div className="text-2xl mb-1.5 group-hover:scale-110 transition-transform">{t.icon}</div>
+                <div className="text-sm font-bold text-text-primary dark:text-dark-text-primary">{t.name}</div>
+                <div className="text-[11px] text-text-secondary dark:text-dark-text-secondary mt-0.5 leading-tight">{t.desc}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* What would you like to create? */}
         {!showNewProject && !creatingType && (
           <div className="mb-16">
