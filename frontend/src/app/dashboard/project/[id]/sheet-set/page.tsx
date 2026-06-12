@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api'
 import { SheetSetWizard } from '@/components/sheetSet/SheetSetWizard'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 import { buildEmptySheetSet } from '@/lib/buildSheetSet'
+import { buildSheetSetFromSelection } from '@/components/sheetSet/sheetTypeLayouts'
 import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
 
 /**
@@ -49,12 +50,18 @@ export default function SheetSetGalleryPage() {
 
   const handleCreateSheetSet = async (config: any) => {
     try {
-      const template = SHEET_SET_TEMPLATES.find(t => t.id === config.selectedTemplate)
-      if (!template) return
-      // build the full SheetSet client-side (empty — standalone create), then persist
-      const data = buildEmptySheetSet(template, { name: config.projectName || template.name })
+      let data: SheetSet
+      if (config.selections?.length) {
+        // new flow: size → sheet types → layout pack → info
+        data = buildSheetSetFromSelection(config)
+      } else {
+        // legacy flow: fixed template pack
+        const template = SHEET_SET_TEMPLATES.find(t => t.id === config.selectedTemplate)
+        if (!template) return
+        data = buildEmptySheetSet(template, { name: config.projectName || template.name })
+      }
       const res = await apiClient.post(`/api/projects/${projectId}/sheet-sets`, {
-        name: config.projectName || template.name,
+        name: config.projectName || 'Sheet Set',
         data,
       })
       router.push(`/dashboard/project/${projectId}/sheet-set/${res.data.id}/editor`)

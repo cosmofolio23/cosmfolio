@@ -213,6 +213,23 @@ export default function EntourageStudioPage() {
     }, 60)
   }
 
+  const createSheetFromEntourage = async () => {
+    setBusy('Creating sheet…')
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/projects`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: `Entourage Sheet ${new Date().toLocaleDateString()}`, project_type: 'sheet' }),
+      })
+      if (!res.ok) throw new Error(`Failed to create project`)
+      const proj = await res.json()
+      window.location.href = `/dashboard/project/${proj.id}/sheet-set`
+    } catch (e: any) {
+      setBusy('')
+      flash(`Failed to create sheet: ${e.message}`)
+    }
+  }
+
   // ---------------- filtered panel items ----------------
   const items = useMemo(() => ENTOURAGE_ITEMS.filter(i => {
     if (cat !== 'All' && i.category !== cat) return false
@@ -393,6 +410,7 @@ export default function EntourageStudioPage() {
             <button onClick={() => doExport(1, false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">🖼️ PNG (screen)</button>
             <button onClick={() => doExport(2.5, false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">🖨️ PNG (high-res)</button>
             <button onClick={() => doExport(2.5, true)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-br from-[#D4AF37] to-[#9C7416] hover:brightness-105">💾 Save to Library</button>
+            <button onClick={createSheetFromEntourage} disabled={busy ? true : false} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">📄 Create Sheet</button>
             <Link href="/dashboard/sheets" className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">→ Sheet Composer</Link>
           </div>
         </section>

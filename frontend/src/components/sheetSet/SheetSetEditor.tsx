@@ -13,6 +13,8 @@ import { SheetSetNavigator } from './SheetSetNavigator'
 import { SheetSetCanvas } from './SheetSetCanvas'
 import { SheetProperties } from './SheetProperties'
 import { AISheetComposer } from './AISheetComposer'
+import { SheetSetEntouragePanel } from './SheetSetEntouragePanel'
+import { layoutsForType, applyLayoutToSheet } from './sheetTypeLayouts'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -69,6 +71,13 @@ export function SheetSetEditor({
     if (!currentSheet) return
     updateSheet(currentSheet.id, {
       elements: currentSheet.elements.filter(e => e.id !== id),
+    })
+  }
+
+  const addElement = (element: SheetElement) => {
+    if (!currentSheet) return
+    updateSheet(currentSheet.id, {
+      elements: [...currentSheet.elements, element],
     })
   }
 
@@ -158,9 +167,18 @@ export function SheetSetEditor({
     )
   }
 
+  // sheet dimensions in mm (orientation-corrected) for scale-true entourage placement
+  const pageSpec = SHEET_SIZES[sheetSet.sheetSize] || SHEET_SIZES.A1
+  const baseW = sheetSet.sheetSize === 'custom' ? (sheetSet.customWidth || 594) : pageSpec.width
+  const baseH = sheetSet.sheetSize === 'custom' ? (sheetSet.customHeight || 841) : pageSpec.height
+  const sheetWidthMm = sheetSet.orientation === 'portrait' ? baseW : baseH
+  const sheetHeightMm = sheetSet.orientation === 'portrait' ? baseH : baseW
+
+  const currentLayouts = layoutsForType(currentSheet.sheetType)
+
   return (
     <div className="flex h-full bg-gray-100">
-      {/* Navigator */}
+      {/* Left Sidebar: Navigator */}
       <SheetSetNavigator
         sheetSet={sheetSet}
         selectedSheetId={selectedSheetId}
@@ -190,6 +208,13 @@ export function SheetSetEditor({
         }}
       />
 
+      {/* Entourage Panel */}
+      <SheetSetEntouragePanel
+        sheetWidthMm={sheetWidthMm}
+        sheetHeightMm={sheetHeightMm}
+        onAddElement={addElement}
+      />
+
       {/* Canvas */}
       <SheetSetCanvas
         sheet={currentSheet}
@@ -207,6 +232,37 @@ export function SheetSetEditor({
 
       {/* Right Sidebar: Properties + AI */}
       <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto flex flex-col">
+        {/* Sheet Layout Switcher */}
+        <div className="p-4 border-b border-gray-200 bg-[#FBE7A1]/10">
+          <label className="text-xs font-bold text-gray-700 block mb-1.5 capitalize">
+            📐 Layout — {currentSheet.sheetType.replace('-', ' ')} sheet
+          </label>
+          <div className="grid grid-cols-3 gap-1.5">
+            {currentLayouts.map(l => (
+              <button
+                key={l.id}
+                onClick={() => updateSheet(currentSheet.id, applyLayoutToSheet(currentSheet, l))}
+                title={l.description}
+                className={`p-1.5 rounded-lg border-2 transition ${currentSheet.layout?.id === l.id ? 'border-[#D4AF37] bg-[#FBE7A1]/30' : 'border-gray-200 hover:border-[#D4AF37]/50'}`}
+              >
+                <div
+                  className="w-full h-9 bg-white border border-gray-300 rounded-sm p-[3px] grid gap-[2px]"
+                  style={{
+                    gridTemplateColumns: `repeat(${l.columnCount}, 1fr)`,
+                    gridTemplateRows: `repeat(${l.rowCount}, 1fr)`,
+                  }}
+                >
+                  {Array.from({ length: Math.min(l.slotDefinitions.length, l.columnCount * l.rowCount) }, (_, i) => (
+                    <div key={i} className="rounded-[1px] bg-[#D4AF37]/40" />
+                  ))}
+                </div>
+                <div className="text-[9px] text-gray-600 mt-1 leading-tight truncate">{l.name}</div>
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1.5">Switching re-flows your drawings into the new grid.</p>
+        </div>
+
         {/* Properties */}
         <SheetProperties
           sheet={currentSheet}
