@@ -15,6 +15,7 @@ import { SheetProperties } from './SheetProperties'
 import { AISheetComposer } from './AISheetComposer'
 import { SheetSetEntouragePanel } from './SheetSetEntouragePanel'
 import { layoutsForType, applyLayoutToSheet } from './sheetTypeLayouts'
+import { LayoutMiniPreview } from './LayoutMiniPreview'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -245,17 +246,7 @@ export function SheetSetEditor({
                 title={l.description}
                 className={`p-1.5 rounded-lg border-2 transition ${currentSheet.layout?.id === l.id ? 'border-[#D4AF37] bg-[#FBE7A1]/30' : 'border-gray-200 hover:border-[#D4AF37]/50'}`}
               >
-                <div
-                  className="w-full h-9 bg-white border border-gray-300 rounded-sm p-[3px] grid gap-[2px]"
-                  style={{
-                    gridTemplateColumns: `repeat(${l.columnCount}, 1fr)`,
-                    gridTemplateRows: `repeat(${l.rowCount}, 1fr)`,
-                  }}
-                >
-                  {Array.from({ length: Math.min(l.slotDefinitions.length, l.columnCount * l.rowCount) }, (_, i) => (
-                    <div key={i} className="rounded-[1px] bg-[#D4AF37]/40" />
-                  ))}
-                </div>
+                <LayoutMiniPreview layout={l} className="w-full h-9" />
                 <div className="text-[9px] text-gray-600 mt-1 leading-tight truncate">{l.name}</div>
               </button>
             ))}

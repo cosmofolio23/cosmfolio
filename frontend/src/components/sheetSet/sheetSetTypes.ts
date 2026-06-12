@@ -140,6 +140,8 @@ export interface SlotDefinition {
   recommendedScale?: ArchScale
   needsScale?: ArchScale
   label: string
+  /** Explicit placement (% of sheet). When set, overrides uniform grid placement — enables asymmetric layouts (hero + strip, columns, bands). */
+  frame?: { x: number; y: number; w: number; h: number }
 }
 
 // ─────────────────────────────────────────────────────────────

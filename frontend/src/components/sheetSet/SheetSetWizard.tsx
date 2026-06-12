@@ -15,6 +15,7 @@ import {
   layoutsForType, packLayoutForType,
   type SheetSelection, type WizardBuildConfig, type LayoutPack,
 } from './sheetTypeLayouts'
+import { LayoutMiniPreview } from './LayoutMiniPreview'
 
 interface SheetSetWizardProps {
   onComplete: (config: WizardBuildConfig) => void
@@ -287,19 +288,13 @@ export function SheetSetWizard({ onComplete, onCancel }: SheetSetWizardProps) {
   )
 }
 
-/** Tiny CSS-grid preview of the layout a pack assigns to a sheet type. */
+/** Mini preview of the layout a pack assigns to a sheet type. */
 function PackTypePreview({ pack, type }: { pack: LayoutPack; type: SheetType }) {
   const layout = packLayoutForType(pack, type)
   const opt = SHEET_TYPE_OPTIONS.find(o => o.type === type)
-  const cells = Math.min(layout.slotDefinitions.length, layout.columnCount * layout.rowCount)
   return (
     <div className="flex flex-col items-center gap-1" title={`${opt?.name}: ${layout.name}`}>
-      <div className="w-12 h-9 bg-white border border-gray-300 rounded-sm p-[3px] grid gap-[2px]"
-        style={{ gridTemplateColumns: `repeat(${layout.columnCount}, 1fr)`, gridTemplateRows: `repeat(${layout.rowCount}, 1fr)` }}>
-        {Array.from({ length: cells }, (_, i) => (
-          <div key={i} className="rounded-[1px]" style={{ background: `${GOLD}55` }} />
-        ))}
-      </div>
+      <LayoutMiniPreview layout={layout} className="w-12 h-9" />
       <span className="text-[8px] text-gray-400 leading-none">{opt?.icon} {opt?.name}</span>
     </div>
   )
