@@ -184,6 +184,21 @@ const FAMILIES: Family[] = [
     },
   },
   {
+    key: 'fullBleedCaption', name: 'Full Bleed + Caption', category: 'Hero', count: 1, build: r => [img(0, r.c0, r.cs, r.r0, Math.round(r.rs * 0.88)), { role: 'text', c0: r.c0 + 1, cs: r.cs - 2, r0: Math.round(r.r0 + r.rs * 0.82), rs: 2 }],
+  },
+  {
+    key: 'splitTextImage', name: 'Split Text / Image', category: 'Asymmetric', count: 2, build: r => {
+      const sw = Math.round(r.cs * 0.5)
+      return [{ role: 'text', c0: r.c0, cs: sw, r0: r.r0 + 1, rs: r.rs - 2 }, img(0, r.c0 + sw, r.cs - sw, r.r0, r.rs), { role: 'meta', c0: r.c0, cs: sw, r0: r.r0, rs: 1 }]
+    },
+  },
+  {
+    key: 'gridCaptioned', name: 'Grid + Captions', category: 'Grid', count: 4, build: r => {
+      const quads = gridCells(r, 2, 2)
+      return quads.map((q, i) => (i === 3 ? { ...q, role: 'text' as const } : q))
+    },
+  },
+  {
     key: 'centerStage', name: 'Center Stage', category: 'Single', count: 1, build: r => {
       const cm = Math.round(r.cs * 0.16), rm = Math.round(r.rs * 0.14)
       return [img(0, r.c0 + cm, r.cs - cm * 2, r.r0 + rm, r.rs - rm * 2)]
@@ -320,6 +335,12 @@ const COVER_COMPS: CoverComp[] = [
   { key: 'splitWideLeft', name: 'Wide Split Left', overlay: false, tall: true, imageCount: 1, images: [img(0, 1, 8, 1, 12)], zone: { c0: 9, cs: 4, r0: 1, rs: 12 } },
   { key: 'splitWideRight', name: 'Wide Split Right', overlay: false, tall: true, imageCount: 1, images: [img(0, 5, 8, 1, 12)], zone: { c0: 1, cs: 4, r0: 1, rs: 12 } },
   { key: 'typographic', name: 'Typographic', overlay: false, tall: true, imageCount: 0, images: [], zone: { c0: 2, cs: 10, r0: 1, rs: 12 } },
+  // ---- additional tall compositions (expand the set) ----
+  { key: 'sidebarLeft', name: 'Sidebar Left', overlay: false, tall: true, imageCount: 4, images: gridCells({ c0: 1, cs: 3, r0: 1, rs: 12 }, 4, 1), zone: { c0: 5, cs: 8, r0: 1, rs: 12 } },
+  { key: 'sidebarRight', name: 'Sidebar Right', overlay: false, tall: true, imageCount: 4, images: gridCells({ c0: 10, cs: 3, r0: 1, rs: 12 }, 4, 1), zone: { c0: 1, cs: 8, r0: 1, rs: 12 } },
+  { key: 'cornerImage', name: 'Corner Image', overlay: false, tall: true, imageCount: 1, images: [img(0, 1, 3, 1, 3)], zone: { c0: 1, cs: 12, r0: 4, rs: 9 } },
+  { key: 'storyBand', name: 'Story Band', overlay: false, tall: true, imageCount: 3, images: [img(0, 1, 4, 1, 12), img(1, 5, 4, 1, 6), img(2, 5, 4, 7, 6)], zone: { c0: 9, cs: 4, r0: 1, rs: 12 } },
+  { key: 'imageStrip', name: 'Image Strip', overlay: false, tall: true, imageCount: 2, images: [img(0, 1, 12, 1, 5), img(1, 1, 12, 9, 4)], zone: { c0: 1, cs: 12, r0: 6, rs: 3 } },
 ]
 
 type CoverPlacement = 'topLeft' | 'center' | 'bottom' | 'eyebrow' | 'display'
