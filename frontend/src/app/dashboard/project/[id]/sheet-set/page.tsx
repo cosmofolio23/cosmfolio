@@ -9,6 +9,7 @@ import { SheetSetWizard } from '@/components/sheetSet/SheetSetWizard'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 import { buildEmptySheetSet } from '@/lib/buildSheetSet'
 import { buildSheetSetFromSelection } from '@/components/sheetSet/sheetTypeLayouts'
+import { peekSheetImage, type SheetImageHandoff } from '@/lib/sheetHandoff'
 import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
 
 /**
@@ -26,6 +27,7 @@ export default function SheetSetGalleryPage() {
   const [loading, setLoading] = useState(true)
   const [showWizard, setShowWizard] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -33,6 +35,7 @@ export default function SheetSetGalleryPage() {
       return
     }
 
+    setHandoff(peekSheetImage())
     loadSheetSets()
   }, [projectId, isAuthenticated])
 
@@ -119,6 +122,27 @@ export default function SheetSetGalleryPage() {
           </div>
         </div>
       </div>
+
+      {/* Pending handoff image from a studio tool */}
+      {handoff && (
+        <div className="max-w-7xl mx-auto px-4 pt-6 sm:px-6 lg:px-8">
+          <div className="bg-[#FBE7A1]/30 border border-[#D4AF37]/40 rounded-xl px-4 py-3 flex items-center gap-4">
+            <img src={handoff.dataUrl} alt={handoff.name} className="w-16 h-16 object-contain rounded border border-[#D4AF37]/30 bg-white" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#9C7416]">Image ready from {handoff.source}</p>
+              <p className="text-xs text-[#9C7416]/80 truncate">
+                Create or open a sheet set below — then click <b>“＋ Add to this sheet”</b> in the editor to place it.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowWizard(true)}
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-br from-[#D4AF37] to-[#9C7416] hover:brightness-105 whitespace-nowrap"
+            >
+              + New Sheet Set
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">

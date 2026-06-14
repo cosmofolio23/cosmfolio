@@ -16,6 +16,7 @@ import { AISheetComposer } from './AISheetComposer'
 import { SheetSetEntouragePanel } from './SheetSetEntouragePanel'
 import { layoutsForType, applyLayoutToSheet } from './sheetTypeLayouts'
 import { LayoutMiniPreview } from './LayoutMiniPreview'
+import { peekSheetImage, clearSheetImage, type SheetImageHandoff } from '@/lib/sheetHandoff'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -38,6 +39,12 @@ export function SheetSetEditor({
   const [zoom, setZoom] = useState(75)
   const [isSaving, setIsSaving] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
+  const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
+
+  // Pick up an image handed off from a studio tool (Drawing Processor, etc.)
+  useEffect(() => {
+    setHandoff(peekSheetImage())
+  }, [])
 
   const currentSheet = sheetSet.sheets.find(s => s.id === selectedSheetId)
   const selectedElement = currentSheet?.elements.find(e => e.id === selectedElementId) || null
@@ -177,8 +184,44 @@ export function SheetSetEditor({
 
   const currentLayouts = layoutsForType(currentSheet.sheetType)
 
+  const addHandoffToSheet = () => {
+    if (!handoff) return
+    let wPct = 45
+    let hPct = wPct * handoff.aspect * (sheetWidthMm / sheetHeightMm)
+    if (hPct > 80) { hPct = 80; wPct = hPct / (handoff.aspect * (sheetWidthMm / sheetHeightMm)) }
+    addElement({
+      id: `el-${Date.now().toString(36)}`,
+      kind: 'drawing',
+      x: 50 - wPct / 2, y: 50 - hPct / 2, w: wPct, h: hPct, z: 60,
+      locked: false, visible: true,
+      drawing: {
+        drawingName: handoff.name, drawingType: 'diagram',
+        originalScale: '1:100', sheetScale: '1:100', vector: false, url: handoff.dataUrl,
+      },
+    })
+    clearSheetImage()
+    setHandoff(null)
+  }
+
   return (
-    <div className="flex h-full bg-gray-100">
+    <div className="flex h-full bg-gray-100 relative">
+      {/* Handoff banner — an image pushed from a studio tool */}
+      {handoff && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 bg-white rounded-xl shadow-xl border border-[#D4AF37]/40 px-3 py-2 flex items-center gap-3">
+          <img src={handoff.dataUrl} alt={handoff.name} className="w-12 h-12 object-contain rounded border border-gray-200 bg-gray-50" />
+          <div className="text-xs">
+            <div className="font-semibold text-gray-800">From {handoff.source}</div>
+            <div className="text-gray-500 max-w-[180px] truncate">{handoff.name}</div>
+          </div>
+          <button onClick={addHandoffToSheet}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-br from-[#D4AF37] to-[#9C7416] hover:brightness-105">
+            ＋ Add to this sheet
+          </button>
+          <button onClick={() => { clearSheetImage(); setHandoff(null) }}
+            className="text-gray-400 hover:text-gray-600 text-sm px-1" title="Dismiss">✕</button>
+        </div>
+      )}
+
       {/* Left Sidebar: Navigator */}
       <SheetSetNavigator
         sheetSet={sheetSet}

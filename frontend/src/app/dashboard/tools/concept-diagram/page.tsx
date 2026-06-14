@@ -8,8 +8,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Logo from '@/components/Logo'
 import { downloadBlob, saveImageToLibrary, svgToPngBlob } from '@/lib/saveToLibrary'
+import { stashSheetImage, aspectOfDataUrl, createSheetProject } from '@/lib/sheetHandoff'
 
 const VW = 1400, VH = 1000
 
@@ -64,6 +66,7 @@ const newEl = (partial: Partial<El>): El => ({
 })
 
 export default function ConceptDiagramPage() {
+  const router = useRouter()
   const [els, setEls] = useState<El[]>([])
   const [selId, setSelId] = useState<string | null>(null)
   const [tool, setTool] = useState<Tool>('select')
@@ -393,6 +396,22 @@ export default function ConceptDiagramPage() {
     }, 60)
   }
 
+  const sendToSheet = () => {
+    setSelId(null); setExporting(true); setBusy('Preparing for Sheet Composer…')
+    setTimeout(async () => {
+      try {
+        const blob = await svgToPngBlob(svgRef.current!, 2.5, '#ffffff')
+        const dataUrl = await new Promise<string>((res, rej) => {
+          const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => rej(new Error('read')); r.readAsDataURL(blob)
+        })
+        const aspect = await aspectOfDataUrl(dataUrl)
+        stashSheetImage(dataUrl, 'Concept Diagram', aspect, 'Concept Diagrams')
+        const id = await createSheetProject()
+        router.push(id ? `/dashboard/project/${id}/sheet-set` : '/dashboard/sheets')
+      } catch { flash('Could not prepare the sheet image — try again.'); setExporting(false); setBusy('') }
+    }, 60)
+  }
+
   // ---------------- render helpers ----------------
   const bubbleById = (id?: string) => els.find(e => e.id === id && e.type === 'bubble')
 
@@ -627,7 +646,7 @@ export default function ConceptDiagramPage() {
             <button onClick={() => doExport('png-hi')} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">🖨️ PNG (print)</button>
             <button onClick={() => doExport('svg')} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">⬇ SVG</button>
             <button onClick={() => doExport('lib')} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-br from-[#D4AF37] to-[#9C7416]">💾 Save to Library</button>
-            <Link href="/dashboard/sheets" className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">→ Sheet Composer</Link>
+            <button onClick={sendToSheet} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700">📐 Send to Sheet</button>
             {busy && <span className="px-3 py-2.5 text-sm text-gray-500">{busy}</span>}
           </div>
         </section>

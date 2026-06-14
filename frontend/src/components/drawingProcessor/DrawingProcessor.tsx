@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
 import { libraryApi } from '@/lib/libraryApi'
+import { stashSheetImage, createSheetProject } from '@/lib/sheetHandoff'
 import {
   DRAWING_TYPES, STYLE_PRESETS, type StylePreset, type Background,
 } from '@/lib/drawingProcessor/stylePresets'
@@ -287,6 +288,18 @@ export default function DrawingProcessor() {
   const exportScreen = () => { setBusy('Exporting…'); setTimeout(() => { download(buildExportCanvas(1), 'screen'); setBusy(''); flash('ok', 'Screen-resolution PNG downloaded.') }, 20) }
   const exportPrint = () => { setBusy('Rendering print resolution…'); setTimeout(() => { download(buildExportCanvas(PRINT_MULT), 'print'); setBusy(''); flash('ok', 'High-resolution PNG downloaded.') }, 20) }
 
+  const sendToSheet = () => {
+    setBusy('Preparing sheet…')
+    setTimeout(async () => {
+      const canvas = buildExportCanvas(PRINT_MULT)
+      const dataUrl = canvas.toDataURL('image/png')
+      stashSheetImage(dataUrl, `${(fileName || 'drawing').replace(/\.[^.]+$/, '')} (processed)`, canvas.height / canvas.width, 'Drawing Processor')
+      const id = await createSheetProject()
+      setBusy('')
+      router.push(id ? `/dashboard/project/${id}/sheet-set` : '/dashboard/sheets')
+    }, 20)
+  }
+
   const saveToLibrary = async () => {
     setBusy('Saving to library…')
     try {
@@ -500,7 +513,7 @@ export default function DrawingProcessor() {
             <button onClick={exportScreen} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">🖼️ PNG (screen)</button>
             <button onClick={exportPrint} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">🖨️ PNG (high-res)</button>
             <button onClick={saveToLibrary} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-br from-[#D4AF37] to-[#9C7416] hover:brightness-105">💾 Save to Library</button>
-            <Link href="/dashboard/sheets" className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">→ Sheet Composer</Link>
+            <button onClick={sendToSheet} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700">📐 Send to Sheet</button>
           </div>
         </section>
       </div>

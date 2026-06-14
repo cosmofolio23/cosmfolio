@@ -8,10 +8,12 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Logo from '@/components/Logo'
 import MapAnnotator, { type MapMode } from '@/components/siteAnalysis/MapAnnotator'
 import { INDIAN_CITIES, generateSunPath, generateWindRose, type SunPathStyle } from '@/lib/siteAnalysis/generators'
 import { downloadBlob, saveImageToLibrary } from '@/lib/saveToLibrary'
+import { stashSheetImage, aspectOfDataUrl, createSheetProject } from '@/lib/sheetHandoff'
 import { libraryApi } from '@/lib/libraryApi'
 
 const LAYOUTS = [
@@ -58,6 +60,7 @@ function svgToDataUrl(svg: string): Promise<string> {
 }
 
 export default function SiteAnalysisPage() {
+  const router = useRouter()
   const [layoutId, setLayoutId] = useState('3x2')
   const [panels, setPanels] = useState<Panel[]>(Array.from({ length: 6 }, emptyPanel))
   const [meta, setMeta] = useState({ project: '', student: '', college: '', year: String(new Date().getFullYear()), sheetNo: '01' })
@@ -201,6 +204,20 @@ export default function SiteAnalysisPage() {
     setBusy('')
   }
 
+  const sendToSheet = async () => {
+    setBusy('Preparing for Sheet Composer…')
+    try {
+      const blob = await compose(2)
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => rej(new Error('read')); r.readAsDataURL(blob)
+      })
+      const aspect = await aspectOfDataUrl(dataUrl)
+      stashSheetImage(dataUrl, `Site Analysis${meta.project ? ` — ${meta.project}` : ''}`, aspect, 'Site Analysis')
+      const id = await createSheetProject(meta.project ? `${meta.project} — Sheets` : undefined)
+      router.push(id ? `/dashboard/project/${id}/sheet-set` : '/dashboard/sheets')
+    } catch { flash('Could not prepare the sheet image — try again.'); setBusy('') }
+  }
+
   return (
     <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
       <header className="glass-nav shadow-elevation-1 sticky top-0 z-40">
@@ -268,7 +285,7 @@ export default function SiteAnalysisPage() {
           <button onClick={() => doExport(1, false)} disabled={!!busy} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50">🖼️ PNG (screen)</button>
           <button onClick={() => doExport(2, false)} disabled={!!busy} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50">🖨️ PNG (print)</button>
           <button onClick={() => doExport(2, true)} disabled={!!busy} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-br from-[#D4AF37] to-[#9C7416] disabled:opacity-50">💾 Save to Library</button>
-          <Link href="/dashboard/sheets" className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50">→ Sheet Composer</Link>
+          <button onClick={sendToSheet} disabled={!!busy} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">📐 Send to Sheet</button>
           {busy && <span className="px-3 py-2.5 text-sm text-gray-500">{busy}</span>}
         </div>
       </main>
