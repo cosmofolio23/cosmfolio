@@ -59,6 +59,10 @@ export default function PortfolioBookPage() {
         document: data.document,
         project,
       })
+      // Auto-open the print dialog when opened as a PDF fallback (?print=1)
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('print') === '1') {
+        window.setTimeout(() => window.print(), 800)
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {

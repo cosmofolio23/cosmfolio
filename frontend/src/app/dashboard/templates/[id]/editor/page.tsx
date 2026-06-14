@@ -84,6 +84,12 @@ export default function TemplateEditor() {
   const [inspectorOpen, setInspectorOpen] = useState(true)
   const [draggedPageIdx, setDraggedPageIdx] = useState<number | null>(null)
   const [documentVersion, setDocumentVersion] = useState<number>(0)
+  const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const flashUpload = (kind: 'info' | 'ok' | 'err', text: string, ms = 3500) => {
+    setUploadMsg({ kind, text })
+    if (ms) window.setTimeout(() => setUploadMsg(m => (m && m.text === text ? null : m)), ms)
+  }
   const [isStale, setIsStale] = useState(false)
 
   const [projectId, setProjectId] = useState<string | null>(null)
@@ -248,31 +254,42 @@ export default function TemplateEditor() {
     return ensurePromiseRef.current
   }
 
+  const ACCEPTED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
   const uploadImage = async (file: File): Promise<string> => {
-    const pid = await ensureProject()
-    const fd = new FormData()
-    fd.append('file', file)
-    fd.append('asset_type', 'render')
-    const res = await fetch(`${API_URL}/api/projects/${pid}/assets`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${authToken()}` },
-      body: fd,
-    })
-    if (!res.ok) throw new Error('Upload failed')
-    const data = await res.json()
-    const url = data.url || data.preview_url
-    // Save to asset library
-    const newAsset: Asset = {
-      id: uid('a'),
-      url,
-      name: file.name,
-      uploadedAt: new Date().toISOString(),
-      size: file.size,
+    // validate type + size up front so the user gets a clear message
+    if (file.type && !ACCEPTED.includes(file.type)) {
+      flashUpload('err', `Unsupported file type "${file.type || 'unknown'}". Use JPG, PNG, WEBP or PDF.`)
+      throw new Error('unsupported type')
     }
-    const updated = [...assets, newAsset]
-    setAssets(updated)
-    localStorage.setItem('uploadedAssets', JSON.stringify(updated))
-    return url
+    if (file.size > 25 * 1024 * 1024) {
+      flashUpload('err', `"${file.name}" is ${(file.size / 1048576).toFixed(1)}MB — please keep uploads under 25MB.`)
+      throw new Error('too large')
+    }
+    flashUpload('info', `Uploading ${file.name}…`, 0)
+    try {
+      const pid = await ensureProject()
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('asset_type', 'render')
+      const res = await fetch(`${API_URL}/api/projects/${pid}/assets`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` },
+        body: fd,
+      })
+      if (!res.ok) throw new Error(`server ${res.status}`)
+      const data = await res.json()
+      const url = data.url || data.preview_url
+      if (!url) throw new Error('no url returned')
+      const newAsset: Asset = { id: uid('a'), url, name: file.name, uploadedAt: new Date().toISOString(), size: file.size }
+      const updated = [...assets, newAsset]
+      setAssets(updated)
+      localStorage.setItem('uploadedAssets', JSON.stringify(updated))
+      flashUpload('ok', `✓ ${file.name} uploaded`)
+      return url
+    } catch (e: any) {
+      flashUpload('err', `Upload failed: ${e?.message || 'network error'}. Your other images are safe.`)
+      throw e
+    }
   }
 
   const saveDocument = async (): Promise<void> => {
@@ -428,14 +445,16 @@ export default function TemplateEditor() {
   // Guided upload: drop an image straight into one specific slot.
   const fillSlotUpload = (pageIndex: number, blockId: string) => {
     const input = document.createElement('input')
-    input.type = 'file'; input.accept = 'image/*'
+    input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp,application/pdf'
     input.onchange = async () => {
       const file = input.files?.[0]; if (!file) return
-      const url = await uploadImage(file); if (!url) return
-      const next = pages.map((p, i) => i === pageIndex
-        ? { ...p, blocks: p.blocks.map(b => b.id === blockId ? { ...b, imageUrl: url } : b) }
-        : p)
-      markDirty(); setPages(next)
+      try {
+        const url = await uploadImage(file); if (!url) return
+        const next = pages.map((p, i) => i === pageIndex
+          ? { ...p, blocks: p.blocks.map(b => b.id === blockId ? { ...b, imageUrl: url } : b) }
+          : p)
+        markDirty(); setPages(next)
+      } catch { /* uploadImage already surfaced the error */ }
     }
     input.click()
   }
@@ -619,22 +638,38 @@ export default function TemplateEditor() {
   }
 
   const exportToPDF = async () => {
-    if (!projectId) { alert('Please save your portfolio first'); return }
+    setIsExporting(true)
+    flashUpload('info', 'Preparing PDF…', 0)
     try {
-      const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-pdf`, {
+      // make sure the latest edits are persisted, then ask the server to render
+      const pid = await ensureProject()
+      await saveDocument().catch(() => {})
+      const res = await fetch(`${API_URL}/api/projects/${pid}/document/export-pdf`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${authToken()}` },
       })
-      if (!res.ok) throw new Error(`Export failed: ${res.statusText}`)
+      if (!res.ok) throw new Error(`server ${res.status}`)
       const blob = await res.blob()
+      if (blob.size < 200) throw new Error('empty document')
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       a.download = `${portfolioTitle || 'portfolio'}.pdf`
       a.click()
       URL.revokeObjectURL(url)
+      flashUpload('ok', '✓ PDF downloaded')
     } catch (e: any) {
-      alert(`PDF export failed: ${e.message}`)
+      // Dependency-free fallback: open the print-ready book view; the browser's
+      // "Save as PDF" preserves images, fonts, overlays and master elements.
+      const pid = projectId
+      if (pid) {
+        flashUpload('info', 'Opening print view — choose “Save as PDF”…', 6000)
+        window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
+      } else {
+        flashUpload('err', `PDF export failed: ${e?.message || 'unknown error'}. Save your portfolio first.`)
+      }
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -777,7 +812,7 @@ export default function TemplateEditor() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900 disabled:opacity-50">📄 Export PDF</button>
+              <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900 disabled:opacity-50">{isExporting ? '⏳ Exporting…' : '📄 Export PDF'}</button>
               <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
             </div>
           </div>
@@ -823,11 +858,25 @@ export default function TemplateEditor() {
               <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
             )}
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
-            <button onClick={exportToPDF} disabled={!projectId || isSaving} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">📄 PDF</button>
+            <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">{isExporting ? '⏳' : '📄 PDF'}</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
         </div>
       </header>
+
+      {/* Upload / export toast */}
+      {uploadMsg && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-lg shadow-xl text-sm font-medium flex items-center gap-2 max-w-md"
+          style={{
+            background: uploadMsg.kind === 'err' ? '#fef2f2' : uploadMsg.kind === 'ok' ? '#f0fdf4' : '#eff6ff',
+            color: uploadMsg.kind === 'err' ? '#b91c1c' : uploadMsg.kind === 'ok' ? '#15803d' : '#1d4ed8',
+            border: `1px solid ${uploadMsg.kind === 'err' ? '#fecaca' : uploadMsg.kind === 'ok' ? '#bbf7d0' : '#bfdbfe'}`,
+          }}>
+          {uploadMsg.kind === 'info' && <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />}
+          <span>{uploadMsg.text}</span>
+          <button onClick={() => setUploadMsg(null)} className="ml-1 opacity-50 hover:opacity-100">✕</button>
+        </div>
+      )}
 
       {/* Stale document warning (collaborative editing) */}
       {isStale && (
