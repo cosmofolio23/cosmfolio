@@ -6,6 +6,13 @@ import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layout
 import {
   ImageBlock, LegendBlock, MetaBlock, TitleBlock, SubtitleBlock, DescriptionBlock, pickContrast,
 } from './Blocks'
+import { TitleBlockView } from '@/components/templates/TitleBlockView'
+import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
+import type { DemoPalette } from '@/components/templates/demoArt'
+
+const toPalette = (t: DesignTokens): DemoPalette => ({
+  primary: t.primary, accent: t.accent, bg: t.background, text: t.text, muted: t.muted,
+})
 
 interface Props {
   page: Page
@@ -21,6 +28,7 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
 export default function PageComposer({ page, tokens, onChange, onUploadImage }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
+  const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
 
   const patchBlock = (id: string, patch: Partial<Block>) =>
     onChange({ ...page, blocks: page.blocks.map(b => b.id === id ? { ...b, ...patch } : b) })
@@ -56,6 +64,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage }: 
             addBlock={addBlock}
             firstOfType={firstOfType}
             onUploadImage={onUploadImage}
+            titleBlock={titleBlock}
           />
         ))}
       </div>
@@ -73,7 +82,7 @@ function gridStyle(r: Region): React.CSSProperties {
 }
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage,
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock,
 }: {
   region: Region
   spec: LayoutSpec
@@ -84,6 +93,7 @@ function RegionView({
   addBlock: (type: BlockType) => Block
   firstOfType: (type: BlockType) => Block | undefined
   onUploadImage?: (file: File) => Promise<string>
+  titleBlock?: (typeof TITLE_BLOCKS)[number]
 }) {
   const style = gridStyle(region)
 
@@ -132,7 +142,20 @@ function RegionView({
 
   return (
     <div style={style} className={`min-h-0 overflow-hidden ${z}`}>
-      {region.role === 'title' && <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} />}
+      {region.role === 'title' && (
+        titleBlock
+          ? <TitleBlockView
+              style={titleBlock}
+              p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
+              fonts={{ heading: tokens.headingFont, body: tokens.bodyFont }}
+              content={{
+                number: firstOfType('meta')?.fields?.[0]?.value || '01',
+                title: block.text || 'Project Title',
+                subline: firstOfType('subtitle')?.text || '',
+              }}
+            />
+          : <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} />
+      )}
       {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}

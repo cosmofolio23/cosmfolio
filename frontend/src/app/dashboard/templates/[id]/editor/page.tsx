@@ -16,6 +16,8 @@ import {
 import { analyzeTemplate, autoFillTemplate, summaryLine } from '@/components/composer/templateDNA'
 import { STYLE_DNA } from '@/components/composer/styleDNA'
 import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
+import { TITLE_BLOCKS, TITLE_BLOCK_CATEGORIES } from '@/components/templates/titleBlocks'
+import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 
@@ -86,6 +88,7 @@ export default function TemplateEditor() {
   const [documentVersion, setDocumentVersion] = useState<number>(0)
   const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
   const flashUpload = (kind: 'info' | 'ok' | 'err', text: string, ms = 3500) => {
     setUploadMsg({ kind, text })
     if (ms) window.setTimeout(() => setUploadMsg(m => (m && m.text === text ? null : m)), ms)
@@ -533,6 +536,7 @@ export default function TemplateEditor() {
   }
 
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
+  const setTitleBlock = (id?: string) => { if (currentPage) updatePage({ ...currentPage, titleBlockId: id }) }
 
   const addBlock = (type: BlockType) => {
     if (!currentPage) return
@@ -1107,6 +1111,39 @@ export default function TemplateEditor() {
             {/* BLOCKS TAB */}
             {rightTab === 'blocks' && (
               <div className="space-y-4">
+                {/* Master Title Block */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase">🏷️ Master Title Block</h4>
+                    {currentPage.titleBlockId && (
+                      <button onClick={() => setTitleBlock(undefined)} className="text-[10px] text-red-500 hover:underline">Remove</button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {(['All', ...TITLE_BLOCK_CATEGORIES] as const).map(c => (
+                      <button key={c} onClick={() => setTbCat(c)}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-semibold transition ${tbCat === c ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{c}</button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 260 }}>
+                    {TITLE_BLOCKS.filter(b => tbCat === 'All' || b.category === tbCat).map(b => {
+                      const active = currentPage.titleBlockId === b.id
+                      return (
+                        <button key={b.id} onClick={() => setTitleBlock(b.id)}
+                          className={`text-left rounded-lg p-2 border-2 transition overflow-hidden ${active ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                          style={{ background: tokens.background, fontSize: 11 }}>
+                          <TitleBlockView style={b}
+                            p={{ primary: tokens.primary, accent: tokens.accent, bg: tokens.background, text: tokens.text, muted: tokens.muted }}
+                            fonts={{ heading: tokens.headingFont, body: tokens.bodyFont }}
+                            content={{ number: 'PROJECT 01', title: 'CULTURAL CENTER', subline: '2026' }} />
+                          <div className="text-[8px] text-gray-400 mt-1 truncate">{b.name}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">Applies to this page's title. Edit the title/subtitle text below.</p>
+                </div>
+
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Add element</h4>
                   <div className="grid grid-cols-3 gap-2">

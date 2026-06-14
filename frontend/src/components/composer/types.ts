@@ -49,6 +49,7 @@ export interface Page {
   type: PageType
   layoutId: string   // references a LayoutSpec in the layout catalog
   blocks: Block[]
+  titleBlockId?: string   // optional Master Title Block applied to this page's title
 }
 
 export interface DesignTokens {
