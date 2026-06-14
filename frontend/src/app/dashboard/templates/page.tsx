@@ -6,6 +6,15 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 import TemplateSpread from '@/components/templates/TemplateSpread'
+import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
+
+type LibTab = 'portfolios' | LibraryView
+const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
+  { id: 'portfolios', label: 'Full Portfolios', icon: '📘' },
+  { id: 'about', label: 'About & Resume Spreads', icon: '🧑‍🎨' },
+  { id: 'project', label: 'Project Spreads', icon: '🏛️' },
+  { id: 'titleblocks', label: 'Title Blocks', icon: '🏷️' },
+]
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -55,6 +64,7 @@ export default function TemplateMarketplace() {
   const router = useRouter()
   const { isAuthenticated, token } = useAuthStore()
   const [templates, setTemplates] = useState<Template[]>([])
+  const [libTab, setLibTab] = useState<LibTab>('portfolios')
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
@@ -350,6 +360,25 @@ export default function TemplateMarketplace() {
           />
         </div>
 
+        {/* Library structure nav */}
+        <div className="mb-10 flex flex-wrap gap-2 border-b border-border-light pb-4">
+          {LIBRARY_TABS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setLibTab(t.id)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                libTab === t.id
+                  ? 'bg-primary text-white shadow-elevation-1'
+                  : 'bg-surface-elevated dark:bg-dark-surface-overlay text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'
+              }`}>
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
+
+        {libTab !== 'portfolios' && <LibraryBrowser view={libTab} />}
+
+        {libTab === 'portfolios' && (<>
         {/* Filter Controls */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
@@ -548,6 +577,7 @@ export default function TemplateMarketplace() {
             </p>
           </div>
         )}
+        </>)}
       </main>
 
       {/* Preview Modal */}
