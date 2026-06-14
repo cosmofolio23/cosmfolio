@@ -326,7 +326,7 @@ export default function TemplateMarketplace() {
             </Link>
             <div className="flex items-center gap-3">
               <Logo size="md" variant="gold" />
-              <h1 className="text-h4 font-semibold text-text-primary dark:text-dark-text-primary">Template Gallery</h1>
+              <h1 className="text-h4 font-semibold text-text-primary dark:text-dark-text-primary">Portfolio Using Preset Templates</h1>
             </div>
           </div>
         </div>
@@ -335,9 +335,9 @@ export default function TemplateMarketplace() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="mb-16">
-          <h2 className="text-h2 text-text-primary dark:text-dark-text-primary mb-4">Professional Design Templates</h2>
+          <h2 className="text-h2 text-text-primary dark:text-dark-text-primary mb-4">Portfolio Using Preset Templates</h2>
           <p className="text-h4 text-text-secondary dark:text-dark-text-secondary font-normal mb-8">
-            Browse 100+ curated architecture portfolio templates. Apply to new portfolios or existing projects.
+            Real, finished architecture portfolios — pick one, swap in your projects, and export. Every preview below shows a complete book, not an empty layout.
           </p>
 
           {/* Search */}

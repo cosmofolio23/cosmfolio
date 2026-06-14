@@ -130,7 +130,7 @@ export default function Dashboard() {
             href="/dashboard/templates"
             className="inline-block bg-gradient-to-br from-[#D4AF37] to-[#9C7416] rounded-xl px-6 py-4 text-white hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
           >
-            🎨 Browse Templates (319) →
+            🎨 Portfolio Using Preset Templates →
           </Link>
           <Link
             href="/dashboard/my-portfolios"
