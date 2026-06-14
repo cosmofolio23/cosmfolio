@@ -9,6 +9,8 @@ import {
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
 import type { DemoPalette } from '@/components/templates/demoArt'
+import { BackgroundLayers, MasterElements, type PageContext } from './PublishingLayers'
+import type { BackgroundLayer, MasterElement } from './publishingTypes'
 
 const toPalette = (t: DesignTokens): DemoPalette => ({
   primary: t.primary, accent: t.accent, bg: t.background, text: t.text, muted: t.muted,
@@ -19,13 +21,17 @@ interface Props {
   tokens: DesignTokens
   onChange: (page: Page) => void
   onUploadImage?: (file: File) => Promise<string>
+  /** Professional Publishing layers (rendered behind content / as page furniture) */
+  backgrounds?: BackgroundLayer[]
+  masterElements?: MasterElement[]
+  pageContext?: PageContext
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -45,9 +51,12 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage }: 
 
   return (
     <div
-      className="relative w-full mx-auto shadow-2xl"
+      className="relative w-full mx-auto shadow-2xl overflow-hidden"
       style={{ background: tokens.background, color: tokens.text, fontFamily: tokens.bodyFont, aspectRatio: '210 / 297', maxWidth: 760 }}
     >
+      {/* Publishing background layers (behind content) */}
+      <BackgroundLayers backgrounds={backgrounds} />
+
       <div
         className="absolute inset-0 grid p-6"
         style={{ gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)', gap: 8 }}
@@ -73,6 +82,9 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage }: 
       {overlay && (
         <div className="absolute inset-x-0 bottom-0 h-2/3 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }} />
       )}
+
+      {/* Publishing master elements (headers / footers / page numbers, above content) */}
+      {pageContext && <MasterElements elements={masterElements} ctx={pageContext} tokens={tokens} />}
     </div>
   )
 }

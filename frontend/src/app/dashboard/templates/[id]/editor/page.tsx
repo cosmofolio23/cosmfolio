@@ -198,6 +198,14 @@ export default function TemplateEditor() {
     if (doc.tokens) setTokens(doc.tokens)
     if (doc.title) setPortfolioTitle(doc.title)
     if (Array.isArray(doc.pages)) setPages(doc.pages)
+    if (doc.publishing) {
+      setPublishingPortfolio(prev => ({
+        ...prev,
+        backgrounds: doc.publishing.backgrounds || [],
+        masterPages: doc.publishing.masterPages || [],
+        grid: doc.publishing.grid || prev.grid,
+      }))
+    }
     if (doc.documentVersion) setDocumentVersion(doc.documentVersion)
     // Initialize history with the loaded state
     if (doc.pages && doc.tokens && doc.title) {
@@ -309,6 +317,11 @@ export default function TemplateEditor() {
       title: portfolioTitle,
       tokens,
       pages,
+      publishing: {
+        backgrounds: publishingPortfolio.backgrounds || [],
+        masterPages: publishingPortfolio.masterPages || [],
+        grid: publishingPortfolio.grid,
+      },
       lastSavedAt: now,
     }
     const res = await fetch(`${API_URL}/api/projects/${pid}/document`, {
@@ -947,7 +960,15 @@ export default function TemplateEditor() {
 
         {/* Center: canvas */}
         <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
-          <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
+          <PageComposer
+            page={currentPage}
+            tokens={tokens}
+            onChange={updatePage}
+            onUploadImage={uploadImage}
+            backgrounds={publishingPortfolio.backgrounds}
+            masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+            pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
+          />
           <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400`}>
             Page {currentIdx + 1}/{pages.length} · {!isMobile && 'Click any text or image to edit'}
           </div>
@@ -977,7 +998,7 @@ export default function TemplateEditor() {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 <ProfessionalPublishingSettings
                   portfolio={publishingPortfolio}
-                  onUpdate={setPublishingPortfolio}
+                  onUpdate={p => { markDirty(); setPublishingPortfolio(p) }}
                 />
                 <AIDesignAssistant
                   onCommand={cmd => console.log('AI command:', cmd)}

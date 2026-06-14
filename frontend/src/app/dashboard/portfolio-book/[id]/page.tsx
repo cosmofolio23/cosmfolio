@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import type { Page, DesignTokens } from '@/components/composer/types'
+import { BackgroundLayers, MasterElements } from '@/components/composer/PublishingLayers'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -167,14 +168,21 @@ export default function PortfolioBookPage() {
           <div className="w-full max-w-2xl">
             {/* Book/Card Style View */}
             <div
-              className="bg-white rounded-lg shadow-2xl overflow-hidden aspect-[8.5/11] flex flex-col"
+              className="relative bg-white rounded-lg shadow-2xl overflow-hidden aspect-[8.5/11] flex flex-col"
               style={{
                 backgroundColor: tokens.background || '#FFFFFF',
                 color: tokens.text || '#000000',
                 fontFamily: `${tokens.bodyFont || 'system-ui'}, sans-serif`,
               }}
             >
-              <div className="p-12 h-full overflow-y-auto flex flex-col justify-start">
+              {/* Publishing layers from the document */}
+              <BackgroundLayers backgrounds={(document as any).publishing?.backgrounds} />
+              <MasterElements
+                elements={(document as any).publishing?.masterPages?.flatMap((m: any) => m.elements)}
+                ctx={{ pageNumber: currentPageIdx + 1, totalPages, projectTitle: project.title, projectNumber: String(currentPageIdx + 1).padStart(2, '0') }}
+                tokens={tokens as DesignTokens}
+              />
+              <div className="relative z-10 p-12 h-full overflow-y-auto flex flex-col justify-start">
                 {currentPage.blocks.map((block) => (
                   <div key={block.id} className="mb-6">
                     {block.type === 'title' && (
