@@ -13,7 +13,7 @@ import {
   uid, createBlock, clamp, planLabel,
 } from './types'
 
-export type RegionRole = 'image' | 'title' | 'subtitle' | 'text' | 'legend' | 'meta'
+export type RegionRole = 'image' | 'title' | 'subtitle' | 'text' | 'legend' | 'meta' | 'contents'
 
 export interface Region {
   role: RegionRole
@@ -24,7 +24,7 @@ export interface Region {
   imageIndex?: number
 }
 
-export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume'
+export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume' | 'Contents'
 
 export interface LayoutSpec {
   id: string
@@ -36,7 +36,7 @@ export interface LayoutSpec {
   kind?: 'overlay'   // cover overlay rendering
 }
 
-export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume']
+export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume', 'Contents']
 
 /* ------------------------------- geometry -------------------------------- */
 
@@ -533,17 +533,55 @@ const ABOUT_SPREAD_SPECS: LayoutSpec[] = [
 /** Project-index / table-of-contents spreads. Roles: title=section title,
  *  text=project list, meta=numbers/years, image=preview thumbnails. */
 const INDEX_SPREAD_SPECS: LayoutSpec[] = [
-  { id: 'index.numberedList', name: 'Index · Numbered List', category: 'Text', suits: ['about', 'project'], imageCount: 0,
-    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 2, r0: 4, rs: 9 }, { role: 'text', c0: 3, cs: 9, r0: 4, rs: 9 }] },
-  { id: 'index.thumbGrid', name: 'Index · Thumbnail Grid', category: 'Grid', suits: ['about', 'project'], imageCount: 6,
-    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, ...gridCells({ c0: 1, cs: 12, r0: 4, rs: 9 }, 2, 3)] },
-  { id: 'index.timeline', name: 'Index · Timeline', category: 'Strip', suits: ['about', 'project'], imageCount: 0,
-    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 12, r0: 4, rs: 2 }, { role: 'text', c0: 1, cs: 12, r0: 6, rs: 7 }] },
-  { id: 'index.magazine', name: 'Index · Magazine', category: 'Asymmetric', suits: ['about', 'project'], imageCount: 1,
-    regions: [{ role: 'title', c0: 1, cs: 6, r0: 1, rs: 3 }, img(0, 7, 6, 1, 6), { role: 'text', c0: 1, cs: 6, r0: 4, rs: 9 }, { role: 'meta', c0: 7, cs: 6, r0: 7, rs: 6 }] },
-  { id: 'index.twoColumn', name: 'Index · Two Column', category: 'Text', suits: ['about', 'project'], imageCount: 0,
-    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'text', c0: 1, cs: 6, r0: 4, rs: 9 }, { role: 'meta', c0: 7, cs: 6, r0: 4, rs: 9 }] },
+  { id: 'index.numberedList', name: 'Index · Numbered List', category: 'Contents', suits: ['about', 'project'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 2, r0: 4, rs: 9 }, { role: 'contents', c0: 3, cs: 9, r0: 4, rs: 9 }] },
+  { id: 'index.thumbGrid', name: 'Index · Thumbnail Grid', category: 'Contents', suits: ['about', 'project'], imageCount: 6,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, ...gridCells({ c0: 1, cs: 12, r0: 4, rs: 9 }, 2, 3).map(r => ({ ...r, role: 'contents' as const }))] },
+  { id: 'index.timeline', name: 'Index · Timeline', category: 'Contents', suits: ['about', 'project'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 12, r0: 4, rs: 2 }, { role: 'contents', c0: 1, cs: 12, r0: 6, rs: 7 }] },
+  { id: 'index.magazine', name: 'Index · Magazine', category: 'Contents', suits: ['about', 'project'], imageCount: 1,
+    regions: [{ role: 'title', c0: 1, cs: 6, r0: 1, rs: 3 }, img(0, 7, 6, 1, 6), { role: 'contents', c0: 1, cs: 6, r0: 4, rs: 9 }] },
+  { id: 'index.twoColumn', name: 'Index · Two Column', category: 'Contents', suits: ['about', 'project'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'contents', c0: 1, cs: 12, r0: 4, rs: 9 }] },
 ]
+
+function buildContentsSpecs(): LayoutSpec[] {
+  const styles = [
+    { key: 'minimal', name: 'Minimal Index' },
+    { key: 'magazine', name: 'Magazine Contents' },
+    { key: 'timeline', name: 'Project Timeline' },
+    { key: 'grid', name: 'Image Grid Contents' },
+    { key: 'luxury', name: 'Luxury Index' },
+    { key: 'research', name: 'Research Index' },
+    { key: 'parametric', name: 'Parametric Contents' },
+    { key: 'competition', name: 'Competition Contents' },
+    { key: 'academic', name: 'Academic Thesis Contents' }
+  ]
+
+  const variations = [
+    { key: 'default', name: 'Standard Layout', regions: [{ role: 'title' as const, c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'contents' as const, c0: 1, cs: 12, r0: 3, rs: 10 }] },
+    { key: 'leftSidebar', name: 'Left Sidebar', regions: [{ role: 'title' as const, c0: 1, cs: 3, r0: 2, rs: 3 }, { role: 'contents' as const, c0: 5, cs: 8, r0: 2, rs: 10 }] },
+    { key: 'rightSidebar', name: 'Right Sidebar', regions: [{ role: 'title' as const, c0: 10, cs: 3, r0: 2, rs: 3 }, { role: 'contents' as const, c0: 1, cs: 8, r0: 2, rs: 10 }] },
+    { key: 'framed', name: 'Framed Margins', regions: [{ role: 'title' as const, c0: 2, cs: 10, r0: 2, rs: 2 }, { role: 'contents' as const, c0: 2, cs: 10, r0: 4, rs: 7 }] },
+    { key: 'compact', name: 'Compact Grid', regions: [{ role: 'title' as const, c0: 1, cs: 7, r0: 1, rs: 2 }, { role: 'contents' as const, c0: 1, cs: 12, r0: 4, rs: 8 }] },
+    { key: 'spread', name: 'Spread Span', regions: [{ role: 'title' as const, c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'contents' as const, c0: 1, cs: 12, r0: 3, rs: 9 }] }
+  ]
+
+  const specs: LayoutSpec[] = []
+  for (const s of styles) {
+    for (const v of variations) {
+      specs.push({
+        id: `index.${s.key}.${v.key}`,
+        name: `${s.name} · ${v.name}`,
+        category: 'Contents',
+        suits: ['about', 'project'],
+        regions: v.regions,
+        imageCount: s.key === 'magazine' ? 1 : (s.key === 'grid' ? 4 : 0)
+      })
+    }
+  }
+  return specs
+}
 
 export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...COVER_SPECS,
@@ -553,6 +591,7 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...RESUME_SPECS,
   ...ABOUT_SPREAD_SPECS,
   ...INDEX_SPREAD_SPECS,
+  ...buildContentsSpecs(),
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))

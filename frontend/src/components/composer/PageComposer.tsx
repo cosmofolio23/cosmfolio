@@ -1,10 +1,11 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import type { Block, Page, DesignTokens, BlockType } from './types'
 import { allImages, createBlock } from './types'
 import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layoutSpecs'
 import {
-  ImageBlock, LegendBlock, MetaBlock, TitleBlock, SubtitleBlock, DescriptionBlock, pickContrast,
+  ImageBlock, LegendBlock, MetaBlock, TitleBlock, SubtitleBlock, DescriptionBlock, pickContrast, ContentsBlock,
 } from './Blocks'
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
@@ -31,13 +32,17 @@ interface Props {
   /** free-canvas overlay elements + edit handler */
   onFreeChange?: (els: FreeElement[]) => void
   editableFree?: boolean
+  onApplyScope?: (scope: 'page' | 'spread' | 'all', el: FreeElement) => void
+  pages?: Page[]
+  onUpdateGlobalPages?: (updater: (pages: Page[]) => Page[]) => void
+  overflowVisible?: boolean
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
-  title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta',
+  title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents'
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, pages, onUpdateGlobalPages, overflowVisible }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -57,7 +62,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
   return (
     <div
-      className="relative w-full mx-auto shadow-2xl overflow-hidden"
+      className={`relative w-full mx-auto shadow-2xl ${overflowVisible ? '' : 'overflow-hidden'}`}
       style={{ background: tokens.background, color: tokens.text, fontFamily: tokens.bodyFont, aspectRatio: '210 / 297', maxWidth: 760 }}
     >
       {/* Publishing background layers (behind content) */}
@@ -81,6 +86,13 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             firstOfType={firstOfType}
             onUploadImage={onUploadImage}
             titleBlock={titleBlock}
+            pages={pages || []}
+            pageContext={pageContext}
+            onUpdateGlobalPages={onUpdateGlobalPages}
+            onInsertImage={url => {
+              const newBlock = { ...createBlock('render'), imageUrl: url, zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' as const }
+              onChange({ ...page, blocks: [...page.blocks, newBlock] })
+            }}
           />
         ))}
       </div>
@@ -103,6 +115,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
           onChange={els => onFreeChange?.(els)}
           tokens={tokens}
           editable={!!editableFree}
+          onApplyScope={onApplyScope}
         />
       )}
     </div>
@@ -113,8 +126,82 @@ function gridStyle(r: Region): React.CSSProperties {
   return { gridColumn: `${r.c0} / span ${r.cs}`, gridRow: `${r.r0} / span ${r.rs}`, minHeight: 0, minWidth: 0 }
 }
 
+function ImageUploadPlaceholder({
+  style, onUploadImage, onDone, type
+}: {
+  style: React.CSSProperties
+  onUploadImage?: (file: File) => Promise<string>
+  onDone: (url: string) => void
+  type: BlockType
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleUpload = async (file: File) => {
+    const valid = file.type.startsWith('image/') || file.type === 'application/pdf'
+    if (!valid) {
+      alert(`❌ Unsupported file type: ${file.type || 'unknown'}. Use JPG, PNG, WEBP or PDF.`)
+      return
+    }
+    setUploading(true)
+    try {
+      let url = ''
+      if (onUploadImage) {
+        url = await onUploadImage(file)
+      } else {
+        url = URL.createObjectURL(file)
+      }
+      onDone(url)
+    } catch (e: any) {
+      console.error(e)
+      alert(`❌ Upload failed: ${e?.message || 'unknown error'}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div
+      style={style}
+      onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={async e => {
+        e.preventDefault()
+        setIsDragging(false)
+        const file = e.dataTransfer.files?.[0]
+        if (file) await handleUpload(file)
+      }}
+      onClick={() => fileInputRef.current?.click()}
+      className={`relative flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/40 transition border-2 border-dashed rounded-sm cursor-pointer ${
+        isDragging ? 'border-blue-500 bg-blue-50/10 text-blue-500' : 'border-gray-300'
+      }`}
+    >
+      {uploading ? (
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+      ) : (
+        <>
+          <span className="text-2xl leading-none">＋</span>
+          <span className="text-[9px] uppercase tracking-widest font-semibold mt-1">{type || 'Image'}</span>
+          <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
+        </>
+      )}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={async e => {
+          const file = e.target.files?.[0]
+          if (file) await handleUpload(file)
+        }}
+        accept="image/*,application/pdf"
+        className="hidden"
+      />
+    </div>
+  )
+}
+
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock,
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages,
 }: {
   region: Region
   spec: LayoutSpec
@@ -126,6 +213,10 @@ function RegionView({
   firstOfType: (type: BlockType) => Block | undefined
   onUploadImage?: (file: File) => Promise<string>
   titleBlock?: (typeof TITLE_BLOCKS)[number]
+  onInsertImage?: (url: string) => void
+  pages?: Page[]
+  pageContext?: PageContext
+  onUpdateGlobalPages?: (updater: (pages: Page[]) => Page[]) => void
 }) {
   const style = gridStyle(region)
 
@@ -141,14 +232,14 @@ function RegionView({
       )
     }
     return (
-      <button
+      <ImageUploadPlaceholder
         style={style}
-        onClick={() => addBlock('render')}
-        className="flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/40 transition border-2 border-dashed rounded-sm"
-      >
-        <span className="text-2xl leading-none">＋</span>
-        <span className="text-[9px] uppercase tracking-widest font-semibold mt-1">Image</span>
-      </button>
+        type="render"
+        onUploadImage={onUploadImage}
+        onDone={url => {
+          onInsertImage?.(url)
+        }}
+      />
     )
   }
 
@@ -172,26 +263,208 @@ function RegionView({
 
   const tk: DesignTokens = onColor ? { ...tokens, primary: onColor, text: onColor, accent: '#e5e5e5' } : tokens
 
+  const [editingTitleBlock, setEditingTitleBlock] = useState(false)
+  const [draftTitle, setDraftTitle] = useState(block?.text || '')
+  const [draftNumber, setDraftNumber] = useState(firstOfType('meta')?.fields?.[0]?.value || '01')
+  const [draftYear, setDraftYear] = useState(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'year')?.value || '')
+  const [draftLoc, setDraftLoc] = useState(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'location')?.value || '')
+  const [draftTypo, setDraftTypo] = useState(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || '')
+
+  const openEditTitleBlock = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDraftTitle(block?.text || '')
+    setDraftNumber(firstOfType('meta')?.fields?.[0]?.value || '01')
+    setDraftYear(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'year')?.value || '2026')
+    setDraftLoc(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'location')?.value || 'Location')
+    setDraftTypo(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || 'Residential')
+    setEditingTitleBlock(true)
+  }
+
+  const handleSaveTitleBlock = (scope: 'page' | 'project' | 'all') => {
+    if (!onUpdateGlobalPages) {
+      // fallback to current page only
+      patchBlock(block.id, { text: draftTitle })
+      const mBlock = firstOfType('meta')
+      if (mBlock) {
+        const nextFields = (mBlock.fields || []).map(f => {
+          const l = f.label.toLowerCase()
+          if (l === 'year') return { ...f, value: draftYear }
+          if (l === 'location') return { ...f, value: draftLoc }
+          if (l === 'program' || l === 'typology') return { ...f, value: draftTypo }
+          return f
+        })
+        if (nextFields[0]) nextFields[0] = { ...nextFields[0], value: draftNumber }
+        patchBlock(mBlock.id, { fields: nextFields })
+      }
+      setEditingTitleBlock(false)
+      return
+    }
+
+    const currentIdx = (pageContext?.pageNumber ? pageContext.pageNumber - 1 : 0)
+    const updater = (pgs: Page[]): Page[] => {
+      let targets: number[] = [currentIdx]
+      if (scope === 'project') {
+        const indices = [currentIdx]
+        for (let i = currentIdx - 1; i >= 0; i--) {
+          if (pgs[i]?.type === 'project') indices.push(i)
+          else break
+        }
+        for (let i = currentIdx + 1; i < pgs.length; i++) {
+          if (pgs[i]?.type === 'project') indices.push(i)
+          else break
+        }
+        targets = indices
+      } else if (scope === 'all') {
+        targets = pgs.map((_, i) => i)
+      }
+
+      return pgs.map((p, idx) => {
+        if (targets.includes(idx)) {
+          const nextBlocks = p.blocks.map(b => {
+            if (b.type === 'title') {
+              return { ...b, text: draftTitle }
+            }
+            if (b.type === 'meta') {
+              const nextFields = (b.fields || []).map(f => {
+                const label = f.label.toLowerCase()
+                if (label === 'year') return { ...f, value: draftYear }
+                if (label === 'location') return { ...f, value: draftLoc }
+                if (label === 'program' || label === 'typology') return { ...f, value: draftTypo }
+                return f
+              })
+              if (nextFields[0]) {
+                nextFields[0] = { ...nextFields[0], value: draftNumber }
+              }
+              return { ...b, fields: nextFields }
+            }
+            return b
+          })
+          return { ...p, blocks: nextBlocks }
+        }
+        return p
+      })
+    }
+
+    onUpdateGlobalPages(updater)
+    setEditingTitleBlock(false)
+  }
+
   return (
     <div style={style} className={`min-h-0 overflow-hidden ${z}`}>
       {region.role === 'title' && (
         titleBlock
-          ? <TitleBlockView
-              style={titleBlock}
-              p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
-              fonts={{ heading: tokens.headingFont, body: tokens.bodyFont }}
-              content={{
-                number: firstOfType('meta')?.fields?.[0]?.value || '01',
-                title: block.text || 'Project Title',
-                subline: firstOfType('subtitle')?.text || '',
-              }}
-            />
+          ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
+              <TitleBlockView
+                style={titleBlock}
+                p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
+                fonts={{ heading: tokens.headingFont, body: tokens.bodyFont }}
+                content={{
+                  number: firstOfType('meta')?.fields?.[0]?.value || '01',
+                  title: block.text || 'Project Title',
+                  subline: firstOfType('subtitle')?.text || '',
+                }}
+              />
+              <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center">
+                <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
+                  ✏️ Edit Title Block
+                </span>
+              </div>
+              
+              {editingTitleBlock && (
+                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 text-white z-50 p-3 rounded-lg shadow-2xl border border-slate-700/80 text-[11px] space-y-2.5 cursor-default min-w-[240px]" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                    <span className="font-bold text-blue-400 uppercase tracking-widest text-[9px]">Edit Title Block</span>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setEditingTitleBlock(false) }} className="text-slate-400 hover:text-white text-xs">✕</button>
+                  </div>
+                  
+                  <div className="flex flex-col gap-0.5">
+                    <label className="text-[8px] text-slate-400 uppercase">Project Title</label>
+                    <input 
+                      type="text" 
+                      value={draftTitle} 
+                      onChange={e => setDraftTitle(e.target.value)}
+                      className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="flex flex-col gap-0.5">
+                      <label className="text-[8px] text-slate-400 uppercase">Number</label>
+                      <input 
+                        type="text" 
+                        value={draftNumber} 
+                        onChange={e => setDraftNumber(e.target.value)}
+                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <label className="text-[8px] text-slate-400 uppercase">Year</label>
+                      <input 
+                        type="text" 
+                        value={draftYear} 
+                        onChange={e => setDraftYear(e.target.value)}
+                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="flex flex-col gap-0.5">
+                      <label className="text-[8px] text-slate-400 uppercase">Typology</label>
+                      <input 
+                        type="text" 
+                        value={draftTypo} 
+                        onChange={e => setDraftTypo(e.target.value)}
+                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <label className="text-[8px] text-slate-400 uppercase">Location</label>
+                      <input 
+                        type="text" 
+                        value={draftLoc} 
+                        onChange={e => setDraftLoc(e.target.value)}
+                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-1.5 border-t border-slate-800">
+                    <span className="text-[8px] text-slate-400 uppercase block mb-1">Apply Updates To:</span>
+                    <div className="flex gap-1">
+                      <button 
+                        type="button"
+                        onClick={() => handleSaveTitleBlock('page')}
+                        className="flex-1 py-1 bg-slate-850 hover:bg-slate-800 rounded text-[9px] text-center border border-slate-700 font-semibold"
+                      >
+                        This Page
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleSaveTitleBlock('project')}
+                        className="flex-1 py-1 bg-blue-900/60 hover:bg-blue-800 rounded text-[9px] text-center border border-blue-800/80 font-semibold"
+                      >
+                        This Project
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleSaveTitleBlock('all')}
+                        className="flex-1 py-1 bg-purple-900/60 hover:bg-purple-800 rounded text-[9px] text-center border border-purple-800/80 font-semibold"
+                      >
+                        Entire Portfolio
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           : <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} />
       )}
       {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
+      {region.role === 'contents' && <ContentsBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} pages={pages || []} layoutId={spec.id} />}
     </div>
   )
 }

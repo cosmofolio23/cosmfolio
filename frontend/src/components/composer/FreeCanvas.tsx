@@ -2,7 +2,7 @@
 
 /**
  * FreeCanvas — InDesign-style free-positioning layer over a page. Any element
- * (text, image, rectangle, ellipse, line) can be moved, resized, rotated,
+ * (text, image, rectangle, ellipse, line, graphic) can be moved, resized, rotated,
  * re-ordered, locked, duplicated and deleted. Sits above the grid layout.
  *
  * Controlled: `elements` + `onChange`. When `editable` is false it renders
@@ -17,11 +17,12 @@ interface Props {
   onChange: (els: FreeElement[]) => void
   tokens: DesignTokens
   editable?: boolean
+  onApplyScope?: (scope: 'page' | 'spread' | 'all', el: FreeElement) => void
 }
 
 type DragMode = 'move' | 'resize' | 'rotate'
 
-export function FreeCanvas({ elements, onChange, tokens, editable = false }: Props) {
+export function FreeCanvas({ elements, onChange, tokens, editable = false, onApplyScope }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [selId, setSelId] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
@@ -48,7 +49,7 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false }: Pro
     const dxp = ((e.clientX - d.sx) / r.width) * 100
     const dyp = ((e.clientY - d.sy) / r.height) * 100
     if (d.mode === 'move') {
-      patch(d.id, { x: Math.max(-20, Math.min(100, d.el.x + dxp)), y: Math.max(-20, Math.min(100, d.el.y + dyp)) })
+      patch(d.id, { x: Math.max(-50, Math.min(150, d.el.x + dxp)), y: Math.max(-50, Math.min(150, d.el.y + dyp)) })
     } else if (d.mode === 'resize') {
       patch(d.id, { w: Math.max(3, d.el.w + dxp), h: Math.max(3, d.el.h + dyp) })
     } else {
@@ -61,12 +62,17 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false }: Pro
 
   const sel = elements.find(e => e.id === selId)
   const maxZ = elements.reduce((m, e) => Math.max(m, e.z ?? 0), 0)
+  
   const layerOp = (op: 'front' | 'back' | 'dup' | 'del' | 'lock') => {
     if (!sel) return
     if (op === 'front') patch(sel.id, { z: maxZ + 1 })
     else if (op === 'back') patch(sel.id, { z: (elements.reduce((m, e) => Math.min(m, e.z ?? 0), 0)) - 1 })
     else if (op === 'lock') patch(sel.id, { locked: !sel.locked })
-    else if (op === 'dup') { const n: FreeElement = { ...sel, id: `fe-${Date.now().toString(36)}`, x: sel.x + 3, y: sel.y + 3, z: maxZ + 1 }; onChange([...elements, n]); setSelId(n.id) }
+    else if (op === 'dup') { 
+      const n: FreeElement = { ...sel, id: `fe-${Date.now().toString(36)}`, x: sel.x + 3, y: sel.y + 3, z: maxZ + 1 }; 
+      onChange([...elements, n]); 
+      setSelId(n.id) 
+    }
     else if (op === 'del') { onChange(elements.filter(e => e.id !== sel.id)); setSelId(null) }
   }
 
@@ -78,7 +84,7 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false }: Pro
       onPointerMove={editable ? onMove : undefined}
       onPointerUp={editable ? onUp : undefined}
       onPointerLeave={editable ? onUp : undefined}
-      onPointerDown={editable ? () => setSelId(null) : undefined}
+      onPointerDown={editable ? () => { setSelId(null); setEditId(null) } : undefined}
     >
       {[...elements].sort((a, b) => (a.z ?? 0) - (b.z ?? 0)).map(el => {
         const selected = editable && el.id === selId
@@ -100,8 +106,16 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false }: Pro
                 onChange={e => patch(el.id, { text: e.target.value })}
                 onBlur={() => setEditId(null)}
                 onPointerDown={e => e.stopPropagation()}
-                className="w-full h-full resize-none bg-white/70 outline outline-1 outline-blue-400 p-0"
-                style={{ color: el.color || tokens.text, fontFamily: el.fontFamily || tokens.bodyFont, fontSize: el.fontSize || 16, fontWeight: el.bold ? 700 : 400, textAlign: el.align || 'left', lineHeight: 1.25 }}
+                className="w-full h-full resize-none bg-white/90 outline outline-1 outline-blue-400 p-1 rounded text-[11px]"
+                style={{ 
+                  color: el.color || tokens.text, 
+                  fontFamily: el.fontFamily || tokens.bodyFont, 
+                  fontSize: el.fontSize || 14, 
+                  fontWeight: el.bold ? 700 : 400, 
+                  textAlign: el.align || 'left', 
+                  lineHeight: el.lineHeight || 1.25,
+                  letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : 'normal'
+                }}
               />
             ) : (
               <ElementBody el={el} tokens={tokens} />
@@ -119,16 +133,259 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false }: Pro
         )
       })}
 
-      {/* selection toolbar */}
+      {/* Floating Toolbar for Text/Graphic customization */}
       {sel && editable && (
-        <div className="absolute z-50 flex items-center gap-1 bg-gray-900 text-white rounded-lg px-1.5 py-1 shadow-xl"
-          style={{ left: `${Math.max(0, Math.min(70, sel.x))}%`, top: `calc(${Math.max(0, sel.y)}% - 34px)` }}
-          onPointerDown={e => e.stopPropagation()}>
-          <button onClick={() => layerOp('front')} title="Bring forward" className="px-1.5 hover:text-blue-300 text-xs">⬆</button>
-          <button onClick={() => layerOp('back')} title="Send backward" className="px-1.5 hover:text-blue-300 text-xs">⬇</button>
-          <button onClick={() => layerOp('lock')} title="Lock" className="px-1.5 hover:text-blue-300 text-xs">{sel.locked ? '🔒' : '🔓'}</button>
-          <button onClick={() => layerOp('dup')} title="Duplicate" className="px-1.5 hover:text-blue-300 text-xs">⧉</button>
-          <button onClick={() => layerOp('del')} title="Delete" className="px-1.5 hover:text-red-400 text-xs">🗑</button>
+        <div 
+          className="absolute z-50 flex flex-col gap-1.5 bg-slate-900 text-white rounded-lg p-2.5 shadow-2xl border border-slate-700/60 max-w-sm select-none"
+          style={{ 
+            left: `${Math.max(0, Math.min(65, sel.x))}%`, 
+            top: `${Math.max(6, sel.y - 18)}%`,
+            transform: 'translateY(-100%)'
+          }}
+          onPointerDown={e => e.stopPropagation()}
+        >
+          {/* Top Row: Basic Object operations */}
+          <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5 mb-1.5">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              {sel.kind.toUpperCase()} Element
+            </span>
+            <div className="flex items-center gap-1.5">
+              <button type="button" onClick={() => layerOp('front')} title="Bring to Front" className="p-1 rounded hover:bg-slate-800 text-[10px]">⬆ Front</button>
+              <button type="button" onClick={() => layerOp('back')} title="Send to Back" className="p-1 rounded hover:bg-slate-800 text-[10px]">⬇ Back</button>
+              <button type="button" onClick={() => layerOp('lock')} title="Lock/Unlock" className="p-1 rounded hover:bg-slate-800 text-[10px]">
+                {sel.locked ? '🔒 Unlock' : '🔓 Lock'}
+              </button>
+              <button type="button" onClick={() => layerOp('dup')} title="Duplicate" className="p-1 rounded hover:bg-slate-800 text-[10px]">⧉ Dup</button>
+              <button type="button" onClick={() => layerOp('del')} title="Delete" className="p-1 rounded hover:bg-red-950 text-red-400 text-[10px]">🗑 Del</button>
+            </div>
+          </div>
+
+          {/* Conditional properties based on kind */}
+          {sel.kind === 'text' && (
+            <div className="space-y-1.5 text-[11px]">
+              {/* Font details */}
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[8px] text-slate-400 uppercase">Font Family</span>
+                  <select 
+                    value={sel.fontFamily || tokens.bodyFont}
+                    onChange={e => patch(sel.id, { fontFamily: e.target.value })}
+                    className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]"
+                  >
+                    <option value={tokens.headingFont}>Heading ({tokens.headingFont})</option>
+                    <option value={tokens.bodyFont}>Body ({tokens.bodyFont})</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Playfair Display">Playfair</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="monospace">Monospace</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[8px] text-slate-400 uppercase">Size (px)</span>
+                  <input 
+                    type="number"
+                    min="6"
+                    max="96"
+                    value={sel.fontSize || 16}
+                    onChange={e => patch(sel.id, { fontSize: parseInt(e.target.value) || 16 })}
+                    className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]"
+                  />
+                </div>
+              </div>
+
+              {/* Formatting details */}
+              <div className="flex items-center gap-2 py-0.5">
+                <button 
+                  type="button" 
+                  onClick={() => patch(sel.id, { bold: !sel.bold })}
+                  className={`px-1.5 py-0.5 rounded font-bold border ${sel.bold ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 hover:bg-slate-700'}`}
+                >
+                  B
+                </button>
+                <div className="flex items-center border border-slate-700 rounded overflow-hidden bg-slate-800">
+                  {(['left', 'center', 'right'] as const).map(a => (
+                    <button 
+                      key={a}
+                      type="button"
+                      onClick={() => patch(sel.id, { align: a })}
+                      className={`px-1.5 py-0.5 text-[9px] capitalize ${sel.align === a || (!sel.align && a === 'left') ? 'bg-blue-600 text-white' : 'hover:bg-slate-700'}`}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
+                {/* Color pick */}
+                <div className="flex items-center gap-1">
+                  <span className="text-[8px] text-slate-400 uppercase">Color:</span>
+                  <input 
+                    type="color"
+                    value={sel.color || '#000000'}
+                    onChange={e => patch(sel.id, { color: e.target.value })}
+                    className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
+                  />
+                  <input 
+                    type="text" 
+                    value={sel.color || '#000000'} 
+                    onChange={e => patch(sel.id, { color: e.target.value })}
+                    className="w-12 bg-slate-800 border border-slate-700 rounded px-0.5 py-0.2 text-[9px] text-center"
+                  />
+                </div>
+              </div>
+
+              {/* Line height, letter spacing, opacity */}
+              <div className="space-y-1 pt-1 border-t border-slate-800">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] text-slate-400">Line Height:</span>
+                  <input 
+                    type="range" min="0.8" max="2.5" step="0.1" 
+                    value={sel.lineHeight || 1.25}
+                    onChange={e => patch(sel.id, { lineHeight: parseFloat(e.target.value) })}
+                    className="w-24 h-1 accent-blue-500 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-[9px] w-6 text-right font-mono">{(sel.lineHeight || 1.25).toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] text-slate-400">Letter Spacing:</span>
+                  <input 
+                    type="range" min="-2" max="15" step="1" 
+                    value={sel.letterSpacing || 0}
+                    onChange={e => patch(sel.id, { letterSpacing: parseInt(e.target.value) })}
+                    className="w-24 h-1 accent-blue-500 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-[9px] w-6 text-right font-mono">{(sel.letterSpacing || 0)}px</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] text-slate-400">Opacity:</span>
+                  <input 
+                    type="range" min="0.1" max="1" step="0.05" 
+                    value={sel.opacity ?? 1}
+                    onChange={e => patch(sel.id, { opacity: parseFloat(e.target.value) })}
+                    className="w-24 h-1 accent-blue-500 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-[9px] w-6 text-right font-mono">{Math.round((sel.opacity ?? 1) * 100)}%</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {sel.kind === 'graphic' && (
+            <div className="space-y-1.5 text-[11px]">
+              {/* Graphic DNA Controls */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] text-slate-400 uppercase">Color:</span>
+                  <input 
+                    type="color"
+                    value={sel.color || tokens.accent}
+                    onChange={e => patch(sel.id, { color: e.target.value })}
+                    className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
+                  />
+                  <input 
+                    type="text" 
+                    value={sel.color || tokens.accent} 
+                    onChange={e => patch(sel.id, { color: e.target.value })}
+                    className="w-14 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-[9px] text-center"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] text-slate-400 uppercase">Stroke Width:</span>
+                  <input 
+                    type="number" 
+                    step="0.5" 
+                    min="0.5" 
+                    max="10" 
+                    value={sel.strokeWidth || 1.5}
+                    onChange={e => patch(sel.id, { strokeWidth: parseFloat(e.target.value) || 1.5 })}
+                    className="w-10 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-center text-[10px]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] text-slate-400">Opacity:</span>
+                <input 
+                  type="range" min="0.1" max="1" step="0.05" 
+                  value={sel.opacity ?? 0.85}
+                  onChange={e => patch(sel.id, { opacity: parseFloat(e.target.value) })}
+                  className="w-28 h-1 accent-blue-500 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-[9px] w-6 text-right font-mono">{Math.round((sel.opacity ?? 0.85) * 100)}%</span>
+              </div>
+
+              {/* Scope replication buttons */}
+              {onApplyScope && (
+                <div className="pt-2 border-t border-slate-800">
+                  <span className="text-[8px] text-slate-400 uppercase block mb-1">Apply Graphic Scope To:</span>
+                  <div className="flex gap-1">
+                    <button 
+                      type="button" 
+                      onClick={() => onApplyScope('page', sel)}
+                      className="flex-1 py-1 px-1 bg-slate-800 hover:bg-slate-700 text-[9px] rounded text-center border border-slate-700"
+                    >
+                      This Page
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => onApplyScope('spread', sel)}
+                      className="flex-1 py-1 px-1 bg-blue-900/60 hover:bg-blue-800 text-[9px] rounded text-center border border-blue-800/80"
+                    >
+                      Current Spread
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => onApplyScope('all', sel)}
+                      className="flex-1 py-1 px-1 bg-purple-900/60 hover:bg-purple-800 text-[9px] rounded text-center border border-purple-800/80"
+                    >
+                      Entire Portfolio
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Simple controls for line/shapes */}
+          {(sel.kind === 'rect' || sel.kind === 'ellipse' || sel.kind === 'line') && (
+            <div className="space-y-1.5 text-[11px]">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] text-slate-400 uppercase">Fill:</span>
+                  <input 
+                    type="color"
+                    value={sel.fill || '#eeeeee'}
+                    onChange={e => patch(sel.id, { fill: e.target.value })}
+                    className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] text-slate-400 uppercase">Stroke:</span>
+                  <input 
+                    type="color"
+                    value={sel.stroke || tokens.accent}
+                    onChange={e => patch(sel.id, { stroke: e.target.value })}
+                    className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
+                  />
+                  <input 
+                    type="number" step="1" min="0" max="10" 
+                    value={sel.strokeWidth || 0}
+                    onChange={e => patch(sel.id, { strokeWidth: parseInt(e.target.value) || 0 })}
+                    className="w-8 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-center text-[10px]"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] text-slate-400">Opacity:</span>
+                <input 
+                  type="range" min="0.1" max="1" step="0.05" 
+                  value={sel.opacity ?? 1}
+                  onChange={e => patch(sel.id, { opacity: parseFloat(e.target.value) })}
+                  className="w-28 h-1 accent-blue-500 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-[9px] w-6 text-right font-mono">{Math.round((sel.opacity ?? 1) * 100)}%</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -139,11 +396,17 @@ function ElementBody({ el, tokens }: { el: FreeElement; tokens: DesignTokens }) 
   if (el.kind === 'text') {
     return (
       <div className="w-full h-full flex overflow-hidden" style={{
-        color: el.color || tokens.text, fontFamily: el.fontFamily || tokens.bodyFont,
-        fontSize: el.fontSize || 16, fontWeight: el.bold ? 700 : 400,
-        textAlign: el.align || 'left', alignItems: 'flex-start',
+        color: el.color || tokens.text, 
+        fontFamily: el.fontFamily || tokens.bodyFont,
+        fontSize: el.fontSize || 14, 
+        fontWeight: el.bold ? 700 : 400,
+        textAlign: el.align || 'left', 
+        alignItems: 'flex-start',
         justifyContent: el.align === 'center' ? 'center' : el.align === 'right' ? 'flex-end' : 'flex-start',
-        lineHeight: 1.25, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+        lineHeight: el.lineHeight || 1.25, 
+        letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : 'normal',
+        whiteSpace: 'pre-wrap', 
+        wordBreak: 'break-word',
       }}>
         {el.text || 'Text'}
       </div>
@@ -157,6 +420,9 @@ function ElementBody({ el, tokens }: { el: FreeElement; tokens: DesignTokens }) 
   if (el.kind === 'line') {
     return <div className="w-full" style={{ height: el.strokeWidth || 2, background: el.stroke || tokens.text, marginTop: '50%' }} />
   }
+  if (el.kind === 'graphic') {
+    return <GraphicDNARenderer type={el.graphicType || 'parametric-curve'} color={el.color || tokens.accent} strokeWidth={el.strokeWidth} />
+  }
   // rect / ellipse
   return <div className="w-full h-full" style={{
     background: el.fill ?? `${tokens.accent}33`,
@@ -165,14 +431,209 @@ function ElementBody({ el, tokens }: { el: FreeElement; tokens: DesignTokens }) 
   }} />
 }
 
+function GraphicDNARenderer({ type, color, strokeWidth = 1.5 }: { type: string; color: string; strokeWidth?: number }) {
+  const c = color || '#000000'
+  const sw = strokeWidth
+  
+  switch (type) {
+    case 'parametric-curve':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 0 50 Q 25 20, 50 50 T 100 50 M 0 30 Q 30 70, 60 20 T 100 80" fill="none" stroke={c} strokeWidth={sw} opacity="0.6"/>
+          <path d="M 0 60 Q 40 10, 70 80 T 100 30" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.4"/>
+        </svg>
+      )
+    case 'zaha-flow':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M -10 20 C 30 120, 70 -20, 110 80" fill="none" stroke={c} strokeWidth={sw * 1.5} />
+          <path d="M -10 30 C 30 130, 70 -10, 110 90" fill="none" stroke={c} strokeWidth={sw} opacity="0.7" strokeDasharray="3 3" />
+          <path d="M -10 10 C 30 110, 70 -30, 110 70" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.5" />
+          <path d="M -10 40 C 40 140, 60 0, 110 100" fill="none" stroke={c} strokeWidth={sw * 0.5} opacity="0.3" />
+        </svg>
+      )
+    case 'contour':
+    case 'topo':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 50 10 C 70 15, 80 30, 85 50 C 90 70, 75 85, 50 90 C 25 85, 10 70, 15 50 C 20 30, 30 15, 50 10 Z" fill="none" stroke={c} strokeWidth={sw * 0.7} />
+          <path d="M 50 25 C 65 28, 70 40, 73 50 C 76 60, 68 70, 50 75 C 32 70, 24 60, 27 50 C 30 40, 35 28, 50 25 Z" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.8" />
+          <path d="M 50 40 C 58 41, 60 45, 62 50 C 64 55, 58 60, 50 62 C 42 60, 36 55, 38 50 C 40 45, 42 41, 50 40 Z" fill="none" stroke={c} strokeWidth={sw * 0.8} opacity="0.6" />
+          <path d="M 50 48 C 52 48, 54 49, 54 50 C 54 51, 52 52, 50 52 C 48 52, 46 51, 46 50 C 46 49, 48 48, 50 48 Z" fill="none" stroke={c} strokeWidth={sw} opacity="0.4" />
+        </svg>
+      )
+    case 'wind-flow':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 10 20 Q 40 10, 70 30 T 90 70" fill="none" stroke={c} strokeWidth={sw} strokeDasharray="5 5" />
+          <path d="M 15 50 Q 45 40, 60 70 T 100 80" fill="none" stroke={c} strokeWidth={sw} strokeDasharray="5 5" />
+          <path d="M 10 20 L 18 17 M 10 20 L 14 28" fill="none" stroke={c} strokeWidth={sw} />
+          <path d="M 15 50 L 23 47 M 15 50 L 19 58" fill="none" stroke={c} strokeWidth={sw} />
+        </svg>
+      )
+    case 'movement-path':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 5 95 C 10 40, 90 60, 95 5" fill="none" stroke={c} strokeWidth={sw * 1.3} strokeDasharray="4 4" />
+          <circle cx="5" cy="95" r="3" fill={c} />
+          <circle cx="95" cy="5" r="3" fill={c} />
+          <path d="M 50 45 L 56 42 M 50 45 L 48 38" fill="none" stroke={c} strokeWidth={sw} />
+        </svg>
+      )
+    case 'spline':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 0 20 C 30 80, 40 10, 70 90 T 100 40" fill="none" stroke={c} strokeWidth={sw} />
+        </svg>
+      )
+    case 'voronoi':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 10 10 L 40 15 L 30 50 L 10 40 Z M 40 15 L 70 5 L 80 40 L 55 50 L 30 50 Z M 10 40 L 30 50 L 25 90 L 5 80 Z M 30 50 L 55 50 L 60 85 L 25 90 Z M 55 50 L 80 40 L 95 70 L 60 85 Z" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.7" />
+          <circle cx="10" cy="10" r="1.5" fill={c} />
+          <circle cx="40" cy="15" r="1.5" fill={c} />
+          <circle cx="30" cy="50" r="1.5" fill={c} />
+          <circle cx="70" cy="5" r="1.5" fill={c} />
+          <circle cx="80" cy="40" r="1.5" fill={c} />
+          <circle cx="55" cy="50" r="1.5" fill={c} />
+          <circle cx="10" cy="40" r="1.5" fill={c} />
+          <circle cx="25" cy="90" r="1.5" fill={c} />
+          <circle cx="60" cy="85" r="1.5" fill={c} />
+          <circle cx="95" cy="70" r="1.5" fill={c} />
+        </svg>
+      )
+    case 'hexagon':
+      return (
+        <svg viewBox="0 0 60 60" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 10 20 L 20 15 L 30 20 L 30 30 L 20 35 L 10 30 Z M 30 20 L 40 15 L 50 20 L 50 30 L 40 35 L 30 30 Z M 20 35 L 30 40 L 30 50 L 20 55 L 10 50 L 10 40 Z M 40 35 L 50 40 L 50 50 L 40 55 L 30 55 L 30 50 M 10 30 L 10 40 M 30 30 L 30 40 M 50 30 L 50 40" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.6" />
+        </svg>
+      )
+    case 'triangle-grid':
+      return (
+        <svg viewBox="0 0 150 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 0 0 L 100 0 L 50 86.6 Z M 50 86.6 L 150 86.6 L 100 0 Z M 0 0 L 50 86.6 M 100 0 L 50 86.6 M 100 0 L 150 86.6" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.5" />
+        </svg>
+      )
+    case 'blueprint-grid':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <line x1="0" y1="20" x2="100" y2="20" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="0" y1="40" x2="100" y2="40" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="0" y1="60" x2="100" y2="60" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="0" y1="80" x2="100" y2="80" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="20" y1="0" x2="20" y2="100" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="40" y1="0" x2="40" y2="100" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="60" y1="0" x2="60" y2="100" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <line x1="80" y1="0" x2="80" y2="100" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="1 4" opacity="0.5" />
+          <text x="2" y="15" fill={c} fontSize="4" opacity="0.5" style={{ fontFamily: 'monospace' }}>A-1</text>
+          <text x="2" y="35" fill={c} fontSize="4" opacity="0.5" style={{ fontFamily: 'monospace' }}>A-2</text>
+          <text x="2" y="55" fill={c} fontSize="4" opacity="0.5" style={{ fontFamily: 'monospace' }}>A-3</text>
+        </svg>
+      )
+    case 'cad-background':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <circle cx="50" cy="50" r="40" fill="none" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="2 2" opacity="0.4" />
+          <line x1="50" y1="5" x2="50" y2="95" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="5 5" opacity="0.5" />
+          <line x1="5" y1="50" x2="95" y2="50" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="5 5" opacity="0.5" />
+          <path d="M 5 5 L 15 5 M 5 5 L 5 15 M 95 5 L 85 5 M 95 5 L 95 15 M 5 95 L 15 95 M 5 95 L 5 85 M 95 95 L 85 95 M 95 95 L 95 85" fill="none" stroke={c} strokeWidth={sw * 0.7} opacity="0.7" />
+        </svg>
+      )
+    case 'section-line':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <line x1="10" y1="50" x2="90" y2="50" stroke={c} strokeWidth={sw * 1.5} strokeDasharray="6 3 1 3" />
+          <line x1="10" y1="50" x2="10" y2="35" stroke={c} strokeWidth={sw * 1.5} />
+          <line x1="90" y1="50" x2="90" y2="35" stroke={c} strokeWidth={sw * 1.5} />
+          <polygon points="10,30 5,37 15,37" fill={c} />
+          <polygon points="90,30 85,37 95,37" fill={c} />
+          <text x="18" y="44" fill={c} fontSize="10" fontWeight="bold" style={{ fontFamily: 'sans-serif' }}>A</text>
+          <text x="76" y="44" fill={c} fontSize="10" fontWeight="bold" style={{ fontFamily: 'sans-serif' }}>A</text>
+        </svg>
+      )
+    case 'site-overlay':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <circle cx="50" cy="50" r="30" fill="none" stroke={c} strokeWidth={sw * 0.7} />
+          <circle cx="50" cy="50" r="45" fill="none" stroke={c} strokeWidth={sw * 0.3} strokeDasharray="2 2" />
+          <line x1="50" y1="2" x2="50" y2="98" stroke={c} strokeWidth={sw * 0.5} />
+          <line x1="2" y1="50" x2="98" y2="50" stroke={c} strokeWidth={sw * 0.5} />
+          <path d="M 50 50 L 80 20" stroke={c} strokeWidth={sw * 1.2} />
+          <text x="53" y="12" fill={c} fontSize="8" fontWeight="bold" style={{ fontFamily: 'sans-serif' }}>N</text>
+          <text x="83" y="23" fill={c} fontSize="6" style={{ fontFamily: 'sans-serif' }}>30°</text>
+        </svg>
+      )
+    case 'measurement':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <line x1="10" y1="50" x2="90" y2="50" stroke={c} strokeWidth={sw} />
+          <line x1="10" y1="35" x2="10" y2="65" stroke={c} strokeWidth={sw * 0.7} />
+          <line x1="90" y1="35" x2="90" y2="65" stroke={c} strokeWidth={sw * 0.7} />
+          <line x1="5" y1="55" x2="15" y2="45" stroke={c} strokeWidth={sw * 1.3} />
+          <line x1="85" y1="55" x2="95" y2="45" stroke={c} strokeWidth={sw * 1.3} />
+          <text x="50" y="44" fill={c} fontSize="8" textAnchor="middle" fontWeight="bold" style={{ fontFamily: 'monospace' }}>12,450</text>
+        </svg>
+      )
+    case 'coordinates':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <line x1="20" y1="50" x2="80" y2="50" stroke={c} strokeWidth={sw * 0.7} />
+          <line x1="50" y1="20" x2="50" y2="80" stroke={c} strokeWidth={sw * 0.7} />
+          <circle cx="50" cy="50" r="3" fill="none" stroke={c} strokeWidth={sw * 0.7} />
+          <text x="54" y="44" fill={c} fontSize="6" style={{ fontFamily: 'monospace' }}>N 53°20'45"</text>
+          <text x="54" y="60" fill={c} fontSize="6" style={{ fontFamily: 'monospace' }}>E 6°15'12"</text>
+        </svg>
+      )
+    case 'section-marker':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <circle cx="50" cy="50" r="16" fill="none" stroke={c} strokeWidth={sw * 1.3} />
+          <line x1="34" y1="50" x2="66" y2="50" stroke={c} strokeWidth={sw} />
+          <text x="50" y="44" fill={c} fontSize="10" textAnchor="middle" fontWeight="bold" style={{ fontFamily: 'sans-serif' }}>A</text>
+          <text x="50" y="62" fill={c} fontSize="8" textAnchor="middle" style={{ fontFamily: 'sans-serif' }}>04</text>
+          <path d="M 66 50 L 76 45 L 76 55 Z" fill={c} />
+        </svg>
+      )
+    case 'arrow':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <polygon points="50,5 30,85 50,70 70,85" fill="none" stroke={c} strokeWidth={sw * 1.3} />
+          <line x1="50" y1="5" x2="50" y2="95" stroke={c} strokeWidth={sw * 0.7} strokeDasharray="3 3" />
+        </svg>
+      )
+    case 'frame-corner':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M 15 5 L 5 5 L 5 15 M 85 5 L 95 5 L 95 15 M 15 95 L 5 95 L 5 85 M 85 95 L 95 95 L 95 85" fill="none" stroke={c} strokeWidth={sw * 1.3} />
+        </svg>
+      )
+    case 'construction-line':
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <line x1="0" y1="30" x2="100" y2="30" stroke={c} strokeWidth={sw * 0.5} strokeDasharray="5 2 1 2" />
+          <line x1="0" y1="70" x2="100" y2="70" stroke={c} strokeWidth={sw * 0.5} strokeDasharray="5 2 1 2" />
+          <line x1="30" y1="0" x2="30" y2="100" stroke={c} strokeWidth={sw * 0.5} strokeDasharray="5 2 1 2" />
+        </svg>
+      )
+    default:
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+          <rect x="5" y="5" width="90" height="90" fill="none" stroke={c} strokeWidth={sw} strokeDasharray="2 2" />
+          <text x="50" y="55" fill={c} fontSize="10" textAnchor="middle">{type}</text>
+        </svg>
+      )
+  }
+}
+
 let _fe = 0
 export function newFreeElement(kind: FreeElement['kind'], tokens: DesignTokens, src?: string): FreeElement {
   const base = { id: `fe-${Date.now().toString(36)}-${_fe++}`, kind, x: 30, y: 35, w: 30, h: 14, z: 1, rotation: 0 }
   switch (kind) {
-    case 'text': return { ...base, h: 8, text: 'Double-click to edit', fontSize: 18, color: tokens.text, align: 'left' }
+    case 'text': return { ...base, h: 8, text: 'Double-click to edit', fontSize: 18, color: tokens.text, align: 'left', lineHeight: 1.25, letterSpacing: 0 }
     case 'image': return { ...base, w: 32, h: 24, src }
     case 'line': return { ...base, h: 2, stroke: tokens.text, strokeWidth: 2 }
     case 'ellipse': return { ...base, w: 20, h: 20, fill: `${tokens.accent}44`, stroke: tokens.accent, strokeWidth: 1 }
+    case 'graphic': return { ...base, w: 35, h: 25, graphicType: 'parametric-curve', color: tokens.accent, strokeWidth: 1.5, opacity: 0.85 }
     default: return { ...base, fill: `${tokens.accent}33`, stroke: tokens.accent, strokeWidth: 1 }
   }
 }

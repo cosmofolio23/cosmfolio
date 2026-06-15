@@ -16,6 +16,7 @@ export type BlockType =
   | 'plan'         // Floor plan drawing (with scale + label)
   | 'section'      // Section / elevation drawing
   | 'diagram'      // Concept / analysis diagram
+  | 'contents'     // Table of contents auto-block
 
 export interface MetaField {
   label: string
@@ -40,6 +41,12 @@ export interface Block {
   legendItems?: LegendItem[]
   // Metadata
   fields?: MetaField[]
+  
+  // Crop / zoom / fit properties for V4
+  fit?: 'cover' | 'contain' | 'fill'
+  zoom?: number
+  xOffset?: number
+  yOffset?: number
 }
 
 export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume'
@@ -48,7 +55,7 @@ export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume'
  *  grid layout. Powers the InDesign-style free-canvas editing. */
 export interface FreeElement {
   id: string
-  kind: 'text' | 'image' | 'rect' | 'ellipse' | 'line'
+  kind: 'text' | 'image' | 'rect' | 'ellipse' | 'line' | 'graphic'
   x: number; y: number; w: number; h: number   // % of page
   rotation?: number
   z?: number
@@ -67,6 +74,11 @@ export interface FreeElement {
   // image
   src?: string
   opacity?: number
+
+  // Graphic DNA properties for V4
+  graphicType?: string // e.g. 'parametric-curve', 'contour', 'voronoi', etc.
+  lineHeight?: number
+  letterSpacing?: number
 }
 
 export interface Page {
@@ -99,6 +111,7 @@ export function uid(prefix = 'b'): string {
 export function createBlock(type: BlockType): Block {
   const base: Block = { id: uid(), type }
   switch (type) {
+    case 'contents':    return { ...base, label: 'Table of Contents' }
     case 'title':       return { ...base, text: 'Project Title' }
     case 'subtitle':    return { ...base, text: 'Project subtitle or tagline' }
     case 'meta':        return { ...base, fields: [
@@ -125,6 +138,7 @@ export function createBlock(type: BlockType): Block {
 const BLOCK_LABELS: Record<BlockType, string> = {
   title: 'Title', subtitle: 'Subtitle', meta: 'Metadata', description: 'Description',
   legend: 'Legend', render: 'Render', plan: 'Plan', section: 'Section', diagram: 'Diagram',
+  contents: 'Table of Contents',
 }
 export function blockLabel(t: BlockType): string { return BLOCK_LABELS[t] }
 

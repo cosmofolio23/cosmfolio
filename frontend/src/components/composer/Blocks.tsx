@@ -54,20 +54,15 @@ export function ImageBlock({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [panActive, setPanActive] = useState(false)
+  const [dragStart, setDragStart] = useState<{ x: number; y: number; ox: number; oy: number } | null>(null)
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file before upload
-    const valid = file.type.startsWith('image/')
+  const uploadFile = async (file: File) => {
+    const valid = file.type.startsWith('image/') || file.type === 'application/pdf'
     const size = file.size / 1024 / 1024
     if (!valid) {
-      alert(`❌ Not an image: ${file.type || 'unknown type'}`)
-      return
-    }
-    if (size < 0.1) {
-      alert(`❌ File too small (${size.toFixed(2)}MB). Min 100KB.`)
+      alert(`❌ Unsupported file type: ${file.type || 'unknown type'}. Use JPG, PNG, WEBP or PDF.`)
       return
     }
     if (size > 100) {
@@ -79,22 +74,58 @@ export function ImageBlock({
       setUploading(true)
       try {
         const url = await onUpload(file)
-        onChange({ imageUrl: url })
+        onChange({ imageUrl: url, zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' })
       } catch (err: any) {
         console.error('Image upload failed:', err)
-        const msg = err?.message || 'Unknown error'
-        const details = msg.includes('401') ? 'Your session expired. Please refresh.' :
-                       msg.includes('413') ? 'File is too large (max 100MB).' :
-                       msg.includes('400') ? 'Invalid file format.' :
-                       msg.includes('network') ? 'Network error. Check your connection.' :
-                       `${msg.slice(0, 80)}`
-        alert(`❌ Upload failed: ${details}`)
+        alert(`❌ Upload failed: ${err?.message || 'unknown error'}`)
       } finally {
         setUploading(false)
       }
     } else {
-      onChange({ imageUrl: URL.createObjectURL(file) })
+      onChange({ imageUrl: URL.createObjectURL(file), zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' })
     }
+  }
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) await uploadFile(file)
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+  const onDragLeave = () => {
+    setIsDragging(false)
+  }
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) await uploadFile(file)
+  }
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!panActive || !block.imageUrl) return
+    e.preventDefault()
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+      ox: block.xOffset || 0,
+      oy: block.yOffset || 0,
+    })
+  }
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!dragStart || !panActive) return
+    const dx = e.clientX - dragStart.x
+    const dy = e.clientY - dragStart.y
+    onChange({
+      xOffset: dragStart.ox + dx / 4,
+      yOffset: dragStart.oy + dy / 4,
+    })
+  }
+  const onMouseUp = () => {
+    setDragStart(null)
   }
 
   const typeBadge: Record<string, string> = {
@@ -110,26 +141,98 @@ export function ImageBlock({
       )}
       <div className={`relative w-full overflow-hidden ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
         {block.imageUrl ? (
-          <>
-            <img src={block.imageUrl} alt={block.label || ''} className="w-full h-full object-cover" />
-            <button
-              onClick={() => onChange({ imageUrl: '' })}
-              className="absolute top-2 right-2 bg-black/70 text-white w-7 h-7 rounded-full text-sm opacity-0 group-hover/img:opacity-100 transition"
-              title="Remove image"
-            >✕</button>
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs opacity-0 group-hover/img:opacity-100 transition"
-            >Replace</button>
-          </>
+          <div
+            className="relative w-full h-full overflow-hidden select-none"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+            style={{ cursor: panActive ? 'move' : 'default' }}
+          >
+            <img
+              src={block.imageUrl}
+              alt={block.label || ''}
+              className="w-full h-full pointer-events-none"
+              style={{
+                objectFit: block.fit || 'cover',
+                transform: `scale(${block.zoom || 1}) translate(${block.xOffset || 0}%, ${block.yOffset || 0}%)`,
+                transformOrigin: 'center center',
+                transition: dragStart ? 'none' : 'transform 0.1s ease',
+              }}
+              draggable={false}
+            />
+            {panActive && (
+              <div className="absolute inset-0 border-2 border-dashed border-blue-500 pointer-events-none flex items-center justify-center bg-blue-500/10">
+                <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                  Drag to Reposition
+                </span>
+              </div>
+            )}
+            
+            {/* Floating Contextual Toolbar */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px]">
+              <button
+                type="button"
+                onClick={() => onChange({ fit: block.fit === 'contain' ? 'cover' : 'contain' })}
+                className={`px-1.5 py-0.5 rounded hover:bg-white/20 transition font-medium ${block.fit === 'contain' ? 'text-blue-300' : ''}`}
+                title="Toggle Fit/Fill"
+              >
+                {block.fit === 'contain' ? 'Fill' : 'Fit'}
+              </button>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                onClick={() => setPanActive(!panActive)}
+                className={`px-1.5 py-0.5 rounded hover:bg-white/20 transition font-medium ${panActive ? 'text-blue-300 bg-blue-500/25' : ''}`}
+                title="Reposition image inside frame"
+              >
+                {panActive ? 'Done ✓' : 'Pan ✋'}
+              </button>
+              <span className="text-white/20">|</span>
+              <div className="flex items-center gap-1">
+                <span>Zoom:</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.05"
+                  value={block.zoom || 1}
+                  onChange={e => onChange({ zoom: parseFloat(e.target.value) })}
+                  className="w-14 h-1 accent-blue-500 cursor-pointer bg-white/20 rounded-lg appearance-none"
+                />
+                <span className="w-6 text-right tabular-nums">{(block.zoom || 1).toFixed(1)}x</span>
+              </div>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-yellow-400 font-medium"
+              >
+                Replace
+              </button>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                onClick={() => onChange({ imageUrl: '' })}
+                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-red-400 font-medium"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         ) : (
           <button
+            type="button"
             onClick={() => inputRef.current?.click()}
-            className="w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed"
-            style={{ borderColor: 'rgba(0,0,0,0.15)' }}
+            className={`w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50/40 text-blue-500' : 'border-gray-300'}`}
+            style={{ borderColor: isDragging ? undefined : 'rgba(0,0,0,0.15)' }}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
           >
             <span className="text-3xl mb-1">＋</span>
             <span className="text-[10px] uppercase tracking-widest font-semibold">{typeBadge[block.type] || 'IMAGE'}</span>
+            <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
           </button>
         )}
         {/* type badge */}
@@ -161,7 +264,7 @@ export function ImageBlock({
         </div>
       )}
 
-      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+      <input type="file" ref={inputRef} onChange={handleFile} accept="image/*,application/pdf" className="hidden" />
     </div>
   )
 }
@@ -310,3 +413,327 @@ export function pickContrast(hex?: string): string {
     return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.55 ? '#ffffff' : '#111111'
   } catch { return '#ffffff' }
 }
+
+/* ------------------------------- Contents Block --------------------------- */
+
+interface ProjectIndexItem {
+  num: string
+  title: string
+  year: string
+  typology: string
+  location: string
+  thumbnail: string
+  pageNumber: string
+}
+
+export function ContentsBlock({
+  block, tokens, onChange, pages, layoutId
+}: {
+  block: Block
+  tokens: DesignTokens
+  onChange: (patch: Partial<Block>) => void
+  pages: any[]
+  layoutId: string
+}) {
+  // Extract project details from pages list
+  const projectItems: ProjectIndexItem[] = []
+  let projCount = 0
+  
+  if (Array.isArray(pages)) {
+    pages.forEach((p, idx) => {
+      if (p.type === 'project') {
+        const titleBlock = p.blocks?.find((b: any) => b.type === 'title')
+        if (titleBlock) {
+          projCount++
+          const metaBlock = p.blocks?.find((b: any) => b.type === 'meta')
+          const fields = metaBlock?.fields || []
+          
+          const year = fields.find((f: any) => f.label.toLowerCase() === 'year')?.value || '2026'
+          const location = fields.find((f: any) => f.label.toLowerCase() === 'location')?.value || 'Location'
+          const typology = fields.find((f: any) => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || 'Residential'
+          
+          const imgBlock = p.blocks?.find((b: any) => ['render', 'plan', 'section', 'diagram'].includes(b.type) && b.imageUrl)
+          const thumbnail = imgBlock?.imageUrl || ''
+          
+          projectItems.push({
+            num: String(projCount).padStart(2, '0'),
+            title: titleBlock.text || 'Project Title',
+            year,
+            typology,
+            location,
+            thumbnail,
+            pageNumber: String(idx + 1).padStart(2, '0')
+          })
+        }
+      }
+    })
+  }
+
+  // Use a fallback list if no projects are found (e.g. fresh template init)
+  const items = projectItems.length > 0 ? projectItems : [
+    { num: '01', title: 'Cultural Center', year: '2025', typology: 'Cultural', location: 'Tokyo, JP', thumbnail: '', pageNumber: '06' },
+    { num: '02', title: 'Urban Housing', year: '2026', typology: 'Residential', location: 'London, UK', thumbnail: '', pageNumber: '18' },
+    { num: '03', title: 'Computational Pavillion', year: '2026', typology: 'Experimental', location: 'Zurich, CH', thumbnail: '', pageNumber: '24' },
+    { num: '04', title: 'Mixed-Use Highrise', year: '2026', typology: 'Commercial', location: 'New York, US', thumbnail: '', pageNumber: '32' }
+  ]
+
+  const lid = (layoutId || '').toLowerCase()
+
+  // 1. Magazine Style
+  if (lid.includes('magazine')) {
+    const featured = items[0]
+    return (
+      <div className="w-full flex flex-col h-full" style={{ fontFamily: tokens.bodyFont }}>
+        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          {block.label || 'Contents'}
+        </h3>
+        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+          <div className="col-span-5 bg-black/5 rounded overflow-hidden relative flex flex-col justify-end p-3 min-h-[160px]">
+            {featured.thumbnail ? (
+              <img src={featured.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80" />
+            ) : (
+              <div className="absolute inset-0 bg-gray-200" />
+            )}
+            <div className="relative z-10 bg-black/60 text-white p-2 rounded">
+              <span className="text-[9px] uppercase tracking-wider block opacity-75">Featured Project</span>
+              <span className="text-xs font-bold block">{featured.title}</span>
+              <span className="text-[9px] block">Page {featured.pageNumber}</span>
+            </div>
+          </div>
+          <div className="col-span-7 space-y-2 overflow-y-auto max-h-[220px]">
+            {items.map((it, idx) => (
+              <div key={idx} className="flex items-center justify-between border-b pb-1.5 border-black/5 text-xs">
+                <div className="flex gap-2">
+                  <span className="font-bold opacity-60">{it.num}</span>
+                  <div>
+                    <span className="font-semibold" style={{ color: tokens.text }}>{it.title}</span>
+                    <span className="text-[9px] text-gray-400 block">{it.typology} · {it.location}</span>
+                  </div>
+                </div>
+                <span className="font-semibold text-gray-500">p. {it.pageNumber}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 2. Timeline Style
+  if (lid.includes('timeline')) {
+    return (
+      <div className="w-full flex flex-col h-full" style={{ fontFamily: tokens.bodyFont }}>
+        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          {block.label || 'Timeline'}
+        </h3>
+        <div className="relative border-l border-slate-350 pl-4 ml-2 space-y-4 flex-1 overflow-y-auto max-h-[220px]">
+          {items.map((it, idx) => (
+            <div key={idx} className="relative text-xs">
+              <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 border border-white" />
+              <div className="flex justify-between items-baseline">
+                <div>
+                  <span className="font-mono text-[9px] text-blue-600 font-bold mr-2">{it.year}</span>
+                  <span className="font-semibold" style={{ color: tokens.text }}>{it.title}</span>
+                </div>
+                <span className="font-semibold text-gray-400">Page {it.pageNumber}</span>
+              </div>
+              <span className="text-[9px] text-gray-400 block mt-0.5">{it.typology} | {it.location}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 3. Image Grid Style
+  if (lid.includes('grid') || lid.includes('thumb')) {
+    return (
+      <div className="w-full flex flex-col h-full" style={{ fontFamily: tokens.bodyFont }}>
+        <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          {block.label || 'Project Index'}
+        </h3>
+        <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[240px]">
+          {items.map((it, idx) => (
+            <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2">
+              <div className="w-12 h-12 bg-black/5 rounded overflow-hidden flex-shrink-0">
+                {it.thumbnail ? (
+                  <img src={it.thumbnail} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-400">{it.num}</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold opacity-60 mr-1">{it.num}</span>
+                  <span className="font-bold text-gray-400">p.{it.pageNumber}</span>
+                </div>
+                <div className="font-semibold text-[10px] truncate" style={{ color: tokens.text }}>{it.title}</div>
+                <div className="text-[8px] text-gray-400 truncate">{it.typology} · {it.location}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 4. Luxury Style
+  if (lid.includes('luxury')) {
+    return (
+      <div className="w-full flex flex-col h-full px-2" style={{ fontFamily: 'Playfair Display, Lora, Georgia, serif' }}>
+        <h3 className="text-2xl font-normal tracking-[0.15em] text-center mb-5 italic" style={{ color: tokens.primary }}>
+          {block.label || 'Portfolio Index'}
+        </h3>
+        <div className="space-y-3 overflow-y-auto max-h-[220px]">
+          {items.map((it, idx) => (
+            <div key={idx} className="flex justify-between items-baseline border-b border-yellow-800/10 pb-1.5 text-xs">
+              <div className="flex items-baseline gap-3">
+                <span className="text-[10px] tracking-wider text-yellow-700/80 font-serif italic">{it.num}</span>
+                <div>
+                  <span className="font-medium text-slate-800 tracking-wide text-xs">{it.title}</span>
+                  <span className="text-[9px] text-slate-400 block tracking-wider font-sans uppercase mt-0.5">{it.typology} / {it.location} ({it.year})</span>
+                </div>
+              </div>
+              <span className="font-serif italic text-slate-500 text-xs">p. {it.pageNumber}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 5. Research Style
+  if (lid.includes('research')) {
+    return (
+      <div className="w-full flex flex-col h-full font-mono text-[9px] text-slate-600">
+        <h3 className="text-xs font-bold uppercase tracking-widest mb-3 border-b border-dashed pb-1.5" style={{ color: tokens.primary }}>
+          // INDEX_SPEC_REF_01
+        </h3>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-slate-350 text-left opacity-75">
+              <th className="py-1">ID</th>
+              <th className="py-1">PROJECT DESCRIPTION</th>
+              <th className="py-1">TYPOLOGY</th>
+              <th className="py-1">LOC</th>
+              <th className="py-1 text-right">PAGE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((it, idx) => (
+              <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
+                <td className="py-1.5 font-bold text-slate-900">{it.num}</td>
+                <td className="py-1.5 font-semibold text-slate-800 uppercase">{it.title} ({it.year})</td>
+                <td className="py-1.5">{it.typology}</td>
+                <td className="py-1.5">{it.location}</td>
+                <td className="py-1.5 text-right font-bold text-slate-900">P.{it.pageNumber}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  // 6. Parametric Style
+  if (lid.includes('parametric')) {
+    return (
+      <div className="w-full flex flex-col h-full" style={{ fontFamily: tokens.bodyFont }}>
+        <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          PROJECTS.MATRIX
+        </h3>
+        <div className="space-y-2.5 overflow-y-auto max-h-[220px]">
+          {items.map((it, idx) => (
+            <div key={idx} className="group flex items-stretch border-l-4 border-slate-900 bg-slate-50 p-2 text-xs transition hover:bg-slate-100">
+              <div className="flex-1 min-w-0 pr-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[9px] bg-slate-900 text-white px-1 font-bold">{it.num}</span>
+                  <span className="font-bold uppercase tracking-tight truncate" style={{ color: tokens.text }}>{it.title}</span>
+                </div>
+                <div className="text-[9px] text-slate-500 mt-1 uppercase truncate">{it.typology} // {it.location}</div>
+              </div>
+              <div className="flex flex-col justify-center items-end border-l border-slate-200 pl-3">
+                <span className="text-[8px] text-slate-400 font-bold uppercase">PAGE</span>
+                <span className="text-sm font-black text-slate-800">{it.pageNumber}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 7. Competition Style
+  if (lid.includes('competition')) {
+    return (
+      <div className="w-full flex flex-col h-full" style={{ fontFamily: tokens.bodyFont }}>
+        <h3 className="text-xl font-bold uppercase tracking-tight mb-4" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          INDEX / WORK_SAMPLES
+        </h3>
+        <div className="grid grid-cols-2 gap-3 overflow-y-auto max-h-[220px]">
+          {items.map((it, idx) => (
+            <div key={idx} className="border-t-2 border-slate-900 pt-2 flex flex-col justify-between text-xs min-h-[90px]">
+              <div>
+                <div className="flex justify-between font-bold text-[10px]">
+                  <span>{it.num}</span>
+                  <span>{it.year}</span>
+                </div>
+                <h4 className="font-bold uppercase tracking-tight text-sm mt-1 leading-tight" style={{ color: tokens.text }}>{it.title}</h4>
+                <p className="text-[9px] text-gray-500 mt-1">{it.typology} · {it.location}</p>
+              </div>
+              <div className="text-right font-bold text-lg mt-2">p.{it.pageNumber}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 8. Academic Thesis Style
+  if (lid.includes('academic') || lid.includes('thesis')) {
+    return (
+      <div className="w-full flex flex-col h-full" style={{ fontFamily: 'Georgia, serif' }}>
+        <h3 className="text-lg font-serif italic mb-4 border-b border-slate-300 pb-2 text-slate-700">
+          Table of Contents
+        </h3>
+        <div className="space-y-3 overflow-y-auto max-h-[210px] text-xs">
+          {items.map((it, idx) => (
+            <div key={idx} className="flex justify-between items-baseline gap-4">
+              <div className="flex items-baseline gap-2 flex-1 min-w-0">
+                <span className="font-sans font-semibold text-[10px] text-slate-400">{it.num}</span>
+                <span className="font-semibold text-slate-800 truncate">{it.title}</span>
+                <span className="flex-1 border-b border-dotted border-slate-300 mx-1 min-w-[20px] self-end h-[3px]" />
+              </div>
+              <span className="font-sans text-[10px] text-slate-500">{it.typology}</span>
+              <span className="font-sans font-bold text-slate-700">Page {it.pageNumber}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // 9. Minimal Default (Minimal Index)
+  return (
+    <div className="w-full flex flex-col h-full" style={{ fontFamily: tokens.bodyFont }}>
+      <h3 className="text-xs font-bold uppercase tracking-[0.25em] mb-4 pb-2 border-b" style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.headingFont }}>
+        {block.label || 'CONTENTS'}
+      </h3>
+      <div className="space-y-2.5 overflow-y-auto max-h-[220px]">
+        {items.map((it, idx) => (
+          <div key={idx} className="flex items-center justify-between text-xs pb-1.5 border-b border-black/[0.04]">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[10px] text-gray-400">{it.num}</span>
+              <div>
+                <span className="font-medium" style={{ color: tokens.text }}>{it.title}</span>
+                <span className="text-[9px] text-gray-400 ml-2">({it.year}) · {it.typology}</span>
+              </div>
+            </div>
+            <span className="font-mono font-bold text-gray-600">{it.pageNumber}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+

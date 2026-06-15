@@ -13,6 +13,7 @@ import {
   seedPagesFromTemplate, getSpec, LAYOUT_CATALOG, LAYOUT_CATEGORIES, LAYOUT_COUNT,
   type LayoutCategory,
 } from '@/components/composer/layoutSpecs'
+import { SPREAD_TEMPLATES, type SpreadTemplate } from '@/components/composer/spreadTemplates'
 import { analyzeTemplate, autoFillTemplate, summaryLine } from '@/components/composer/templateDNA'
 import { STYLE_DNA } from '@/components/composer/styleDNA'
 import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
@@ -47,6 +48,164 @@ const ADD_BLOCKS: { type: BlockType; icon: string }[] = [
 
 const HEADING_FONTS = ['Montserrat', 'Playfair Display', 'Roboto', 'Inter', 'Poppins', 'Georgia', 'Lora', 'Bebas Neue', 'Oswald', 'Arial']
 const BODY_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', 'Raleway', 'Georgia', 'Arial']
+
+function seedCustomPages(data: any, orientation: string, size: string, purpose: string, targetPages: number, targetProjects: number): Page[] {
+  const list: Page[] = []
+  
+  // 1. Cover Page
+  list.push({
+    id: uid('p'),
+    type: 'cover',
+    layoutId: 'cover.fullBleed.center',
+    blocks: [
+      { id: uid(), type: 'title', text: data.name || 'Architecture Portfolio' },
+      { id: uid(), type: 'subtitle', text: `${purpose.toUpperCase()} PORTFOLIO` },
+      { id: uid(), type: 'meta', fields: [{ label: 'Name', value: 'Student Name' }, { label: 'Year', value: '2026' }] }
+    ]
+  })
+
+  // 2. Contents Page
+  list.push({
+    id: uid('p'),
+    type: 'about',
+    layoutId: 'index.minimal.default',
+    blocks: [
+      { id: uid(), type: 'title', text: 'Selected Works' },
+      { id: uid(), type: 'contents', label: 'Contents' }
+    ]
+  })
+
+  // 3. About / Resume Spread (2 pages)
+  list.push({
+    id: uid('p'),
+    type: 'about',
+    layoutId: 'about.portraitFull',
+    blocks: [
+      { id: uid(), type: 'title', text: 'About Me' },
+      { id: uid(), type: 'description', text: 'Architect and designer. Passionate about sustainable urban spaces.' }
+    ]
+  })
+  list.push({
+    id: uid('p'),
+    type: 'resume',
+    layoutId: 'about.cardStack',
+    blocks: [
+      { id: uid(), type: 'title', text: 'Curriculum Vitae' },
+      { id: uid(), type: 'legend', label: 'EDUCATION', legendItems: [{ key: '2022-26', label: 'B.Arch Graduate' }] }
+    ]
+  })
+
+  // 4. Projects
+  const remainingPages = Math.max(2, targetPages - 5)
+  const pagesPerProject = Math.max(2, Math.floor(remainingPages / targetProjects))
+  
+  for (let pIdx = 0; pIdx < targetProjects; pIdx++) {
+    const pNum = String(pIdx + 1).padStart(2, '0')
+    const pTitle = `Project ${pNum}`
+    
+    list.push({
+      id: uid('p'),
+      type: 'project',
+      layoutId: 'single.titleTopText',
+      blocks: [
+        { id: uid(), type: 'title', text: pTitle },
+        { id: uid(), type: 'subtitle', text: 'Project Description Subtitle' },
+        { id: uid(), type: 'meta', fields: [{ label: 'Year', value: '2026' }, { label: 'Location', value: 'Location' }] },
+        { id: uid(), type: 'render', imageUrl: '', label: 'Hero Render' }
+      ]
+    })
+
+    for (let pg = 1; pg < pagesPerProject; pg++) {
+      if (list.length >= targetPages - 1) break
+      list.push({
+        id: uid('p'),
+        type: 'project',
+        layoutId: pg % 2 === 1 ? 'duoH.bare' : 'heroSideRight.titleLegendSide',
+        blocks: [
+          { id: uid(), type: 'render', imageUrl: '', label: 'Visual View' },
+          { id: uid(), type: 'plan', imageUrl: '', label: 'Ground Floor Plan' }
+        ]
+      })
+    }
+    if (list.length >= targetPages - 1) break
+  }
+
+  while (list.length < targetPages - 1) {
+    list.push({
+      id: uid('p'),
+      type: 'project',
+      layoutId: 'single.bare',
+      blocks: [{ id: uid(), type: 'render', imageUrl: '', label: 'Project View' }]
+    })
+  }
+
+  // Last page: Contact / Back Cover
+  list.push({
+    id: uid('p'),
+    type: 'contact',
+    layoutId: 'contact.minimalGrid',
+    blocks: [
+      { id: uid(), type: 'title', text: 'Thank You' },
+      { id: uid(), type: 'description', text: 'For inquiries or collaborations, get in touch.' }
+    ]
+  })
+
+  return list
+}
+
+const reflowLayoutForOrientation = (layoutId: string, toLandscape: boolean): string => {
+  const mapping: Record<string, string> = {
+    'duoV.titleTopText': 'duoH.titleSideLeft',
+    'duoV.titleSideLeft': 'duoH.titleSideLeft',
+    'duoV.titleSideRight': 'duoH.titleSideRight',
+    'duoV.titleLegendSide': 'duoH.titleLegendSide',
+    'duoV.titleMetaInline': 'duoH.titleMetaInline',
+    'heroSideRight.titleTop': 'heroStripBottom.titleTop',
+    'heroSideRight.titleSideLeft': 'heroStripBottom.titleSideLeft',
+    'heroSideRight.titleSideRight': 'heroStripBottom.titleSideRight',
+    'heroSideRight.titleLegendSide': 'heroStripBottom.titleLegendSide',
+    'heroSideRight.titleMetaInline': 'heroStripBottom.titleMetaInline',
+    
+    'duoH.titleSideLeft': 'duoV.titleTopText',
+    'duoH.titleSideRight': 'duoV.titleSideRight',
+    'duoH.titleLegendSide': 'duoV.titleLegendSide',
+    'duoH.titleMetaInline': 'duoV.titleMetaInline',
+    'heroStripBottom.titleTop': 'heroSideRight.titleTop',
+    'heroStripBottom.titleSideLeft': 'heroSideRight.titleSideLeft',
+    'heroStripBottom.titleSideRight': 'heroSideRight.titleSideRight',
+    'heroStripBottom.titleLegendSide': 'heroSideRight.titleLegendSide',
+    'heroStripBottom.titleMetaInline': 'heroSideRight.titleMetaInline',
+  }
+  
+  if (toLandscape && mapping[layoutId]) return mapping[layoutId]
+  if (!toLandscape) {
+    const revKey = Object.keys(mapping).find(k => mapping[k] === layoutId)
+    if (revKey) return revKey
+  }
+  return layoutId
+}
+
+const reflowFreeElements = (els: FreeElement[], toLandscape: boolean): FreeElement[] => {
+  return (els || []).map(el => {
+    if (toLandscape) {
+      return {
+        ...el,
+        x: Math.max(0, Math.min(95, el.x * 0.9 + 5)),
+        y: Math.max(0, Math.min(95, el.y * 1.1 - 5)),
+        w: Math.max(5, Math.min(95, el.w * 0.9)),
+        h: Math.max(5, Math.min(95, el.h * 1.1))
+      }
+    } else {
+      return {
+        ...el,
+        x: Math.max(0, Math.min(95, (el.x - 5) / 0.9)),
+        y: Math.max(0, Math.min(95, (el.y + 5) / 1.1)),
+        w: Math.max(5, Math.min(95, el.w / 0.9)),
+        h: Math.max(5, Math.min(95, el.h / 1.1))
+      }
+    }
+  })
+}
 
 export default function TemplateEditor() {
   const router = useRouter()
@@ -92,6 +251,190 @@ export default function TemplateEditor() {
   const [isExporting, setIsExporting] = useState(false)
   const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
   const [previewSpread, setPreviewSpread] = useState(false)
+  const [editSpreadMode, setEditSpreadMode] = useState<boolean>(true)
+  const [previewSpreadIdx, setPreviewSpreadIdx] = useState<number>(0)
+  const [layoutTabMode, setLayoutTabMode] = useState<'single' | 'spread'>('spread')
+  const [spreadCategory, setSpreadCategory] = useState<'all' | 'about' | 'content' | 'project'>('all')
+  const [spreadStyle, setSpreadStyle] = useState<'all' | 'minimal' | 'luxury' | 'competition' | 'academic' | 'experimental' | 'parametric'>('all')
+  const [flipDirection, setFlipDirection] = useState<'next' | 'prev' | null>(null)
+
+  // 150+ spreads selection preview & page list grouping helper
+  const previewSpreads = useMemo(() => {
+    const list: Page[][] = []
+    if (pages.length === 0) return list
+    
+    // Cover
+    list.push([pages[0]])
+    
+    // Spreads
+    for (let i = 1; i < pages.length - 1; i += 2) {
+      const pair = [pages[i]]
+      if (i + 1 < pages.length - 1) {
+        pair.push(pages[i + 1])
+      }
+      list.push(pair)
+    }
+
+    // Back Cover
+    if (pages.length > 1) {
+      list.push([pages[pages.length - 1]])
+    }
+
+    return list
+  }, [pages])
+
+  const handleNextSpread = () => {
+    if (previewSpreadIdx < previewSpreads.length - 1) {
+      setFlipDirection('next')
+      setTimeout(() => {
+        setPreviewSpreadIdx(prev => prev + 1)
+        setFlipDirection(null)
+      }, 300)
+    }
+  }
+
+  const handlePrevSpread = () => {
+    if (previewSpreadIdx > 0) {
+      setFlipDirection('prev')
+      setTimeout(() => {
+        setPreviewSpreadIdx(prev => prev - 1)
+        setFlipDirection(null)
+      }, 300)
+    }
+  }
+
+  // Keyboard navigation for view mode
+  useEffect(() => {
+    if (mode !== 'view') return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') handleNextSpread()
+      else if (e.key === 'ArrowLeft') handlePrevSpread()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [mode, previewSpreadIdx, previewSpreads])
+
+  const toggleOrientation = () => {
+    markDirty()
+    const currentSize = publishingPortfolio.pageSize
+    const isCurrentlyLandscape = currentSize.width > currentSize.height
+    
+    // Swap width and height for PageSize
+    const newWidth = currentSize.height
+    const newHeight = currentSize.width
+    const newName = currentSize.preset === 'custom' 
+      ? `Custom (${newWidth}×${newHeight}mm)`
+      : currentSize.name.includes('Portrait')
+        ? currentSize.name.replace('Portrait', 'Landscape')
+        : currentSize.name.includes('Landscape')
+          ? currentSize.name.replace('Landscape', 'Portrait')
+          : currentSize.name // for square or other names
+    
+    let newPreset = currentSize.preset
+    if (currentSize.preset === 'a4-portrait') newPreset = 'a4-landscape'
+    else if (currentSize.preset === 'a4-landscape') newPreset = 'a4-portrait'
+    else if (currentSize.preset === 'a3-portrait') newPreset = 'a3-landscape'
+    else if (currentSize.preset === 'a3-landscape') newPreset = 'a3-portrait'
+
+    const newPageSize = {
+      ...currentSize,
+      preset: newPreset,
+      name: newName,
+      width: newWidth,
+      height: newHeight
+    }
+
+    setPublishingPortfolio(prev => ({
+      ...prev,
+      pageSize: newPageSize
+    }))
+
+    // Reflow layoutIds and freeElements for all pages
+    const updatedPages = pages.map(page => {
+      const newLayoutId = reflowLayoutForOrientation(page.layoutId, !isCurrentlyLandscape)
+      const newFreeElements = reflowFreeElements(page.freeElements || [], !isCurrentlyLandscape)
+      return {
+        ...page,
+        layoutId: newLayoutId,
+        freeElements: newFreeElements
+      }
+    })
+
+    setPages(updatedPages)
+    pushHistory()
+    flashUpload('ok', `Reflowed all pages to ${!isCurrentlyLandscape ? 'Landscape' : 'Portrait'}`)
+  }
+
+  const applyElementScopeFromPage = (scope: 'page' | 'spread' | 'all', el: FreeElement) => {
+    markDirty()
+    if (scope === 'page') return
+
+    let targetPageIndexes: number[] = []
+    if (scope === 'spread') {
+      if (currentIdx === 0) return
+      else if (currentIdx === pages.length - 1) return
+      else {
+        const pairIdx = currentIdx % 2 === 1 ? currentIdx + 1 : currentIdx - 1
+        if (pairIdx >= 0 && pairIdx < pages.length) {
+          targetPageIndexes = [pairIdx]
+        }
+      }
+    } else if (scope === 'all') {
+      targetPageIndexes = pages
+        .map((_, i) => i)
+        .filter(i => i !== currentIdx && i !== 0 && i !== pages.length - 1) // exclude cover/back
+    }
+
+    if (targetPageIndexes.length === 0) return
+
+    const updatedPages = pages.map((page, idx) => {
+      if (targetPageIndexes.includes(idx)) {
+        const existingFree = page.freeElements || []
+        const duplicate = existingFree.find(fe => fe.kind === el.kind && fe.graphicType === el.graphicType && fe.x === el.x && fe.y === el.y)
+        if (!duplicate) {
+          const clonedEl: FreeElement = {
+            ...el,
+            id: `fe-${Date.now().toString(36)}-cloned-${Math.random().toString(36).substr(2, 5)}`
+          }
+          return {
+            ...page,
+            freeElements: [...existingFree, clonedEl]
+          }
+        }
+      }
+      return page
+    })
+
+    setPages(updatedPages)
+    pushHistory()
+    flashUpload('ok', `Replicated graphic to ${scope === 'spread' ? 'adjacent spread page' : `${targetPageIndexes.length} pages`}`)
+  }
+
+  const applySpreadTemplate = (st: SpreadTemplate) => {
+    markDirty()
+    if (currentIdx === 0 || currentIdx === pages.length - 1) {
+      flashUpload('err', 'Spread layouts can only be applied to pages inside the book spreads, not the covers.')
+      return
+    }
+
+    const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
+    const rightIdx = leftIdx + 1
+
+    if (leftIdx >= 0 && rightIdx < pages.length) {
+      const updatedPages = pages.map((page, idx) => {
+        if (idx === leftIdx) {
+          return { ...page, layoutId: st.leftLayoutId }
+        }
+        if (idx === rightIdx) {
+          return { ...page, layoutId: st.rightLayoutId }
+        }
+        return page
+      })
+      setPages(updatedPages)
+      pushHistory()
+      flashUpload('ok', `Applied spread layout: ${st.name}`)
+    }
+  }
   const flashUpload = (kind: 'info' | 'ok' | 'err', text: string, ms = 3500) => {
     setUploadMsg({ kind, text })
     if (ms) window.setTimeout(() => setUploadMsg(m => (m && m.text === text ? null : m)), ms)
@@ -237,6 +580,36 @@ export default function TemplateEditor() {
       const sres = await fetch(`${API_URL}/api/templates/sheets/${templateId}`)
       if (sres.ok) data = await sres.json()
     }
+    
+    // Read custom setup settings from query params
+    const orientationParam = searchParams.get('orientation')
+    const sizeParam = searchParams.get('size')
+    const purposeParam = searchParams.get('purpose')
+    const pagesParam = searchParams.get('pages')
+    const projectsParam = searchParams.get('projects')
+
+    let pageSize = PAGE_SIZES['a4-landscape']
+    if (orientationParam === 'square' || sizeParam === 'square') {
+      pageSize = PAGE_SIZES['square']
+    } else if (sizeParam === 'a4') {
+      pageSize = orientationParam === 'portrait' ? PAGE_SIZES['a4-portrait'] : PAGE_SIZES['a4-landscape']
+    } else if (sizeParam === 'a3') {
+      pageSize = orientationParam === 'portrait' ? PAGE_SIZES['a3-portrait'] : PAGE_SIZES['a3-landscape']
+    } else if (sizeParam === '1920x1080') {
+      pageSize = { preset: 'custom', name: 'Digital Full HD (16:9)', width: 320, height: 180 }
+    } else if (sizeParam === 'website') {
+      pageSize = { preset: 'custom', name: 'Website presentation', width: 320, height: 200 }
+    } else if (sizeParam === 'custom') {
+      const cw = parseInt(searchParams.get('customWidth') || '297')
+      const ch = parseInt(searchParams.get('customHeight') || '210')
+      pageSize = { preset: 'custom', name: `Custom (${cw}×${ch}mm)`, width: cw, height: ch }
+    }
+
+    setPublishingPortfolio(prev => ({
+      ...prev,
+      pageSize
+    }))
+
     if (data) {
       setTemplate(data)
       setPortfolioTitle(`${data.name} Portfolio`)
@@ -250,12 +623,36 @@ export default function TemplateEditor() {
         headingFont: data.fonts?.heading || 'Montserrat',
         bodyFont: data.fonts?.body || 'Inter',
       })
-      setPages(seedPagesFromTemplate(data))
+      
+      if (pagesParam && projectsParam) {
+        setPages(seedCustomPages(
+          data,
+          orientationParam || 'landscape',
+          sizeParam || 'a4',
+          purposeParam || 'university',
+          parseInt(pagesParam) || 24,
+          parseInt(projectsParam) || 4
+        ))
+      } else {
+        setPages(seedPagesFromTemplate(data))
+      }
     } else {
       // Template unavailable (e.g. reopening a project with no saved doc) — start blank
       setTemplate({ id: templateId, name: 'Portfolio', category: '' })
       setPortfolioTitle('Untitled Portfolio')
-      setPages(seedPagesFromTemplate({ name: 'Portfolio', placeholders: { renders: 2, plans: 1, sections: 1, diagrams: 0 } }))
+      
+      if (pagesParam && projectsParam) {
+        setPages(seedCustomPages(
+          { name: 'Portfolio' },
+          orientationParam || 'landscape',
+          sizeParam || 'a4',
+          purposeParam || 'university',
+          parseInt(pagesParam) || 24,
+          parseInt(projectsParam) || 4
+        ))
+      } else {
+        setPages(seedPagesFromTemplate({ name: 'Portfolio', placeholders: { renders: 2, plans: 1, sections: 1, diagrams: 0 } }))
+      }
     }
   }
 
@@ -967,28 +1364,102 @@ export default function TemplateEditor() {
               ))}
             </div>
           ) : (
-            /* Book Spread view: cover alone, then left/right page pairs */
-            <div className="max-w-[1040px] mx-auto space-y-8" style={{ pointerEvents: 'none' }}>
-              {(() => {
-                const groups: typeof pages[] = []
-                if (pages.length) { groups.push([pages[0]]); for (let i = 1; i < pages.length; i += 2) groups.push(pages.slice(i, i + 2)) }
-                return groups.map((grp, gi) => (
-                  <div key={gi} className="flex justify-center mx-auto w-fit" style={{ boxShadow: gi === 0 ? '0 24px 64px rgba(0,0,0,0.40)' : '0 8px 40px rgba(0,0,0,0.28)', borderRadius: 2, overflow: 'hidden' }}>
-                    {grp.map((page, pi) => (
-                      <div key={page.id} className="w-[420px] overflow-hidden" style={{
-                        boxShadow: grp.length === 2
-                          ? (pi === 0 ? 'inset -6px 0 14px rgba(0,0,0,0.18)' : 'inset 6px 0 14px rgba(0,0,0,0.18)')
-                          : 'none'
-                      }}>
-                        <PageComposer page={page} tokens={tokens} onChange={() => {}} />
-                      </div>
-                    ))}
-                    {grp.length === 1 && gi > 0 && (
-                      <div className="w-[420px] overflow-hidden" style={{ background: tokens.background, opacity: 0.35, boxShadow: 'inset 6px 0 14px rgba(0,0,0,0.18)' }} />
+            /* Premium interactive 3D Book Spread view: cover alone, then left/right page pairs with sequential flips */
+            <div className="flex flex-col items-center justify-center min-h-[75vh] gap-6">
+              {/* Perspective container */}
+              <div className="w-full flex items-center justify-between px-4 max-w-[1200px]">
+                {/* Left Arrow Button */}
+                <button
+                  onClick={handlePrevSpread}
+                  disabled={previewSpreadIdx === 0}
+                  className="w-12 h-12 rounded-full border border-gray-300 bg-white shadow-lg hover:bg-gray-50 flex items-center justify-center text-lg disabled:opacity-30 transition-all select-none font-bold"
+                >
+                  ◀
+                </button>
+
+                {/* Spread Canvas */}
+                <div 
+                  className="flex-1 flex justify-center py-4 overflow-visible"
+                  style={{ perspective: 1200 }}
+                >
+                  <div 
+                    className={`flex shadow-2xl relative transition-all duration-300 ${
+                      flipDirection === 'next' ? '[transform:rotateY(-12deg)] origin-center' :
+                      flipDirection === 'prev' ? '[transform:rotateY(12deg)] origin-center' : ''
+                    }`}
+                    style={{ 
+                      transformStyle: 'preserve-3d', 
+                      borderRadius: 4, 
+                      overflow: 'visible',
+                      maxWidth: (previewSpreads[previewSpreadIdx] || []).length === 2 ? 1040 : 520,
+                      width: '100%'
+                    }}
+                  >
+                    {(previewSpreads[previewSpreadIdx] || []).map((page, pi) => {
+                      const isLeft = (previewSpreads[previewSpreadIdx] || []).length === 2 && pi === 0
+                      const isRight = (previewSpreads[previewSpreadIdx] || []).length === 2 && pi === 1
+                      return (
+                        <div 
+                          key={page.id} 
+                          className="relative flex-1 overflow-hidden" 
+                          style={{
+                            aspectRatio: '210/297',
+                            boxShadow: isLeft 
+                              ? 'inset -12px 0 20px rgba(0,0,0,0.15), -10px 10px 20px rgba(0,0,0,0.1)' 
+                              : isRight 
+                                ? 'inset 12px 0 20px rgba(0,0,0,0.15), 10px 10px 20px rgba(0,0,0,0.1)' 
+                                : '0 15px 35px rgba(0,0,0,0.2)'
+                          }}
+                        >
+                          <PageComposer 
+                            page={page} 
+                            tokens={tokens} 
+                            onChange={() => {}}
+                            backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === page.id)}
+                            masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                            pageContext={{ pageNumber: pages.indexOf(page) + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(pages.indexOf(page) + 1).padStart(2, '0') }}
+                            grid={publishingPortfolio.grid}
+                          />
+                        </div>
+                      )
+                    })}
+                    {/* Center Spine Line (only when it is a spread of 2 pages) */}
+                    {(previewSpreads[previewSpreadIdx] || []).length === 2 && (
+                      <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-2 bg-slate-900 shadow-[inset_0_0_8px_rgba(0,0,0,0.9)] z-20 pointer-events-none" />
                     )}
                   </div>
-                ))
-              })()}
+                </div>
+
+                {/* Right Arrow Button */}
+                <button
+                  onClick={handleNextSpread}
+                  disabled={previewSpreadIdx === previewSpreads.length - 1}
+                  className="w-12 h-12 rounded-full border border-gray-300 bg-white shadow-lg hover:bg-gray-50 flex items-center justify-center text-lg disabled:opacity-30 transition-all select-none font-bold"
+                >
+                  ▶
+                </button>
+              </div>
+
+              {/* Dot Pagination & Label Info */}
+              <div className="flex flex-col items-center gap-2 mt-4 select-none">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {previewSpreadIdx === 0 ? 'Cover Page (Page 1)' :
+                   previewSpreadIdx === previewSpreads.length - 1 ? `Back Cover (Page ${pages.length})` :
+                   `Pages ${previewSpreadIdx * 2} - ${previewSpreadIdx * 2 + 1}`}
+                </div>
+                <div className="flex items-center gap-2.5">
+                  {previewSpreads.map((_, sIdx) => (
+                    <button
+                      key={sIdx}
+                      onClick={() => setPreviewSpreadIdx(sIdx)}
+                      className={`w-3 h-3 rounded-full transition-all ${
+                        previewSpreadIdx === sIdx ? 'bg-blue-600 scale-125' : 'bg-gray-350 hover:bg-gray-450'
+                      }`}
+                      title={sIdx === 0 ? 'Cover' : sIdx === previewSpreads.length - 1 ? 'Back Cover' : `Spread ${sIdx}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </main>
@@ -1022,6 +1493,11 @@ export default function TemplateEditor() {
             {projectId && (
               <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
             )}
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
+              <button onClick={() => setEditSpreadMode(false)} className={`px-2.5 py-1.5 font-medium ${!editSpreadMode ? 'bg-blue-650 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`} title="Single page canvas edit">📄 Single</button>
+              <button onClick={() => setEditSpreadMode(true)} className={`px-2.5 py-1.5 font-medium ${editSpreadMode ? 'bg-blue-650 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`} title="Dual page spread composer">📖 Spread</button>
+            </div>
+            <button onClick={toggleOrientation} className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50" title="Reflow page orientations (Portrait <-> Landscape)">🔄 Reflow Format</button>
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
             <button onClick={saveAsMyTemplate} className="px-3 py-2 border rounded-lg text-sm font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30" title="Save this design as a reusable template">⭐ Save Template</button>
             <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">{isExporting ? '⏳' : '📄 PDF'}</button>
@@ -1108,32 +1584,122 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
-          {/* Free-element insert toolbar */}
-          <div className="max-w-[760px] mx-auto mb-3 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mr-1">+ Add free element</span>
-            {([['text', 'T Text'], ['image', '🖼 Image'], ['rect', '▭ Box'], ['ellipse', '◯ Ellipse'], ['line', '— Line']] as const).map(([k, label]) => (
-              <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
-                className="px-2.5 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium hover:border-blue-400 hover:bg-blue-50 transition">
-                {label}
-              </button>
-            ))}
-            <span className="text-[10px] text-gray-400 ml-1">drag to move · corner to resize · top dot to rotate · double-click text to edit</span>
+        <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40 overflow-x-hidden`}>
+          {/* Free-element insert toolbar & mode controls */}
+          <div className="max-w-[760px] mx-auto mb-3 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mr-1">+ Add free element</span>
+              {([['text', 'T Text'], ['image', '🖼 Image'], ['rect', '▭ Box'], ['ellipse', '◯ Ellipse'], ['line', '— Line']] as const).map(([k, label]) => (
+                <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
+                  className="px-2.5 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium hover:border-blue-400 hover:bg-blue-50 transition">
+                  {label}
+                </button>
+              ))}
+              <span className="text-[10px] text-gray-400 ml-1 hidden md:inline">drag to move · corner to resize · double-click text to edit</span>
+            </div>
           </div>
-          <PageComposer
-            page={currentPage}
-            tokens={tokens}
-            onChange={updatePage}
-            onUploadImage={uploadImage}
-            backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
-            masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
-            pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
-            grid={publishingPortfolio.grid}
-            editableFree
-            onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
-          />
-          <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400`}>
-            Page {currentIdx + 1}/{pages.length} · {!isMobile && 'Click any text or image to edit'}
+
+          {editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 ? (
+            /* Cosmo Book Design Mode: Left and Right Page side-by-side spread */
+            (() => {
+              const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
+              const rightIdx = leftIdx + 1
+              return (
+                <div className="flex gap-0 items-stretch justify-center mx-auto relative overflow-visible max-w-[1520px] select-none py-2">
+                  {/* Left Page */}
+                  <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
+                    <PageComposer
+                      page={pages[leftIdx]}
+                      tokens={tokens}
+                      onChange={(p) => {
+                        markDirty()
+                        setPages(pages.map((x, i) => i === leftIdx ? p : x))
+                      }}
+                      onUploadImage={uploadImage}
+                      backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === pages[leftIdx].id)}
+                      masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                      pageContext={{ pageNumber: leftIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(leftIdx + 1).padStart(2, '0') }}
+                      grid={publishingPortfolio.grid}
+                      editableFree={currentIdx === leftIdx}
+                      onFreeChange={els => {
+                        markDirty()
+                        setPages(pages.map((x, i) => i === leftIdx ? { ...x, freeElements: els } : x))
+                      }}
+                      onApplyScope={applyElementScopeFromPage}
+                      pages={pages}
+                      onUpdateGlobalPages={(updater) => {
+                        markDirty()
+                        setPages(updater(pages))
+                      }}
+                      overflowVisible
+                    />
+                    <div className="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Left Page · Page {leftIdx + 1}</div>
+                  </div>
+
+                  {/* Center Gutter/Spine */}
+                  <div className="w-2 bg-slate-950 shadow-[inset_0_0_10px_rgba(0,0,0,0.85)] z-20 pointer-events-none relative flex-shrink-0" />
+
+                  {/* Right Page */}
+                  <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === rightIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(rightIdx)}>
+                    <PageComposer
+                      page={pages[rightIdx]}
+                      tokens={tokens}
+                      onChange={(p) => {
+                        markDirty()
+                        setPages(pages.map((x, i) => i === rightIdx ? p : x))
+                      }}
+                      onUploadImage={uploadImage}
+                      backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === pages[rightIdx].id)}
+                      masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                      pageContext={{ pageNumber: rightIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(rightIdx + 1).padStart(2, '0') }}
+                      grid={publishingPortfolio.grid}
+                      editableFree={currentIdx === rightIdx}
+                      onFreeChange={els => {
+                        markDirty()
+                        setPages(pages.map((x, i) => i === rightIdx ? { ...x, freeElements: els } : x))
+                      }}
+                      onApplyScope={applyElementScopeFromPage}
+                      pages={pages}
+                      onUpdateGlobalPages={(updater) => {
+                        markDirty()
+                        setPages(updater(pages))
+                      }}
+                      overflowVisible
+                    />
+                    <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
+                  </div>
+                </div>
+              )
+            })()
+          ) : (
+            /* Single Page Canvas (Covers, or when Spread Mode is disabled) */
+            <div className="max-w-[760px] mx-auto relative select-none">
+              <PageComposer
+                page={currentPage}
+                tokens={tokens}
+                onChange={updatePage}
+                onUploadImage={uploadImage}
+                backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
+                masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
+                grid={publishingPortfolio.grid}
+                editableFree
+                onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
+                onApplyScope={applyElementScopeFromPage}
+                pages={pages}
+                onUpdateGlobalPages={(updater) => {
+                  markDirty()
+                  setPages(updater(pages))
+                }}
+              />
+            </div>
+          )}
+          <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400 font-medium`}>
+            {editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 
+              ? `Spread view: Pages ${currentIdx % 2 === 1 ? currentIdx + 1 : currentIdx} - ${currentIdx % 2 === 1 ? currentIdx + 2 : currentIdx + 1} of ${pages.length}`
+              : `Page ${currentIdx + 1} of ${pages.length}`}
+            {' · '}
+            <span>Active Editing: {currentPage.type.toUpperCase()} layout ({getSpec(currentPage.layoutId).name})</span>
           </div>
         </main>
 
@@ -1194,19 +1760,57 @@ export default function TemplateEditor() {
 
                   {/* Template Variations (Style DNA) */}
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Variations</p>
-                    <div className="grid grid-cols-2 gap-1">
-                      {STYLE_DNA.map(st => (
-                        <button key={st.id} onClick={() => { markDirty(); setTokens(st.tokens) }} title={st.description}
-                          className="flex items-center gap-1 px-1.5 py-1 rounded border text-left hover:border-blue-400 transition">
-                          <span className="flex gap-0.5 flex-shrink-0">
-                            <span className="w-2 h-2 rounded-full" style={{ background: st.tokens.background, border: '1px solid #ddd' }} />
-                            <span className="w-2 h-2 rounded-full" style={{ background: st.tokens.primary }} />
-                            <span className="w-2 h-2 rounded-full" style={{ background: st.tokens.accent }} />
-                          </span>
-                          <span className="text-[8px] font-medium text-gray-600 truncate">{st.name}</span>
-                        </button>
-                      ))}
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-2 font-bold">100+ Cosmo Style DNA Variations</p>
+                    <div className="grid grid-cols-1 gap-2.5 overflow-y-auto pr-1" style={{ maxHeight: 380 }}>
+                      {STYLE_DNA.map(st => {
+                        const active = tokens.background === st.tokens.background && tokens.primary === st.tokens.primary && tokens.headingFont === st.tokens.headingFont
+                        return (
+                          <button
+                            key={st.id}
+                            onClick={() => { markDirty(); setTokens(st.tokens) }}
+                            title={st.description}
+                            className={`flex flex-col gap-2 p-2 rounded-xl border text-left transition ${active ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200 hover:border-gray-300 bg-gray-50'}`}
+                          >
+                            <div className="flex items-center justify-between gap-1.5 w-full">
+                              <span className="text-[10px] font-bold text-gray-800 truncate">{st.name}</span>
+                              <span className="text-[8px] bg-gray-200 text-gray-605 px-1 py-0.2 rounded font-semibold uppercase">{st.id.split('-')[0]}</span>
+                            </div>
+                            
+                            {/* Real miniature visual layout preview showing color & typography tokens */}
+                            <div className="grid grid-cols-3 gap-1 p-1 rounded border border-gray-200" style={{ background: st.tokens.background }}>
+                              {/* Cover mini */}
+                              <div className="aspect-[210/297] rounded flex flex-col justify-between p-1 relative border border-gray-100" style={{ background: st.tokens.background }}>
+                                <div className="w-1/2 h-1 rounded-full" style={{ background: st.tokens.accent }} />
+                                <div className="space-y-0.5">
+                                  <div className="w-4/5 h-2 rounded" style={{ background: st.tokens.primary }} />
+                                  <div className="w-2/3 h-1 rounded" style={{ background: st.tokens.accent }} />
+                                </div>
+                                <div className="text-[4px] font-bold overflow-hidden" style={{ color: st.tokens.primary, fontFamily: st.tokens.headingFont }}>PORTFOLIO</div>
+                              </div>
+                              {/* About Spread mini */}
+                              <div className="col-span-2 aspect-[420/297] rounded flex gap-0.5 border border-gray-100 overflow-hidden relative" style={{ background: st.tokens.background }}>
+                                <div className="flex-1 p-1 flex flex-col gap-1 border-r border-gray-200">
+                                  <div className="w-1/2 h-1.5 rounded" style={{ background: st.tokens.primary }} />
+                                  <div className="space-y-0.5">
+                                    <div className="w-full h-0.5 rounded" style={{ background: st.tokens.accent }} />
+                                    <div className="w-4/5 h-0.5 rounded" style={{ background: st.tokens.accent }} />
+                                    <div className="w-full h-0.5 rounded" style={{ background: st.tokens.accent }} />
+                                  </div>
+                                </div>
+                                <div className="flex-1 p-1 flex flex-col justify-between">
+                                  <div className="space-y-0.5">
+                                    <div className="w-full h-0.5 rounded" style={{ background: st.tokens.accent }} />
+                                    <div className="w-3/4 h-0.5 rounded" style={{ background: st.tokens.accent }} />
+                                  </div>
+                                  <div className="w-full h-4 rounded" style={{ background: st.tokens.muted }} />
+                                </div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1px] h-full bg-gray-300" />
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-gray-550 line-clamp-1 leading-normal italic">{st.description}</span>
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -1252,46 +1856,113 @@ export default function TemplateEditor() {
             {/* LAYOUT TAB */}
             {rightTab === 'layout' && (
               <div className="space-y-3">
-                <input
-                  value={layoutSearch}
-                  onChange={e => setLayoutSearch(e.target.value)}
-                  placeholder={`Search ${LAYOUT_COUNT} layouts…`}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <div className="flex flex-wrap gap-1">
-                  {(['All', ...LAYOUT_CATEGORIES] as const).map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setLayoutCat(cat as any)}
-                      className={`px-2 py-1 rounded text-[10px] font-semibold transition ${layoutCat === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                {/* Layout Mode Toggle */}
+                <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
+                  <button onClick={() => setLayoutTabMode('single')} className={`flex-1 py-1.5 font-medium ${layoutTabMode === 'single' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Single Grid</button>
+                  <button onClick={() => setLayoutTabMode('spread')} className={`flex-1 py-1.5 font-medium ${layoutTabMode === 'spread' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Spread Layout</button>
                 </div>
-                <div className="text-[11px] text-gray-400">{filteredLayouts.length} layouts · click to apply</div>
-                <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 280px)' }}>
-                  {filteredLayouts.map(spec => {
-                    const active = currentPage.layoutId === spec.id
-                    const recommended = spec.suits.includes(currentPage.type)
-                    return (
-                      <button
-                        key={spec.id}
-                        onClick={() => setLayout(spec.id)}
-                        className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
-                      >
-                        {recommended && (
-                          <div className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-900 text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐</div>
-                        )}
-                        <LayoutThumb spec={spec} tokens={tokens} active={active} />
-                        <div className="mt-1 px-0.5">
-                          <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight">{spec.name}</div>
-                          <div className="text-[9px] text-gray-400">{spec.category}{spec.imageCount > 0 ? ` · ${spec.imageCount} img` : ''}</div>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+
+                {layoutTabMode === 'single' ? (
+                  <div className="space-y-3">
+                    <input
+                      value={layoutSearch}
+                      onChange={e => setLayoutSearch(e.target.value)}
+                      placeholder={`Search ${LAYOUT_COUNT} layouts…`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <div className="flex flex-wrap gap-1">
+                      {(['All', ...LAYOUT_CATEGORIES] as const).map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setLayoutCat(cat as any)}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition ${layoutCat === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="text-[11px] text-gray-400">{filteredLayouts.length} layouts · click to apply</div>
+                    <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 340px)' }}>
+                      {filteredLayouts.map(spec => {
+                        const active = currentPage.layoutId === spec.id
+                        const recommended = spec.suits.includes(currentPage.type)
+                        return (
+                          <button
+                            key={spec.id}
+                            onClick={() => setLayout(spec.id)}
+                            className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
+                          >
+                            {recommended && (
+                              <div className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-900 text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐</div>
+                            )}
+                            <LayoutThumb spec={spec} tokens={tokens} active={active} />
+                            <div className="mt-1 px-0.5">
+                              <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight">{spec.name}</div>
+                              <div className="text-[9px] text-gray-400">{spec.category}{spec.imageCount > 0 ? ` · ${spec.imageCount} img` : ''}</div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="text-[11px] text-gray-500 font-medium">Cosmo Spread Layout Packs (150+ templates)</div>
+                    {/* Category Filter */}
+                    <div className="flex flex-wrap gap-1">
+                      {(['all', 'about', 'content', 'project'] as const).map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setSpreadCategory(cat)}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition capitalize ${spreadCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                          {cat === 'all' ? 'All Pages' : cat === 'content' ? 'Contents' : cat}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Style Filter */}
+                    <div className="flex flex-wrap gap-1">
+                      {(['all', 'minimal', 'luxury', 'competition', 'academic', 'experimental', 'parametric'] as const).map(st => (
+                        <button
+                          key={st}
+                          onClick={() => setSpreadStyle(st)}
+                          className={`px-2 py-0.5 rounded text-[9px] font-medium transition capitalize ${spreadStyle === st ? 'bg-slate-700 text-white' : 'bg-gray-50 border text-gray-500 hover:bg-gray-100'}`}
+                        >
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Spread List */}
+                    <div className="grid grid-cols-1 gap-2.5 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 365px)' }}>
+                      {SPREAD_TEMPLATES.filter(st => {
+                        if (spreadCategory !== 'all' && st.category !== spreadCategory) return false
+                        if (spreadStyle !== 'all' && st.style !== spreadStyle) return false
+                        return true
+                      }).map(st => {
+                        return (
+                          <button
+                            key={st.id}
+                            onClick={() => applySpreadTemplate(st)}
+                            className="group text-left rounded-lg p-2.5 border border-gray-200 hover:border-blue-500 hover:bg-blue-50/20 transition flex flex-col gap-1.5"
+                          >
+                            <div className="text-[10px] font-bold text-gray-700 leading-tight truncate">{st.name}</div>
+                            <div className="text-[8px] text-gray-400 uppercase font-semibold">{st.style} · {st.category}</div>
+                            {/* Double mini layout previews side-by-side */}
+                            <div className="flex gap-1.5 bg-gray-150 p-1 rounded-md mt-0.5 w-full">
+                              <div className="flex-1 aspect-[210/297] scale-[0.9] border border-gray-200 rounded overflow-hidden">
+                                <LayoutThumb spec={getSpec(st.leftLayoutId)} tokens={tokens} active={false} />
+                              </div>
+                              <div className="flex-1 aspect-[210/297] scale-[0.9] border border-gray-200 rounded overflow-hidden">
+                                <LayoutThumb spec={getSpec(st.rightLayoutId)} tokens={tokens} active={false} />
+                              </div>
+                            </div>
+                            <div className="text-[9px] text-gray-550 leading-normal mt-0.5 italic">{st.description}</div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

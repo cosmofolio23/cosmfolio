@@ -8,6 +8,7 @@ import Logo from '@/components/Logo'
 import TemplateSpread from '@/components/templates/TemplateSpread'
 import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
 import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
+import SetupModal from '@/components/composer/SetupModal'
 
 type LibTab = 'portfolios' | LibraryView | 'mytemplates'
 const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
@@ -97,6 +98,10 @@ export default function TemplateMarketplace() {
   const [customFonts, setCustomFonts] = useState<Record<string, string>>({})
   const [customizeName, setCustomizeName] = useState('')
   const [saveAsVariant, setSaveAsVariant] = useState(false)
+  
+  // Setup Flow wizard states
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(true)
+  const [setupSettings, setSetupSettings] = useState<any>(null)
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -203,8 +208,16 @@ export default function TemplateMarketplace() {
       })
       if (!res.ok) throw new Error('Failed to create project')
       const newProject = await res.json()
-      // Redirect to editor with the new project
-      router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}`)
+      
+      // Pass setup wizard settings to the editor
+      const orientationParam = setupSettings?.orientation || 'landscape'
+      const sizeParam = setupSettings?.size || 'a4'
+      const purposeParam = setupSettings?.purpose || 'university'
+      const pagesParam = setupSettings?.pages || 24
+      const projectsParam = setupSettings?.projects || 4
+
+      // Redirect to editor with the new project and configuration query params
+      router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}&orientation=${orientationParam}&size=${sizeParam}&purpose=${purposeParam}&pages=${pagesParam}&projects=${projectsParam}`)
     } catch (e) {
       alert('Failed to create portfolio from template')
       console.error(e)
@@ -895,6 +908,16 @@ export default function TemplateMarketplace() {
           </div>
         </div>
       )}
+      
+      {/* Portfolio Setup Modal */}
+      <SetupModal 
+        isOpen={isSetupModalOpen} 
+        onClose={() => setIsSetupModalOpen(false)} 
+        onComplete={settings => {
+          setSetupSettings(settings)
+          setIsSetupModalOpen(false)
+        }} 
+      />
     </div>
   )
 }
