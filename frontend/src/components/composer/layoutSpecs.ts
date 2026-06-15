@@ -488,12 +488,71 @@ const RESUME_SPECS: LayoutSpec[] = [
     ] },
 ]
 
+/* ------------------------------- about spreads --------------------------- */
+/** Resume + About-the-architect spreads. Roles: title=name, subtitle=role,
+ *  text=bio/philosophy, meta=education/experience/contact, legend=skills,
+ *  image=portrait. suits 'about' + 'resume' so they appear in the About &
+ *  Resume library and apply to either page type. */
+const ABOUT_SPREAD_SPECS: LayoutSpec[] = [
+  { id: 'about.portraitLeft', name: 'About · Portrait Left', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 1, 4, 1, 7), { role: 'meta', c0: 1, cs: 4, r0: 8, rs: 5 },
+      { role: 'title', c0: 6, cs: 7, r0: 1, rs: 2 }, { role: 'subtitle', c0: 6, cs: 7, r0: 3, rs: 1 }, { role: 'text', c0: 6, cs: 7, r0: 4, rs: 5 }, { role: 'legend', c0: 6, cs: 7, r0: 9, rs: 4 }] },
+  { id: 'about.portraitRight', name: 'About · Portrait Right', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 9, 4, 1, 7), { role: 'legend', c0: 9, cs: 4, r0: 8, rs: 5 },
+      { role: 'title', c0: 1, cs: 7, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 7, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 7, r0: 4, rs: 5 }, { role: 'meta', c0: 1, cs: 7, r0: 9, rs: 4 }] },
+  { id: 'about.portraitBanner', name: 'About · Portrait Banner', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 1, 12, 1, 4), { role: 'title', c0: 1, cs: 8, r0: 5, rs: 2 }, { role: 'subtitle', c0: 1, cs: 8, r0: 7, rs: 1 },
+      { role: 'text', c0: 1, cs: 7, r0: 8, rs: 5 }, { role: 'meta', c0: 9, cs: 4, r0: 5, rs: 4 }, { role: 'legend', c0: 9, cs: 4, r0: 9, rs: 4 }] },
+  { id: 'about.twoColumnBio', name: 'About · Two-Column Bio', category: 'Resume', suits: ['about', 'resume'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 },
+      { role: 'text', c0: 1, cs: 6, r0: 5, rs: 8 }, { role: 'meta', c0: 7, cs: 6, r0: 5, rs: 4 }, { role: 'legend', c0: 7, cs: 6, r0: 9, rs: 4 }] },
+  { id: 'about.sidebarSkills', name: 'About · Skills Sidebar', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [{ role: 'title', c0: 1, cs: 8, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 8, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 8, r0: 5, rs: 8 },
+      img(0, 9, 4, 1, 4), { role: 'legend', c0: 9, cs: 4, r0: 5, rs: 4 }, { role: 'meta', c0: 9, cs: 4, r0: 9, rs: 4 }] },
+  { id: 'about.timeline', name: 'About · Experience Timeline', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [{ role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 3, rs: 1 }, img(0, 1, 5, 5, 4), { role: 'legend', c0: 1, cs: 5, r0: 9, rs: 4 },
+      { role: 'text', c0: 7, cs: 6, r0: 1, rs: 12 }] },
+  { id: 'about.magazine', name: 'About · Magazine', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 1, 6, 1, 12), { role: 'title', c0: 8, cs: 5, r0: 1, rs: 2 }, { role: 'subtitle', c0: 8, cs: 5, r0: 3, rs: 1 },
+      { role: 'text', c0: 8, cs: 5, r0: 5, rs: 5 }, { role: 'legend', c0: 8, cs: 5, r0: 10, rs: 3 }] },
+  { id: 'about.statementHero', name: 'About · Statement', category: 'Resume', suits: ['about', 'resume'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 11, r0: 2, rs: 3 }, { role: 'text', c0: 1, cs: 9, r0: 5, rs: 5 }, { role: 'meta', c0: 1, cs: 11, r0: 11, rs: 2 }] },
+  { id: 'about.centeredMinimal', name: 'About · Centered', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 5, 4, 1, 4), { role: 'title', c0: 2, cs: 10, r0: 5, rs: 2 }, { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 1 }, { role: 'text', c0: 3, cs: 8, r0: 8, rs: 5 }] },
+  { id: 'about.dossier', name: 'About · Dossier', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 1, 3, 1, 4), { role: 'title', c0: 4, cs: 9, r0: 1, rs: 2 }, { role: 'subtitle', c0: 4, cs: 9, r0: 3, rs: 1 },
+      { role: 'text', c0: 1, cs: 12, r0: 6, rs: 4 }, { role: 'meta', c0: 1, cs: 6, r0: 10, rs: 3 }, { role: 'legend', c0: 7, cs: 6, r0: 10, rs: 3 }] },
+  { id: 'about.cardStack', name: 'About · Card Stack', category: 'Resume', suits: ['about', 'resume'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 },
+      { role: 'text', c0: 1, cs: 4, r0: 5, rs: 8 }, { role: 'meta', c0: 5, cs: 4, r0: 5, rs: 8 }, { role: 'legend', c0: 9, cs: 4, r0: 5, rs: 8 }] },
+  { id: 'about.portraitFull', name: 'About · Full Portrait', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+    regions: [img(0, 7, 6, 1, 12), { role: 'title', c0: 1, cs: 5, r0: 2, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 4, rs: 1 }, { role: 'text', c0: 1, cs: 5, r0: 6, rs: 4 }, { role: 'meta', c0: 1, cs: 5, r0: 10, rs: 3 }] },
+]
+
+/* ----------------------------- content / index spreads ------------------- */
+/** Project-index / table-of-contents spreads. Roles: title=section title,
+ *  text=project list, meta=numbers/years, image=preview thumbnails. */
+const INDEX_SPREAD_SPECS: LayoutSpec[] = [
+  { id: 'index.numberedList', name: 'Index · Numbered List', category: 'Text', suits: ['about', 'project'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 2, r0: 4, rs: 9 }, { role: 'text', c0: 3, cs: 9, r0: 4, rs: 9 }] },
+  { id: 'index.thumbGrid', name: 'Index · Thumbnail Grid', category: 'Grid', suits: ['about', 'project'], imageCount: 6,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, ...gridCells({ c0: 1, cs: 12, r0: 4, rs: 9 }, 2, 3)] },
+  { id: 'index.timeline', name: 'Index · Timeline', category: 'Strip', suits: ['about', 'project'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 12, r0: 4, rs: 2 }, { role: 'text', c0: 1, cs: 12, r0: 6, rs: 7 }] },
+  { id: 'index.magazine', name: 'Index · Magazine', category: 'Asymmetric', suits: ['about', 'project'], imageCount: 1,
+    regions: [{ role: 'title', c0: 1, cs: 6, r0: 1, rs: 3 }, img(0, 7, 6, 1, 6), { role: 'text', c0: 1, cs: 6, r0: 4, rs: 9 }, { role: 'meta', c0: 7, cs: 6, r0: 7, rs: 6 }] },
+  { id: 'index.twoColumn', name: 'Index · Two Column', category: 'Text', suits: ['about', 'project'], imageCount: 0,
+    regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'text', c0: 1, cs: 6, r0: 4, rs: 9 }, { role: 'meta', c0: 7, cs: 6, r0: 4, rs: 9 }] },
+]
+
 export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...COVER_SPECS,
   ...buildImageSpecs(),
   ...TEXT_SPECS,
   ...CONTACT_SPECS,
   ...RESUME_SPECS,
+  ...ABOUT_SPREAD_SPECS,
+  ...INDEX_SPREAD_SPECS,
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))

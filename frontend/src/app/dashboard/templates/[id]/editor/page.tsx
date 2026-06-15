@@ -1101,7 +1101,7 @@ export default function TemplateEditor() {
             tokens={tokens}
             onChange={updatePage}
             onUploadImage={uploadImage}
-            backgrounds={publishingPortfolio.backgrounds}
+            backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
             masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
             pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
             grid={publishingPortfolio.grid}
@@ -1140,6 +1140,7 @@ export default function TemplateEditor() {
                   onUpdate={p => { markDirty(); setPublishingPortfolio(p) }}
                   drawingMeta={currentPage.drawingMeta}
                   onDrawingMeta={meta => updatePage({ ...currentPage, drawingMeta: meta })}
+                  currentPageId={currentPage.id}
                 />
                 <AIDesignAssistant
                   onCommand={handleAICommand}

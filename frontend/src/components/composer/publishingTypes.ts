@@ -229,6 +229,8 @@ export interface BackgroundLayer {
   definitions: BackgroundDefinition[]
   /** Apply to */
   appliesTo: 'current-page' | 'current-spread' | 'entire-project'
+  /** the page this layer was created on (for 'current-page' / 'current-spread' scoping) */
+  pageId?: string
 }
 
 /* ======================== GRID SYSTEM ======================== */

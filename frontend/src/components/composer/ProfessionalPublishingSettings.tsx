@@ -19,9 +19,11 @@ interface ProfessionalPublishingSettingsProps {
   /** scale metadata for the current page's drawing + its setter */
   drawingMeta?: DrawingMetadata
   onDrawingMeta?: (m: DrawingMetadata) => void
+  /** id of the page being edited — stamped onto new page-scoped backgrounds */
+  currentPageId?: string
 }
 
-export function ProfessionalPublishingSettings({ portfolio, onUpdate, drawingMeta, onDrawingMeta }: ProfessionalPublishingSettingsProps) {
+export function ProfessionalPublishingSettings({ portfolio, onUpdate, drawingMeta, onDrawingMeta, currentPageId }: ProfessionalPublishingSettingsProps) {
   const [activeTab, setActiveTab] = useState<'page-size' | 'masters' | 'backgrounds' | 'grid' | 'scale'>('page-size')
 
   if (!portfolio || !onUpdate) return null
@@ -153,6 +155,7 @@ export function ProfessionalPublishingSettings({ portfolio, onUpdate, drawingMet
                   visible: true,
                   definitions: [{ type: 'solid', color: '#ffffff' }],
                   appliesTo: 'current-page',
+                  pageId: currentPageId,
                 }
                 onUpdate({ ...portfolio, backgrounds: [...(portfolio.backgrounds || []), newBg] })
               }}

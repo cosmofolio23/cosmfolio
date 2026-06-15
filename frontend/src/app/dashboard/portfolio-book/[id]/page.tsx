@@ -177,7 +177,7 @@ export default function PortfolioBookPage() {
               }}
             >
               {/* Publishing layers from the document */}
-              <BackgroundLayers backgrounds={(document as any).publishing?.backgrounds} />
+              <BackgroundLayers backgrounds={(document as any).publishing?.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)} />
               <MasterElements
                 elements={(document as any).publishing?.masterPages?.flatMap((m: any) => m.elements)}
                 ctx={{ pageNumber: currentPageIdx + 1, totalPages, projectTitle: project.title, projectNumber: String(currentPageIdx + 1).padStart(2, '0') }}
