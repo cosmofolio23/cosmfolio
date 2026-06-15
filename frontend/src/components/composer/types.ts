@@ -44,12 +44,38 @@ export interface Block {
 
 export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume'
 
+/** A freely-positioned, movable/resizable/rotatable element layered over the
+ *  grid layout. Powers the InDesign-style free-canvas editing. */
+export interface FreeElement {
+  id: string
+  kind: 'text' | 'image' | 'rect' | 'ellipse' | 'line'
+  x: number; y: number; w: number; h: number   // % of page
+  rotation?: number
+  z?: number
+  locked?: boolean
+  // text
+  text?: string
+  fontSize?: number          // px at 760px-wide page reference
+  fontFamily?: string
+  color?: string
+  align?: 'left' | 'center' | 'right'
+  bold?: boolean
+  // shape
+  fill?: string
+  stroke?: string
+  strokeWidth?: number
+  // image
+  src?: string
+  opacity?: number
+}
+
 export interface Page {
   id: string
   type: PageType
   layoutId: string   // references a LayoutSpec in the layout catalog
   blocks: Block[]
-  titleBlockId?: string   // optional Master Title Block applied to this page's title
+  titleBlockId?: string     // optional Master Title Block applied to this page's title
+  freeElements?: FreeElement[]   // free-canvas overlay elements
 }
 
 export interface DesignTokens {

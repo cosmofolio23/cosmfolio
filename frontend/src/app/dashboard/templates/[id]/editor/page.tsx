@@ -18,6 +18,8 @@ import { STYLE_DNA } from '@/components/composer/styleDNA'
 import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
 import { TITLE_BLOCKS, TITLE_BLOCK_CATEGORIES } from '@/components/templates/titleBlocks'
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
+import { newFreeElement } from '@/components/composer/FreeCanvas'
+import type { FreeElement } from '@/components/composer/types'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 
@@ -89,6 +91,7 @@ export default function TemplateEditor() {
   const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
+  const [previewSpread, setPreviewSpread] = useState(false)
   const flashUpload = (kind: 'info' | 'ok' | 'err', text: string, ms = 3500) => {
     setUploadMsg({ kind, text })
     if (ms) window.setTimeout(() => setUploadMsg(m => (m && m.text === text ? null : m)), ms)
@@ -563,6 +566,26 @@ export default function TemplateEditor() {
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
   const setTitleBlock = (id?: string) => { if (currentPage) updatePage({ ...currentPage, titleBlockId: id }) }
 
+  const addFreeElement = (kind: FreeElement['kind']) => {
+    if (!currentPage) return
+    if (kind === 'image') {
+      const input = document.createElement('input')
+      input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp'
+      input.onchange = async () => {
+        const file = input.files?.[0]; if (!file) return
+        try {
+          const url = await uploadImage(file)
+          const el = newFreeElement('image', tokens, url)
+          markDirty(); updatePage({ ...currentPage, freeElements: [...(currentPage.freeElements || []), el] })
+        } catch { /* surfaced by uploadImage */ }
+      }
+      input.click()
+      return
+    }
+    const el = newFreeElement(kind, tokens)
+    markDirty(); updatePage({ ...currentPage, freeElements: [...(currentPage.freeElements || []), el] })
+  }
+
   const FONT_PAIRS: Array<[string, string]> = [
     ['Playfair Display', 'Inter'], ['Montserrat', 'Lora'], ['Bebas Neue', 'Roboto'],
     ['Georgia', 'Source Sans Pro'], ['Oswald', 'Open Sans'], ['Poppins', 'Lato'],
@@ -906,20 +929,44 @@ export default function TemplateEditor() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
+                <button onClick={() => setPreviewSpread(false)} className={`px-3 py-1.5 font-medium ${!previewSpread ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>📄 Single</button>
+                <button onClick={() => setPreviewSpread(true)} className={`px-3 py-1.5 font-medium ${previewSpread ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>📖 Spread</button>
+              </div>
               <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900 disabled:opacity-50">{isExporting ? '⏳ Exporting…' : '📄 Export PDF'}</button>
               <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
             </div>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6 bg-gray-300/40">
-          <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
-            {pages.map((page) => (
-              <div key={page.id}>
-                <PageComposer page={page} tokens={tokens} onChange={() => {}} />
-                <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
-              </div>
-            ))}
-          </div>
+          {!previewSpread ? (
+            <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
+              {pages.map((page) => (
+                <div key={page.id}>
+                  <PageComposer page={page} tokens={tokens} onChange={() => {}} />
+                  <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Book Spread view: cover alone, then left/right page pairs */
+            <div className="max-w-[1040px] mx-auto space-y-8" style={{ pointerEvents: 'none' }}>
+              {(() => {
+                const groups: typeof pages[] = []
+                if (pages.length) { groups.push([pages[0]]); for (let i = 1; i < pages.length; i += 2) groups.push(pages.slice(i, i + 2)) }
+                return groups.map((grp, gi) => (
+                  <div key={gi} className="flex justify-center gap-1 shadow-2xl mx-auto w-fit">
+                    {grp.map(page => (
+                      <div key={page.id} className="w-[420px]">
+                        <PageComposer page={page} tokens={tokens} onChange={() => {}} />
+                      </div>
+                    ))}
+                    {grp.length === 1 && gi > 0 && <div className="w-[420px] bg-white/40 border border-dashed border-gray-300" />}
+                  </div>
+                ))
+              })()}
+            </div>
+          )}
         </main>
       </div>
     )
@@ -1038,6 +1085,17 @@ export default function TemplateEditor() {
 
         {/* Center: canvas */}
         <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
+          {/* Free-element insert toolbar */}
+          <div className="max-w-[760px] mx-auto mb-3 flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mr-1">+ Add free element</span>
+            {([['text', 'T Text'], ['image', '🖼 Image'], ['rect', '▭ Box'], ['ellipse', '◯ Ellipse'], ['line', '— Line']] as const).map(([k, label]) => (
+              <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
+                className="px-2.5 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium hover:border-blue-400 hover:bg-blue-50 transition">
+                {label}
+              </button>
+            ))}
+            <span className="text-[10px] text-gray-400 ml-1">drag to move · corner to resize · top dot to rotate · double-click text to edit</span>
+          </div>
           <PageComposer
             page={currentPage}
             tokens={tokens}
@@ -1047,6 +1105,8 @@ export default function TemplateEditor() {
             masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
             pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
             grid={publishingPortfolio.grid}
+            editableFree
+            onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
           />
           <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400`}>
             Page {currentIdx + 1}/{pages.length} · {!isMobile && 'Click any text or image to edit'}

@@ -11,6 +11,8 @@ import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
 import type { DemoPalette } from '@/components/templates/demoArt'
 import { BackgroundLayers, MasterElements, GridOverlay, type PageContext } from './PublishingLayers'
 import type { BackgroundLayer, MasterElement, GridSettings } from './publishingTypes'
+import { FreeCanvas } from './FreeCanvas'
+import type { FreeElement } from './types'
 
 const toPalette = (t: DesignTokens): DemoPalette => ({
   primary: t.primary, accent: t.accent, bg: t.background, text: t.text, muted: t.muted,
@@ -26,13 +28,16 @@ interface Props {
   masterElements?: MasterElement[]
   pageContext?: PageContext
   grid?: GridSettings
+  /** free-canvas overlay elements + edit handler */
+  onFreeChange?: (els: FreeElement[]) => void
+  editableFree?: boolean
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -87,6 +92,16 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
       {/* Publishing master elements (headers / footers / page numbers, above content) */}
       {pageContext && <MasterElements elements={masterElements} ctx={pageContext} tokens={tokens} />}
+
+      {/* Free-canvas overlay (movable / resizable / rotatable elements) */}
+      {(editableFree || (page.freeElements && page.freeElements.length > 0)) && (
+        <FreeCanvas
+          elements={page.freeElements || []}
+          onChange={els => onFreeChange?.(els)}
+          tokens={tokens}
+          editable={!!editableFree}
+        />
+      )}
     </div>
   )
 }

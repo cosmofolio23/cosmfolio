@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import type { Page, DesignTokens } from '@/components/composer/types'
 import { BackgroundLayers, MasterElements } from '@/components/composer/PublishingLayers'
+import { FreeCanvas } from '@/components/composer/FreeCanvas'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -182,6 +183,9 @@ export default function PortfolioBookPage() {
                 ctx={{ pageNumber: currentPageIdx + 1, totalPages, projectTitle: project.title, projectNumber: String(currentPageIdx + 1).padStart(2, '0') }}
                 tokens={tokens as DesignTokens}
               />
+              {currentPage.freeElements?.length ? (
+                <FreeCanvas elements={currentPage.freeElements} onChange={() => {}} tokens={tokens as DesignTokens} editable={false} />
+              ) : null}
               <div className="relative z-10 p-12 h-full overflow-y-auto flex flex-col justify-start">
                 {currentPage.blocks.map((block) => (
                   <div key={block.id} className="mb-6">
