@@ -16,9 +16,12 @@ import type { DrawingMetadata } from './publishingTypes'
 interface ProfessionalPublishingSettingsProps {
   portfolio?: Portfolio
   onUpdate?: (portfolio: Portfolio) => void
+  /** scale metadata for the current page's drawing + its setter */
+  drawingMeta?: DrawingMetadata
+  onDrawingMeta?: (m: DrawingMetadata) => void
 }
 
-export function ProfessionalPublishingSettings({ portfolio, onUpdate }: ProfessionalPublishingSettingsProps) {
+export function ProfessionalPublishingSettings({ portfolio, onUpdate, drawingMeta, onDrawingMeta }: ProfessionalPublishingSettingsProps) {
   const [activeTab, setActiveTab] = useState<'page-size' | 'masters' | 'backgrounds' | 'grid' | 'scale'>('page-size')
 
   if (!portfolio || !onUpdate) return null
@@ -170,11 +173,20 @@ export function ProfessionalPublishingSettings({ portfolio, onUpdate }: Professi
 
         {/* Architectural Scale */}
         {activeTab === 'scale' && (
-          <div className="p-3 bg-gray-50 rounded border text-[10px] text-gray-600">
-            <p className="mb-2 font-semibold">Architectural Scales</p>
-            <p>Available scales: 1:1 through 1:1000</p>
-            <p className="mt-1">Apply to individual drawings via the ArchitecturalScaleEditor component in each page/block.</p>
-          </div>
+          onDrawingMeta ? (
+            <div className="space-y-2">
+              <p className="text-[10px] text-gray-500">Adds a scale bar, north arrow and drawing label to the current page (renders on canvas, preview & PDF).</p>
+              <ArchitecturalScaleEditor metadata={drawingMeta} onUpdate={onDrawingMeta} />
+              {drawingMeta && (
+                <button onClick={() => onDrawingMeta(undefined as any)} className="w-full px-3 py-1.5 border border-red-300 text-red-600 rounded text-xs hover:bg-red-50">Remove drawing info from this page</button>
+              )}
+            </div>
+          ) : (
+            <div className="p-3 bg-gray-50 rounded border text-[10px] text-gray-600">
+              <p className="mb-2 font-semibold">Architectural Scales</p>
+              <p>Open a portfolio page to tag it with a scale bar and north arrow.</p>
+            </div>
+          )
         )}
       </div>
     </div>

@@ -76,6 +76,7 @@ export interface Page {
   blocks: Block[]
   titleBlockId?: string     // optional Master Title Block applied to this page's title
   freeElements?: FreeElement[]   // free-canvas overlay elements
+  drawingMeta?: import('./publishingTypes').DrawingMetadata   // architectural scale + scale bar / north
 }
 
 export interface DesignTokens {

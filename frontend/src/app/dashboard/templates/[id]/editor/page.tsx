@@ -1138,6 +1138,8 @@ export default function TemplateEditor() {
                 <ProfessionalPublishingSettings
                   portfolio={publishingPortfolio}
                   onUpdate={p => { markDirty(); setPublishingPortfolio(p) }}
+                  drawingMeta={currentPage.drawingMeta}
+                  onDrawingMeta={meta => updatePage({ ...currentPage, drawingMeta: meta })}
                 />
                 <AIDesignAssistant
                   onCommand={handleAICommand}

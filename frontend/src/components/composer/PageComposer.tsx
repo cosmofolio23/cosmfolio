@@ -9,7 +9,7 @@ import {
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
 import type { DemoPalette } from '@/components/templates/demoArt'
-import { BackgroundLayers, MasterElements, GridOverlay, type PageContext } from './PublishingLayers'
+import { BackgroundLayers, MasterElements, GridOverlay, DrawingInfoBar, type PageContext } from './PublishingLayers'
 import type { BackgroundLayer, MasterElement, GridSettings } from './publishingTypes'
 import { FreeCanvas } from './FreeCanvas'
 import type { FreeElement } from './types'
@@ -89,6 +89,9 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
       {overlay && (
         <div className="absolute inset-x-0 bottom-0 h-2/3 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }} />
       )}
+
+      {/* Architectural drawing furniture (scale bar / north / caption) */}
+      <DrawingInfoBar meta={page.drawingMeta} tokens={tokens} />
 
       {/* Publishing master elements (headers / footers / page numbers, above content) */}
       {pageContext && <MasterElements elements={masterElements} ctx={pageContext} tokens={tokens} />}

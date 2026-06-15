@@ -8,7 +8,7 @@
  */
 
 import type { DesignTokens } from './types'
-import type { BackgroundLayer, BackgroundDefinition, MasterElement, GridSettings } from './publishingTypes'
+import type { BackgroundLayer, BackgroundDefinition, MasterElement, GridSettings, DrawingMetadata } from './publishingTypes'
 
 export interface PageContext {
   pageNumber: number
@@ -173,4 +173,52 @@ export function GridOverlay({ grid }: { grid?: GridSettings }) {
   }
 
   return <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 20, opacity: op }}>{lines}</div>
+}
+
+/* --------------------------- drawing info bar ---------------------------- */
+/** Architectural drawing furniture: scale bar + north arrow + number/name/caption,
+ *  driven by the ArchitecturalScaleEditor metadata. */
+const SCALE_MAX_M: Record<string, number> = {
+  '1:1': 0.5, '1:5': 1, '1:10': 2, '1:20': 4, '1:50': 5, '1:100': 10, '1:200': 20, '1:500': 50, '1:1000': 100,
+}
+
+export function DrawingInfoBar({ meta, tokens }: { meta?: DrawingMetadata; tokens: DesignTokens }) {
+  if (!meta) return null
+  const maxM = SCALE_MAX_M[meta.scale] ?? 10
+  const segs = 4
+  return (
+    <div className="absolute left-[5%] right-[5%] bottom-[3%] pointer-events-none flex items-end justify-between gap-3" style={{ zIndex: 25, color: tokens.text }}>
+      {/* number + name + caption */}
+      <div style={{ fontFamily: tokens.bodyFont }}>
+        <div className="flex items-baseline gap-1.5">
+          {meta.drawingNumber && <span style={{ fontWeight: 800, color: tokens.accent, fontSize: 13 }}>{meta.drawingNumber}</span>}
+          <span style={{ fontWeight: 700, fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{meta.name}</span>
+          <span style={{ fontSize: 10, opacity: 0.6, fontFamily: 'monospace' }}>{meta.scale}</span>
+        </div>
+        {meta.caption && <div style={{ fontSize: 9, opacity: 0.65, marginTop: 1 }}>{meta.caption}</div>}
+      </div>
+
+      <div className="flex items-end gap-3">
+        {meta.showScaleBar && (
+          <div className="flex flex-col items-start">
+            <div className="flex" style={{ height: 6, border: `1px solid ${tokens.text}` }}>
+              {Array.from({ length: segs }, (_, i) => (
+                <div key={i} style={{ width: 16, height: '100%', background: i % 2 === 0 ? tokens.text : 'transparent' }} />
+              ))}
+            </div>
+            <div className="flex justify-between w-full" style={{ width: segs * 16, fontSize: 7, fontFamily: 'monospace', opacity: 0.7 }}>
+              <span>0</span><span>{maxM}m</span>
+            </div>
+          </div>
+        )}
+        {meta.northPoint && (
+          <svg width="22" height="28" viewBox="0 0 22 28" style={{ overflow: 'visible' }}>
+            <polygon points="11,2 15,14 11,11 7,14" fill={tokens.text} />
+            <polygon points="11,2 11,11 7,14" fill={tokens.text} opacity="0.5" />
+            <text x="11" y="26" textAnchor="middle" fontSize="9" fontWeight="700" fill={tokens.text} fontFamily="sans-serif">N</text>
+          </svg>
+        )}
+      </div>
+    </div>
+  )
 }
