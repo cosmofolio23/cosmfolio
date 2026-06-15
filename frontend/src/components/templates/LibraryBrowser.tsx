@@ -10,6 +10,7 @@
  */
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { specsForType, type LayoutSpec } from '@/components/composer/layoutSpecs'
 import { DemoPage } from './DemoPage'
 import { TitleBlockView } from './TitleBlockView'
@@ -26,6 +27,7 @@ const PALETTES: Array<{ name: string; p: DemoPalette; fonts: { heading: string; 
 ]
 
 export default function LibraryBrowser({ view, onUse }: { view: LibraryView; onUse?: () => void }) {
+  const router = useRouter()
   const [paletteIdx, setPaletteIdx] = useState(0)
   const [tbCat, setTbCat] = useState<'All' | TitleBlockCategory>('All')
   const { p, fonts } = PALETTES[paletteIdx]
@@ -96,9 +98,17 @@ export default function LibraryBrowser({ view, onUse }: { view: LibraryView; onU
                     <DemoPage spec={spec} p={p} fonts={fonts} content={content} />
                   </div>
                 </div>
-                <div className="px-4 py-3 border-t border-border-light flex items-center justify-between">
-                  <div className="text-sm font-semibold text-text-primary dark:text-dark-text-primary">{spec.name}</div>
-                  <span className="text-[10px] uppercase tracking-wider text-text-secondary bg-surface-elevated dark:bg-dark-surface-overlay px-2 py-1 rounded">{spec.category}</span>
+                <div className="px-4 py-3 border-t border-border-light flex items-center justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-text-primary dark:text-dark-text-primary">{spec.name}</div>
+                    <div className="text-[10px] text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">{spec.category}</div>
+                  </div>
+                  <button
+                    onClick={() => { onUse?.(); router.push('/dashboard/templates') }}
+                    className="text-[11px] px-2.5 py-1.5 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition whitespace-nowrap"
+                  >
+                    Use →
+                  </button>
                 </div>
               </div>
             )

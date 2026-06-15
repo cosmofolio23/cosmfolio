@@ -238,6 +238,73 @@ export function BackgroundLayerEditor({ layer, onUpdate, onDelete }: BackgroundL
           </>
         )}
 
+        {def.type === 'texture' && (
+          <>
+            <label className="text-[10px] uppercase text-gray-500">Texture</label>
+            <select
+              value={(def as any).texture || 'concrete'}
+              onChange={e => updateDefinition(index, { texture: e.target.value } as any)}
+              className="w-full px-2 py-1 border rounded text-xs"
+            >
+              <option value="concrete">Concrete</option>
+              <option value="brick">Brick</option>
+              <option value="wood">Wood</option>
+              <option value="stone">Stone</option>
+              <option value="paper">Paper</option>
+              <option value="fabric">Fabric</option>
+            </select>
+            <label className="text-[10px] uppercase text-gray-500">Scale</label>
+            <input
+              type="number"
+              value={(def as any).scale || 1}
+              onChange={e => updateDefinition(index, { scale: parseFloat(e.target.value) } as any)}
+              className="w-full px-2 py-1 border rounded text-xs"
+              step="0.1"
+            />
+          </>
+        )}
+
+        {def.type === 'shape' && (
+          <>
+            <label className="text-[10px] uppercase text-gray-500">Shape</label>
+            <select
+              value={(def as any).shape || 'rectangle'}
+              onChange={e => updateDefinition(index, { shape: e.target.value } as any)}
+              className="w-full px-2 py-1 border rounded text-xs"
+            >
+              <option value="rectangle">Rectangle</option>
+              <option value="circle">Circle</option>
+              <option value="triangle">Triangle</option>
+              <option value="polygon">Polygon</option>
+            </select>
+            <label className="text-[10px] uppercase text-gray-500">Fill Color</label>
+            <input
+              type="color"
+              value={(def as any).color || '#cccccc'}
+              onChange={e => updateDefinition(index, { color: e.target.value } as any)}
+              className="w-full h-6 border rounded"
+            />
+            <div className="grid grid-cols-2 gap-1">
+              <div>
+                <label className="text-[10px] uppercase text-gray-500">X %</label>
+                <input type="number" value={(def as any).x ?? 0} onChange={e => updateDefinition(index, { x: parseFloat(e.target.value) } as any)} className="w-full px-2 py-1 border rounded text-xs" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-gray-500">Y %</label>
+                <input type="number" value={(def as any).y ?? 0} onChange={e => updateDefinition(index, { y: parseFloat(e.target.value) } as any)} className="w-full px-2 py-1 border rounded text-xs" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-gray-500">W %</label>
+                <input type="number" value={(def as any).width ?? 100} onChange={e => updateDefinition(index, { width: parseFloat(e.target.value) } as any)} className="w-full px-2 py-1 border rounded text-xs" />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-gray-500">H %</label>
+                <input type="number" value={(def as any).height ?? 100} onChange={e => updateDefinition(index, { height: parseFloat(e.target.value) } as any)} className="w-full px-2 py-1 border rounded text-xs" />
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Opacity for all */}
         {def.type !== 'solid' && (
           <div>

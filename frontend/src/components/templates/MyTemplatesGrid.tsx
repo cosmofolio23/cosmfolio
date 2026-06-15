@@ -27,7 +27,8 @@ export default function MyTemplatesGrid() {
     try { setItems(JSON.parse(localStorage.getItem(KEY) || '[]')) } catch { setItems([]) }
   }, [])
 
-  const remove = (id: string) => {
+  const remove = (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     const next = items.filter(t => t.id !== id)
     setItems(next)
     try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* ignore */ }
@@ -64,7 +65,7 @@ export default function MyTemplatesGrid() {
                 Open
               </button>
               <button
-                onClick={() => remove(t.id)}
+                onClick={() => remove(t.id, t.name)}
                 className="px-3 py-2 border border-red-300 text-red-600 rounded-lg text-sm hover:bg-red-50 transition" title="Delete">
                 🗑
               </button>

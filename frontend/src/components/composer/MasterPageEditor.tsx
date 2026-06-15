@@ -138,6 +138,104 @@ export function MasterPageEditor({ master, onUpdate, onDelete }: MasterPageEdito
                   </>
                 )}
 
+                {elem.type === 'image' && (
+                  <>
+                    <label className="text-[10px] uppercase text-gray-500">Image URL</label>
+                    <input
+                      type="text"
+                      value={elem.imageUrl || ''}
+                      onChange={e => updateElement(elem.id, { imageUrl: e.target.value })}
+                      className="w-full px-2 py-1 border rounded text-xs"
+                      placeholder="https://... or paste a URL"
+                    />
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="text-[10px] uppercase text-gray-500">Width</label>
+                        <input
+                          type="number"
+                          value={elem.width || 40}
+                          onChange={e => updateElement(elem.id, { width: parseInt(e.target.value) })}
+                          className="w-full px-2 py-1 border rounded text-xs"
+                          placeholder="px"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-[10px] uppercase text-gray-500">Height</label>
+                        <input
+                          type="number"
+                          value={elem.height || 40}
+                          onChange={e => updateElement(elem.id, { height: parseInt(e.target.value) })}
+                          className="w-full px-2 py-1 border rounded text-xs"
+                          placeholder="px"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {elem.type === 'line' && (
+                  <>
+                    <label className="text-[10px] uppercase text-gray-500">Line Color</label>
+                    <input
+                      type="color"
+                      value={elem.color || '#000000'}
+                      onChange={e => updateElement(elem.id, { color: e.target.value })}
+                      className="w-full h-8 border rounded"
+                    />
+                    <label className="text-[10px] uppercase text-gray-500">Stroke Width (px)</label>
+                    <input
+                      type="number"
+                      value={elem.strokeWidth || 1}
+                      onChange={e => updateElement(elem.id, { strokeWidth: parseInt(e.target.value) })}
+                      className="w-full px-2 py-1 border rounded text-xs"
+                      min="1"
+                      max="20"
+                    />
+                  </>
+                )}
+
+                {elem.type === 'watermark' && (
+                  <>
+                    <label className="text-[10px] uppercase text-gray-500">Watermark Text</label>
+                    <input
+                      type="text"
+                      value={elem.text || 'DRAFT'}
+                      onChange={e => updateElement(elem.id, { text: e.target.value })}
+                      className="w-full px-2 py-1 border rounded text-xs"
+                      placeholder="e.g. DRAFT, CONFIDENTIAL"
+                    />
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="text-[10px] uppercase text-gray-500">Font Size</label>
+                        <input
+                          type="number"
+                          value={elem.fontSize || 48}
+                          onChange={e => updateElement(elem.id, { fontSize: parseInt(e.target.value) })}
+                          className="w-full px-2 py-1 border rounded text-xs"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-[10px] uppercase text-gray-500">Opacity</label>
+                        <input
+                          type="number"
+                          value={Math.round((elem.opacity || 0.12) * 100)}
+                          onChange={e => updateElement(elem.id, { opacity: parseInt(e.target.value) / 100 })}
+                          className="w-full px-2 py-1 border rounded text-xs"
+                          min="1"
+                          max="100"
+                        />
+                      </div>
+                    </div>
+                    <label className="text-[10px] uppercase text-gray-500">Color</label>
+                    <input
+                      type="color"
+                      value={elem.color || '#000000'}
+                      onChange={e => updateElement(elem.id, { color: e.target.value })}
+                      className="w-full h-8 border rounded"
+                    />
+                  </>
+                )}
+
                 <select
                   value={elem.position}
                   onChange={e => updateElement(elem.id, { position: e.target.value as MasterElement['position'] })}

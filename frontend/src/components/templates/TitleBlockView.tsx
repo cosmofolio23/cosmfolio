@@ -36,7 +36,7 @@ export function TitleBlockView({
   // number element
   const numberEl = () => {
     if (style.numberStyle === 'none') return null
-    const base: React.CSSProperties = { fontFamily: fonts.body, color: sub === '' ? fg : p.accent, lineHeight: 1 }
+    const base: React.CSSProperties = { fontFamily: fonts.body, color: style.fill === 'none' || style.fill === 'tint' ? p.accent : fg, lineHeight: 1 }
     switch (style.numberStyle) {
       case 'big': return <div style={{ ...base, fontFamily: fonts.heading, fontSize: '3.4em', fontWeight: 800, color: `${p.accent}`, opacity: 0.9 }}>{num.replace(/\D/g, '') || '01'}</div>
       case 'chip': return <span style={{ ...base, background: p.accent, color: '#fff', padding: '0.15em 0.5em', fontSize: '0.62em', fontWeight: 700, letterSpacing: '0.12em', borderRadius: 2 }}>{num}</span>

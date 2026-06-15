@@ -466,7 +466,7 @@ export default function TemplateEditor() {
     return 'render'
   }
   const autoFillFromLibrary = () => {
-    if (!assets.length) { alert('Upload images to the Asset library first (Blocks tab → upload).'); return }
+    if (!assets.length) { flashUpload('info', 'Upload images to the Style tab first — use the + Add free element → Image button or upload via Guide tab.'); return }
     const byType: Record<string, string[]> = {}
     for (const a of assets) { const t = typeFromName(a.name); (byType[t] ||= []).push(a.url) }
     const next = autoFillTemplate(pages, byType)
@@ -744,23 +744,28 @@ export default function TemplateEditor() {
   }
 
   const savePortfolio = async () => {
-    if (!portfolioTitle.trim()) { alert('Please enter a portfolio title'); return }
+    if (!portfolioTitle.trim()) { flashUpload('err', 'Please enter a portfolio name in the title bar first.'); return }
     setIsSaving(true)
     try {
       await saveDocument()
       router.push('/dashboard/my-portfolios')
     } catch (e: any) {
-      alert(`Failed to save: ${e.message}`)
+      flashUpload('err', `Save failed: ${e?.message || 'network error'}. Try again or check your connection.`)
     } finally { setIsSaving(false) }
   }
 
   const exportToPDF = async () => {
     setIsExporting(true)
-    flashUpload('info', 'Preparing PDF…', 0)
+    flashUpload('info', 'Saving and preparing PDF…', 0)
     try {
-      // make sure the latest edits are persisted, then ask the server to render
       const pid = await ensureProject()
-      await saveDocument().catch(() => {})
+      // Save first — warn if the save itself fails but continue with last saved version
+      try {
+        await saveDocument()
+      } catch (saveErr: any) {
+        flashUpload('info', `Note: Could not save latest changes (${saveErr?.message || 'network error'}). Exporting last saved version.`, 5000)
+        await new Promise(r => setTimeout(r, 1200))
+      }
       const res = await fetch(`${API_URL}/api/projects/${pid}/document/export-pdf`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${authToken()}` },
@@ -774,16 +779,16 @@ export default function TemplateEditor() {
       a.download = `${portfolioTitle || 'portfolio'}.pdf`
       a.click()
       URL.revokeObjectURL(url)
-      flashUpload('ok', '✓ PDF downloaded')
+      flashUpload('ok', '✓ PDF downloaded successfully')
     } catch (e: any) {
-      // Dependency-free fallback: open the print-ready book view; the browser's
-      // "Save as PDF" preserves images, fonts, overlays and master elements.
+      // Client-side fallback: open the print-ready portfolio book view
       const pid = projectId
       if (pid) {
-        flashUpload('info', 'Opening print view — choose “Save as PDF”…', 6000)
-        window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
+        flashUpload('info', '📄 PDF server unavailable — opening print view. Use browser "Save as PDF" (Ctrl+P).', 8000)
+        const printWin = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
+        if (!printWin) flashUpload('err', 'Pop-up blocked. Allow popups for this site, then try again.')
       } else {
-        flashUpload('err', `PDF export failed: ${e?.message || 'unknown error'}. Save your portfolio first.`)
+        flashUpload('err', 'Save your portfolio first (click "Save & Close"), then export as PDF.')
       }
     } finally {
       setIsExporting(false)
@@ -791,19 +796,19 @@ export default function TemplateEditor() {
   }
 
   const savePack = () => {
-    if (!packName.trim()) { alert('Enter a pack name'); return }
+    if (!packName.trim()) { flashUpload('err', 'Enter a name for this design pack.'); return }
     const newPack: DesignPack = { name: packName, tokens: structuredClone(tokens), createdAt: new Date().toISOString() }
     const updated = [...designPacks.filter(p => p.name !== packName), newPack]
     setDesignPacks(updated)
     localStorage.setItem('designPacks', JSON.stringify(updated))
     setPackName('')
     setShowSavePackModal(false)
-    alert(`✓ Design pack "${packName}" saved!`)
+    flashUpload('ok', `⭐ Design pack "${packName}" saved!`)
   }
 
   const loadPack = (pack: DesignPack) => {
     setTok(pack.tokens)
-    alert(`✓ Loaded design pack "${pack.name}"`)
+    flashUpload('ok', `✓ Loaded "${pack.name}"`)
   }
 
   const deletePack = (name: string) => {
@@ -814,10 +819,23 @@ export default function TemplateEditor() {
 
   const insertAsset = (assetUrl: string) => {
     if (!currentPage) return
-    const block = { ...createBlock('render'), imageUrl: assetUrl }
-    updatePage({ ...currentPage, blocks: [...currentPage.blocks, block] })
+    const imageTypes = ['render', 'plan', 'section', 'diagram'] as const
+    // Find first unfilled image slot on the current page
+    const emptySlot = currentPage.blocks.find(
+      b => imageTypes.includes(b.type as typeof imageTypes[number]) && !b.imageUrl
+    )
+    if (emptySlot) {
+      // Fill the first available empty slot
+      const next = { ...currentPage, blocks: currentPage.blocks.map(b => b.id === emptySlot.id ? { ...b, imageUrl: assetUrl } : b) }
+      markDirty(); updatePage(next)
+      flashUpload('ok', `✓ Image placed into ${emptySlot.type} slot`)
+    } else {
+      // All slots filled — add as a movable free canvas element instead
+      const el = newFreeElement('image', tokens, assetUrl)
+      markDirty(); updatePage({ ...currentPage, freeElements: [...(currentPage.freeElements || []), el] })
+      flashUpload('ok', '✓ Image added as a free element (drag to position)')
+    }
     setTimeout(() => recordHistorySnapshot(), 10)
-    alert('Image inserted!')
   }
 
   const deleteAsset = (assetId: string) => {
@@ -835,11 +853,11 @@ export default function TemplateEditor() {
 
   const generateStylePack = async () => {
     if (!generateInput.trim()) {
-      alert(`Please enter a ${generateMode}`);
+      flashUpload('err', `Please enter a ${generateMode} to generate from.`)
       return
     }
     if (!projectId) {
-      alert('Please save your portfolio first')
+      flashUpload('info', 'Save your portfolio first (click "Save & Close" or upload an image), then generate a style pack.')
       return
     }
     setIsGenerating(true)
@@ -955,13 +973,19 @@ export default function TemplateEditor() {
                 const groups: typeof pages[] = []
                 if (pages.length) { groups.push([pages[0]]); for (let i = 1; i < pages.length; i += 2) groups.push(pages.slice(i, i + 2)) }
                 return groups.map((grp, gi) => (
-                  <div key={gi} className="flex justify-center gap-1 shadow-2xl mx-auto w-fit">
-                    {grp.map(page => (
-                      <div key={page.id} className="w-[420px]">
+                  <div key={gi} className="flex justify-center mx-auto w-fit" style={{ boxShadow: gi === 0 ? '0 24px 64px rgba(0,0,0,0.40)' : '0 8px 40px rgba(0,0,0,0.28)', borderRadius: 2, overflow: 'hidden' }}>
+                    {grp.map((page, pi) => (
+                      <div key={page.id} className="w-[420px] overflow-hidden" style={{
+                        boxShadow: grp.length === 2
+                          ? (pi === 0 ? 'inset -6px 0 14px rgba(0,0,0,0.18)' : 'inset 6px 0 14px rgba(0,0,0,0.18)')
+                          : 'none'
+                      }}>
                         <PageComposer page={page} tokens={tokens} onChange={() => {}} />
                       </div>
                     ))}
-                    {grp.length === 1 && gi > 0 && <div className="w-[420px] bg-white/40 border border-dashed border-gray-300" />}
+                    {grp.length === 1 && gi > 0 && (
+                      <div className="w-[420px] overflow-hidden" style={{ background: tokens.background, opacity: 0.35, boxShadow: 'inset 6px 0 14px rgba(0,0,0,0.18)' }} />
+                    )}
                   </div>
                 ))
               })()}

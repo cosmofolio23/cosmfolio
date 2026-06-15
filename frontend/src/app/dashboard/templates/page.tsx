@@ -20,6 +20,17 @@ const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+const DEMO_TEMPLATES: Template[] = [
+  { id: 'demo-minimal-1', name: 'Minimal Studio', description: 'Clean white space with generous margins. Perfect for residential and cultural projects where the work speaks for itself.', category: 'minimalist', colors: { primary: '#1A1A1A', secondary: '#888888', accent: '#9CA3AF', background: '#FFFFFF' }, fonts: { heading: 'Montserrat', body: 'Inter' }, page_count_range: '16-24', style_notes: 'Generous white space, single-weight typography, restrained palette.', source: 'downloaded' },
+  { id: 'demo-editorial-1', name: 'Architectural Journal', description: 'Editorial serif layout inspired by architectural publications. Ideal for thesis and research-heavy portfolios.', category: 'editorial', colors: { primary: '#1F2937', secondary: '#6B7280', accent: '#A16207', background: '#FAF8F3' }, fonts: { heading: 'Playfair Display', body: 'Source Sans Pro' }, page_count_range: '24-40', style_notes: 'Editorial serif typography, warm paper background, structured grid.', source: 'downloaded' },
+  { id: 'demo-competition-1', name: 'Competition Board', description: 'Bold, high-contrast graphics for competition submissions and urban-scale projects. Maximum visual impact.', category: 'competition', colors: { primary: '#1A1A1A', secondary: '#111111', accent: '#E11D48', background: '#FFFFFF' }, fonts: { heading: 'Oswald', body: 'Roboto' }, page_count_range: '16-24', style_notes: 'High contrast, bold typography, architectural red accent.', source: 'downloaded' },
+  { id: 'demo-technical-1', name: 'Technical Drawing Set', description: 'Grid-based precision layout for technical projects, infrastructure, and engineering-focused portfolios.', category: 'technical', colors: { primary: '#1E3A8A', secondary: '#3B82F6', accent: '#2563EB', background: '#FFFFFF' }, fonts: { heading: 'Montserrat', body: 'Roboto' }, page_count_range: '24-40', style_notes: 'Blueprint-inspired palette, clean technical grids, engineering precision.', source: 'downloaded' },
+  { id: 'demo-luxury-1', name: 'Dark Studio', description: 'Moody dark background with gold accents. Designed for luxury residential, hospitality, and high-end commercial work.', category: 'luxury', colors: { primary: '#FFFFFF', secondary: '#D4AF37', accent: '#D4AF37', background: '#0E0E10' }, fonts: { heading: 'Oswald', body: 'Inter' }, page_count_range: '20-30', style_notes: 'Premium dark mode with gold accents, sophisticated and moody.', source: 'downloaded' },
+  { id: 'demo-student-1', name: 'Graduate Portfolio', description: 'Fresh, dynamic layout for undergraduate and graduate applications. Balanced mix of drawings and photography.', category: 'student', colors: { primary: '#111827', secondary: '#6B7280', accent: '#7C3AED', background: '#FFFFFF' }, fonts: { heading: 'Poppins', body: 'Inter' }, page_count_range: '16-24', style_notes: 'Contemporary purple accent, clear hierarchy, application-ready format.', source: 'downloaded' },
+  { id: 'demo-parametric-1', name: 'Parametric Vision', description: 'Tech-forward dark layout for computational, parametric, and digital fabrication portfolios.', category: 'competition', colors: { primary: '#7DD3FC', secondary: '#38BDF8', accent: '#38BDF8', background: '#0B1020' }, fonts: { heading: 'Montserrat', body: 'Inter' }, page_count_range: '20-30', style_notes: 'Dark parametric palette, luminous cyan accents, tech-forward geometry.', source: 'downloaded' },
+  { id: 'demo-thesis-1', name: 'Thesis Edition', description: 'Academic, sequential, serif-forward layout for thesis and dissertation portfolios with extended text.', category: 'student', colors: { primary: '#3F3F46', secondary: '#71717A', accent: '#7C2D12', background: '#FCFCFA' }, fonts: { heading: 'Cormorant Garamond', body: 'Georgia' }, page_count_range: '32-48', style_notes: 'Serif typeset, academic red accent, structured for long-form writing.', source: 'downloaded' },
+]
+
 interface Template {
   id: string
   name: string
@@ -207,13 +218,13 @@ export default function TemplateMarketplace() {
       })
       if (res.ok) {
         const data: TemplateListResponse = await res.json()
-        setTemplates(data.templates)
+        setTemplates(data.templates?.length ? data.templates : DEMO_TEMPLATES)
       } else {
-        console.error('Failed to fetch templates')
-        setTemplates([])
+        setTemplates(DEMO_TEMPLATES)
       }
     } catch (e) {
       console.error('Error fetching templates:', e)
+      setTemplates(DEMO_TEMPLATES)
     } finally {
       setIsLoading(false)
     }
@@ -595,10 +606,12 @@ export default function TemplateMarketplace() {
               <div className="h-64 rounded-lg overflow-hidden border border-border-light">
                 <TemplateSpread template={selectedTemplate} />
               </div>
-              {selectedTemplate.preview_image && (
-                <p className="text-sm italic text-text-secondary dark:text-dark-text-secondary">
-                  Design: {selectedTemplate.preview_image}
-                </p>
+              {selectedTemplate.preview_image && selectedTemplate.preview_image.startsWith('http') && (
+                <img
+                  src={selectedTemplate.preview_image}
+                  alt={selectedTemplate.name}
+                  className="w-full rounded-lg border border-border-light object-cover max-h-48"
+                />
               )}
               <p className="text-body text-text-secondary dark:text-dark-text-secondary">{selectedTemplate.description}</p>
               {selectedTemplate.style_notes && (
@@ -620,11 +633,16 @@ export default function TemplateMarketplace() {
                   </div>
                 </div>
               )}
-              <div className="flex gap-3 pt-6 border-t border-border-light">
+              <div className="flex gap-3 pt-6 border-t border-border-light flex-wrap">
                 <button
-                  onClick={() => { setShowPreview(false); router.push(`/dashboard/templates/${selectedTemplate.id}/editor`) }}
+                  onClick={() => { setShowPreview(false); handleUseTemplate(selectedTemplate) }}
                   className="flex-1 bg-primary text-white px-4 py-3 rounded-lg font-semibold hover:bg-primary-dark transition">
                   ✏️ Edit This Template
+                </button>
+                <button
+                  onClick={() => { setShowCustomize(true) }}
+                  className="flex-1 border-2 border-[#D4AF37] text-[#9C7416] px-4 py-3 rounded-lg font-semibold hover:bg-[#FBE7A1]/30 transition">
+                  🎨 Customize
                 </button>
                 {portfolios.length > 0 && (
                   <button
@@ -863,7 +881,7 @@ export default function TemplateMarketplace() {
                     setSaveAsVariant(false);
 
                     // Step 3: Navigate to the new project
-                    router.push(`/dashboard/project/${projectId}`);
+                    router.push(`/dashboard/templates/${selectedTemplate.id}/editor?project=${projectId}`);
                   } catch (error) {
                     console.error('Error creating portfolio:', error);
                     alert('Failed to create portfolio. Please try again.');

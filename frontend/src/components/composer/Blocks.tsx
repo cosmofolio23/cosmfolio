@@ -15,8 +15,18 @@ export function EditableText({
   multiline?: boolean
   placeholder?: string
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  // Sync external value changes (e.g., AI auto-fill) when the element is NOT focused
+  const prevValueRef = useRef(value)
+  if (prevValueRef.current !== value) {
+    prevValueRef.current = value
+    if (ref.current && document.activeElement !== ref.current) {
+      ref.current.textContent = value
+    }
+  }
   return (
     <div
+      ref={ref}
       contentEditable
       suppressContentEditableWarning
       data-placeholder={placeholder}
