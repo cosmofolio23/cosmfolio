@@ -677,6 +677,18 @@ export default function TemplateEditor() {
     return ensurePromiseRef.current
   }
 
+  const updateMasterElement = (id: string, patch: any) => {
+    markDirty()
+    const updatedMasterPages = (publishingPortfolio.masterPages || []).map(m => ({
+      ...m,
+      elements: m.elements.map(el => el.id === id ? { ...el, ...patch } : el)
+    }))
+    setPublishingPortfolio({
+      ...publishingPortfolio,
+      masterPages: updatedMasterPages
+    })
+  }
+
   const ACCEPTED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
   const uploadImage = async (file: File): Promise<string> => {
     // validate type + size up front so the user gets a clear message
@@ -733,6 +745,7 @@ export default function TemplateEditor() {
         backgrounds: publishingPortfolio.backgrounds || [],
         masterPages: publishingPortfolio.masterPages || [],
         grid: publishingPortfolio.grid,
+        pageSize: publishingPortfolio.pageSize,
       },
       lastSavedAt: now,
     }
@@ -1632,6 +1645,7 @@ export default function TemplateEditor() {
                         setPages(updater(pages))
                       }}
                       overflowVisible
+                      onUpdateMasterElement={updateMasterElement}
                     />
                     <div className="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Left Page · Page {leftIdx + 1}</div>
                   </div>
@@ -1665,6 +1679,7 @@ export default function TemplateEditor() {
                         setPages(updater(pages))
                       }}
                       overflowVisible
+                      onUpdateMasterElement={updateMasterElement}
                     />
                     <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
                   </div>
@@ -1691,6 +1706,7 @@ export default function TemplateEditor() {
                   markDirty()
                   setPages(updater(pages))
                 }}
+                onUpdateMasterElement={updateMasterElement}
               />
             </div>
           )}

@@ -7,6 +7,7 @@
  * the book view and the exported PDF.
  */
 
+import { useState } from 'react'
 import type { DesignTokens } from './types'
 import type { BackgroundLayer, BackgroundDefinition, MasterElement, GridSettings, DrawingMetadata } from './publishingTypes'
 
@@ -110,7 +111,21 @@ const POS: Record<string, React.CSSProperties> = {
   'center': { top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center' },
 }
 
-function MasterElementView({ el, ctx, tokens }: { el: MasterElement; ctx: PageContext; tokens: DesignTokens }) {
+function MasterElementView({
+  el,
+  ctx,
+  tokens,
+  editable = false,
+  isSelected = false,
+  onSelect,
+}: {
+  el: MasterElement
+  ctx: PageContext
+  tokens: DesignTokens
+  editable?: boolean
+  isSelected?: boolean
+  onSelect?: () => void
+}) {
   if (el.hidden) return null
   const base: React.CSSProperties = el.position === 'custom'
     ? { left: el.x, top: el.y, width: el.width, height: el.height }
@@ -121,28 +136,200 @@ function MasterElementView({ el, ctx, tokens }: { el: MasterElement; ctx: PageCo
     transform: `${base.transform || ''} ${rot}`.trim() || undefined,
     opacity: el.opacity ?? 1, zIndex: el.zIndex ?? 30,
     color: el.color || tokens.text, fontSize: el.fontSize ?? 11, fontFamily: el.fontFamily || tokens.bodyFont,
+    outline: isSelected ? '2px solid #7c3aed' : undefined,
+    outlineOffset: '2px',
+    cursor: editable && !el.locked ? 'pointer' : undefined,
   }
+
+  const handleSelect = (e: React.MouseEvent) => {
+    if (!editable) return
+    e.stopPropagation()
+    onSelect?.()
+  }
+
   if (el.type === 'line') {
-    return <div style={{ ...style, width: el.width ? `${el.width}px` : '90%', height: el.strokeWidth ?? 1, background: el.strokeColor || el.color || tokens.text }} />
+    return <div onClick={handleSelect} style={{ ...style, width: el.width ? `${el.width}px` : '90%', height: el.strokeWidth ?? 1, background: el.strokeColor || el.color || tokens.text }} />
   }
   if (el.type === 'shape') {
-    return <div style={{ ...style, width: el.width ?? 40, height: el.height ?? 40, background: el.color || tokens.accent }} />
+    return <div onClick={handleSelect} style={{ ...style, width: el.width ?? 40, height: el.height ?? 40, background: el.color || tokens.accent }} />
   }
   if (el.type === 'image' && el.imageUrl) {
-    return <img src={el.imageUrl} alt="" style={{ ...style, width: el.width ?? 60, height: el.height ?? 60, objectFit: 'contain' }} />
+    return <img onClick={handleSelect} src={el.imageUrl} alt="" style={{ ...style, width: el.width ?? 60, height: el.height ?? 60, objectFit: 'contain' }} />
   }
   if (el.type === 'watermark') {
-    return <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ opacity: el.opacity ?? 0.08, zIndex: el.zIndex ?? 30 }}>
-      <span style={{ transform: `rotate(${el.rotation ?? -30}deg)`, fontSize: el.fontSize ?? 64, color: el.color || tokens.text, fontWeight: 800, whiteSpace: 'nowrap' }}>{subst(el.textTemplate || el.text, ctx)}</span>
-    </div>
+    return (
+      <div onClick={handleSelect} className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ opacity: el.opacity ?? 0.08, zIndex: el.zIndex ?? 30 }}>
+        <span style={{ transform: `rotate(${el.rotation ?? -30}deg)`, fontSize: el.fontSize ?? 64, color: el.color || tokens.text, fontWeight: 800, whiteSpace: 'nowrap', pointerEvents: editable ? 'auto' : 'none' }}>{subst(el.textTemplate || el.text, ctx)}</span>
+      </div>
+    )
   }
   // text
-  return <div style={style} className="whitespace-nowrap">{subst(el.textTemplate || el.text, ctx)}</div>
+  return <div onClick={handleSelect} style={style} className="whitespace-nowrap">{subst(el.textTemplate || el.text, ctx)}</div>
 }
 
-export function MasterElements({ elements, ctx, tokens }: { elements?: MasterElement[]; ctx: PageContext; tokens: DesignTokens }) {
+export function MasterElements({
+  elements,
+  ctx,
+  tokens,
+  editable = false,
+  onUpdateElement,
+}: {
+  elements?: MasterElement[]
+  ctx: PageContext
+  tokens: DesignTokens
+  editable?: boolean
+  onUpdateElement?: (id: string, patch: Partial<MasterElement>) => void
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
   if (!elements?.length) return null
-  return <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 30 }}>{elements.map(el => <MasterElementView key={el.id} el={el} ctx={ctx} tokens={tokens} />)}</div>
+
+  return (
+    <div
+      className={`absolute inset-0 overflow-hidden ${editable ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      style={{ zIndex: 30 }}
+      onClick={() => setSelectedId(null)}
+    >
+      {elements.map(el => {
+        const isSelected = selectedId === el.id
+        return (
+          <div key={el.id} className="contents">
+            <MasterElementView
+              el={el}
+              ctx={ctx}
+              tokens={tokens}
+              editable={editable}
+              isSelected={isSelected}
+              onSelect={() => setSelectedId(el.id)}
+            />
+
+            {/* Popover/Toolbar for MasterElement editing */}
+            {isSelected && editable && onUpdateElement && (
+              <div
+                className="absolute z-50 flex flex-col gap-1.5 bg-slate-900 text-white rounded-lg p-2.5 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px] cursor-default"
+                style={{
+                  left: el.position === 'custom' ? `${el.x ?? 50}%` : '50%',
+                  top: el.position === 'custom' ? `${(el.y ?? 50) + 5}%` : '85%',
+                  transform: 'translate(-50%, -100%)',
+                }}
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.preventDefault()}
+              >
+                <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5 mb-1.5">
+                  <span className="text-[9px] font-bold text-purple-400 uppercase tracking-widest">Edit Master Element</span>
+                  <button type="button" onClick={() => setSelectedId(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+                </div>
+
+                {/* Edit Text Template */}
+                {(el.type === 'text' || el.type === 'watermark') && (
+                  <div className="flex flex-col gap-0.5 mb-1">
+                    <span className="text-[8px] text-slate-400 uppercase">Text Template</span>
+                    <input
+                      type="text"
+                      value={el.textTemplate || el.text || ''}
+                      onChange={e => onUpdateElement(el.id, { textTemplate: e.target.value, text: e.target.value })}
+                      className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                    />
+                    <span className="text-[7px] text-slate-500">Vars: {'${pageNumber}'}, {'${projectTitle}'}, {'${projectNumber}'}</span>
+                  </div>
+                )}
+
+                {/* Font options */}
+                {(el.type === 'text' || el.type === 'watermark') && (
+                  <div className="grid grid-cols-2 gap-1.5 mb-1">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] text-slate-400 uppercase">Font</span>
+                      <select
+                        value={el.fontFamily || ''}
+                        onChange={e => onUpdateElement(el.id, { fontFamily: e.target.value })}
+                        className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[9px]"
+                      >
+                        <option value="">Body Font</option>
+                        <option value={tokens.headingFont}>Heading Font</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="monospace">Monospace</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] text-slate-400 uppercase">Size</span>
+                      <input
+                        type="number"
+                        min="6"
+                        max="96"
+                        value={el.fontSize || 11}
+                        onChange={e => onUpdateElement(el.id, { fontSize: parseInt(e.target.value) || 11 })}
+                        className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px] w-14"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Position and Color */}
+                <div className="grid grid-cols-2 gap-1.5 mb-1">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[8px] text-slate-400 uppercase">Position</span>
+                    <select
+                      value={el.position}
+                      onChange={e => onUpdateElement(el.id, { position: e.target.value as any })}
+                      className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[9px]"
+                    >
+                      <option value="top-left">Top Left</option>
+                      <option value="top-center">Top Center</option>
+                      <option value="top-right">Top Right</option>
+                      <option value="bottom-left">Bottom Left</option>
+                      <option value="bottom-center">Bottom Center</option>
+                      <option value="bottom-right">Bottom Right</option>
+                      <option value="center">Center</option>
+                      <option value="custom">Custom X/Y</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[8px] text-slate-400 uppercase">Color</span>
+                    <input
+                      type="color"
+                      value={el.color || '#000000'}
+                      onChange={e => onUpdateElement(el.id, { color: e.target.value })}
+                      className="w-full h-5 rounded border-0 cursor-pointer bg-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Custom coordinates if custom position */}
+                {el.position === 'custom' && (
+                  <div className="grid grid-cols-2 gap-1.5 mb-1">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] text-slate-400 uppercase">X (%)</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={el.x ?? 0}
+                        onChange={e => onUpdateElement(el.id, { x: parseInt(e.target.value) || 0 })}
+                        className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] text-slate-400 uppercase">Y (%)</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={el.y ?? 0}
+                        onChange={e => onUpdateElement(el.id, { y: parseInt(e.target.value) || 0 })}
+                        className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 /* ------------------------------- grid guides ----------------------------- */

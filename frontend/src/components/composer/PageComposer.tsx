@@ -11,7 +11,7 @@ import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
 import type { DemoPalette } from '@/components/templates/demoArt'
 import { BackgroundLayers, MasterElements, GridOverlay, DrawingInfoBar, type PageContext } from './PublishingLayers'
-import type { BackgroundLayer, MasterElement, GridSettings } from './publishingTypes'
+import type { BackgroundLayer, MasterElement, GridSettings, PageSize } from './publishingTypes'
 import { FreeCanvas } from './FreeCanvas'
 import type { FreeElement } from './types'
 
@@ -36,13 +36,15 @@ interface Props {
   pages?: Page[]
   onUpdateGlobalPages?: (updater: (pages: Page[]) => Page[]) => void
   overflowVisible?: boolean
+  onUpdateMasterElement?: (id: string, patch: Partial<MasterElement>) => void
+  pageSize?: PageSize
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents'
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, pages, onUpdateGlobalPages, overflowVisible }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -63,7 +65,13 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
   return (
     <div
       className={`relative w-full mx-auto shadow-2xl ${overflowVisible ? '' : 'overflow-hidden'}`}
-      style={{ background: tokens.background, color: tokens.text, fontFamily: tokens.bodyFont, aspectRatio: '210 / 297', maxWidth: 760 }}
+      style={{
+        background: tokens.background,
+        color: tokens.text,
+        fontFamily: tokens.bodyFont,
+        aspectRatio: pageSize ? `${pageSize.width} / ${pageSize.height}` : '210 / 297',
+        width: '100%'
+      }}
     >
       {/* Publishing background layers (behind content) */}
       <BackgroundLayers backgrounds={backgrounds} />
@@ -89,9 +97,34 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             pages={pages || []}
             pageContext={pageContext}
             onUpdateGlobalPages={onUpdateGlobalPages}
+            masterElements={masterElements}
             onInsertImage={url => {
-              const newBlock = { ...createBlock('render'), imageUrl: url, zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' as const }
-              onChange({ ...page, blocks: [...page.blocks, newBlock] })
+              // Exact placeholder slot replacement logic (BUG 1)
+              const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
+              const idx = region.imageIndex ?? 0
+              if (idx < currentImages.length) {
+                const targetBlockId = currentImages[idx].id
+                const updatedBlocks = page.blocks.map(b =>
+                  b.id === targetBlockId ? { ...b, imageUrl: url, zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' as const } : b
+                )
+                onChange({ ...page, blocks: updatedBlocks })
+              } else {
+                const newBlocks = [...page.blocks]
+                const needed = idx - currentImages.length + 1
+                for (let k = 0; k < needed; k++) {
+                  const isLast = k === needed - 1
+                  const newImgBlock = {
+                    ...createBlock('render'),
+                    imageUrl: isLast ? url : undefined,
+                    zoom: 1,
+                    xOffset: 0,
+                    yOffset: 0,
+                    fit: 'cover' as const
+                  }
+                  newBlocks.push(newImgBlock)
+                }
+                onChange({ ...page, blocks: newBlocks })
+              }
             }}
           />
         ))}
@@ -106,7 +139,15 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
       <DrawingInfoBar meta={page.drawingMeta} tokens={tokens} />
 
       {/* Publishing master elements (headers / footers / page numbers, above content) */}
-      {pageContext && <MasterElements elements={masterElements} ctx={pageContext} tokens={tokens} />}
+      {pageContext && (
+        <MasterElements
+          elements={masterElements}
+          ctx={pageContext}
+          tokens={tokens}
+          editable={!!editableFree}
+          onUpdateElement={onUpdateMasterElement}
+        />
+      )}
 
       {/* Free-canvas overlay (movable / resizable / rotatable elements) */}
       {(editableFree || (page.freeElements && page.freeElements.length > 0)) && (
@@ -123,7 +164,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 }
 
 function gridStyle(r: Region): React.CSSProperties {
-  return { gridColumn: `${r.c0} / span ${r.cs}`, gridRow: `${r.r0} / span ${r.rs}`, minHeight: 0, minWidth: 0 }
+  return { gridColumn: `${r.c0} / span ${r.cs}`, gridRow: `${r.r0} / span ${r.rs}`, minHeight: 0, minWidth: 0, position: 'relative', zIndex: 20 }
 }
 
 function ImageUploadPlaceholder({
@@ -201,7 +242,7 @@ function ImageUploadPlaceholder({
 }
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages,
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements,
 }: {
   region: Region
   spec: LayoutSpec
@@ -217,8 +258,23 @@ function RegionView({
   pages?: Page[]
   pageContext?: PageContext
   onUpdateGlobalPages?: (updater: (pages: Page[]) => Page[]) => void
+  masterElements?: MasterElement[]
 }) {
-  const style = gridStyle(region)
+  const style = { ...gridStyle(region) }
+
+  // Collision detection and safe area guard (BUG 4)
+  const hasTopMaster = masterElements?.some(el => !el.hidden && (el.position.startsWith('top') || (el.position === 'custom' && (el.y ?? 0) < 15)))
+  const hasBottomMaster = masterElements?.some(el => !el.hidden && (el.position.startsWith('bottom') || (el.position === 'custom' && (el.y ?? 0) > 85)))
+  
+  const overlapsTop = region.r0 <= 2
+  const overlapsBottom = (region.r0 + region.rs - 1) >= 11
+
+  if (overlapsTop && hasTopMaster && region.role !== 'title') {
+    style.paddingTop = '28px'
+  }
+  if (overlapsBottom && hasBottomMaster) {
+    style.paddingBottom = '28px'
+  }
 
   /* ---- image region ---- */
   if (region.role === 'image') {
@@ -464,7 +520,35 @@ function RegionView({
       {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
-      {region.role === 'contents' && <ContentsBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} pages={pages || []} layoutId={spec.id} />}
+      {region.role === 'contents' && (
+        <div className="w-full h-full flex flex-col justify-between">
+          <div className="flex-1 min-h-0">
+            <ContentsBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} pages={pages || []} layoutId={spec.id} />
+          </div>
+          {onUpdateGlobalPages && (
+            <button
+              onClick={() => {
+                onUpdateGlobalPages(currentPages => {
+                  const newPage = {
+                    id: `p-${Date.now()}`,
+                    type: 'project' as const,
+                    layoutId: 'twoThirdsStack.titleMetaInline',
+                    blocks: [
+                      { id: `b-${Date.now()}-1`, type: 'title' as const, text: 'New Project' },
+                      { id: `b-${Date.now()}-2`, type: 'meta' as const, fields: [{ label: 'Year', value: '2026' }] }
+                    ]
+                  }
+                  return [...currentPages, newPage]
+                })
+              }}
+              className="mt-2 text-[10px] font-semibold uppercase tracking-wider self-start cursor-pointer transition hover:opacity-80"
+              style={{ color: tokens.accent }}
+            >
+              + Add Content Item
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

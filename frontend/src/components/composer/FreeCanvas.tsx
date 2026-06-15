@@ -80,7 +80,7 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
     <div
       ref={ref}
       className="absolute inset-0"
-      style={{ zIndex: 40, pointerEvents: editable ? 'auto' : 'none' }}
+      style={{ zIndex: editable ? 40 : 10, pointerEvents: editable ? 'auto' : 'none' }}
       onPointerMove={editable ? onMove : undefined}
       onPointerUp={editable ? onUp : undefined}
       onPointerLeave={editable ? onUp : undefined}

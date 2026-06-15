@@ -1,12 +1,23 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { Block, DesignTokens, LegendItem, MetaField } from './types'
 
 /* ----------------------------- Editable Text ----------------------------- */
 
 export function EditableText({
-  value, onChange, className, style, multiline = false, placeholder,
+  value,
+  onChange,
+  className,
+  style,
+  multiline = false,
+  placeholder,
+  fontFamily,
+  fontSize,
+  color,
+  align,
+  bold,
+  onFormatChange,
 }: {
   value: string
   onChange: (v: string) => void
@@ -14,8 +25,18 @@ export function EditableText({
   style?: React.CSSProperties
   multiline?: boolean
   placeholder?: string
+  fontFamily?: string
+  fontSize?: number
+  color?: string
+  align?: 'left' | 'center' | 'right'
+  bold?: boolean
+  onFormatChange?: (patch: any) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const [isSelected, setIsSelected] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+
   // Sync external value changes (e.g., AI auto-fill) when the element is NOT focused
   const prevValueRef = useRef(value)
   if (prevValueRef.current !== value) {
@@ -24,17 +45,156 @@ export function EditableText({
       ref.current.textContent = value
     }
   }
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsEditing(true)
+    setIsSelected(true)
+    // Focus the contentEditable element
+    setTimeout(() => {
+      ref.current?.focus()
+      // Move cursor to the end
+      if (ref.current) {
+        const range = document.createRange()
+        const sel = window.getSelection()
+        range.selectNodeContents(ref.current)
+        range.collapse(false)
+        sel?.removeAllRanges()
+        sel?.addRange(range)
+      }
+    }, 10)
+  }
+
+  const handleBlur = (e: React.FocusEvent) => {
+    const relatedTarget = e.relatedTarget as HTMLElement
+    if (relatedTarget && wrapperRef.current?.contains(relatedTarget)) {
+      return
+    }
+    setIsEditing(false)
+    setIsSelected(false)
+    onChange(ref.current?.textContent || '')
+  }
+
+  useEffect(() => {
+    if (!isSelected) return
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsSelected(false)
+        setIsEditing(false)
+        onChange(ref.current?.textContent || '')
+      }
+    }
+    document.addEventListener('mousedown', handleDocumentClick)
+    return () => document.removeEventListener('mousedown', handleDocumentClick)
+  }, [isSelected, onChange])
+
   return (
-    <div
-      ref={ref}
-      contentEditable
-      suppressContentEditableWarning
-      data-placeholder={placeholder}
-      onBlur={e => onChange(e.currentTarget.textContent || '')}
-      className={`outline-none focus:bg-yellow-100/40 hover:bg-yellow-50/30 rounded px-1 -mx-1 transition cursor-text ${multiline ? 'whitespace-pre-line' : ''} ${className || ''}`}
-      style={style}
-    >
-      {value}
+    <div ref={wrapperRef} className="relative group/edittext inline-block min-w-[30px]" onBlur={handleBlur}>
+      <div
+        ref={ref}
+        contentEditable={isEditing}
+        suppressContentEditableWarning
+        data-placeholder={placeholder}
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsSelected(true)
+        }}
+        onDoubleClick={handleDoubleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !multiline) {
+            e.preventDefault()
+            ref.current?.blur()
+          } else if (e.key === 'Escape') {
+            e.preventDefault()
+            if (ref.current) ref.current.textContent = value
+            ref.current?.blur()
+          }
+        }}
+        className={`outline-none rounded px-1 -mx-1 transition ${
+          isEditing ? 'cursor-text bg-white border border-blue-400 shadow-sm text-black' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : 'hover:bg-yellow-50/30'
+        } ${multiline ? 'whitespace-pre-line' : ''} ${className || ''}`}
+        style={style}
+      >
+        {value}
+      </div>
+
+      {/* Floating Toolbar */}
+      {isSelected && onFormatChange && (
+        <div 
+          className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
+          onMouseDown={e => e.preventDefault()} // Prevent losing focus from editor
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-slate-400 uppercase">Font</span>
+            <select
+              value={fontFamily || ''}
+              onChange={e => onFormatChange({ fontFamily: e.target.value })}
+              className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[9px]"
+            >
+              <option value="">Default</option>
+              <option value="Inter">Inter</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Georgia">Georgia</option>
+              <option value="monospace">Mono</option>
+            </select>
+          </div>
+          <span className="text-white/20">|</span>
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-slate-400 uppercase">Size</span>
+            <input
+              type="number"
+              min="8"
+              max="72"
+              value={fontSize || 14}
+              onChange={e => onFormatChange({ fontSize: parseInt(e.target.value) || 14 })}
+              className="bg-slate-800 border border-slate-700 rounded w-10 px-1 py-0.5 text-white text-[9px]"
+            />
+          </div>
+          <span className="text-white/20">|</span>
+          <button
+            type="button"
+            onClick={() => onFormatChange({ bold: !bold })}
+            className={`px-1.5 py-0.5 rounded font-bold ${bold ? 'bg-blue-600 text-white' : 'hover:bg-white/20'}`}
+          >
+            B
+          </button>
+          <span className="text-white/20">|</span>
+          <div className="flex items-center border border-slate-700 rounded overflow-hidden bg-slate-800">
+            {(['left', 'center', 'right'] as const).map(a => (
+              <button
+                key={a}
+                type="button"
+                onClick={() => onFormatChange({ align: a })}
+                className={`px-1 py-0.5 text-[9px] capitalize ${align === a ? 'bg-blue-600 text-white' : 'hover:bg-slate-700'}`}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+          <span className="text-white/20">|</span>
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-slate-400 uppercase">Color</span>
+            <input
+              type="color"
+              value={color || '#000000'}
+              onChange={e => onFormatChange({ color: e.target.value })}
+              className="w-4 h-4 rounded-sm border-0 cursor-pointer bg-transparent"
+            />
+          </div>
+          <span className="text-white/20">|</span>
+          <button
+            type="button"
+            onClick={() => {
+              setIsSelected(false)
+              setIsEditing(false)
+            }}
+            className="text-[9px] font-bold text-gray-400 hover:text-white px-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -279,12 +439,57 @@ export function LegendBlock({
   onChange: (patch: Partial<Block>) => void
 }) {
   const items = block.legendItems || []
+  
+  // Detect block subtype (BUG 5)
+  const labelLower = (block.label || '').toLowerCase()
+  let blockType: 'education' | 'experience' | 'skills' | 'software' | 'competitions' | 'awards' | 'projects' | 'generic' = 'generic'
+  if (labelLower.includes('edu')) blockType = 'education'
+  else if (labelLower.includes('exp') || labelLower.includes('work')) blockType = 'experience'
+  else if (labelLower.includes('soft') || labelLower.includes('tool')) blockType = 'software'
+  else if (labelLower.includes('skill')) blockType = 'skills'
+  else if (labelLower.includes('award') || labelLower.includes('hon')) blockType = 'awards'
+  else if (labelLower.includes('comp')) blockType = 'competitions'
+  else if (labelLower.includes('proj')) blockType = 'projects'
+
   const update = (idx: number, patch: Partial<LegendItem>) => {
     const next = items.map((it, i) => i === idx ? { ...it, ...patch } : it)
     onChange({ legendItems: next })
   }
-  const add = () => onChange({ legendItems: [...items, { key: String(items.length + 1).padStart(2, '0'), label: 'New space' }] })
+
+  const add = () => {
+    let newItem = { key: String(items.length + 1).padStart(2, '0'), label: 'New item' }
+    if (blockType === 'education') {
+      newItem = { key: '2026', label: 'B.Arch — University' }
+    } else if (blockType === 'experience') {
+      newItem = { key: '2026', label: 'Intern Architect at Studio' }
+    } else if (blockType === 'skills') {
+      newItem = { key: 'Skill', label: 'Advanced' }
+    } else if (blockType === 'software') {
+      newItem = { key: 'Revit', label: 'Advanced' }
+    } else if (blockType === 'competitions') {
+      newItem = { key: '2026', label: 'Competition Name' }
+    } else if (blockType === 'awards') {
+      newItem = { key: '2026', label: 'Design Award' }
+    } else if (blockType === 'projects') {
+      newItem = { key: '2026', label: 'Project Name' }
+    }
+    onChange({ legendItems: [...items, newItem] })
+  }
+
   const remove = (idx: number) => onChange({ legendItems: items.filter((_, i) => i !== idx) })
+
+  const getButtonText = () => {
+    switch (blockType) {
+      case 'education': return '+ Add Education'
+      case 'experience': return '+ Add Experience'
+      case 'skills': return '+ Add Skill'
+      case 'software': return '+ Add Software'
+      case 'competitions': return '+ Add Competition'
+      case 'awards': return '+ Add Award'
+      case 'projects': return '+ Add Project'
+      default: return '+ Add Item'
+    }
+  }
 
   return (
     <div className="w-full">
@@ -314,7 +519,7 @@ export function LegendBlock({
         ))}
       </div>
       <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: tokens.accent }}>
-        + Add item
+        {getButtonText()}
       </button>
     </div>
   )
@@ -331,14 +536,93 @@ export function MetaBlock({
   layout?: 'stack' | 'inline'
 }) {
   const fields = block.fields || []
+  const label = block.label || 'INFO'
+
+  // Detect block subtype (BUG 5)
+  const labelLower = label.toLowerCase()
+  let blockType: 'education' | 'experience' | 'skills' | 'software' | 'competitions' | 'awards' | 'projects' | 'generic' = 'generic'
+  if (labelLower.includes('edu')) blockType = 'education'
+  else if (labelLower.includes('exp') || labelLower.includes('work')) blockType = 'experience'
+  else if (labelLower.includes('soft') || labelLower.includes('tool')) blockType = 'software'
+  else if (labelLower.includes('skill')) blockType = 'skills'
+  else if (labelLower.includes('award') || labelLower.includes('hon')) blockType = 'awards'
+  else if (labelLower.includes('comp')) blockType = 'competitions'
+  else if (labelLower.includes('proj')) blockType = 'projects'
+
   const update = (idx: number, patch: Partial<MetaField>) => {
     onChange({ fields: fields.map((f, i) => i === idx ? { ...f, ...patch } : f) })
   }
-  const add = () => onChange({ fields: [...fields, { label: 'Label', value: 'Value' }] })
+
+  const add = () => {
+    let newFields: MetaField[] = []
+    if (blockType === 'education') {
+      newFields = [
+        { label: 'Institution', value: 'University Name' },
+        { label: 'Degree', value: 'B.Arch' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else if (blockType === 'experience') {
+      newFields = [
+        { label: 'Firm', value: 'Office Name' },
+        { label: 'Role', value: 'Intern' },
+        { label: 'Year', value: '2025' }
+      ]
+    } else if (blockType === 'skills') {
+      newFields = [
+        { label: 'Skill', value: 'CAD' },
+        { label: 'Level', value: 'Advanced' }
+      ]
+    } else if (blockType === 'software') {
+      newFields = [
+        { label: 'Software', value: 'Rhino' },
+        { label: 'Level', value: 'Advanced' }
+      ]
+    } else if (blockType === 'competitions') {
+      newFields = [
+        { label: 'Competition', value: 'Competition Name' },
+        { label: 'Rank', value: '1st Place' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else if (blockType === 'awards') {
+      newFields = [
+        { label: 'Award', value: 'Design Excellence' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else if (blockType === 'projects') {
+      newFields = [
+        { label: 'Project', value: 'New Project' },
+        { label: 'Typology', value: 'Residential' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else {
+      newFields = [{ label: 'Label', value: 'Value' }]
+    }
+    onChange({ fields: [...fields, ...newFields] })
+  }
+
   const remove = (idx: number) => onChange({ fields: fields.filter((_, i) => i !== idx) })
+
+  const getButtonText = () => {
+    switch (blockType) {
+      case 'education': return '+ Add Education'
+      case 'experience': return '+ Add Experience'
+      case 'skills': return '+ Add Skill'
+      case 'software': return '+ Add Software'
+      case 'competitions': return '+ Add Competition'
+      case 'awards': return '+ Add Award'
+      case 'projects': return '+ Add Project'
+      default: return '+ Field'
+    }
+  }
 
   return (
     <div className={layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'space-y-2'}>
+      <EditableText
+        value={label}
+        onChange={v => onChange({ label: v })}
+        className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b block w-full"
+        style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
+      />
       {fields.map((f, idx) => (
         <div key={idx} className="group/meta">
           <EditableText
@@ -358,7 +642,7 @@ export function MetaBlock({
           </div>
         </div>
       ))}
-      <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: tokens.accent }}>+ Field</button>
+      <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider block w-full text-left" style={{ color: tokens.accent }}>{getButtonText()}</button>
     </div>
   )
 }
@@ -371,8 +655,20 @@ export function TitleBlock({ block, tokens, onChange, size = 'lg' }: { block: Bl
     <EditableText
       value={block.text || ''}
       onChange={v => onChange({ text: v })}
-      className={`font-bold leading-tight ${sizes[size]}`}
-      style={{ color: tokens.primary, fontFamily: tokens.headingFont }}
+      className={`leading-tight ${sizes[size]}`}
+      fontFamily={block.fontFamily || tokens.headingFont}
+      fontSize={block.fontSize}
+      color={block.color || tokens.primary}
+      align={block.align || 'left'}
+      bold={block.bold !== undefined ? block.bold : true}
+      onFormatChange={patch => onChange(patch)}
+      style={{ 
+        color: block.color || tokens.primary, 
+        fontFamily: block.fontFamily || tokens.headingFont,
+        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        textAlign: block.align || 'left',
+        fontWeight: block.bold !== false ? 'bold' : 'normal'
+      }}
     />
   )
 }
@@ -383,7 +679,19 @@ export function SubtitleBlock({ block, tokens, onChange }: { block: Block; token
       value={block.text || ''}
       onChange={v => onChange({ text: v })}
       className="text-lg"
-      style={{ color: tokens.accent, fontFamily: tokens.bodyFont }}
+      fontFamily={block.fontFamily || tokens.bodyFont}
+      fontSize={block.fontSize}
+      color={block.color || tokens.accent}
+      align={block.align || 'left'}
+      bold={block.bold}
+      onFormatChange={patch => onChange(patch)}
+      style={{ 
+        color: block.color || tokens.accent, 
+        fontFamily: block.fontFamily || tokens.bodyFont,
+        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        textAlign: block.align || 'left',
+        fontWeight: block.bold ? 'bold' : 'normal'
+      }}
     />
   )
 }
@@ -395,7 +703,19 @@ export function DescriptionBlock({ block, tokens, onChange }: { block: Block; to
       onChange={v => onChange({ text: v })}
       multiline
       className="text-sm leading-relaxed"
-      style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
+      fontFamily={block.fontFamily || tokens.bodyFont}
+      fontSize={block.fontSize}
+      color={block.color || tokens.text}
+      align={block.align || 'left'}
+      bold={block.bold}
+      onFormatChange={patch => onChange(patch)}
+      style={{ 
+        color: block.color || tokens.text, 
+        fontFamily: block.fontFamily || tokens.bodyFont,
+        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        textAlign: block.align || 'left',
+        fontWeight: block.bold ? 'bold' : 'normal'
+      }}
     />
   )
 }

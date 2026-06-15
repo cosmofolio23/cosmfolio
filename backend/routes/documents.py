@@ -100,7 +100,20 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         # Try to use pdfkit/wkhtmltopdf if available, otherwise return HTML
         try:
             import pdfkit
-            pdf_bytes = pdfkit.from_string(html_content, False, options={'page-size': 'A4'})
+            publishing = doc.get('publishing', {}) or {}
+            page_size = publishing.get('pageSize', {}) or {}
+            width_mm = page_size.get('width', 210)
+            height_mm = page_size.get('height', 297)
+            pdf_options = {
+                'page-width': f'{width_mm}mm',
+                'page-height': f'{height_mm}mm',
+                'margin-top': '0mm',
+                'margin-bottom': '0mm',
+                'margin-left': '0mm',
+                'margin-right': '0mm',
+                'disable-smart-shrinking': None
+            }
+            pdf_bytes = pdfkit.from_string(html_content, False, options=pdf_options)
             if pdf_bytes:
                 return FileResponse(
                     BytesIO(pdf_bytes),
@@ -128,6 +141,11 @@ def _render_document_to_html(doc: dict) -> str:
     tokens = doc.get('tokens', {})
     pages = doc.get('pages', [])
 
+    publishing = doc.get('publishing', {}) or {}
+    page_size = publishing.get('pageSize', {}) or {}
+    width_mm = page_size.get('width', 210)
+    height_mm = page_size.get('height', 297)
+
     bg = tokens.get('background', '#ffffff')
     text_color = tokens.get('text', '#1a1a1a')
     primary = tokens.get('primary', '#111111')
@@ -142,8 +160,8 @@ def _render_document_to_html(doc: dict) -> str:
         '<style>',
         '  * { margin: 0; padding: 0; box-sizing: border-box; }',
         f'  html, body {{ font-family: {body_font}; background: {bg}; color: {text_color}; line-height: 1.6; }}',
-        '  .portfolio { width: 210mm; margin: 0 auto; }',
-        '  .page { page-break-after: always; padding: 20mm; min-height: 297mm; background: ' + bg + '; }',
+        f'  .portfolio {{ width: {width_mm}mm; margin: 0 auto; }}',
+        f'  .page {{ page-break-after: always; padding: 20mm; min-height: {height_mm}mm; background: {bg}; }}',
         '  .page:first-child { page-break-before: avoid; }',
         f'  h1 {{ font-family: {heading_font}; color: {primary}; font-size: 42px; font-weight: 600; line-height: 1.2; margin-bottom: 20px; }}',
         f'  h2 {{ font-family: {heading_font}; color: {accent}; font-size: 28px; font-weight: 500; margin-top: 30px; margin-bottom: 15px; }}',
@@ -161,7 +179,7 @@ def _render_document_to_html(doc: dict) -> str:
         '  .legend-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 10px; }',
         '  .legend-item { font-size: 13px; margin-bottom: 6px; }',
         '  .legend-key { display: inline-block; min-width: 24px; padding: 2px 6px; background: ' + accent + '; color: white; border-radius: 2px; font-weight: 600; margin-right: 8px; }',
-        '  @page { size: A4; margin: 0; }',
+        f'  @page {{ size: {width_mm}mm {height_mm}mm; margin: 0; }}',
         '  @media print { body { background: white; margin: 0; padding: 0; } .page { background: white; } }',
         '</style></head><body>',
         '<div class="portfolio">',

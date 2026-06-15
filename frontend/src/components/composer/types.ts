@@ -47,6 +47,13 @@ export interface Block {
   zoom?: number
   xOffset?: number
   yOffset?: number
+
+  // On-canvas text formatting (V4 floating toolbar)
+  fontFamily?: string
+  fontSize?: number
+  bold?: boolean
+  align?: 'left' | 'center' | 'right'
+  color?: string
 }
 
 export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume'

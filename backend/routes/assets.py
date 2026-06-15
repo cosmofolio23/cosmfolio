@@ -86,38 +86,82 @@ async def upload_asset(
         if tags:
             tag_list = [t.strip() for t in tags.split(",") if t.strip()]
 
-        # Create asset record
-        asset_data = {
+        # Build public URLs the frontend can render directly
+        storage = get_storage_client()
+        public_url = await storage.get_public_url(upload_result["storage_path"])
+        preview_path = upload_result.get("preview_path") or upload_result["storage_path"]
+        preview_public = await storage.get_public_url(preview_path)
+
+        # Try inserting simple schema first (as defined in database.py)
+        simple_data = {
             "id": asset_id,
-            "user_id": current_user["user_id"],
-            "portfolio_id": portfolio_id,
-            "file_name": file.filename,
-            "original_file_name": file.filename,
-            "file_size": upload_result["file_size"],
-            "mime_type": upload_result["mime_type"],
+            "project_id": portfolio_id,
             "asset_type": asset_type,
-            "storage_path": upload_result["storage_path"],
-            "thumb_path": upload_result["thumb_path"],
-            "preview_path": upload_result["preview_path"],
-            "width": upload_result["width"],
-            "height": upload_result["height"],
-            "aspect_ratio": upload_result["aspect_ratio"],
-            "description": description,
-            "exif_data": upload_result["metadata"].get("exif", {}),
-            "upload_status": "completed",
-            "thumbnail_status": "completed",
-            "version": 1,
+            "file_url": public_url,
+            "file_name": file.filename,
+            "file_size": upload_result.get("file_size", 0),
+            "width": upload_result.get("width"),
+            "height": upload_result.get("height"),
+            "analysis": {},
+            "upload_order": 0,
             "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
         }
 
-        # Insert asset
-        response = supabase.table("assets").insert(asset_data).execute()
+        inserted_record = None
+        try:
+            response = supabase.table("assets").insert(simple_data).execute()
+            if response.data:
+                inserted_record = response.data[0]
+        except Exception as simple_err:
+            print(f"[WARNING] Simple schema insert failed, trying minimal schema: {simple_err}")
+            try:
+                minimal_data = {
+                    "id": asset_id,
+                    "project_id": portfolio_id,
+                    "asset_type": asset_type,
+                    "file_url": public_url,
+                    "file_name": file.filename,
+                    "file_size": upload_result.get("file_size", 0),
+                    "upload_order": 0,
+                    "analysis": {},
+                    "created_at": datetime.utcnow().isoformat(),
+                }
+                response = supabase.table("assets").insert(minimal_data).execute()
+                if response.data:
+                    inserted_record = response.data[0]
+            except Exception as minimal_err:
+                print(f"[WARNING] Minimal schema insert failed, trying extended schema: {minimal_err}")
+                # Fallback: Create extended asset record
+                asset_data = {
+                    "id": asset_id,
+                    "user_id": current_user["user_id"],
+                    "portfolio_id": portfolio_id,
+                    "file_name": file.filename,
+                    "original_file_name": file.filename,
+                    "file_size": upload_result["file_size"],
+                    "mime_type": upload_result["mime_type"],
+                    "asset_type": asset_type,
+                    "storage_path": upload_result["storage_path"],
+                    "thumb_path": upload_result["thumb_path"],
+                    "preview_path": upload_result["preview_path"],
+                    "width": upload_result["width"],
+                    "height": upload_result["height"],
+                    "aspect_ratio": upload_result["aspect_ratio"],
+                    "description": description,
+                    "exif_data": upload_result["metadata"].get("exif", {}),
+                    "upload_status": "completed",
+                    "thumbnail_status": "completed",
+                    "version": 1,
+                    "created_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat(),
+                }
+                # Insert asset
+                response = supabase.table("assets").insert(asset_data).execute()
+                if response.data:
+                    inserted_record = response.data[0]
 
-        if not response.data:
+        if not inserted_record:
             raise DatabaseException("Failed to create asset record")
-
-        asset = response.data[0]
 
         # Insert tags
         if tag_list:
@@ -130,17 +174,16 @@ async def upload_asset(
                 }
                 for tag in tag_list
             ]
-            supabase.table("asset_tags").insert(tag_data).execute()
-
-        # Build public URLs the frontend can render directly
-        storage = get_storage_client()
-        public_url = await storage.get_public_url(upload_result["storage_path"])
-        preview_path = upload_result.get("preview_path") or upload_result["storage_path"]
-        preview_public = await storage.get_public_url(preview_path)
+            try:
+                supabase.table("asset_tags").insert(tag_data).execute()
+            except Exception as tag_err:
+                print(f"[WARNING] Inserting tags failed: {tag_err}")
 
         # Return asset with tags
         return {
-            **asset,
+            **inserted_record,
+            "project_id": portfolio_id,
+            "file_url": public_url,
             "tags": tag_list,
             "url": public_url,
             "preview_url": preview_public,
