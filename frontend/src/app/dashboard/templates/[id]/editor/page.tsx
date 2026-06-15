@@ -182,6 +182,18 @@ export default function TemplateEditor() {
           }
         }
       }
+      // "My Template": hydrate a user-saved template from localStorage
+      if (templateId.startsWith('my-')) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('cosmofolio_my_templates') || '[]')
+          const mt = saved.find((t: any) => t.id === templateId)
+          if (mt?.document) {
+            hydrate({ ...mt.document, templateName: mt.name, templateId })
+            setIsLoading(false); loadedRef.current = true
+            return
+          }
+        } catch { /* fall through to template fetch */ }
+      }
       // Fresh start: seed from the template in the route
       await fetchTemplate()
     } catch (e) {
@@ -551,6 +563,71 @@ export default function TemplateEditor() {
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
   const setTitleBlock = (id?: string) => { if (currentPage) updatePage({ ...currentPage, titleBlockId: id }) }
 
+  const FONT_PAIRS: Array<[string, string]> = [
+    ['Playfair Display', 'Inter'], ['Montserrat', 'Lora'], ['Bebas Neue', 'Roboto'],
+    ['Georgia', 'Source Sans Pro'], ['Oswald', 'Open Sans'], ['Poppins', 'Lato'],
+  ]
+  const AI_PALETTES: Array<[string, string]> = [
+    ['#1a1a1a', '#b08d57'], ['#0f2c4c', '#e0533d'], ['#1d1d1f', '#2a9d8f'], ['#222', '#bc6c25'], ['#16161a', '#c9a96a'],
+  ]
+  const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)]
+
+  /** Real handler for the AI Design Assistant — applies tangible changes. */
+  const handleAICommand = (cmd: string) => {
+    if (!currentPage) return
+    const ofType = LAYOUT_CATALOG.filter(s => s.suits.includes(currentPage.type))
+    const applyDna = (id: string, label: string) => { const d = STYLE_DNA.find(x => x.id === id); if (d) setTok(d.tokens); flashUpload('ok', label) }
+    switch (cmd) {
+      case 'minimize': applyDna('minimal-white', 'Applied a minimal, white-space palette'); break
+      case 'premium': applyDna('dark-studio', 'Premium dark + gold treatment applied'); break
+      case 'competition': applyDna('competition', 'Competition style applied'); break
+      case 'thesis': applyDna('thesis', 'Thesis style applied'); break
+      case 'colors': { const [pr, ac] = pick(AI_PALETTES); setTok({ primary: pr, accent: ac }); flashUpload('ok', 'New colour pairing applied'); break }
+      case 'fonts': { const [h, b] = pick(FONT_PAIRS); setTok({ headingFont: h, bodyFont: b }); flashUpload('ok', `Fonts: ${h} / ${b}`); break }
+      case 'white-space': { const opts = ofType.filter(s => s.category === 'Single' || s.imageCount <= 1); if (opts.length) { setLayout(pick(opts).id); flashUpload('ok', 'Opened up the composition') } break }
+      case 'hierarchy': { const opts = ofType.filter(s => s.regions.some(r => r.role === 'title')); if (opts.length) { setLayout(pick(opts).id); flashUpload('ok', 'Strengthened the title hierarchy') } break }
+      case 'recompose': { const opts = ofType.filter(s => s.id !== currentPage.layoutId); if (opts.length) { const s = pick(opts); setLayout(s.id); flashUpload('ok', `Recomposed → ${s.name}`) } break }
+      case 'generate-bg': {
+        const bg = { id: `bg-${Date.now()}`, name: 'AI Background', zIndex: 0, opacity: 1, visible: true, appliesTo: 'entire-project' as const, definitions: [{ type: 'pattern' as const, pattern: 'parametric' as const, color: tokens.accent, scale: 1.4, opacity: 0.16 }] }
+        markDirty(); setPublishingPortfolio(p => ({ ...p, backgrounds: [...(p.backgrounds || []), bg] }))
+        flashUpload('ok', 'Parametric background added (see Publishing tab)'); break
+      }
+      case 'improve-page': flashUpload('info', 'Lead with one hero image · keep ≤2 type sizes · align everything to the grid.', 6000); break
+      case 'improve-text': flashUpload('info', 'Open with a one-line concept, then 2–3 sentences of design intent.', 6000); break
+      default: flashUpload('info', `AI: ${cmd}`)
+    }
+  }
+
+  const saveAsMyTemplate = () => {
+    const name = window.prompt('Name this template (it will appear under "My Templates"):', portfolioTitle || template?.name || 'My Template')
+    if (!name) return
+    try {
+      const saved = JSON.parse(localStorage.getItem('cosmofolio_my_templates') || '[]')
+      const entry = {
+        id: `my-${Date.now().toString(36)}`,
+        name,
+        savedAt: new Date().toISOString(),
+        colors: { primary: tokens.primary, secondary: tokens.muted, accent: tokens.accent, background: tokens.background, text: tokens.text },
+        fonts: { heading: tokens.headingFont, body: tokens.bodyFont },
+        // a portfolio-shaped hint so the gallery preview picks a sensible cover
+        layouts: { cover: { structure: getSpec(pages[0]?.layoutId || '').kind === 'overlay' ? 'full-bleed overlay' : 'split' } },
+        placeholders: { renders: 3, plans: 1, sections: 1 },
+        document: {
+          version: 2, templateId, title: portfolioTitle, tokens, pages,
+          publishing: {
+            backgrounds: publishingPortfolio.backgrounds || [],
+            masterPages: publishingPortfolio.masterPages || [],
+            grid: publishingPortfolio.grid,
+          },
+        },
+      }
+      localStorage.setItem('cosmofolio_my_templates', JSON.stringify([entry, ...saved].slice(0, 50)))
+      flashUpload('ok', `⭐ Saved "${name}" to My Templates`)
+    } catch (e: any) {
+      flashUpload('err', `Could not save template: ${e?.message || 'storage error'}`)
+    }
+  }
+
   const addBlock = (type: BlockType) => {
     if (!currentPage) return
     const next = { ...currentPage, blocks: [...currentPage.blocks, createBlock(type)] }
@@ -875,6 +952,7 @@ export default function TemplateEditor() {
               <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
             )}
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
+            <button onClick={saveAsMyTemplate} className="px-3 py-2 border rounded-lg text-sm font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30" title="Save this design as a reusable template">⭐ Save Template</button>
             <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">{isExporting ? '⏳' : '📄 PDF'}</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
@@ -968,6 +1046,7 @@ export default function TemplateEditor() {
             backgrounds={publishingPortfolio.backgrounds}
             masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
             pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
+            grid={publishingPortfolio.grid}
           />
           <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400`}>
             Page {currentIdx + 1}/{pages.length} · {!isMobile && 'Click any text or image to edit'}
@@ -1001,7 +1080,7 @@ export default function TemplateEditor() {
                   onUpdate={p => { markDirty(); setPublishingPortfolio(p) }}
                 />
                 <AIDesignAssistant
-                  onCommand={cmd => console.log('AI command:', cmd)}
+                  onCommand={handleAICommand}
                 />
               </div>
             )}

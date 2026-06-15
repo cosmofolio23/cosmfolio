@@ -7,13 +7,15 @@ import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 import TemplateSpread from '@/components/templates/TemplateSpread'
 import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
+import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
 
-type LibTab = 'portfolios' | LibraryView
+type LibTab = 'portfolios' | LibraryView | 'mytemplates'
 const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
   { id: 'portfolios', label: 'Full Portfolios', icon: '📘' },
   { id: 'about', label: 'About & Resume Spreads', icon: '🧑‍🎨' },
   { id: 'project', label: 'Project Spreads', icon: '🏛️' },
   { id: 'titleblocks', label: 'Title Blocks', icon: '🏷️' },
+  { id: 'mytemplates', label: 'My Templates', icon: '⭐' },
 ]
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -376,7 +378,8 @@ export default function TemplateMarketplace() {
           ))}
         </div>
 
-        {libTab !== 'portfolios' && <LibraryBrowser view={libTab} />}
+        {libTab === 'mytemplates' && <MyTemplatesGrid />}
+        {libTab !== 'portfolios' && libTab !== 'mytemplates' && <LibraryBrowser view={libTab} />}
 
         {libTab === 'portfolios' && (<>
         {/* Filter Controls */}

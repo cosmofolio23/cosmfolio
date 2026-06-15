@@ -8,7 +8,7 @@
  */
 
 import type { DesignTokens } from './types'
-import type { BackgroundLayer, BackgroundDefinition, MasterElement } from './publishingTypes'
+import type { BackgroundLayer, BackgroundDefinition, MasterElement, GridSettings } from './publishingTypes'
 
 export interface PageContext {
   pageNumber: number
@@ -143,4 +143,34 @@ function MasterElementView({ el, ctx, tokens }: { el: MasterElement; ctx: PageCo
 export function MasterElements({ elements, ctx, tokens }: { elements?: MasterElement[]; ctx: PageContext; tokens: DesignTokens }) {
   if (!elements?.length) return null
   return <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 30 }}>{elements.map(el => <MasterElementView key={el.id} el={el} ctx={ctx} tokens={tokens} />)}</div>
+}
+
+/* ------------------------------- grid guides ----------------------------- */
+/** Visual grid overlay (editing aid). Honors the GridEditor settings. */
+export function GridOverlay({ grid }: { grid?: GridSettings }) {
+  if (!grid || !grid.enabled || !grid.showGrid) return null
+  const color = grid.gridColor || '#3b82f6'
+  const op = grid.gridOpacity ?? 0.18
+  const sw = grid.gridStrokeWidth ?? 1
+  const lines: React.ReactNode[] = []
+
+  if (grid.type === 'column') {
+    const n = grid.columns ?? 12
+    for (let i = 0; i <= n; i++) lines.push(<div key={`c${i}`} className="absolute top-0 bottom-0" style={{ left: `${(i / n) * 100}%`, width: sw, background: color }} />)
+  } else if (grid.type === 'baseline') {
+    const h = grid.baselineHeight ?? 24
+    for (let y = 0; y < 1200; y += h) lines.push(<div key={`b${y}`} className="absolute left-0 right-0" style={{ top: y, height: sw, background: color }} />)
+  } else if (grid.type === 'golden-ratio') {
+    [38.2, 61.8].forEach((p, i) => {
+      lines.push(<div key={`gx${i}`} className="absolute top-0 bottom-0" style={{ left: `${p}%`, width: sw, background: color }} />)
+      lines.push(<div key={`gy${i}`} className="absolute left-0 right-0" style={{ top: `${p}%`, height: sw, background: color }} />)
+    })
+  } else {
+    // modular / architectural / custom → square module grid
+    const m = grid.moduleSize || grid.columnWidth || 40
+    for (let x = 0; x < 800; x += m) lines.push(<div key={`mx${x}`} className="absolute top-0 bottom-0" style={{ left: x, width: sw, background: color }} />)
+    for (let y = 0; y < 1200; y += (grid.rowHeight || m)) lines.push(<div key={`my${y}`} className="absolute left-0 right-0" style={{ top: y, height: sw, background: color }} />)
+  }
+
+  return <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 20, opacity: op }}>{lines}</div>
 }

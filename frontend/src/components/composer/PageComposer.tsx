@@ -9,8 +9,8 @@ import {
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
 import type { DemoPalette } from '@/components/templates/demoArt'
-import { BackgroundLayers, MasterElements, type PageContext } from './PublishingLayers'
-import type { BackgroundLayer, MasterElement } from './publishingTypes'
+import { BackgroundLayers, MasterElements, GridOverlay, type PageContext } from './PublishingLayers'
+import type { BackgroundLayer, MasterElement, GridSettings } from './publishingTypes'
 
 const toPalette = (t: DesignTokens): DemoPalette => ({
   primary: t.primary, accent: t.accent, bg: t.background, text: t.text, muted: t.muted,
@@ -25,13 +25,14 @@ interface Props {
   backgrounds?: BackgroundLayer[]
   masterElements?: MasterElement[]
   pageContext?: PageContext
+  grid?: GridSettings
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -56,6 +57,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
     >
       {/* Publishing background layers (behind content) */}
       <BackgroundLayers backgrounds={backgrounds} />
+      <GridOverlay grid={grid} />
 
       <div
         className="absolute inset-0 grid p-6"
