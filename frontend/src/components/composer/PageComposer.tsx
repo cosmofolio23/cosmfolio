@@ -73,6 +73,42 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
         aspectRatio: pageSize ? `${pageSize.width} / ${pageSize.height}` : '210 / 297',
         width: '100%'
       }}
+      onDragOver={e => e.preventDefault()}
+      onDrop={async e => {
+        e.preventDefault()
+        if (!onFreeChange || !onUploadImage) return
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
+        if (files.length === 0) return
+
+        const urls = await Promise.all(files.map(f => onUploadImage(f)))
+        const validUrls = urls.filter(u => !!u)
+        if (validUrls.length === 0) return
+
+        const cols = Math.ceil(Math.sqrt(validUrls.length))
+        const rows = Math.ceil(validUrls.length / cols)
+        const margin = 5
+        const gap = 2
+        const availableW = 100 - (margin * 2) - (gap * (cols - 1))
+        const availableH = 100 - (margin * 2) - (gap * (rows - 1))
+        const w = availableW / cols
+        const h = availableH / rows
+
+        const newElements = validUrls.map((url, i) => {
+          const col = i % cols
+          const row = Math.floor(i / cols)
+          return {
+            id: `fe-${Date.now()}-${i}`,
+            kind: 'image' as const,
+            x: margin + col * (w + gap),
+            y: margin + row * (h + gap),
+            w, h,
+            imageUrl: url,
+            z: 10 + i,
+            locked: false
+          }
+        })
+        onFreeChange([...(page.freeElements || []), ...newElements])
+      }}
     >
       {/* Publishing background layers (behind content) */}
       <BackgroundLayers backgrounds={backgrounds} />
@@ -211,6 +247,7 @@ function ImageUploadPlaceholder({
       onDragLeave={() => setIsDragging(false)}
       onDrop={async e => {
         e.preventDefault()
+        e.stopPropagation()
         setIsDragging(false)
         const file = e.dataTransfer.files?.[0]
         if (file) await handleUpload(file)

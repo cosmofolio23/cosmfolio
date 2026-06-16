@@ -22,11 +22,13 @@ interface Props {
 }
 
 type DragMode = 'move' | 'resize' | 'rotate'
+type SnapLine = { axis: 'x' | 'y'; pos: number }
 
 export function FreeCanvas({ elements, onChange, tokens, editable = false, onApplyScope, onSelectionChange }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [selId, setSelId] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
+  const [snapLines, setSnapLines] = useState<SnapLine[]>([])
 
   useEffect(() => {
     const el = selId ? elements.find(e => e.id === selId) ?? null : null
@@ -67,17 +69,90 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
     const r = rect(); if (!r) return
     const dxp = ((e.clientX - d.sx) / r.width) * 100
     const dyp = ((e.clientY - d.sy) / r.height) * 100
-    if (d.mode === 'move') {
-      patch(d.id, { x: Math.max(-50, Math.min(150, d.el.x + dxp)), y: Math.max(-50, Math.min(150, d.el.y + dyp)) })
-    } else if (d.mode === 'resize') {
-      patch(d.id, { w: Math.max(3, d.el.w + dxp), h: Math.max(3, d.el.h + dyp) })
+    
+    if (d.mode === 'move' || d.mode === 'resize') {
+      let nx = d.el.x + dxp
+      let ny = d.el.y + dyp
+      let nw = d.el.w
+      let nh = d.el.h
+
+      if (d.mode === 'resize') {
+        nx = d.el.x
+        ny = d.el.y
+        nw = Math.max(3, d.el.w + dxp)
+        nh = Math.max(3, d.el.h + dyp)
+      }
+
+      const SNAP_T = 1.5 // 1.5% threshold
+      const newSnaps: SnapLine[] = []
+
+      const myX = [nx, nx + nw / 2, nx + nw]
+      const myY = [ny, ny + nh / 2, ny + nh]
+
+      let snappedX = false
+      let snappedY = false
+      let finalX = nx
+      let finalY = ny
+      let finalW = nw
+      let finalH = nh
+
+      const targets = [
+        { id: 'page', x: [0, 50, 100], y: [0, 50, 100] },
+        ...elements.filter(e => e.id !== d.id).map(e => ({
+          id: e.id,
+          x: [e.x, e.x + e.w / 2, e.x + e.w],
+          y: [e.y, e.y + e.h / 2, e.y + e.h]
+        }))
+      ]
+
+      for (const t of targets) {
+        if (!snappedX) {
+          for (let i = 0; i < 3; i++) {
+            if (d.mode === 'resize' && i !== 2) continue // only snap right edge for SE resize
+            for (let j = 0; j < 3; j++) {
+              if (Math.abs(myX[i] - t.x[j]) < SNAP_T) {
+                if (d.mode === 'move') finalX = t.x[j] - (i * nw / 2)
+                else finalW = t.x[j] - d.el.x
+                newSnaps.push({ axis: 'x', pos: t.x[j] })
+                snappedX = true; break
+              }
+            }
+            if (snappedX) break
+          }
+        }
+        if (!snappedY) {
+          for (let i = 0; i < 3; i++) {
+            if (d.mode === 'resize' && i !== 2) continue // only snap bottom edge for SE resize
+            for (let j = 0; j < 3; j++) {
+              if (Math.abs(myY[i] - t.y[j]) < SNAP_T) {
+                if (d.mode === 'move') finalY = t.y[j] - (i * nh / 2)
+                else finalH = t.y[j] - d.el.y
+                newSnaps.push({ axis: 'y', pos: t.y[j] })
+                snappedY = true; break
+              }
+            }
+            if (snappedY) break
+          }
+        }
+      }
+
+      setSnapLines(newSnaps)
+
+      if (d.mode === 'move') {
+        patch(d.id, { x: Math.max(-50, Math.min(150, finalX)), y: Math.max(-50, Math.min(150, finalY)) })
+      } else {
+        patch(d.id, { w: Math.max(3, finalW), h: Math.max(3, finalH) })
+      }
     } else {
       const ang = Math.atan2(e.clientY - d.cy, e.clientX - d.cx) * 180 / Math.PI + 90
-      patch(d.id, { rotation: Math.round(ang) })
+      let rot = Math.round(ang)
+      if (Math.abs(rot % 45) < 4 || Math.abs(rot % 45) > 41) rot = Math.round(rot / 45) * 45 // 45deg snap
+      patch(d.id, { rotation: rot })
+      setSnapLines([])
     }
   }
 
-  const onUp = () => { drag.current = null }
+  const onUp = () => { drag.current = null; setSnapLines([]) }
 
   const sel = elements.find(e => e.id === selId)
   const maxZ = elements.reduce((m, e) => Math.max(m, e.z ?? 0), 0)
@@ -152,6 +227,16 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
         )
       })}
 
+      {/* Snap Lines */}
+      {snapLines.map((line, i) => (
+        <div key={`snap-${i}`} className="absolute bg-pink-500 pointer-events-none z-50"
+          style={line.axis === 'x' ? {
+            left: `${line.pos}%`, top: 0, bottom: 0, width: 1, transform: 'translateX(-50%)'
+          } : {
+            top: `${line.pos}%`, left: 0, right: 0, height: 1, transform: 'translateY(-50%)'
+          }}
+        />
+      ))}
     </div>
   )
 }
