@@ -284,6 +284,43 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
 
           {sel.kind === 'graphic' && (
             <div className="space-y-1.5 text-[11px]">
+              {/* Graphic DNA type picker */}
+              <div>
+                <span className="text-[9px] text-slate-400 uppercase block mb-1">Graphic Type:</span>
+                <div className="grid grid-cols-3 gap-1">
+                  {([
+                    ['parametric-curve', 'Parametric Curve'],
+                    ['contour', 'Topography'],
+                    ['voronoi', 'Voronoi Mesh'],
+                    ['measurement', 'Dimension Line'],
+                    ['coordinates', 'Coordinates'],
+                    ['section-line', 'Section Line'],
+                    ['zaha-flow', 'Zaha Flow'],
+                    ['wind-flow', 'Wind Flow'],
+                    ['movement-path', 'Movement Path'],
+                    ['spline', 'Spline'],
+                    ['hexagon', 'Hexagon Grid'],
+                    ['triangle-grid', 'Triangle Grid'],
+                    ['blueprint-grid', 'Blueprint Grid'],
+                    ['cad-background', 'CAD Background'],
+                    ['site-overlay', 'Site Overlay'],
+                    ['section-marker', 'Section Marker'],
+                    ['arrow', 'Arrow'],
+                    ['frame-corner', 'Frame Corner'],
+                    ['construction-line', 'Construction Line'],
+                  ] as const).map(([t, label]) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => patch(sel.id, { graphicType: t })}
+                      className={`py-1 px-1.5 rounded text-[8px] text-center leading-tight truncate border transition ${sel.graphicType === t ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300'}`}
+                      title={label}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {/* Graphic DNA Controls */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">

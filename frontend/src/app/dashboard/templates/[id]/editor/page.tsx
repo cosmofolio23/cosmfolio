@@ -1373,7 +1373,7 @@ export default function TemplateEditor() {
             <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
               {pages.map((page) => (
                 <div key={page.id}>
-                  <PageComposer page={page} tokens={tokens} onChange={() => {}} />
+                  <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} />
                   <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
                 </div>
               ))}
@@ -1418,7 +1418,7 @@ export default function TemplateEditor() {
                           key={page.id} 
                           className="relative flex-1 overflow-hidden" 
                           style={{
-                            aspectRatio: '210/297',
+                            aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}`,
                             boxShadow: isLeft 
                               ? 'inset -12px 0 20px rgba(0,0,0,0.15), -10px 10px 20px rgba(0,0,0,0.1)' 
                               : isRight 
@@ -1434,6 +1434,7 @@ export default function TemplateEditor() {
                             masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
                             pageContext={{ pageNumber: pages.indexOf(page) + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(pages.indexOf(page) + 1).padStart(2, '0') }}
                             grid={publishingPortfolio.grid}
+                            pageSize={publishingPortfolio.pageSize}
                           />
                         </div>
                       )
@@ -1604,7 +1605,7 @@ export default function TemplateEditor() {
           <div className="max-w-[760px] mx-auto mb-3 flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mr-1">+ Add free element</span>
-              {([['text', 'T Text'], ['image', '🖼 Image'], ['rect', '▭ Box'], ['ellipse', '◯ Ellipse'], ['line', '— Line']] as const).map(([k, label]) => (
+              {([['text', 'T Text'], ['image', '🖼 Image'], ['rect', '▭ Box'], ['ellipse', '◯ Ellipse'], ['line', '— Line'], ['graphic', '✦ Graphic']] as const).map(([k, label]) => (
                 <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
                   className="px-2.5 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium hover:border-blue-400 hover:bg-blue-50 transition">
                   {label}
@@ -1648,6 +1649,7 @@ export default function TemplateEditor() {
                       }}
                       overflowVisible
                       onUpdateMasterElement={updateMasterElement}
+                      pageSize={publishingPortfolio.pageSize}
                     />
                     <div className="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Left Page · Page {leftIdx + 1}</div>
                   </div>
@@ -1682,6 +1684,7 @@ export default function TemplateEditor() {
                       }}
                       overflowVisible
                       onUpdateMasterElement={updateMasterElement}
+                      pageSize={publishingPortfolio.pageSize}
                     />
                     <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
                   </div>
@@ -1709,6 +1712,7 @@ export default function TemplateEditor() {
                   setPages(updater(pages))
                 }}
                 onUpdateMasterElement={updateMasterElement}
+                pageSize={publishingPortfolio.pageSize}
               />
             </div>
           )}
@@ -1797,7 +1801,7 @@ export default function TemplateEditor() {
                             {/* Real miniature visual layout preview showing color & typography tokens */}
                             <div className="grid grid-cols-3 gap-1 p-1 rounded border border-gray-200" style={{ background: st.tokens.background }}>
                               {/* Cover mini */}
-                              <div className="aspect-[210/297] rounded flex flex-col justify-between p-1 relative border border-gray-100" style={{ background: st.tokens.background }}>
+                              <div className="rounded flex flex-col justify-between p-1 relative border border-gray-100" style={{ background: st.tokens.background, aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}` }}>
                                 <div className="w-1/2 h-1 rounded-full" style={{ background: st.tokens.accent }} />
                                 <div className="space-y-0.5">
                                   <div className="w-4/5 h-2 rounded" style={{ background: st.tokens.primary }} />
@@ -1806,7 +1810,7 @@ export default function TemplateEditor() {
                                 <div className="text-[4px] font-bold overflow-hidden" style={{ color: st.tokens.primary, fontFamily: st.tokens.headingFont }}>PORTFOLIO</div>
                               </div>
                               {/* About Spread mini */}
-                              <div className="col-span-2 aspect-[420/297] rounded flex gap-0.5 border border-gray-100 overflow-hidden relative" style={{ background: st.tokens.background }}>
+                              <div className="col-span-2 rounded flex gap-0.5 border border-gray-100 overflow-hidden relative" style={{ background: st.tokens.background, aspectRatio: `${publishingPortfolio.pageSize.width * 2}/${publishingPortfolio.pageSize.height}` }}>
                                 <div className="flex-1 p-1 flex flex-col gap-1 border-r border-gray-200">
                                   <div className="w-1/2 h-1.5 rounded" style={{ background: st.tokens.primary }} />
                                   <div className="space-y-0.5">
@@ -1973,10 +1977,10 @@ export default function TemplateEditor() {
                             <div className="text-[8px] text-gray-400 uppercase font-semibold">{st.style} · {st.category}</div>
                             {/* Double mini layout previews side-by-side */}
                             <div className="flex gap-1.5 bg-gray-150 p-1 rounded-md mt-0.5 w-full">
-                              <div className="flex-1 aspect-[210/297] scale-[0.9] border border-gray-200 rounded overflow-hidden">
+                              <div className="flex-1 scale-[0.9] border border-gray-200 rounded overflow-hidden" style={{ aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}` }}>
                                 <LayoutThumb spec={getSpec(st.leftLayoutId)} tokens={tokens} active={false} />
                               </div>
-                              <div className="flex-1 aspect-[210/297] scale-[0.9] border border-gray-200 rounded overflow-hidden">
+                              <div className="flex-1 scale-[0.9] border border-gray-200 rounded overflow-hidden" style={{ aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}` }}>
                                 <LayoutThumb spec={getSpec(st.rightLayoutId)} tokens={tokens} active={false} />
                               </div>
                             </div>
