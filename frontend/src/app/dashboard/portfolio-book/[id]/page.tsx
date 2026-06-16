@@ -134,6 +134,12 @@ export default function PortfolioBookPage() {
             >
               Share
             </button>
+            <Link
+              href={`/dashboard/portfolio-web/${projectId}`}
+              className="px-4 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+            >
+              🌐 Web
+            </Link>
             <button
               onClick={() => window.print()}
               className="px-4 py-2 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"

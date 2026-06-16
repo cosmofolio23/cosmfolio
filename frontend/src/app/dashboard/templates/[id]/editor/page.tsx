@@ -1003,7 +1003,65 @@ export default function TemplateEditor() {
 
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
   const setTitleBlock = (id?: string) => { if (currentPage) updatePage({ ...currentPage, titleBlockId: id }) }
+  const magicShuffleLayout = () => {
+    if (!currentPage.freeElements) return
+    const images = currentPage.freeElements.filter(el => el.kind === 'image')
+    if (images.length === 0) {
+      flashUpload('err', 'No free canvas images to shuffle. Add some images first!')
+      return
+    }
 
+    const margin = 5
+    const gap = 2
+
+    const layouts = [
+      (imgs: FreeElement[]) => {
+        if (imgs.length < 2) return [{ ...imgs[0], x: margin, y: margin, w: 100 - margin * 2, h: 100 - margin * 2 }]
+        const wLeft = 60
+        const wRight = 100 - margin * 2 - wLeft - gap
+        const hRight = (100 - margin * 2 - gap * (imgs.length - 2)) / (imgs.length - 1)
+        return imgs.map((img, i) => {
+          if (i === 0) return { ...img, x: margin, y: margin, w: wLeft, h: 100 - margin * 2 }
+          return { ...img, x: margin + wLeft + gap, y: margin + (i - 1) * (hRight + gap), w: wRight, h: hRight }
+        })
+      },
+      (imgs: FreeElement[]) => {
+        if (imgs.length < 2) return [{ ...imgs[0], x: margin, y: margin, w: 100 - margin * 2, h: 100 - margin * 2 }]
+        const hTop = 60
+        const hBottom = 100 - margin * 2 - hTop - gap
+        const wBottom = (100 - margin * 2 - gap * (imgs.length - 2)) / (imgs.length - 1)
+        return imgs.map((img, i) => {
+          if (i === 0) return { ...img, x: margin, y: margin, w: 100 - margin * 2, h: hTop }
+          return { ...img, x: margin + (i - 1) * (wBottom + gap), y: margin + hTop + gap, w: wBottom, h: hBottom }
+        })
+      },
+      (imgs: FreeElement[]) => {
+        const cols = Math.ceil(Math.sqrt(imgs.length))
+        const rows = Math.ceil(imgs.length / cols)
+        const w = (100 - margin * 2 - gap * (cols - 1)) / cols
+        const h = (100 - margin * 2 - gap * (rows - 1)) / rows
+        return imgs.map((img, i) => {
+          const col = i % cols
+          const row = Math.floor(i / cols)
+          return { ...img, x: margin + col * (w + gap), y: margin + row * (h + gap), w, h }
+        })
+      }
+    ]
+
+    const preset = layouts[Math.floor(Math.random() * layouts.length)]
+    const newImages = preset(images)
+
+    const updatedElements = currentPage.freeElements.map(el => {
+      if (el.kind === 'image') {
+        const updated = newImages.find(n => n.id === el.id)
+        if (updated) return updated
+      }
+      return el
+    })
+
+    updatePage({ ...currentPage, freeElements: updatedElements })
+    flashUpload('ok', '✨ Layout Shuffled!')
+  }
   const addFreeElement = (kind: FreeElement['kind']) => {
     if (!currentPage) return
     if (kind === 'image') {
@@ -1518,7 +1576,10 @@ export default function TemplateEditor() {
             <button onClick={undo} disabled={historyIdx <= 0} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Undo (Ctrl+Z)">↶</button>
             <button onClick={redo} disabled={historyIdx >= history.length - 1} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Redo (Ctrl+Shift+Z)">↷</button>
             {projectId && (
-              <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
+              <>
+                <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
+                <Link href={`/dashboard/portfolio-web/${projectId}`} className="px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg text-sm font-medium hover:opacity-90 shadow-sm" title="Interactive Web Experience">🌐 Web</Link>
+              </>
             )}
             <button onClick={() => setShowSpreadManager(true)} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700" title="Visual Spread Manager">⏹️ Spreads</button>
             <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
@@ -2094,6 +2155,14 @@ export default function TemplateEditor() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Automations</h4>
+                  <button onClick={magicShuffleLayout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border border-purple-200 text-purple-700 rounded-lg text-xs font-semibold transition">
+                    <span className="text-sm">✨</span> Magic Layout Shuffle
+                  </button>
+                  <p className="text-[10px] text-gray-400 mt-1.5 leading-tight">Instantly snap images into perfect architectural grids and alignments.</p>
                 </div>
 
                 {/* Selected element properties */}
