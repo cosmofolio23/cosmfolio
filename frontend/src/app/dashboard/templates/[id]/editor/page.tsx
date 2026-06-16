@@ -739,7 +739,16 @@ export default function TemplateEditor() {
         headers: { Authorization: `Bearer ${authToken()}` },
         body: fd,
       })
-      if (!res.ok) throw new Error(`server ${res.status}`)
+      if (!res.ok) {
+        // Surface the real server error (the backend returns JSON like
+        // { error: { message } } or { detail }) instead of a bare status code.
+        let detail = `server ${res.status}`
+        try {
+          const errBody = await res.json()
+          detail = errBody?.error?.message || errBody?.detail || detail
+        } catch { /* non-JSON body, keep status */ }
+        throw new Error(detail)
+      }
       const data = await res.json()
       const url = data.url || data.preview_url
       if (!url) throw new Error('no url returned')

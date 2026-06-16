@@ -35,6 +35,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register error handlers so custom exceptions (CosmoFolioException, etc.) return
+# proper JSON responses *through* the CORS middleware. Without this, an unhandled
+# exception (e.g. a failed asset upload) bubbles to Starlette's ServerErrorMiddleware
+# which sits OUTSIDE CORS — the 500 response then lacks Access-Control-Allow-Origin
+# and the browser reports a misleading "Failed to fetch" instead of the real error.
+try:
+    from error_handlers import setup_error_handlers
+    setup_error_handlers(app)
+    print("[OK] Error handlers registered")
+except Exception as e:
+    print(f"[WARNING] Failed to register error handlers: {e}")
+
 # Health check endpoint (critical for Render)
 @app.get("/health")
 async def health():

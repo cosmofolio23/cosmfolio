@@ -159,6 +159,23 @@ async def upload_asset(
                     inserted_record = response.data[0]
 
         if not inserted_record:
+            # The file is already in storage and we have a usable public URL — the
+            # editor only needs that URL to place the image. Don't fail the whole
+            # upload just because the metadata row couldn't be written (schema/RLS
+            # drift on the assets table). Degrade gracefully and return the URL.
+            if public_url:
+                print("[WARNING] Asset metadata insert failed; returning storage URL without DB row")
+                return {
+                    "id": asset_id,
+                    "project_id": portfolio_id,
+                    "asset_type": asset_type,
+                    "file_url": public_url,
+                    "file_name": file.filename,
+                    "file_size": upload_result.get("file_size", 0),
+                    "tags": tag_list,
+                    "url": public_url,
+                    "preview_url": preview_public,
+                }
             raise DatabaseException("Failed to create asset record")
 
         # Insert tags
