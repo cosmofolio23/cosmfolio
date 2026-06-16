@@ -24,7 +24,7 @@ export interface Region {
   imageIndex?: number
 }
 
-export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume' | 'Contents'
+export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume' | 'Contents' | 'Spread'
 
 export interface LayoutSpec {
   id: string
@@ -36,7 +36,7 @@ export interface LayoutSpec {
   kind?: 'overlay'   // cover overlay rendering
 }
 
-export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume', 'Contents']
+export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume', 'Contents', 'Spread']
 
 /* ------------------------------- geometry -------------------------------- */
 
@@ -701,6 +701,51 @@ function buildProceduralContents(): LayoutSpec[] {
   return specs
 }
 
+function buildProceduralMasterSpreads(): LayoutSpec[] {
+  const specs: LayoutSpec[] = []
+  for (let i = 1; i <= 100; i++) {
+    const regions: Region[] = []
+    const type = i % 5
+    const imageCount = (i % 3) + 1
+    
+    // Master Bleed Layouts spanning 24 columns (Left page -> Right page)
+    if (type === 0) { // Full Bleed Master Image
+       regions.push(img(0, 1, 24, 1, 13)) // Full cover across both pages
+       regions.push({ role: 'title', c0: 2, cs: 8, r0: 10, rs: 2 })
+       regions.push({ role: 'text', c0: 14, cs: 6, r0: 10, rs: 2 })
+    } else if (type === 1) { // Cinematic Split
+       regions.push(img(0, 1, 24, 4, 6)) // Middle cinematic band spanning both pages
+       regions.push({ role: 'title', c0: 1, cs: 10, r0: 1, rs: 2 })
+       regions.push({ role: 'text', c0: 1, cs: 8, r0: 10, rs: 3 })
+       regions.push({ role: 'legend', c0: 15, cs: 4, r0: 10, rs: 3 })
+    } else if (type === 2) { // Asymmetric Master
+       regions.push(img(0, 6, 18, 1, 13)) // Bleeds from middle of left page entirely across right page
+       regions.push({ role: 'title', c0: 1, cs: 4, r0: 2, rs: 4 })
+       regions.push({ role: 'text', c0: 1, cs: 4, r0: 6, rs: 6 })
+    } else if (type === 3) { // Floating Dual Renders
+       regions.push(img(0, 3, 8, 2, 8)) // Left page
+       regions.push(img(1, 14, 8, 4, 8)) // Right page (offset)
+       regions.push({ role: 'title', c0: 1, cs: 24, r0: 1, rs: 1 })
+       regions.push({ role: 'text', c0: 14, cs: 6, r0: 1, rs: 2 })
+    } else { // Magazine Editorial Spread
+       regions.push(img(0, 1, 14, 1, 13)) // Bleeds slightly past the gutter
+       regions.push({ role: 'title', c0: 16, cs: 8, r0: 2, rs: 3 })
+       regions.push({ role: 'subtitle', c0: 16, cs: 8, r0: 5, rs: 1 })
+       regions.push({ role: 'text', c0: 16, cs: 8, r0: 7, rs: 5 })
+    }
+    
+    specs.push({
+      id: `spread.master${i}`,
+      name: `Master Spread · Variation ${String(i).padStart(2, '0')}`,
+      category: 'Spread',
+      suits: ['project', 'about', 'cover'],
+      imageCount: imageCount,
+      regions
+    })
+  }
+  return specs
+}
+
 export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...COVER_SPECS,
   ...buildImageSpecs(),
@@ -712,6 +757,7 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...INDEX_SPREAD_SPECS,
   ...buildContentsSpecs(),
   ...buildProceduralContents(),
+  ...buildProceduralMasterSpreads(),
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))

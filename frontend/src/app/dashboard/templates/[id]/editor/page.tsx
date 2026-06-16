@@ -2431,6 +2431,15 @@ export default function TemplateEditor() {
                                   title={label}>{label}</button>
                               ))}
                             </div>
+                            <label className="mt-2 block border border-dashed border-gray-300 rounded text-center py-2 text-[9px] text-gray-500 hover:bg-gray-50 cursor-pointer">
+                              + Upload Custom Graphic
+                              <input type="file" accept="image/*,.svg" className="hidden" onChange={async e => {
+                                if (e.target.files && e.target.files[0]) {
+                                  const url = await uploadImage(e.target.files[0])
+                                  patchFree({ kind: 'image', src: url, graphicType: 'custom' })
+                                }
+                              }} />
+                            </label>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5">
@@ -2441,19 +2450,6 @@ export default function TemplateEditor() {
                               <label className="text-[9px] text-gray-400 uppercase">Stroke</label>
                               <input type="number" step="0.5" min="0.5" max="10" value={sel.strokeWidth || 1.5} onChange={e => patchFree({ strokeWidth: parseFloat(e.target.value) || 1.5 })}
                                 className="w-12 border border-gray-200 rounded px-1 py-0.5 text-[10px]" />
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[9px] text-gray-400">Opacity</span>
-                            <input type="range" min="0.1" max="1" step="0.05" value={sel.opacity ?? 0.85} onChange={e => patchFree({ opacity: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
-                            <span className="text-[9px] w-7 text-right font-mono">{Math.round((sel.opacity ?? 0.85) * 100)}%</span>
-                          </div>
-                          <div>
-                            <label className="text-[9px] text-gray-400 uppercase block mb-1">Replicate To</label>
-                            <div className="flex gap-1.5">
-                              <button onClick={() => applyElementScopeFromPage('page', sel)} className="flex-1 py-1.5 text-[9px] border border-gray-200 rounded hover:bg-gray-50">This Page</button>
-                              <button onClick={() => applyElementScopeFromPage('spread', sel)} className="flex-1 py-1.5 text-[9px] bg-blue-50 border border-blue-200 text-blue-700 rounded hover:bg-blue-100">Spread</button>
-                              <button onClick={() => applyElementScopeFromPage('all', sel)} className="flex-1 py-1.5 text-[9px] bg-purple-50 border border-purple-200 text-purple-700 rounded hover:bg-purple-100">All Pages</button>
                             </div>
                           </div>
                         </div>
@@ -2473,13 +2469,31 @@ export default function TemplateEditor() {
                               <input type="number" step="1" min="0" max="10" value={sel.strokeWidth || 0} onChange={e => patchFree({ strokeWidth: parseInt(e.target.value) || 0 })} className="w-10 border border-gray-200 rounded px-1 py-0.5 text-[10px]" />
                             </div>
                           </div>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[9px] text-gray-400">Opacity</span>
-                            <input type="range" min="0.1" max="1" step="0.05" value={sel.opacity ?? 1} onChange={e => patchFree({ opacity: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
-                            <span className="text-[9px] w-7 text-right font-mono">{Math.round((sel.opacity ?? 1) * 100)}%</span>
-                          </div>
                         </div>
                       )}
+
+                      {/* Universal Properties (Opacity & Replicate) */}
+                      <div className="space-y-3 pt-3 border-t mt-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[9px] text-gray-400">Opacity</span>
+                          <input type="range" min="0.05" max="1" step="0.05" value={sel.opacity ?? 1} onChange={e => patchFree({ opacity: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
+                          <span className="text-[9px] w-7 text-right font-mono">{Math.round((sel.opacity ?? 1) * 100)}%</span>
+                        </div>
+                        <div>
+                          <label className="text-[9px] text-gray-400 uppercase block mb-1">Replicate To</label>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => applyElementScopeFromPage('page', sel)} className="flex-1 py-1.5 text-[9px] border border-gray-200 rounded hover:bg-gray-50">This Page</button>
+                            <button onClick={() => applyElementScopeFromPage('spread', sel)} className="flex-1 py-1.5 text-[9px] bg-blue-50 border border-blue-200 text-blue-700 rounded hover:bg-blue-100">Spread</button>
+                            <button onClick={() => applyElementScopeFromPage('all', sel)} className="flex-1 py-1.5 text-[9px] bg-purple-50 border border-purple-200 text-purple-700 rounded hover:bg-purple-100">All Pages</button>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[9px] text-gray-400 uppercase block mb-1">Span Full Spread (200% Width)</label>
+                          <button onClick={() => patchFree({ w: 200, x: currentIdx % 2 === 0 ? -100 : 0 })} className="w-full py-1.5 text-[9px] bg-slate-800 text-white rounded hover:bg-slate-700 shadow-sm font-bold tracking-wider">
+                            MAKE FULL SPREAD
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )
                 })() : (

@@ -117,7 +117,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
       <div
         className="absolute inset-0 grid p-6"
-        style={{ gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)', gap: 8 }}
+        style={{ gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)', gridAutoColumns: '1fr', gap: 8 }}
       >
         {spec.regions.map((region, i) => (
           <RegionView
