@@ -1623,19 +1623,6 @@ export default function TemplateEditor() {
 
         {/* Center: canvas */}
         <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40 overflow-x-hidden`}>
-          {/* Free-element insert toolbar & mode controls */}
-          <div className="max-w-[760px] mx-auto mb-3 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mr-1">+ Add free element</span>
-              {([['text', 'T Text'], ['image', '🖼 Image'], ['rect', '▭ Box'], ['ellipse', '◯ Ellipse'], ['line', '— Line'], ['graphic', '✦ Graphic']] as const).map(([k, label]) => (
-                <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
-                  className="px-2.5 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium hover:border-blue-400 hover:bg-blue-50 transition">
-                  {label}
-                </button>
-              ))}
-              <span className="text-[10px] text-gray-400 ml-1 hidden md:inline">drag to move · corner to resize · double-click text to edit</span>
-            </div>
-          </div>
 
           {editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 ? (
             /* Cosmo Book Design Mode: Left and Right Page side-by-side spread */
@@ -2059,13 +2046,27 @@ export default function TemplateEditor() {
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Add element</h4>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Add content block</h4>
                   <div className="grid grid-cols-3 gap-2">
                     {ADD_BLOCKS.map(b => (
                       <button key={b.type} onClick={() => addBlock(b.type)}
                         className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
                         <span className="text-lg">{b.icon}</span>
                         <span className="text-[10px] font-medium capitalize">{blockLabel(b.type)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Free canvas elements</h4>
+                  <p className="text-[10px] text-gray-400 mb-2">drag to move · corner to resize · double-click text to edit</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([['text', 'T', 'Text'], ['image', '🖼', 'Image'], ['rect', '▭', 'Box'], ['ellipse', '◯', 'Ellipse'], ['line', '—', 'Line'], ['graphic', '✦', 'Graphic']] as const).map(([k, icon, label]) => (
+                      <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
+                        className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
+                        <span className="text-lg leading-none">{icon}</span>
+                        <span className="text-[10px] font-medium">{label}</span>
                       </button>
                     ))}
                   </div>
