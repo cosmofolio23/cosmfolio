@@ -108,6 +108,7 @@ export interface DesignTokens {
   muted: string
   headingFont: string
   bodyFont: string
+  fontScale?: number
 }
 
 let _id = 0

@@ -1814,6 +1814,21 @@ export default function TemplateEditor() {
 
         {/* Center: canvas */}
         <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40 overflow-x-hidden`}>
+          <style>{`
+            .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
+            .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
+            .portfolio-page .text-sm { font-size: 0.875em; line-height: 1.25rem; }
+            .portfolio-page .text-base { font-size: 1em; line-height: 1.5rem; }
+            .portfolio-page .text-lg { font-size: 1.125em; line-height: 1.75rem; }
+            .portfolio-page .text-xl { font-size: 1.25em; line-height: 1.75rem; }
+            .portfolio-page .text-2xl { font-size: 1.5em; line-height: 2rem; }
+            .portfolio-page .text-3xl { font-size: 1.875em; line-height: 2.25rem; }
+            .portfolio-page .text-4xl { font-size: 2.25em; line-height: 2.5rem; }
+            .portfolio-page .text-5xl { font-size: 3em; line-height: 1; }
+            .portfolio-page .text-6xl { font-size: 3.75em; line-height: 1; }
+            .portfolio-page .text-7xl { font-size: 4.5em; line-height: 1; }
+            .portfolio-page .text-8xl { font-size: 6em; line-height: 1; }
+          `}</style>
 
           {editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 ? (
             /* Cosmo Book Design Mode: Left and Right Page side-by-side spread */
@@ -2497,9 +2512,22 @@ export default function TemplateEditor() {
                     {HEADING_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                   <label className="text-[10px] text-gray-400 uppercase block mb-1">Body</label>
-                  <select value={tokens.bodyFont} onChange={e => setTok({ bodyFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                  <select value={tokens.bodyFont} onChange={e => setTok({ bodyFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3">
                     {BODY_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
+                  <label className="text-[10px] text-gray-400 uppercase block mb-1 flex justify-between">
+                    Master Font Scale
+                    <span>{Math.round((tokens.fontScale || 1) * 100)}%</span>
+                  </label>
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max="1.5" 
+                    step="0.05" 
+                    value={tokens.fontScale || 1} 
+                    onChange={e => setTok({ fontScale: parseFloat(e.target.value) })} 
+                    className="w-full"
+                  />
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex items-center justify-between mb-2">
