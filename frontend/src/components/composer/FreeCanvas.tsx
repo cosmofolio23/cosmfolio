@@ -9,7 +9,7 @@
  * static (for preview / book / export).
  */
 
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import type { FreeElement, DesignTokens } from './types'
 
 interface Props {
@@ -27,6 +27,19 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
   const [selId, setSelId] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const drag = useRef<{ mode: DragMode; id: string; sx: number; sy: number; el: FreeElement; cx: number; cy: number } | null>(null)
+
+  useEffect(() => {
+    if (!editable) return
+    const handleGlobalClick = (e: PointerEvent) => {
+      // If we clicked inside a FreeCanvas element, the element's onPointerDown stops propagation
+      // Or we can just check if e.target is part of our canvas
+      // But actually, onDown calls e.stopPropagation(). So if this fires on window, it means it wasn't a free element!
+      setSelId(null)
+      setEditId(null)
+    }
+    window.addEventListener('pointerdown', handleGlobalClick)
+    return () => window.removeEventListener('pointerdown', handleGlobalClick)
+  }, [editable])
 
   const rect = () => ref.current?.getBoundingClientRect()
 
@@ -80,11 +93,10 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
     <div
       ref={ref}
       className="absolute inset-0"
-      style={{ zIndex: editable ? 40 : 10, pointerEvents: editable ? 'auto' : 'none' }}
+      style={{ zIndex: editable ? 40 : 10, pointerEvents: 'none' }}
       onPointerMove={editable ? onMove : undefined}
       onPointerUp={editable ? onUp : undefined}
       onPointerLeave={editable ? onUp : undefined}
-      onPointerDown={editable ? () => { setSelId(null); setEditId(null) } : undefined}
     >
       {[...elements].sort((a, b) => (a.z ?? 0) - (b.z ?? 0)).map(el => {
         const selected = editable && el.id === selId
@@ -93,6 +105,7 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
           transform: `rotate(${el.rotation || 0}deg)`, opacity: el.opacity ?? 1,
           cursor: editable && !el.locked ? 'move' : 'default',
           outline: selected ? '1.5px solid #3b82f6' : 'none', outlineOffset: 2,
+          pointerEvents: editable ? 'auto' : 'none',
         }
         const editing = editable && editId === el.id && el.kind === 'text'
         return (

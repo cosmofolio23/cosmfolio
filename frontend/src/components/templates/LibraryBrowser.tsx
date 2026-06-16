@@ -26,7 +26,7 @@ const PALETTES: Array<{ name: string; p: DemoPalette; fonts: { heading: string; 
   { name: 'Blueprint', p: { primary: '#0f2c4c', accent: '#3b82f6', bg: '#f4f7fb', text: '#0f2c4c', muted: '#dde6f0' }, fonts: { heading: 'Inter, sans-serif', body: 'Inter, sans-serif' } },
 ]
 
-export default function LibraryBrowser({ view, onUse }: { view: LibraryView; onUse?: () => void }) {
+export default function LibraryBrowser({ view, onUse }: { view: LibraryView; onUse?: (item: any) => void }) {
   const router = useRouter()
   const [paletteIdx, setPaletteIdx] = useState(0)
   const [tbCat, setTbCat] = useState<'All' | TitleBlockCategory>('All')
@@ -75,7 +75,16 @@ export default function LibraryBrowser({ view, onUse }: { view: LibraryView; onU
                       <div className="text-sm font-semibold text-text-primary dark:text-dark-text-primary">{b.name}</div>
                       <div className="text-[11px] text-text-secondary dark:text-dark-text-secondary">{b.category}</div>
                     </div>
-                    <span className="text-[10px] uppercase tracking-wider text-text-secondary bg-surface-elevated dark:bg-dark-surface-overlay px-2 py-1 rounded">Master block</span>
+                    {onUse ? (
+                      <button
+                        onClick={() => onUse(b)}
+                        className="text-[11px] px-2.5 py-1.5 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition whitespace-nowrap"
+                      >
+                        Use →
+                      </button>
+                    ) : (
+                      <span className="text-[10px] uppercase tracking-wider text-text-secondary bg-surface-elevated dark:bg-dark-surface-overlay px-2 py-1 rounded">Master block</span>
+                    )}
                   </div>
                 </div>
               )
@@ -104,7 +113,13 @@ export default function LibraryBrowser({ view, onUse }: { view: LibraryView; onU
                     <div className="text-[10px] text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">{spec.category}</div>
                   </div>
                   <button
-                    onClick={() => { onUse?.(); router.push('/dashboard/templates') }}
+                    onClick={() => {
+                      if (onUse) {
+                        onUse(spec)
+                      } else {
+                        router.push('/dashboard/templates')
+                      }
+                    }}
                     className="text-[11px] px-2.5 py-1.5 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition whitespace-nowrap"
                   >
                     Use →

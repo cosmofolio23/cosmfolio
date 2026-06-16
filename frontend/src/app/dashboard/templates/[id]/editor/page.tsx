@@ -23,6 +23,7 @@ import { newFreeElement } from '@/components/composer/FreeCanvas'
 import type { FreeElement } from '@/components/composer/types'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
+import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
 
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
@@ -222,6 +223,7 @@ export default function TemplateEditor() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
   const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide' | 'publishing'>('guide')
+  const [libraryModalView, setLibraryModalView] = useState<LibraryView | null>(null)
   const [publishingPortfolio, setPublishingPortfolio] = useState<PublishingPortfolio>({
     id: 'template-' + params.id,
     name: 'Template',
@@ -1924,6 +1926,12 @@ export default function TemplateEditor() {
                 ) : (
                   <div className="space-y-3">
                     <div className="text-[11px] text-gray-500 font-medium">Cosmo Spread Layout Packs (150+ templates)</div>
+                    <button
+                      onClick={() => setLibraryModalView(spreadCategory === 'about' ? 'about' : 'project')}
+                      className="w-full py-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 border border-blue-200 transition flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      ✨ Browse Realistic Spread Library
+                    </button>
                     {/* Category Filter */}
                     <div className="flex flex-wrap gap-1">
                       {(['all', 'about', 'content', 'project'] as const).map(cat => (
@@ -1993,6 +2001,12 @@ export default function TemplateEditor() {
                       <button onClick={() => setTitleBlock(undefined)} className="text-[10px] text-red-500 hover:underline">Remove</button>
                     )}
                   </div>
+                  <button
+                    onClick={() => setLibraryModalView('titleblocks')}
+                    className="w-full py-2 mb-3 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 border border-blue-200 transition flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    ✨ Browse Master Title Block Library
+                  </button>
                   <div className="flex flex-wrap gap-1 mb-2">
                     {(['All', ...TITLE_BLOCK_CATEGORIES] as const).map(c => (
                       <button key={c} onClick={() => setTbCat(c)}
@@ -2170,6 +2184,35 @@ export default function TemplateEditor() {
           </div>
         </aside>
       </div>
+
+      {/* Library Browser Modal */}
+      {libraryModalView && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white overflow-auto shadow-2xl">
+          <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10 shadow-sm">
+            <h2 className="text-xl font-bold capitalize text-slate-800 tracking-tight flex items-center gap-2">
+              <span className="text-2xl">📚</span>
+              {libraryModalView === 'titleblocks' ? 'Master Title Blocks' : `${libraryModalView} Spreads`}
+            </h2>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500 font-medium hidden sm:inline-block">Select a design to instantly apply it to your current page.</span>
+              <button onClick={() => setLibraryModalView(null)} className="px-5 py-2.5 bg-slate-900 text-white hover:bg-slate-800 rounded-lg font-semibold text-sm transition shadow-md">Close Library</button>
+            </div>
+          </div>
+          <div className="p-8 max-w-7xl mx-auto w-full">
+            <LibraryBrowser
+              view={libraryModalView}
+              onUse={(spec: any) => {
+                if (libraryModalView === 'titleblocks') {
+                  setTitleBlock(spec.id)
+                } else {
+                  setLayout(spec.id)
+                }
+                setLibraryModalView(null)
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

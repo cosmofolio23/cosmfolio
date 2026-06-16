@@ -100,8 +100,6 @@ async def upload_asset(
             "file_url": public_url,
             "file_name": file.filename,
             "file_size": upload_result.get("file_size", 0),
-            "width": upload_result.get("width"),
-            "height": upload_result.get("height"),
             "analysis": {},
             "upload_order": 0,
             "created_at": datetime.utcnow().isoformat(),
