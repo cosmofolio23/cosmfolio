@@ -214,6 +214,36 @@ Respond with only the biography, no additional text."""
             logger.error(f"Error generating biography: {str(e)}")
             raise
 
+    # ==================== ARCH-SPEAK COPYWRITER ====================
+
+    async def polish_text(
+        self,
+        text: str,
+        tone: str = "academic"
+    ) -> str:
+        """Polish and rewrite text using architectural terminology"""
+        try:
+            prompt = f"""Rewrite the following architectural text to be highly professional, {self.tone_descriptions.get(tone, tone)}, and use sophisticated architectural terminology (often called 'Arch-Speak'). Make it concise and impactful.
+Do not add introductory or concluding remarks (e.g. no "Here is the rewritten text:"). Just output the rewritten text itself.
+
+Original text:
+{text}
+
+Rewritten text:"""
+
+            polished = await self._call_llm(
+                prompt,
+                temperature=0.7,
+                max_tokens=400
+            )
+
+            logger.info("Polished architectural text")
+            return polished.strip()
+
+        except Exception as e:
+            logger.error(f"Error polishing text: {str(e)}")
+            raise
+
     # ==================== TITLE & TAGLINE GENERATION ====================
 
     async def suggest_project_titles(

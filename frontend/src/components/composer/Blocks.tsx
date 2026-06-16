@@ -18,6 +18,7 @@ export function EditableText({
   align,
   bold,
   onFormatChange,
+  onAiPolish,
 }: {
   value: string
   onChange: (v: string) => void
@@ -31,11 +32,13 @@ export function EditableText({
   align?: 'left' | 'center' | 'right'
   bold?: boolean
   onFormatChange?: (patch: any) => void
+  onAiPolish?: (text: string) => Promise<string>
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [isSelected, setIsSelected] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [isPolishing, setIsPolishing] = useState(false)
 
   // Sync external value changes (e.g., AI auto-fill) when the element is NOT focused
   const prevValueRef = useRef(value)
@@ -193,6 +196,33 @@ export function EditableText({
           >
             ✕
           </button>
+          {onAiPolish && (
+            <>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                disabled={isPolishing}
+                onClick={async () => {
+                  if (ref.current?.textContent) {
+                    setIsPolishing(true)
+                    try {
+                      const polished = await onAiPolish(ref.current.textContent)
+                      ref.current.textContent = polished
+                      onChange(polished)
+                    } finally {
+                      setIsPolishing(false)
+                    }
+                  }
+                }}
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium transition ${
+                  isPolishing ? 'text-purple-300 animate-pulse bg-purple-900/50' : 'text-purple-400 hover:bg-purple-900/50 hover:text-purple-300'
+                }`}
+              >
+                <span>✨</span>
+                {isPolishing ? 'Polishing...' : 'AI Polish'}
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -650,11 +680,12 @@ export function MetaBlock({
 
 /* ------------------------------ Text Blocks ------------------------------- */
 
-export function TitleBlock({ block, tokens, onChange, size = 'lg' }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; size?: 'sm' | 'lg' | 'xl' }) {
+export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; size?: 'sm' | 'lg' | 'xl', onAiPolish?: (t: string) => Promise<string> }) {
   const sizes = { sm: 'text-2xl', lg: 'text-4xl', xl: 'text-6xl' }
   return (
     <EditableText
       value={block.text || ''}
+      onAiPolish={onAiPolish}
       onChange={v => onChange({ text: v })}
       className={`leading-tight ${sizes[size]}`}
       fontFamily={block.fontFamily || tokens.headingFont}
@@ -674,10 +705,11 @@ export function TitleBlock({ block, tokens, onChange, size = 'lg' }: { block: Bl
   )
 }
 
-export function SubtitleBlock({ block, tokens, onChange }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void }) {
+export function SubtitleBlock({ block, tokens, onChange, onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string> }) {
   return (
     <EditableText
       value={block.text || ''}
+      onAiPolish={onAiPolish}
       onChange={v => onChange({ text: v })}
       className="text-lg"
       fontFamily={block.fontFamily || tokens.bodyFont}
@@ -697,10 +729,11 @@ export function SubtitleBlock({ block, tokens, onChange }: { block: Block; token
   )
 }
 
-export function DescriptionBlock({ block, tokens, onChange }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void }) {
+export function DescriptionBlock({ block, tokens, onChange, onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string> }) {
   return (
     <EditableText
       value={block.text || ''}
+      onAiPolish={onAiPolish}
       onChange={v => onChange({ text: v })}
       multiline
       className="text-sm leading-relaxed"

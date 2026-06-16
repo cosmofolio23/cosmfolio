@@ -3,8 +3,9 @@ AI generation API endpoints
 Phase 4: Task 4.1 - AI-powered content generation
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi import APIRouter, HTTPException, status, Depends, Query, Body
 from typing import Optional, List
+from pydantic import BaseModel
 
 from .deps import get_current_user
 from services.ai_generation import get_ai_generation_service, AiTone
@@ -12,6 +13,10 @@ from error_handlers import ResourceNotFoundException, AuthorizationException
 from database import supabase
 
 router = APIRouter()
+
+class PolishTextRequest(BaseModel):
+    text: str
+    tone: str = "academic"
 
 # ==================== PROJECT DESCRIPTION ====================
 
@@ -130,6 +135,28 @@ async def generate_image_caption(
 
     except (ResourceNotFoundException, AuthorizationException):
         raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# ==================== ARCH-SPEAK COPYWRITER ====================
+
+@router.post("/polish-text")
+async def polish_text(
+    request: PolishTextRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Polish and rewrite text using architectural terminology"""
+    try:
+        ai_service = get_ai_generation_service()
+        polished = await ai_service.polish_text(
+            text=request.text,
+            tone=request.tone
+        )
+        return {
+            "original_text": request.text,
+            "polished_text": polished,
+            "tone": request.tone
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

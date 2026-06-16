@@ -14,6 +14,7 @@ import { BackgroundLayers, MasterElements, GridOverlay, DrawingInfoBar, type Pag
 import type { BackgroundLayer, MasterElement, GridSettings, PageSize } from './publishingTypes'
 import { FreeCanvas } from './FreeCanvas'
 import type { FreeElement } from './types'
+import { apiClient } from '@/lib/api'
 
 const toPalette = (t: DesignTokens): DemoPalette => ({
   primary: t.primary, accent: t.accent, bg: t.background, text: t.text, muted: t.muted,
@@ -301,6 +302,16 @@ function RegionView({
 }) {
   const style = { ...gridStyle(region) }
 
+  const handleAiPolish = async (text: string) => {
+    try {
+      const res = await apiClient.polishText(text)
+      return res.polished_text
+    } catch (e: any) {
+      alert(`AI Polish failed: ${e.message}`)
+      throw e
+    }
+  }
+
   // Collision detection and safe area guard (BUG 4)
   const hasTopMaster = masterElements?.some(el => !el.hidden && (el.position.startsWith('top') || (el.position === 'custom' && (el.y ?? 0) < 15)))
   const hasBottomMaster = masterElements?.some(el => !el.hidden && (el.position.startsWith('bottom') || (el.position === 'custom' && (el.y ?? 0) > 85)))
@@ -553,10 +564,10 @@ function RegionView({
                 </div>
               )}
             </div>
-          : <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} />
+          : <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} onAiPolish={handleAiPolish} />
       )}
-      {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
-      {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} />}
+      {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} />}
+      {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'contents' && (
