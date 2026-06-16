@@ -626,35 +626,57 @@ export default function TemplateEditor() {
         bodyFont: data.fonts?.body || 'Inter',
       })
       
+      let initialPages: Page[] = []
       if (pagesParam && projectsParam) {
-        setPages(seedCustomPages(
+        initialPages = seedCustomPages(
           data,
           orientationParam || 'landscape',
           sizeParam || 'a4',
           purposeParam || 'university',
           parseInt(pagesParam) || 24,
           parseInt(projectsParam) || 4
-        ))
+        )
       } else {
-        setPages(seedPagesFromTemplate(data))
+        initialPages = seedPagesFromTemplate(data)
       }
+
+      const isLandscape = pageSize.width > pageSize.height
+      if (isLandscape) {
+        initialPages = initialPages.map(page => ({
+          ...page,
+          layoutId: reflowLayoutForOrientation(page.layoutId, true),
+          freeElements: reflowFreeElements(page.freeElements || [], true)
+        }))
+      }
+      setPages(initialPages)
     } else {
       // Template unavailable (e.g. reopening a project with no saved doc) — start blank
       setTemplate({ id: templateId, name: 'Portfolio', category: '' })
       setPortfolioTitle('Untitled Portfolio')
       
+      let initialPages: Page[] = []
       if (pagesParam && projectsParam) {
-        setPages(seedCustomPages(
+        initialPages = seedCustomPages(
           { name: 'Portfolio' },
           orientationParam || 'landscape',
           sizeParam || 'a4',
           purposeParam || 'university',
           parseInt(pagesParam) || 24,
           parseInt(projectsParam) || 4
-        ))
+        )
       } else {
-        setPages(seedPagesFromTemplate({ name: 'Portfolio', placeholders: { renders: 2, plans: 1, sections: 1, diagrams: 0 } }))
+        initialPages = seedPagesFromTemplate({ name: 'Portfolio', placeholders: { renders: 2, plans: 1, sections: 1, diagrams: 0 } })
       }
+
+      const isLandscape = pageSize.width > pageSize.height
+      if (isLandscape) {
+        initialPages = initialPages.map(page => ({
+          ...page,
+          layoutId: reflowLayoutForOrientation(page.layoutId, true),
+          freeElements: reflowFreeElements(page.freeElements || [], true)
+        }))
+      }
+      setPages(initialPages)
     }
   }
 
