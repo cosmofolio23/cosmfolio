@@ -579,35 +579,6 @@ class AssetMetadataRequest(BaseModel):
     tags: Optional[List[str]] = None
     asset_type: Optional[AssetTypeEnum] = None
 
-class AssetResponse(BaseModel):
-    id: str
-    project_id: Optional[str]
-    portfolio_id: str
-    file_name: str
-    file_size: int
-    file_type: str
-    mime_type: str
-    asset_type: str
-    storage_path: str
-    thumb_path: Optional[str]
-    preview_url: Optional[str]
-    width: Optional[int]
-    height: Optional[int]
-    description: Optional[str]
-    tags: List[str]
-    created_at: datetime
-    updated_at: datetime
-    version: int
-
-    model_config = {"from_attributes": True, "extra": "ignore"}
-
-class AssetListResponse(BaseModel):
-    items: List[AssetResponse]
-    total: int
-    page: int
-    page_size: int
-    total_pages: int
-
 class AssetVersionResponse(BaseModel):
     id: str
     asset_id: str
