@@ -24,6 +24,7 @@ const PAGE_PURPOSE: Record<PageType, PagePurpose> = {
   project: { purpose: 'Project', needs: ['Best Render', 'Project Name', 'Location', 'Typology', 'Description'] },
   contact: { purpose: 'Contact', needs: ['Email', 'Website', 'Social'] },
   resume: { purpose: 'Resume', needs: ['Name', 'Role', 'Contact', 'Experience', 'Skills'] },
+  contents: { purpose: 'Contents', needs: ['Page List', 'Project Titles', 'Page Numbers'] },
 }
 
 /* ------------------------- image-slot requirements ---------------------- */

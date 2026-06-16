@@ -1058,6 +1058,79 @@ export default function TemplateEditor() {
     if (scope === 'page') applyFilterToPage(filter)
     else applyFilterToProject(filter)
   }
+
+  const detachLayoutToCanvas = () => {
+    if (!currentPage) return
+    if (currentPage.layoutId === 'custom' || currentPage.layoutId === 'blank') {
+      flashUpload('info', 'Layout is already custom/blank.')
+      return
+    }
+    const { getSpec } = require('@/components/composer/layoutSpecs')
+    const spec = getSpec(currentPage.layoutId)
+    if (!spec) return
+
+    const newFreeElements: import('@/components/composer/types').FreeElement[] = [...(currentPage.freeElements || [])]
+    const blocks = currentPage.blocks || []
+    const counts: Record<string, number> = {}
+
+    spec.regions.forEach((region: any) => {
+      const role = region.role
+      const x = ((region.c0 - 1) / 12) * 100
+      const w = (region.cs / 12) * 100
+      const y = ((region.r0 - 1) / 12) * 100
+      const h = (region.rs / 12) * 100
+
+      let block: any
+      if (role === 'image') {
+        const images = blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
+        block = images[region.imageIndex ?? 0]
+      } else {
+        const typeMap: Record<string, string> = {
+          title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents'
+        }
+        const t = typeMap[role]
+        if (t) {
+          counts[t] = counts[t] || 0
+          block = blocks.filter(b => b.type === t)[counts[t]++]
+        }
+      }
+
+      if (block) {
+        const el: any = {
+          id: `fe-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          kind: role === 'image' ? 'image' : 'text',
+          x, y, w, h, z: 5,
+        }
+        if (role === 'image') {
+          if (!block.imageUrl) return // don't detach empty image placeholders
+          el.src = block.imageUrl
+          el.cssFilter = block.cssFilter
+        } else {
+          if (block.type === 'meta') {
+            el.text = block.fields?.map((f: any) => `${f.label}: ${f.value}`).join('\n') || ''
+          } else if (block.type === 'legend') {
+            el.text = block.legendItems?.map((l: any) => `${l.key} - ${l.label}`).join('\n') || ''
+          } else {
+            el.text = block.text || ''
+          }
+          if (!el.text) return // skip empty text
+          el.fontSize = block.fontSize || (role === 'title' ? 36 : role === 'subtitle' ? 18 : 12)
+          el.fontFamily = block.fontFamily
+          el.color = block.color || (role === 'title' ? tokens.primary : tokens.text)
+          el.align = block.align || 'left'
+          el.bold = block.bold
+        }
+        newFreeElements.push(el)
+      }
+    })
+
+    if (confirm('Detaching the layout will convert all grid items into freely movable canvas elements. You will lose auto-layout features for this page. Continue?')) {
+      updatePage({ ...currentPage, layoutId: 'custom', blocks: [], freeElements: newFreeElements })
+      markDirty()
+      flashUpload('ok', 'Layout detached! You can now move and resize everything freely.')
+    }
+  }
+
   const magicShuffleLayout = () => {
     if (!currentPage.freeElements) return
     const images = currentPage.freeElements.filter(el => el.kind === 'image')
@@ -1241,10 +1314,22 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : 'twoThirdsStack.titleMetaInline'
-    const blocks: Block[] = [{ ...createBlock('title'), text: type === 'project' ? `Project ${pages.filter(p => p.type === 'project').length + 1}` : 'New Page' }]
-    if (type === 'project') { blocks.push(createBlock('meta'), createBlock('render'), createBlock('description')) }
-    else { blocks.push(createBlock('description')) }
+    const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
+    const blocks: Block[] = [{ ...createBlock('title'), text: type === 'project' ? `Project ${pages.filter(p => p.type === 'project').length + 1}` : type === 'resume' ? 'Curriculum Vitae' : type === 'contents' ? 'Table of Contents' : 'New Page' }]
+    if (type === 'project') { 
+      blocks.push(createBlock('meta'), createBlock('render'), createBlock('description')) 
+    } else if (type === 'resume') {
+      blocks.push(
+        { ...createBlock('subtitle'), text: 'Architecture Student & 3D Designer' },
+        { ...createBlock('meta'), fields: [{ label: 'Email', value: 'hello@example.com' }, { label: 'Phone', value: '+1 234 567 8900' }, { label: 'Website', value: 'portfolio.com' }] },
+        { ...createBlock('description'), text: 'EDUCATION\n\nMaster of Architecture\nHarvard GSD | 2024 - 2026\n• Current GPA: 3.9 / 4.0\n• Thesis: Parametric Urbanism\n\nBachelor of Architecture\nUCL Bartlett | 2020 - 2024\n• Graduated with First Class Honours\n• Marks: 92% Average\n\nPROFESSIONAL EXPERIENCE\n\nJunior Architect @ OMA\nSummer 2025\n• Developed concept models in Rhino\n• Produced presentation renders in Lumion\n\nArchitecture Intern @ BIG\nSummer 2024\n• Assisted with drafting plans in AutoCAD\n• Prepared physical study models' },
+        { ...createBlock('legend'), label: 'SOFTWARE SKILLS', legendItems: [{ key: 'RNO', label: 'Rhinoceros 3D (Expert)' }, { key: 'RVT', label: 'Autodesk Revit (Advanced)' }, { key: 'ACD', label: 'AutoCAD (Expert)' }, { key: 'LUM', label: 'Lumion (Advanced)' }, { key: 'VRY', label: 'V-Ray (Intermediate)' }, { key: 'PS', label: 'Adobe Photoshop (Expert)' }, { key: 'AI', label: 'Adobe Illustrator (Expert)' }, { key: 'ID', label: 'Adobe InDesign (Expert)' }] }
+      )
+    } else if (type === 'contents') {
+      blocks.push(createBlock('contents'))
+    } else { 
+      blocks.push(createBlock('description')) 
+    }
     const newPage: Page = { id: uid('p'), type, layoutId, blocks }
     markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
   }
@@ -1719,7 +1804,7 @@ export default function TemplateEditor() {
             <div className="mt-3 pt-3 border-t">
               <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1.5">Add page</p>
               <div className="grid grid-cols-2 gap-1.5">
-                {(['project', 'about', 'cover', 'contact'] as const).map(t => (
+                {(['project', 'about', 'cover', 'contact', 'resume', 'contents'] as const).map(t => (
                   <button key={t} onClick={() => addPage(t)} className="px-2 py-1.5 text-[11px] border border-gray-300 rounded hover:bg-gray-50 capitalize">+ {t}</button>
                 ))}
               </div>
@@ -2213,11 +2298,16 @@ export default function TemplateEditor() {
                 </div>
 
                 <div className="pt-2 border-t border-gray-100">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Automations</h4>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Automations & Layout</h4>
+                  
+                  <button onClick={detachLayoutToCanvas} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-semibold transition mb-2">
+                    <span className="text-sm">🔓</span> Detach Layout to Canvas
+                  </button>
+
                   <button onClick={magicShuffleLayout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border border-purple-200 text-purple-700 rounded-lg text-xs font-semibold transition">
                     <span className="text-sm">✨</span> Magic Layout Shuffle
                   </button>
-                  <p className="text-[10px] text-gray-400 mt-1.5 leading-tight">Instantly snap images into perfect architectural grids and alignments.</p>
+                  <p className="text-[10px] text-gray-400 mt-1.5 leading-tight">Instantly snap images into perfect architectural grids, or detach the layout to freely edit it.</p>
                 </div>
 
                 {/* Selected element properties */}

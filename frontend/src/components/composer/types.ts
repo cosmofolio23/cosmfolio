@@ -57,7 +57,7 @@ export interface Block {
   color?: string
 }
 
-export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume'
+export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume' | 'contents'
 
 /** A freely-positioned, movable/resizable/rotatable element layered over the
  *  grid layout. Powers the InDesign-style free-canvas editing. */

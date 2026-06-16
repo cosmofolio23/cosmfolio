@@ -486,6 +486,28 @@ const RESUME_SPECS: LayoutSpec[] = [
       { role: 'title', c0: 1, cs: 8, r0: 1, rs: 2 }, { role: 'meta', c0: 9, cs: 4, r0: 1, rs: 2 },
       { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 12, r0: 5, rs: 8 },
     ] },
+  { id: 'resume.swissGrid', name: 'Resume · Swiss Grid (New)', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 4, r0: 1, rs: 2 },
+      { role: 'subtitle', c0: 1, cs: 4, r0: 3, rs: 2 },
+      { role: 'meta', c0: 1, cs: 4, r0: 5, rs: 4 },
+      { role: 'text', c0: 5, cs: 4, r0: 1, rs: 12 },
+      { role: 'legend', c0: 9, cs: 4, r0: 1, rs: 12 },
+    ] },
+  { id: 'resume.splitColumn', name: 'Resume · Split Column (New)', category: 'Resume', suits: ['resume'], imageCount: 1,
+    regions: [
+      img(0, 1, 4, 1, 5),
+      { role: 'title', c0: 1, cs: 4, r0: 6, rs: 2 },
+      { role: 'meta', c0: 1, cs: 4, r0: 8, rs: 5 },
+      { role: 'text', c0: 6, cs: 7, r0: 1, rs: 6 },
+      { role: 'subtitle', c0: 6, cs: 7, r0: 8, rs: 5 },
+    ] },
+  { id: 'resume.minimalText', name: 'Resume · Minimal Text (New)', category: 'Resume', suits: ['resume'], imageCount: 0,
+    regions: [
+      { role: 'title', c0: 3, cs: 8, r0: 1, rs: 2 },
+      { role: 'text', c0: 3, cs: 8, r0: 4, rs: 5 },
+      { role: 'subtitle', c0: 3, cs: 8, r0: 10, rs: 3 },
+    ] },
 ]
 
 /* ------------------------------- about spreads --------------------------- */
@@ -533,15 +555,15 @@ const ABOUT_SPREAD_SPECS: LayoutSpec[] = [
 /** Project-index / table-of-contents spreads. Roles: title=section title,
  *  text=project list, meta=numbers/years, image=preview thumbnails. */
 const INDEX_SPREAD_SPECS: LayoutSpec[] = [
-  { id: 'index.numberedList', name: 'Index · Numbered List', category: 'Contents', suits: ['about', 'project'], imageCount: 0,
+  { id: 'index.numberedList', name: 'Index · Numbered List', category: 'Contents', suits: ['contents', 'about', 'project'], imageCount: 0,
     regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 2, r0: 4, rs: 9 }, { role: 'contents', c0: 3, cs: 9, r0: 4, rs: 9 }] },
-  { id: 'index.thumbGrid', name: 'Index · Thumbnail Grid', category: 'Contents', suits: ['about', 'project'], imageCount: 6,
+  { id: 'index.thumbGrid', name: 'Index · Thumbnail Grid', category: 'Contents', suits: ['contents', 'about', 'project'], imageCount: 6,
     regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, ...gridCells({ c0: 1, cs: 12, r0: 4, rs: 9 }, 2, 3).map(r => ({ ...r, role: 'contents' as const }))] },
-  { id: 'index.timeline', name: 'Index · Timeline', category: 'Contents', suits: ['about', 'project'], imageCount: 0,
+  { id: 'index.timeline', name: 'Index · Timeline', category: 'Contents', suits: ['contents', 'about', 'project'], imageCount: 0,
     regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'meta', c0: 1, cs: 12, r0: 4, rs: 2 }, { role: 'contents', c0: 1, cs: 12, r0: 6, rs: 7 }] },
-  { id: 'index.magazine', name: 'Index · Magazine', category: 'Contents', suits: ['about', 'project'], imageCount: 1,
+  { id: 'index.magazine', name: 'Index · Magazine', category: 'Contents', suits: ['contents', 'about', 'project'], imageCount: 1,
     regions: [{ role: 'title', c0: 1, cs: 6, r0: 1, rs: 3 }, img(0, 7, 6, 1, 6), { role: 'contents', c0: 1, cs: 6, r0: 4, rs: 9 }] },
-  { id: 'index.twoColumn', name: 'Index · Two Column', category: 'Contents', suits: ['about', 'project'], imageCount: 0,
+  { id: 'index.twoColumn', name: 'Index · Two Column', category: 'Contents', suits: ['contents', 'about', 'project'], imageCount: 0,
     regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'contents', c0: 1, cs: 12, r0: 4, rs: 9 }] },
 ]
 
@@ -574,11 +596,107 @@ function buildContentsSpecs(): LayoutSpec[] {
         id: `index.${s.key}.${v.key}`,
         name: `${s.name} · ${v.name}`,
         category: 'Contents',
-        suits: ['about', 'project'],
+        suits: ['contents', 'about', 'project'],
         regions: v.regions,
         imageCount: s.key === 'magazine' ? 1 : (s.key === 'grid' ? 4 : 0)
       })
     }
+  }
+  return specs
+}
+
+function buildProceduralResumes(): LayoutSpec[] {
+  const specs: LayoutSpec[] = []
+  
+  // 50 variations
+  for(let i=1; i<=50; i++) {
+    const regions: Region[] = []
+    const type = i % 5
+    const hasImage = i % 2 !== 0
+    const isSpread = i % 4 === 0
+    
+    if (type === 0) { // Classic Top-Down
+       regions.push({ role: 'title', c0: 2, cs: 10, r0: 1, rs: 2 })
+       regions.push({ role: 'subtitle', c0: 2, cs: 10, r0: 3, rs: 1 })
+       if (hasImage) regions.push(img(0, 1, 12, 4, 3))
+       regions.push({ role: 'text', c0: 2, cs: 6, r0: hasImage ? 8 : 5, rs: 5 })
+       regions.push({ role: 'meta', c0: 9, cs: 3, r0: hasImage ? 8 : 5, rs: 2 })
+       regions.push({ role: 'legend', c0: 9, cs: 3, r0: hasImage ? 11 : 8, rs: 2 })
+    } else if (type === 1) { // Split Left
+       if (hasImage) regions.push(img(0, 1, 4, 1, isSpread ? 12 : 5))
+       regions.push({ role: 'title', c0: 5, cs: 8, r0: 1, rs: 2 })
+       regions.push({ role: 'subtitle', c0: 5, cs: 8, r0: 3, rs: 1 })
+       regions.push({ role: 'text', c0: 5, cs: 8, r0: 5, rs: 8 })
+       regions.push({ role: 'meta', c0: 1, cs: 4, r0: hasImage && !isSpread ? 7 : 1, rs: 3 })
+       if (!isSpread) regions.push({ role: 'legend', c0: 1, cs: 4, r0: hasImage ? 10 : 5, rs: 3 })
+    } else if (type === 2) { // Split Right
+       regions.push({ role: 'title', c0: 1, cs: 8, r0: 1, rs: 2 })
+       regions.push({ role: 'subtitle', c0: 1, cs: 8, r0: 3, rs: 1 })
+       regions.push({ role: 'text', c0: 1, cs: 8, r0: 5, rs: 8 })
+       if (hasImage) regions.push(img(0, 9, 4, 1, isSpread ? 12 : 5))
+       regions.push({ role: 'meta', c0: 9, cs: 4, r0: hasImage && !isSpread ? 7 : 1, rs: 3 })
+       if (!isSpread) regions.push({ role: 'legend', c0: 9, cs: 4, r0: hasImage ? 10 : 5, rs: 3 })
+    } else if (type === 3) { // Masonry / Abstract
+       regions.push({ role: 'title', c0: 1, cs: 6, r0: 1, rs: 3 })
+       regions.push({ role: 'meta', c0: 8, cs: 5, r0: 1, rs: 3 })
+       if (hasImage) regions.push(img(0, 1, 4, 5, 8))
+       regions.push({ role: 'text', c0: hasImage ? 6 : 1, cs: hasImage ? 7 : 8, r0: 5, rs: 8 })
+       if (!hasImage) regions.push({ role: 'legend', c0: 10, cs: 3, r0: 5, rs: 8 })
+    } else { // Typographic Minimal
+       regions.push({ role: 'title', c0: (i%3)+1, cs: 8, r0: 2, rs: 2 })
+       regions.push({ role: 'subtitle', c0: (i%3)+1, cs: 8, r0: 4, rs: 1 })
+       regions.push({ role: 'text', c0: (i%3)+3, cs: 8, r0: 6, rs: 7 })
+       regions.push({ role: 'meta', c0: 1, cs: (i%3)+1, r0: 6, rs: 7 })
+    }
+    
+    specs.push({
+      id: `resume.gen${i}`,
+      name: `Resume · ${isSpread ? 'Spread ' : ''}Variation ${String(i).padStart(2, '0')}`,
+      category: 'Resume',
+      suits: ['resume'],
+      imageCount: hasImage ? 1 : 0,
+      regions
+    })
+  }
+  return specs
+}
+
+function buildProceduralContents(): LayoutSpec[] {
+  const specs: LayoutSpec[] = []
+  for (let i = 1; i <= 50; i++) {
+    const regions: Region[] = []
+    const type = i % 4
+    const images = i % 3 === 0 ? 3 : i % 2 === 0 ? 1 : 0
+    const isSpread = i % 4 === 0
+    
+    regions.push({ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 })
+    
+    if (type === 0) {
+      regions.push({ role: 'contents', c0: 1, cs: isSpread ? 8 : 6, r0: 4, rs: 9 })
+      if (images === 1) regions.push(img(0, isSpread ? 9 : 8, isSpread ? 4 : 5, 4, 9))
+      else if (images === 3) {
+         regions.push(img(0, 8, 5, 4, 2))
+         regions.push(img(1, 8, 5, 7, 2))
+         regions.push(img(2, 8, 5, 10, 2))
+      }
+    } else if (type === 1) {
+      if (images > 0) regions.push(img(0, 1, 12, 3, 3))
+      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 7, rs: 6 })
+    } else if (type === 2) {
+      regions.push({ role: 'contents', c0: isSpread ? 2 : 1, cs: isSpread ? 10 : 12, r0: 4, rs: 9 })
+    } else {
+      regions.push({ role: 'contents', c0: 4, cs: 9, r0: 3, rs: 10 })
+      if (images > 0) regions.push(img(0, 1, 2, 3, 10))
+    }
+    
+    specs.push({
+      id: `contents.gen${i}`,
+      name: `Contents · ${isSpread ? 'Spread ' : ''}Variation ${String(i).padStart(2, '0')}`,
+      category: 'Contents',
+      suits: ['contents', 'about', 'project'],
+      imageCount: images,
+      regions
+    })
   }
   return specs
 }
@@ -589,9 +707,11 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...TEXT_SPECS,
   ...CONTACT_SPECS,
   ...RESUME_SPECS,
+  ...buildProceduralResumes(),
   ...ABOUT_SPREAD_SPECS,
   ...INDEX_SPREAD_SPECS,
   ...buildContentsSpecs(),
+  ...buildProceduralContents(),
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))

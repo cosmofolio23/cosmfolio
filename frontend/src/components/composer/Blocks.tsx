@@ -854,7 +854,7 @@ export function ContentsBlock({
               <span className="text-[9px] block">Page {featured.pageNumber}</span>
             </div>
           </div>
-          <div className="col-span-7 space-y-2 overflow-y-auto max-h-[220px]">
+          <div className="col-span-7 space-y-2">
             {items.map((it, idx) => (
               <div key={idx} className="flex items-center justify-between border-b pb-1.5 border-black/5 text-xs">
                 <div className="flex gap-2">
@@ -880,7 +880,7 @@ export function ContentsBlock({
         <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Timeline'}
         </h3>
-        <div className="relative border-l border-slate-350 pl-4 ml-2 space-y-4 flex-1 overflow-y-auto max-h-[220px]">
+        <div className="relative border-l border-slate-350 pl-4 ml-2 space-y-4 flex-1">
           {items.map((it, idx) => (
             <div key={idx} className="relative text-xs">
               <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 border border-white" />
@@ -906,7 +906,7 @@ export function ContentsBlock({
         <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Project Index'}
         </h3>
-        <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[240px]">
+        <div className="grid grid-cols-2 gap-2">
           {items.map((it, idx) => (
             <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2">
               <div className="w-12 h-12 bg-black/5 rounded overflow-hidden flex-shrink-0">
@@ -938,7 +938,7 @@ export function ContentsBlock({
         <h3 className="text-2xl font-normal tracking-[0.15em] text-center mb-5 italic" style={{ color: tokens.primary }}>
           {block.label || 'Portfolio Index'}
         </h3>
-        <div className="space-y-3 overflow-y-auto max-h-[220px]">
+        <div className="space-y-3">
           {items.map((it, idx) => (
             <div key={idx} className="flex justify-between items-baseline border-b border-yellow-800/10 pb-1.5 text-xs">
               <div className="flex items-baseline gap-3">
@@ -996,7 +996,7 @@ export function ContentsBlock({
         <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           PROJECTS.MATRIX
         </h3>
-        <div className="space-y-2.5 overflow-y-auto max-h-[220px]">
+        <div className="space-y-2.5">
           {items.map((it, idx) => (
             <div key={idx} className="group flex items-stretch border-l-4 border-slate-900 bg-slate-50 p-2 text-xs transition hover:bg-slate-100">
               <div className="flex-1 min-w-0 pr-2">
@@ -1024,7 +1024,7 @@ export function ContentsBlock({
         <h3 className="text-xl font-bold uppercase tracking-tight mb-4" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           INDEX / WORK_SAMPLES
         </h3>
-        <div className="grid grid-cols-2 gap-3 overflow-y-auto max-h-[220px]">
+        <div className="grid grid-cols-2 gap-3">
           {items.map((it, idx) => (
             <div key={idx} className="border-t-2 border-slate-900 pt-2 flex flex-col justify-between text-xs min-h-[90px]">
               <div>
@@ -1050,7 +1050,7 @@ export function ContentsBlock({
         <h3 className="text-lg font-serif italic mb-4 border-b border-slate-300 pb-2 text-slate-700">
           Table of Contents
         </h3>
-        <div className="space-y-3 overflow-y-auto max-h-[210px] text-xs">
+        <div className="space-y-3 text-xs">
           {items.map((it, idx) => (
             <div key={idx} className="flex justify-between items-baseline gap-4">
               <div className="flex items-baseline gap-2 flex-1 min-w-0">
@@ -1073,7 +1073,7 @@ export function ContentsBlock({
       <h3 className="text-xs font-bold uppercase tracking-[0.25em] mb-4 pb-2 border-b" style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.headingFont }}>
         {block.label || 'CONTENTS'}
       </h3>
-      <div className="space-y-2.5 overflow-y-auto max-h-[220px]">
+      <div className="space-y-2.5">
         {items.map((it, idx) => (
           <div key={idx} className="flex items-center justify-between text-xs pb-1.5 border-b border-black/[0.04]">
             <div className="flex items-center gap-3">
