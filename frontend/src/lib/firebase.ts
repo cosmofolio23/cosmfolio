@@ -15,7 +15,7 @@ import {
 // invalidates the Firebase API key ("API key not valid") and turns absolute
 // URLs into relative paths. Firebase config + URLs are all printable ASCII.
 const clean = (v?: string) => (v ?? '').replace(/[^\x20-\x7E]/g, '').trim()
-const apiBase = () => clean(process.env.NEXT_PUBLIC_API_URL) || 'http://localhost:8000'
+const apiBase = () => clean(process.env.NEXT_PUBLIC_API_URL) || 'https://cosmfolio-backend.onrender.com'
 const firebaseApiKey = () => clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY)
 
 const firebaseConfig = {

@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth'
 import type { Page, DesignTokens } from '@/components/composer/types'
 import PageComposer from '@/components/composer/PageComposer'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ('https://cosmfolio-backend.onrender.com')
 
 interface PortfolioData {
   document: {

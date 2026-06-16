@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-backend.onrender.com'
 
 export class APIClient {
   private client: AxiosInstance

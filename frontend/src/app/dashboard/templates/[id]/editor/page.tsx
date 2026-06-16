@@ -30,7 +30,7 @@ import LibraryBrowser, { type LibraryView } from '@/components/templates/Library
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ('https://cosmfolio-backend.onrender.com')
 
 interface Template {
   id: string

@@ -15,7 +15,7 @@ interface Project {
   created_at: string
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ('https://cosmfolio-backend.onrender.com')
 
 export default function ProjectPage() {
   const params = useParams()

@@ -9,7 +9,7 @@ import { StylePackGallery, StylePack, PRESET_PACKS } from '@/components/design-s
 import { StylePackPreview } from '@/components/design-system/StylePackPreview'
 import { StylePackGenerator } from '@/components/design-system/StylePackGenerator'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ('https://cosmfolio-backend.onrender.com')
 
 const LAYOUTS = [
   { id: 'hero_render', name: 'Hero Render', desc: 'Full-page hero image + content', icon: '🖼️', category: 'Hero' },
