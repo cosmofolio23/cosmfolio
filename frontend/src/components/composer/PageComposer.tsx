@@ -33,6 +33,7 @@ interface Props {
   onFreeChange?: (els: FreeElement[]) => void
   editableFree?: boolean
   onApplyScope?: (scope: 'page' | 'spread' | 'all', el: FreeElement) => void
+  onFreeSelectionChange?: (el: FreeElement | null) => void
   pages?: Page[]
   onUpdateGlobalPages?: (updater: (pages: Page[]) => Page[]) => void
   overflowVisible?: boolean
@@ -44,7 +45,7 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents'
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -157,6 +158,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
           tokens={tokens}
           editable={!!editableFree}
           onApplyScope={onApplyScope}
+          onSelectionChange={onFreeSelectionChange}
         />
       )}
     </div>

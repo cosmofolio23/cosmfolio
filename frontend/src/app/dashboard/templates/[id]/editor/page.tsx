@@ -222,7 +222,8 @@ export default function TemplateEditor() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
-  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide' | 'publishing'>('guide')
+  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide' | 'publishing' | 'canvas'>('guide')
+  const [selectedFreeEl, setSelectedFreeEl] = useState<FreeElement | null>(null)
   const [libraryModalView, setLibraryModalView] = useState<LibraryView | null>(null)
   const [publishingPortfolio, setPublishingPortfolio] = useState<PublishingPortfolio>({
     id: 'template-' + params.id,
@@ -1651,6 +1652,7 @@ export default function TemplateEditor() {
                         setPages(pages.map((x, i) => i === leftIdx ? { ...x, freeElements: els } : x))
                       }}
                       onApplyScope={applyElementScopeFromPage}
+                      onFreeSelectionChange={el => { setSelectedFreeEl(el); if (el) setRightTab('canvas') }}
                       pages={pages}
                       onUpdateGlobalPages={(updater) => {
                         markDirty()
@@ -1686,6 +1688,7 @@ export default function TemplateEditor() {
                         setPages(pages.map((x, i) => i === rightIdx ? { ...x, freeElements: els } : x))
                       }}
                       onApplyScope={applyElementScopeFromPage}
+                      onFreeSelectionChange={el => { setSelectedFreeEl(el); if (el) setRightTab('canvas') }}
                       pages={pages}
                       onUpdateGlobalPages={(updater) => {
                         markDirty()
@@ -1715,6 +1718,7 @@ export default function TemplateEditor() {
                 editableFree
                 onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
                 onApplyScope={applyElementScopeFromPage}
+                onFreeSelectionChange={el => { setSelectedFreeEl(el); if (el) setRightTab('canvas') }}
                 pages={pages}
                 onUpdateGlobalPages={(updater) => {
                   markDirty()
@@ -1743,10 +1747,10 @@ export default function TemplateEditor() {
         <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10">
-            {(['guide', 'publishing', 'layout', 'blocks', 'style'] as const).map(t => (
+            {(['guide', 'publishing', 'layout', 'blocks', 'canvas', 'style'] as const).map(t => (
               <button key={t} onClick={() => setRightTab(t)}
                 className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
-                {t}
+                {t === 'canvas' ? '✦' : t}
               </button>
             ))}
           </div>
@@ -2046,7 +2050,7 @@ export default function TemplateEditor() {
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Add content block</h4>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Add element</h4>
                   <div className="grid grid-cols-3 gap-2">
                     {ADD_BLOCKS.map(b => (
                       <button key={b.type} onClick={() => addBlock(b.type)}
@@ -2058,19 +2062,6 @@ export default function TemplateEditor() {
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Free canvas elements</h4>
-                  <p className="text-[10px] text-gray-400 mb-2">drag to move · corner to resize · double-click text to edit</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {([['text', 'T', 'Text'], ['image', '🖼', 'Image'], ['rect', '▭', 'Box'], ['ellipse', '◯', 'Ellipse'], ['line', '—', 'Line'], ['graphic', '✦', 'Graphic']] as const).map(([k, icon, label]) => (
-                      <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
-                        className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
-                        <span className="text-lg leading-none">{icon}</span>
-                        <span className="text-[10px] font-medium">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Elements on this page ({currentPage.blocks.length})</h4>
                   <div className="space-y-1.5">
@@ -2088,6 +2079,187 @@ export default function TemplateEditor() {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* CANVAS TAB — Free element add + selected element properties */}
+            {rightTab === 'canvas' && (
+              <div className="space-y-4">
+                {/* Add free elements */}
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Add to Canvas</h4>
+                  <p className="text-[10px] text-gray-400 mb-2">drag · corner resize · double-click text to edit</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([['text', 'T', 'Text'], ['image', '🖼', 'Image'], ['rect', '▭', 'Box'], ['ellipse', '◯', 'Ellipse'], ['line', '—', 'Line'], ['graphic', '✦', 'Graphic']] as const).map(([k, icon, label]) => (
+                      <button key={k} onClick={() => addFreeElement(k as FreeElement['kind'])}
+                        className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
+                        <span className="text-lg leading-none">{icon}</span>
+                        <span className="text-[10px] font-medium">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Selected element properties */}
+                {selectedFreeEl ? (() => {
+                  const sel = selectedFreeEl
+                  const patchFree = (patch: Partial<FreeElement>) => {
+                    if (!currentPage) return
+                    const updated = (currentPage.freeElements || []).map(e => e.id === sel.id ? { ...e, ...patch } : e)
+                    updatePage({ ...currentPage, freeElements: updated })
+                    setSelectedFreeEl({ ...sel, ...patch })
+                    markDirty()
+                  }
+                  const layerOp = (op: 'front' | 'back' | 'lock' | 'dup' | 'del') => {
+                    if (!currentPage) return
+                    const els = currentPage.freeElements || []
+                    if (op === 'del') { updatePage({ ...currentPage, freeElements: els.filter(e => e.id !== sel.id) }); setSelectedFreeEl(null); markDirty(); return }
+                    if (op === 'lock') { patchFree({ locked: !sel.locked }); return }
+                    if (op === 'dup') { const clone = { ...sel, id: `fe-${Date.now().toString(36)}-dup`, x: sel.x + 3, y: sel.y + 3 }; updatePage({ ...currentPage, freeElements: [...els, clone] }); markDirty(); return }
+                    const maxZ = Math.max(...els.map(e => e.z || 1))
+                    const minZ = Math.min(...els.map(e => e.z || 1))
+                    patchFree({ z: op === 'front' ? maxZ + 1 : Math.max(0, minZ - 1) })
+                  }
+                  return (
+                    <div className="border-t pt-4 space-y-3">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-gray-700 uppercase">{sel.kind} Properties</span>
+                        <button onClick={() => setSelectedFreeEl(null)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+                      </div>
+
+                      {/* Object actions */}
+                      <div className="flex flex-wrap gap-1.5">
+                        <button onClick={() => layerOp('front')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">⬆ Front</button>
+                        <button onClick={() => layerOp('back')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">⬇ Back</button>
+                        <button onClick={() => layerOp('lock')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">{sel.locked ? '🔒 Unlock' : '🔓 Lock'}</button>
+                        <button onClick={() => layerOp('dup')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">⧉ Dup</button>
+                        <button onClick={() => layerOp('del')} className="px-2 py-1 text-[10px] border border-red-100 text-red-500 rounded hover:bg-red-50">🗑 Delete</button>
+                      </div>
+
+                      {/* Text properties */}
+                      {sel.kind === 'text' && (
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[9px] text-gray-400 uppercase block mb-0.5">Font</label>
+                              <select value={sel.fontFamily || tokens.bodyFont} onChange={e => patchFree({ fontFamily: e.target.value })}
+                                className="w-full border border-gray-200 rounded px-1.5 py-1 text-[10px]">
+                                <option value={tokens.headingFont}>Heading</option>
+                                <option value={tokens.bodyFont}>Body</option>
+                                <option value="Inter">Inter</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Playfair Display">Playfair</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="monospace">Monospace</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[9px] text-gray-400 uppercase block mb-0.5">Size (px)</label>
+                              <input type="number" min="6" max="96" value={sel.fontSize || 16} onChange={e => patchFree({ fontSize: parseInt(e.target.value) || 16 })}
+                                className="w-full border border-gray-200 rounded px-1.5 py-1 text-[10px]" />
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => patchFree({ bold: !sel.bold })}
+                              className={`px-2 py-1 rounded text-[10px] font-bold border ${sel.bold ? 'bg-blue-600 border-blue-500 text-white' : 'border-gray-200 hover:bg-gray-50'}`}>B</button>
+                            <div className="flex border border-gray-200 rounded overflow-hidden">
+                              {(['left', 'center', 'right'] as const).map(a => (
+                                <button key={a} onClick={() => patchFree({ align: a })}
+                                  className={`px-2 py-1 text-[9px] ${sel.align === a || (!sel.align && a === 'left') ? 'bg-blue-600 text-white' : 'hover:bg-gray-50'}`}>{a[0].toUpperCase()}</button>
+                              ))}
+                            </div>
+                            <input type="color" value={sel.color || '#000000'} onChange={e => patchFree({ color: e.target.value })} className="w-6 h-6 rounded cursor-pointer border-0" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[9px] text-gray-400">Line Height</span>
+                              <input type="range" min="0.8" max="2.5" step="0.1" value={sel.lineHeight || 1.25} onChange={e => patchFree({ lineHeight: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
+                              <span className="text-[9px] w-7 text-right font-mono">{(sel.lineHeight || 1.25).toFixed(1)}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[9px] text-gray-400">Opacity</span>
+                              <input type="range" min="0.1" max="1" step="0.05" value={sel.opacity ?? 1} onChange={e => patchFree({ opacity: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
+                              <span className="text-[9px] w-7 text-right font-mono">{Math.round((sel.opacity ?? 1) * 100)}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Graphic DNA properties */}
+                      {sel.kind === 'graphic' && (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-[9px] text-gray-400 uppercase block mb-1">Graphic Type</label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {([
+                                ['parametric-curve','Parametric'], ['contour','Topography'], ['voronoi','Voronoi'],
+                                ['measurement','Dimension'], ['coordinates','Coordinates'], ['section-line','Section Line'],
+                                ['zaha-flow','Zaha Flow'], ['wind-flow','Wind Flow'], ['movement-path','Movement'],
+                                ['spline','Spline'], ['hexagon','Hexagon'], ['triangle-grid','Triangle'],
+                                ['blueprint-grid','Blueprint'], ['cad-background','CAD Bg'], ['site-overlay','Site'],
+                                ['section-marker','Sec. Marker'], ['arrow','Arrow'], ['frame-corner','Frame'],
+                                ['construction-line','Construction'],
+                              ] as const).map(([t, label]) => (
+                                <button key={t} onClick={() => patchFree({ graphicType: t })}
+                                  className={`py-1 px-1 rounded text-[8px] text-center border transition leading-tight ${sel.graphicType === t ? 'bg-blue-600 border-blue-500 text-white' : 'border-gray-200 hover:bg-gray-50 text-gray-600'}`}
+                                  title={label}>{label}</button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5">
+                              <label className="text-[9px] text-gray-400 uppercase">Color</label>
+                              <input type="color" value={sel.color || tokens.accent} onChange={e => patchFree({ color: e.target.value })} className="w-6 h-6 rounded cursor-pointer border-0" />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <label className="text-[9px] text-gray-400 uppercase">Stroke</label>
+                              <input type="number" step="0.5" min="0.5" max="10" value={sel.strokeWidth || 1.5} onChange={e => patchFree({ strokeWidth: parseFloat(e.target.value) || 1.5 })}
+                                className="w-12 border border-gray-200 rounded px-1 py-0.5 text-[10px]" />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[9px] text-gray-400">Opacity</span>
+                            <input type="range" min="0.1" max="1" step="0.05" value={sel.opacity ?? 0.85} onChange={e => patchFree({ opacity: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
+                            <span className="text-[9px] w-7 text-right font-mono">{Math.round((sel.opacity ?? 0.85) * 100)}%</span>
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-gray-400 uppercase block mb-1">Replicate To</label>
+                            <div className="flex gap-1.5">
+                              <button onClick={() => applyElementScopeFromPage('page', sel)} className="flex-1 py-1.5 text-[9px] border border-gray-200 rounded hover:bg-gray-50">This Page</button>
+                              <button onClick={() => applyElementScopeFromPage('spread', sel)} className="flex-1 py-1.5 text-[9px] bg-blue-50 border border-blue-200 text-blue-700 rounded hover:bg-blue-100">Spread</button>
+                              <button onClick={() => applyElementScopeFromPage('all', sel)} className="flex-1 py-1.5 text-[9px] bg-purple-50 border border-purple-200 text-purple-700 rounded hover:bg-purple-100">All Pages</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Shape / line properties */}
+                      {(sel.kind === 'rect' || sel.kind === 'ellipse' || sel.kind === 'line') && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5">
+                              <label className="text-[9px] text-gray-400 uppercase">Fill</label>
+                              <input type="color" value={sel.fill || '#eeeeee'} onChange={e => patchFree({ fill: e.target.value })} className="w-6 h-6 rounded cursor-pointer border-0" />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <label className="text-[9px] text-gray-400 uppercase">Stroke</label>
+                              <input type="color" value={sel.stroke || tokens.accent} onChange={e => patchFree({ stroke: e.target.value })} className="w-6 h-6 rounded cursor-pointer border-0" />
+                              <input type="number" step="1" min="0" max="10" value={sel.strokeWidth || 0} onChange={e => patchFree({ strokeWidth: parseInt(e.target.value) || 0 })} className="w-10 border border-gray-200 rounded px-1 py-0.5 text-[10px]" />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[9px] text-gray-400">Opacity</span>
+                            <input type="range" min="0.1" max="1" step="0.05" value={sel.opacity ?? 1} onChange={e => patchFree({ opacity: parseFloat(e.target.value) })} className="flex-1 h-1 accent-blue-500" />
+                            <span className="text-[9px] w-7 text-right font-mono">{Math.round((sel.opacity ?? 1) * 100)}%</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })() : (
+                  <p className="text-[11px] text-gray-400 text-center py-4 border-t mt-2">Click any element on the canvas to edit its properties here.</p>
+                )}
               </div>
             )}
 
