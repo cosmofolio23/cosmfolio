@@ -17,7 +17,7 @@ import { ProfessionalPublishingSettings } from '@/components/composer/Profession
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ('https://cosmfolio-backend.onrender.com')
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
 const DEFAULT_TOKENS: DesignTokens = {
   background: '#ffffff', text: '#1a1a1a', primary: '#1a1a1a',

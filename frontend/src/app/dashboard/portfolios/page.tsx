@@ -45,7 +45,7 @@ export default function PortfoliosPage() {
       setError(null)
       const savedToken = token || localStorage.getItem('auth_token')
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-backend.onrender.com'}/api/portfolios`, {
+      const res = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
 
@@ -75,7 +75,7 @@ export default function PortfoliosPage() {
       setCreating(true)
       const savedToken = token || localStorage.getItem('auth_token')
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-backend.onrender.com'}/api/portfolios`, {
+      const res = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ export default function PortfoliosPage() {
       const savedToken = token || localStorage.getItem('auth_token')
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-backend.onrender.com'}/api/portfolios/${id}`,
+        `${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios/${id}`,
         {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${savedToken}` }

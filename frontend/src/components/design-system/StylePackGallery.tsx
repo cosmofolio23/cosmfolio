@@ -148,7 +148,7 @@ export function StylePackGallery({ selectedPackId, onSelect, onGenerateClick, sh
     if (!portfolioId) return
     try {
       setLoading(true)
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-backend.onrender.com'
+      const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
       const res = await fetch(`${API_URL}/api/portfolios/${portfolioId}/style-packs?include_defaults=false`, {
         headers: { 'Authorization': `Bearer ${token}` }

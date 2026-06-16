@@ -8,7 +8,7 @@ import type { Page, DesignTokens } from '@/components/composer/types'
 import PageComposer from '@/components/composer/PageComposer'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ('https://cosmfolio-backend.onrender.com')
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
 interface PortfolioData {
   document: {
