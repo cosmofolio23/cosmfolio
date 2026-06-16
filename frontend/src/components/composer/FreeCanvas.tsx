@@ -263,7 +263,7 @@ function ElementBody({ el, tokens }: { el: FreeElement; tokens: DesignTokens }) 
   }
   if (el.kind === 'image') {
     return el.src
-      ? <img src={el.src} alt="" className="w-full h-full" style={{ objectFit: 'cover' }} draggable={false} />
+      ? <img src={el.src} alt="" className="w-full h-full" style={{ objectFit: 'cover', filter: el.cssFilter || 'none' }} draggable={false} />
       : <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">Image</div>
   }
   if (el.kind === 'line') {

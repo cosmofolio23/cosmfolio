@@ -318,6 +318,7 @@ export function ImageBlock({
                 transform: `scale(${block.zoom || 1}) translate(${block.xOffset || 0}%, ${block.yOffset || 0}%)`,
                 transformOrigin: 'center center',
                 transition: dragStart ? 'none' : 'transform 0.1s ease',
+                filter: block.cssFilter || 'none',
               }}
               draggable={false}
             />

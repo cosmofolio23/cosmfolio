@@ -47,6 +47,7 @@ export interface Block {
   zoom?: number
   xOffset?: number
   yOffset?: number
+  cssFilter?: string // Added for Global Filters feature
 
   // On-canvas text formatting (V4 floating toolbar)
   fontFamily?: string
@@ -81,6 +82,7 @@ export interface FreeElement {
   // image
   src?: string
   opacity?: number
+  cssFilter?: string // Added for Global Filters feature
 
   // Graphic DNA properties for V4
   graphicType?: string // e.g. 'parametric-curve', 'contour', 'voronoi', etc.

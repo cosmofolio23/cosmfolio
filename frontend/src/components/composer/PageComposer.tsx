@@ -102,7 +102,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             x: margin + col * (w + gap),
             y: margin + row * (h + gap),
             w, h,
-            imageUrl: url,
+            src: url,
             z: 10 + i,
             locked: false
           }

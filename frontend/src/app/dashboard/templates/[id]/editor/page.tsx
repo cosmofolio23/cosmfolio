@@ -1003,6 +1003,52 @@ export default function TemplateEditor() {
 
   const setLayout = (layoutId: string) => { if (currentPage) updatePage({ ...currentPage, layoutId }) }
   const setTitleBlock = (id?: string) => { if (currentPage) updatePage({ ...currentPage, titleBlockId: id }) }
+
+  const PRESET_FILTERS = [
+    { name: 'None', filter: 'none' },
+    { name: 'Grayscale', filter: 'grayscale(100%)' },
+    { name: 'Blueprint', filter: 'sepia(100%) hue-rotate(190deg) saturate(300%) contrast(150%) brightness(80%)' },
+    { name: 'High Contrast', filter: 'grayscale(100%) contrast(150%)' },
+    { name: 'Sepia Sketch', filter: 'sepia(100%) contrast(120%) brightness(90%)' },
+    { name: 'Moody Dark', filter: 'grayscale(50%) contrast(130%) brightness(70%)' },
+    { name: 'Invert', filter: 'invert(100%) grayscale(100%) contrast(150%)' },
+    { name: 'Warm Sun', filter: 'sepia(50%) saturate(150%) brightness(110%)' },
+    { name: 'Cool Steel', filter: 'sepia(50%) hue-rotate(180deg) saturate(100%) brightness(95%)' },
+    { name: 'Arch-Dark', filter: 'grayscale(100%) invert(100%) contrast(120%)' },
+    { name: 'Faded Vintage', filter: 'sepia(40%) contrast(90%) brightness(110%) opacity(90%)' },
+    { name: 'Overcast', filter: 'grayscale(30%) brightness(90%) contrast(110%)' },
+    { name: 'Neon Blueprint', filter: 'invert(100%) sepia(100%) hue-rotate(180deg) saturate(400%)' },
+  ]
+
+  const applyFilterToPage = (filter: string) => {
+    if (!currentPage) return
+    const newBlocks = currentPage.blocks.map(b => (b.type === 'render' || b.type === 'diagram' || b.type === 'plan' || b.type === 'section') ? { ...b, cssFilter: filter } : b)
+    const newFreeElements = (currentPage.freeElements || []).map(el => el.kind === 'image' ? { ...el, cssFilter: filter } : el)
+    updatePage({ ...currentPage, blocks: newBlocks, freeElements: newFreeElements })
+    flashUpload('ok', `Applied ${filter === 'none' ? 'No Filter' : 'Filter'} to page`)
+  }
+
+  const applyFilterToProject = (filter: string) => {
+    const newPages = pages.map(p => {
+      const newBlocks = p.blocks.map(b => (b.type === 'render' || b.type === 'diagram' || b.type === 'plan' || b.type === 'section') ? { ...b, cssFilter: filter } : b)
+      const newFreeElements = (p.freeElements || []).map(el => el.kind === 'image' ? { ...el, cssFilter: filter } : el)
+      return { ...p, blocks: newBlocks, freeElements: newFreeElements }
+    })
+    setPages(newPages)
+    markDirty()
+    flashUpload('ok', `Applied ${filter === 'none' ? 'No Filter' : 'Filter'} to entire project!`)
+  }
+
+  const [filterBrightness, setFilterBrightness] = useState(100)
+  const [filterContrast, setFilterContrast] = useState(100)
+  const [filterSaturation, setFilterSaturation] = useState(100)
+  const [filterSepia, setFilterSepia] = useState(0)
+
+  const applyCustomFilter = (scope: 'page' | 'project') => {
+    const filter = `brightness(${filterBrightness}%) contrast(${filterContrast}%) saturate(${filterSaturation}%) sepia(${filterSepia}%)`
+    if (scope === 'page') applyFilterToPage(filter)
+    else applyFilterToProject(filter)
+  }
   const magicShuffleLayout = () => {
     if (!currentPage.freeElements) return
     const images = currentPage.freeElements.filter(el => el.kind === 'image')
@@ -2355,6 +2401,52 @@ export default function TemplateEditor() {
                   <select value={tokens.bodyFont} onChange={e => setTok({ bodyFont: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded text-sm">
                     {BODY_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase">Image Filters</h4>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mb-2 leading-tight">Unify rendering and diagram styles globally.</p>
+                  
+                  {/* Filter Presets */}
+                  <div className="overflow-x-auto pb-2 mb-2 scrollbar-thin flex gap-1.5">
+                    {PRESET_FILTERS.map(pf => (
+                      <button
+                        key={pf.name}
+                        onClick={() => applyFilterToPage(pf.filter)}
+                        className="flex-shrink-0 w-16 flex flex-col items-center gap-1 group"
+                      >
+                        <div className="w-10 h-10 rounded-full border-2 border-gray-200 overflow-hidden group-hover:border-blue-400 transition" style={{ filter: pf.filter, background: 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=100&q=80) center/cover' }} />
+                        <span className="text-[9px] font-semibold text-gray-600 text-center leading-tight">{pf.name}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Manual Sliders */}
+                  <div className="space-y-2 mb-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] uppercase font-bold text-gray-500 w-12 text-right">Bright</span>
+                      <input type="range" min="0" max="200" value={filterBrightness} onChange={e => setFilterBrightness(Number(e.target.value))} className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] uppercase font-bold text-gray-500 w-12 text-right">Contrast</span>
+                      <input type="range" min="0" max="200" value={filterContrast} onChange={e => setFilterContrast(Number(e.target.value))} className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] uppercase font-bold text-gray-500 w-12 text-right">Saturate</span>
+                      <input type="range" min="0" max="300" value={filterSaturation} onChange={e => setFilterSaturation(Number(e.target.value))} className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] uppercase font-bold text-gray-500 w-12 text-right">Sepia</span>
+                      <input type="range" min="0" max="100" value={filterSepia} onChange={e => setFilterSepia(Number(e.target.value))} className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                    </div>
+                  </div>
+
+                  {/* Apply Actions */}
+                  <div className="flex gap-1.5">
+                    <button onClick={() => applyCustomFilter('page')} className="flex-1 px-2 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px] font-bold hover:bg-blue-100">Apply to Page</button>
+                    <button onClick={() => applyCustomFilter('project')} className="flex-1 px-2 py-1.5 bg-blue-600 text-white rounded text-[10px] font-bold hover:bg-blue-700">Apply to Project</button>
+                  </div>
                 </div>
                 <div className="border-t pt-3">
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Design Packs</h4>
