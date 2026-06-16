@@ -19,6 +19,8 @@ import { STYLE_DNA } from '@/components/composer/styleDNA'
 import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
 import { TITLE_BLOCKS, TITLE_BLOCK_CATEGORIES } from '@/components/templates/titleBlocks'
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
+import { BackgroundLayers, MasterElements } from '@/components/composer/PublishingLayers'
+import { SpreadManager } from '@/components/composer/SpreadManager'
 import { newFreeElement } from '@/components/composer/FreeCanvas'
 import type { FreeElement } from '@/components/composer/types'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
@@ -243,6 +245,7 @@ export default function TemplateEditor() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null)
   const [showGeneratePackModal, setShowGeneratePackModal] = useState(false)
+  const [showSpreadManager, setShowSpreadManager] = useState(false)
   const [generateMode, setGenerateMode] = useState<'mood' | 'color' | 'assets'>('mood')
   const [generateInput, setGenerateInput] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -1201,30 +1204,15 @@ export default function TemplateEditor() {
         flashUpload('info', `Note: Could not save latest changes (${saveErr?.message || 'network error'}). Exporting last saved version.`, 5000)
         await new Promise(r => setTimeout(r, 1200))
       }
-      const res = await fetch(`${API_URL}/api/projects/${pid}/document/export-pdf`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${authToken()}` },
-      })
-      if (!res.ok) throw new Error(`server ${res.status}`)
-      const blob = await res.blob()
-      if (blob.size < 200) throw new Error('empty document')
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${portfolioTitle || 'portfolio'}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
-      flashUpload('ok', '✓ PDF downloaded successfully')
-    } catch (e: any) {
-      // Client-side fallback: open the print-ready portfolio book view
-      const pid = projectId
-      if (pid) {
-        flashUpload('info', '📄 PDF server unavailable — opening print view. Use browser "Save as PDF" (Ctrl+P).', 8000)
-        const printWin = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
-        if (!printWin) flashUpload('err', 'Pop-up blocked. Allow popups for this site, then try again.')
+      
+      const printWin = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
+      if (!printWin) {
+        flashUpload('err', 'Pop-up blocked. Allow popups for this site, then try again.')
       } else {
-        flashUpload('err', 'Save your portfolio first (click "Save & Close"), then export as PDF.')
+        flashUpload('ok', '✓ Opened PDF print viewer')
       }
+    } catch (e: any) {
+      flashUpload('err', 'Save your portfolio first, then export as PDF.')
     } finally {
       setIsExporting(false)
     }
@@ -1532,6 +1520,7 @@ export default function TemplateEditor() {
             {projectId && (
               <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
             )}
+            <button onClick={() => setShowSpreadManager(true)} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700" title="Visual Spread Manager">⏹️ Spreads</button>
             <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
               <button onClick={() => setEditSpreadMode(false)} className={`px-2.5 py-1.5 font-medium ${!editSpreadMode ? 'bg-blue-650 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`} title="Single page canvas edit">📄 Single</button>
               <button onClick={() => setEditSpreadMode(true)} className={`px-2.5 py-1.5 font-medium ${editSpreadMode ? 'bg-blue-650 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`} title="Dual page spread composer">📖 Spread</button>
@@ -1652,7 +1641,7 @@ export default function TemplateEditor() {
                         setPages(pages.map((x, i) => i === leftIdx ? { ...x, freeElements: els } : x))
                       }}
                       onApplyScope={applyElementScopeFromPage}
-                      onFreeSelectionChange={el => { setSelectedFreeEl(el); if (el) setRightTab('canvas') }}
+                      onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
                       pages={pages}
                       onUpdateGlobalPages={(updater) => {
                         markDirty()
@@ -1688,7 +1677,7 @@ export default function TemplateEditor() {
                         setPages(pages.map((x, i) => i === rightIdx ? { ...x, freeElements: els } : x))
                       }}
                       onApplyScope={applyElementScopeFromPage}
-                      onFreeSelectionChange={el => { setSelectedFreeEl(el); if (el) setRightTab('canvas') }}
+                      onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
                       pages={pages}
                       onUpdateGlobalPages={(updater) => {
                         markDirty()
@@ -1718,7 +1707,7 @@ export default function TemplateEditor() {
                 editableFree
                 onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
                 onApplyScope={applyElementScopeFromPage}
-                onFreeSelectionChange={el => { setSelectedFreeEl(el); if (el) setRightTab('canvas') }}
+                onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
                 pages={pages}
                 onUpdateGlobalPages={(updater) => {
                   markDirty()
@@ -1747,10 +1736,17 @@ export default function TemplateEditor() {
         <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10">
-            {(['guide', 'publishing', 'layout', 'blocks', 'canvas', 'style'] as const).map(t => (
-              <button key={t} onClick={() => setRightTab(t)}
-                className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
-                {t === 'canvas' ? '✦' : t}
+            {([
+              ['guide',      '📋', 'Guide'],
+              ['publishing', '📐', 'Publishing'],
+              ['layout',     '▦',  'Layout'],
+              ['blocks',     '▤',  'Blocks'],
+              ['canvas',     '✦',  'Canvas'],
+              ['style',      '🎨', 'Style'],
+            ] as const).map(([t, icon, label]) => (
+              <button key={t} onClick={() => setRightTab(t)} title={label}
+                className={`flex-1 py-3 text-base transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                {icon}
               </button>
             ))}
           </div>
@@ -2411,6 +2407,19 @@ export default function TemplateEditor() {
             />
           </div>
         </div>
+      )}
+
+      {showSpreadManager && (
+        <SpreadManager
+          pages={pages}
+          tokens={tokens}
+          pageSize={publishingPortfolio.pageSize}
+          onClose={() => setShowSpreadManager(false)}
+          onReorder={(newPages) => { setPages(newPages); markDirty() }}
+          onSelect={(idx) => setCurrentIdx(idx)}
+          onDuplicate={(idx) => { const p = pages[idx]; if (p) { const clone = { ...p, id: `p-${Date.now().toString(36)}` }; setPages(prev => { const next = [...prev]; next.splice(idx + 1, 0, clone); return next }); markDirty() } }}
+          onDelete={(idx) => deletePage(idx)}
+        />
       )}
     </div>
   )
