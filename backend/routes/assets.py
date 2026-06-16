@@ -32,7 +32,7 @@ router = APIRouter()
 
 # ==================== ASSET UPLOAD ====================
 
-@router.post("/{portfolio_id}/assets", response_model=AssetResponse)
+@router.post("/{portfolio_id}/assets")
 async def upload_asset(
     portfolio_id: str,
     file: UploadFile = File(...),
