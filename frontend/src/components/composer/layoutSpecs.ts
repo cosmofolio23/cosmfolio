@@ -758,6 +758,121 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
   ...buildContentsSpecs(),
   ...buildProceduralContents(),
   ...buildProceduralMasterSpreads(),
+
+  {
+    id: 'cosmo-special-2-cover',
+    name: 'Cosmo Special 2 · Cover',
+    category: 'Cover',
+    suits: ['cover'],
+    imageCount: 0,
+    regions: [
+      { role:'title',  x:10, y:30, w:80, h:20 },
+      { role:'body',   x:10, y:55, w:80, h:35 }
+    ]
+  },
+  {
+    id: 'cosmo-special-2-project',
+    name: 'Cosmo Special 2 · Project',
+    category: 'Single',
+    suits: ['project'],
+    imageCount: 1,
+    regions: [
+      { role:'render', x:0,  y:0,   w:100, h:100 },
+      { role:'title',  x:5,  y:70,  w:60,  h:15  },
+      { role:'meta',   x:5,  y:86,  w:50,  h:8   }
+    ]
+  },
+  {
+    id: 'cosmo-special-2-about',
+    name: 'Cosmo Special 2 · About',
+    category: 'About',
+    suits: ['about'],
+    imageCount: 1,
+    regions: [
+      { role:'render', x:0,  y:0,  w:50, h:100 },
+      { role:'title',  x:55, y:20, w:40, h:20  },
+      { role:'body',   x:55, y:45, w:40, h:40  }
+    ]
+  },
+  {
+    id: 'cosmo-special-2-resume',
+    name: 'Cosmo Special 2 · Resume',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 0,
+    regions: [
+      { role:'title',  x:5,  y:5,  w:90,  h:10 },
+      { role:'meta',   x:5,  y:18, w:40,  h:60 },
+      { role:'body',   x:48, y:18, w:47,  h:75 }
+    ]
+  },
+  {
+    id: 'cosmo-special-2-contents',
+    name: 'Cosmo Special 2 · Contents',
+    category: 'Contents',
+    suits: ['contents'],
+    imageCount: 0,
+    regions: [
+      { role:'title',    x:5,  y:5,  w:90, h:10 },
+      { role:'contents', x:5,  y:20, w:90, h:75 }
+    ]
+  },
+  {
+    id: 'cosmo-special-1-cover',
+    name: 'Cosmo Special 1 · Cover',
+    category: 'Cover',
+    suits: ['cover'],
+    imageCount: 0,
+    regions: [
+      { role:'title',  x:10, y:30, w:80, h:20 },
+      { role:'body',   x:10, y:55, w:80, h:35 }
+    ]
+  },
+  {
+    id: 'cosmo-special-1-project',
+    name: 'Cosmo Special 1 · Project',
+    category: 'Single',
+    suits: ['project'],
+    imageCount: 0,
+    regions: [
+      { role:'title',  x:10, y:30, w:80, h:20 },
+      { role:'body',   x:10, y:55, w:80, h:35 }
+    ]
+  },
+  {
+    id: 'cosmo-special-1-about',
+    name: 'Cosmo Special 1 · About',
+    category: 'About',
+    suits: ['about'],
+    imageCount: 0,
+    regions: [
+      { role:'title',  x:10, y:30, w:80, h:20 },
+      { role:'body',   x:10, y:55, w:80, h:35 }
+    ]
+  },
+  {
+    id: 'cosmo-special-1-resume',
+    name: 'Cosmo Special 1 · Resume',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 0,
+    regions: [
+      { role:'title',  x:5,  y:5,  w:90,  h:10 },
+      { role:'meta',   x:5,  y:18, w:40,  h:60 },
+      { role:'body',   x:48, y:18, w:47,  h:75 }
+    ]
+  },
+  {
+    id: 'cosmo-special-1-contents',
+    name: 'Cosmo Special 1 · Contents',
+    category: 'Contents',
+    suits: ['contents'],
+    imageCount: 0,
+    regions: [
+      { role:'title',    x:5,  y:5,  w:90, h:10 },
+      { role:'contents', x:5,  y:20, w:90, h:75 }
+    ]
+  }
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))

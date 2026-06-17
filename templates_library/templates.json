@@ -8241,5 +8241,129 @@
     "style_notes": "Technical architects, BIM managers, drafting specialists.",
     "page_count_range": "20-40",
     "orientation": "landscape_A1"
+  },
+  {
+    "id": "cosmo-special-1",
+    "name": "Cosmo Special 1",
+    "category": "Cosmo Special",
+    "source": "pdf-extract",
+    "origin_file": "dummy-portfolio.pdf",
+    "orientation": "portrait",
+    "page_count": 1,
+    "preview_image": "scripts/content_pipeline/previews/dummy-portfolio_cover.png",
+    "colors": {
+      "background": "#fefefe",
+      "text": "#a9a9a9",
+      "accent": "#fefefe",
+      "primary": "#e2e2e2",
+      "muted": "#f2f2f2",
+      "secondary": "#cdcdcd"
+    },
+    "fonts": {
+      "heading": "Georgia",
+      "body": "Inter"
+    },
+    "layouts": {
+      "cover": {
+        "structure": "minimal",
+        "grid": "1-column",
+        "image_ratio": "4:3"
+      },
+      "project": {
+        "structure": "minimal",
+        "grid": "1-column",
+        "image_ratio": "4:3"
+      },
+      "about": {
+        "structure": "minimal",
+        "grid": "1-column",
+        "image_ratio": "4:3"
+      },
+      "resume": {
+        "structure": "columns",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      },
+      "contents": {
+        "structure": "index",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      }
+    },
+    "placeholders": {
+      "renders": 5,
+      "plans": 2,
+      "sections": 1
+    },
+    "description": "Cosmo Special 1 \u2014 extracted from dummy-portfolio.pdf",
+    "layout_ids": {
+      "cover": "cosmo-special-1-cover",
+      "project": "cosmo-special-1-project",
+      "about": "cosmo-special-1-about",
+      "resume": "cosmo-special-1-resume",
+      "contents": "cosmo-special-1-contents"
+    }
+  },
+  {
+    "id": "cosmo-special-2",
+    "name": "Cosmo Special 2",
+    "category": "Cosmo Special",
+    "source": "pdf-extract",
+    "origin_file": "Cosmo special 1.pdf",
+    "orientation": "portrait",
+    "page_count": 28,
+    "preview_image": "scripts/content_pipeline/previews/Cosmo special 1_cover.png",
+    "colors": {
+      "background": "#fefefe",
+      "text": "#717171",
+      "accent": "#e9e9ea",
+      "primary": "#cbcbcb",
+      "muted": "#b0b0b0",
+      "secondary": "#929292"
+    },
+    "fonts": {
+      "heading": "Georgia",
+      "body": "Inter"
+    },
+    "layouts": {
+      "cover": {
+        "structure": "minimal",
+        "grid": "1-column",
+        "image_ratio": "4:3"
+      },
+      "project": {
+        "structure": "full-bleed",
+        "grid": "3-column",
+        "image_ratio": "1:1"
+      },
+      "about": {
+        "structure": "left-half",
+        "grid": "2-column",
+        "image_ratio": "3:4"
+      },
+      "resume": {
+        "structure": "columns",
+        "grid": "3-column",
+        "image_ratio": "1:1"
+      },
+      "contents": {
+        "structure": "index",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      }
+    },
+    "placeholders": {
+      "renders": 5,
+      "plans": 2,
+      "sections": 1
+    },
+    "description": "Cosmo Special 2 \u2014 extracted from Cosmo special 1.pdf",
+    "layout_ids": {
+      "cover": "cosmo-special-2-cover",
+      "project": "cosmo-special-2-project",
+      "about": "cosmo-special-2-about",
+      "resume": "cosmo-special-2-resume",
+      "contents": "cosmo-special-2-contents"
+    }
   }
 ]
