@@ -178,6 +178,37 @@ export function SheetSetEditor({
     setSheetSet(prev => ({ ...prev, sheets }))
   }
 
+  const handleUpdateSheetSet = (update: Partial<SheetSet>) => {
+    if (update.orientation && update.orientation !== sheetSet.orientation) {
+      const pageSize = SHEET_SIZES[sheetSet.sheetSize as keyof typeof SHEET_SIZES]
+      const oldWidth = sheetSet.orientation === 'portrait' ? pageSize.width : pageSize.height
+      const oldHeight = sheetSet.orientation === 'portrait' ? pageSize.height : pageSize.width
+      const newWidth = update.orientation === 'portrait' ? pageSize.width : pageSize.height
+      const newHeight = update.orientation === 'portrait' ? pageSize.height : pageSize.width
+
+      const reflowedSheets = sheetSet.sheets.map(sheet => ({
+        ...sheet,
+        elements: sheet.elements.map(el => {
+          const absX = (el.x / 100) * oldWidth
+          const absY = (el.y / 100) * oldHeight
+          const absW = (el.w / 100) * oldWidth
+          const absH = (el.h / 100) * oldHeight
+          return {
+            ...el,
+            x: (absX / newWidth) * 100,
+            y: (absY / newHeight) * 100,
+            w: (absW / newWidth) * 100,
+            h: (absH / newHeight) * 100,
+          }
+        })
+      }))
+      
+      setSheetSet(prev => ({ ...prev, ...update, sheets: reflowedSheets }))
+    } else {
+      setSheetSet(prev => ({ ...prev, ...update }))
+    }
+  }
+
   const handleAICommand = async (cmd: any) => {
     if (!currentSheet || !onAICommand) return
     setAiProcessing(true)
@@ -305,6 +336,8 @@ export function SheetSetEditor({
         onZoomChange={setZoom}
         gridEnabled={currentSheet.gridEnabled}
         snapEnabled={currentSheet.snapEnabled}
+        onToggleGrid={() => updateSheet(currentSheet.id, { gridEnabled: !currentSheet.gridEnabled })}
+        onToggleSnap={() => updateSheet(currentSheet.id, { snapEnabled: !currentSheet.snapEnabled })}
       />
 
       {/* Right Sidebar: Properties + AI */}
@@ -333,7 +366,10 @@ export function SheetSetEditor({
         {/* Properties */}
         <SheetProperties
           sheet={currentSheet}
+          sheetSet={sheetSet}
           selectedElement={selectedElement}
+          onUpdateSheet={update => updateSheet(currentSheet.id, update)}
+          onUpdateSheetSet={handleUpdateSheetSet}
           onUpdateElement={update => {
             if (selectedElement) {
               updateElement(selectedElement.id, update)

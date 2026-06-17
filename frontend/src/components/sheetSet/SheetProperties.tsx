@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react'
 import { ChevronDown, Upload } from 'lucide-react'
-import type { Sheet, SheetElement, DrawingMetadata } from './sheetSetTypes'
+import type { Sheet, SheetElement, DrawingMetadata, SheetSet } from './sheetSetTypes'
 import { SCALE_RATIOS } from './drawingScaleEngine'
 
 interface SheetPropertiesProps {
@@ -14,13 +14,19 @@ interface SheetPropertiesProps {
   selectedElement: SheetElement | null
   onUpdateElement: (update: Partial<SheetElement>) => void
   onUploadDrawing: (element: SheetElement, file: File, metadata: Partial<DrawingMetadata>) => void
+  sheetSet: SheetSet
+  onUpdateSheet: (update: Partial<Sheet>) => void
+  onUpdateSheetSet: (update: Partial<SheetSet>) => void
 }
 
 export function SheetProperties({
   sheet,
+  sheetSet,
   selectedElement,
   onUpdateElement,
   onUploadDrawing,
+  onUpdateSheet,
+  onUpdateSheetSet,
 }: SheetPropertiesProps) {
   const [uploadingElement, setUploadingElement] = useState<string | null>(null)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['position', 'style']))
@@ -36,9 +42,115 @@ export function SheetProperties({
   }
 
   if (!selectedElement) {
+    const handleOrientationChange = (newOrientation: 'portrait' | 'landscape') => {
+      if (newOrientation === sheetSet.orientation) return
+      // The actual reflow math will be handled upstream, or we can just emit the update
+      onUpdateSheetSet({ orientation: newOrientation })
+    }
+
     return (
-      <div className="w-80 bg-white border-l border-gray-200 p-4 flex flex-col items-center justify-center text-gray-500">
-        <p className="text-sm">Select an element to edit</p>
+      <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
+        <div className="p-4 border-b border-gray-200 sticky top-0 bg-white">
+          <h3 className="font-semibold text-gray-900">Sheet Settings</h3>
+          <p className="text-xs text-gray-500">Configure page setup and backgrounds</p>
+        </div>
+        
+        <div className="p-4 space-y-6">
+          {/* Page Setup */}
+          <section>
+            <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">Page Setup</h4>
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-700">Sheet Name</span>
+                <input
+                  type="text"
+                  value={sheet.sheetName}
+                  onChange={e => onUpdateSheet({ sheetName: e.target.value })}
+                  className="w-full mt-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-medium text-gray-700 mb-1 block">Orientation</span>
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                  <button
+                    className={`flex-1 py-1.5 text-xs font-medium rounded ${sheetSet.orientation === 'portrait' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => handleOrientationChange('portrait')}
+                  >
+                    Portrait
+                  </button>
+                  <button
+                    className={`flex-1 py-1.5 text-xs font-medium rounded ${sheetSet.orientation === 'landscape' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => handleOrientationChange('landscape')}
+                  >
+                    Landscape
+                  </button>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <hr className="border-gray-200" />
+
+          {/* Backgrounds */}
+          <section>
+            <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">Background Overlays</h4>
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-700 mb-1 block">Pattern Overlay</span>
+                <select
+                  value={sheet.background?.pattern || 'none'}
+                  onChange={e => {
+                    const pattern = e.target.value as any
+                    if (pattern === 'none') {
+                      onUpdateSheet({ background: undefined })
+                    } else {
+                      onUpdateSheet({
+                        background: {
+                          ...sheet.background,
+                          id: sheet.background?.id || `bg-${Date.now()}`,
+                          type: 'pattern',
+                          pattern,
+                          visible: true,
+                          opacity: sheet.background?.opacity || 0.1,
+                        }
+                      })
+                    }
+                  }}
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                >
+                  <option value="none">None</option>
+                  <option value="dots">Drafting Dots</option>
+                  <option value="grid">Architectural Grid</option>
+                  <option value="lines">Horizontal Lines</option>
+                  <option value="diagonal">Diagonal Hatch</option>
+                </select>
+              </label>
+
+              {sheet.background && (
+                <>
+                  <label className="block">
+                    <span className="text-xs font-medium text-gray-700 flex justify-between">
+                      Opacity
+                      <span className="text-gray-400">{(sheet.background.opacity || 0.1) * 100}%</span>
+                    </span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={sheet.background.opacity || 0.1}
+                      onChange={e => onUpdateSheet({
+                        background: { ...sheet.background!, opacity: parseFloat(e.target.value) }
+                      })}
+                      className="w-full mt-1"
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     )
   }
@@ -253,7 +365,12 @@ export function SheetProperties({
                 max="100"
                 step="1"
                 value={selectedElement.w}
-                onChange={e => onUpdateElement({ w: parseFloat(e.target.value) })}
+                onChange={e => {
+                  if (selectedElement.kind === 'drawing') {
+                    if (!window.confirm('Warning: Resizing this drawing will break its architectural scale. Do you want to proceed and lose scale accuracy?')) return
+                  }
+                  onUpdateElement({ w: parseFloat(e.target.value) })
+                }}
                 className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"
               />
             </label>
@@ -266,7 +383,12 @@ export function SheetProperties({
                 max="100"
                 step="1"
                 value={selectedElement.h}
-                onChange={e => onUpdateElement({ h: parseFloat(e.target.value) })}
+                onChange={e => {
+                  if (selectedElement.kind === 'drawing') {
+                    if (!window.confirm('Warning: Resizing this drawing will break its architectural scale. Do you want to proceed and lose scale accuracy?')) return
+                  }
+                  onUpdateElement({ h: parseFloat(e.target.value) })
+                }}
                 className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"
               />
             </label>

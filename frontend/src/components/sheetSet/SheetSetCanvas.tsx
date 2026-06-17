@@ -23,6 +23,8 @@ interface SheetSetCanvasProps {
   onZoomChange: (zoom: number) => void
   gridEnabled: boolean
   snapEnabled: boolean
+  onToggleGrid: () => void
+  onToggleSnap: () => void
 }
 
 export function SheetSetCanvas({
@@ -37,9 +39,12 @@ export function SheetSetCanvas({
   onZoomChange,
   gridEnabled,
   snapEnabled,
+  onToggleGrid,
+  onToggleSnap,
 }: SheetSetCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [resizingId, setResizingId] = useState<string | null>(null)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
   const pageSize = SHEET_SIZES[sheetSet.sheetSize as keyof typeof SHEET_SIZES]
@@ -56,25 +61,52 @@ export function SheetSetCanvas({
     onSelectElement(elementId)
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggingId || !canvasRef.current) return
+  const handleResizeMouseDown = (e: React.MouseEvent, element: SheetElement) => {
+    e.stopPropagation()
+    if (e.button !== 0) return
+    if (element.kind === 'drawing') {
+      const proceed = window.confirm('Warning: Resizing this drawing will break its architectural scale. Do you want to proceed and lose scale accuracy?')
+      if (!proceed) return
+    }
+    setResizingId(element.id)
+    setDragStart({ x: e.clientX, y: e.clientY })
+    onSelectElement(element.id)
+  }
 
-    const element = sheet.elements.find(el => el.id === draggingId)
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if ((!draggingId && !resizingId) || !canvasRef.current) return
+
+    const id = draggingId || resizingId
+    const element = sheet.elements.find(el => el.id === id)
     if (!element || element.locked) return
 
     const deltaX = e.clientX - dragStart.x
     const deltaY = e.clientY - dragStart.y
 
-    const canvasRect = canvasRef.current.getBoundingClientRect()
-    const newX = Math.max(0, Math.min(100, element.x + (deltaX / sheetWidthPx) * 100))
-    const newY = Math.max(0, Math.min(100, element.y + (deltaY / sheetHeightPx) * 100))
-
-    onUpdateElement(element.id, { x: newX, y: newY })
+    if (resizingId) {
+      let newW = Math.max(2, element.w + (deltaX / sheetWidthPx) * 100)
+      let newH = Math.max(2, element.h + (deltaY / sheetHeightPx) * 100)
+      if (snapEnabled) {
+        newW = Math.round(newW / 2) * 2
+        newH = Math.round(newH / 2) * 2
+      }
+      onUpdateElement(element.id, { w: newW, h: newH })
+    } else if (draggingId) {
+      let newX = Math.max(0, Math.min(100 - element.w, element.x + (deltaX / sheetWidthPx) * 100))
+      let newY = Math.max(0, Math.min(100 - element.h, element.y + (deltaY / sheetHeightPx) * 100))
+      if (snapEnabled) {
+        newX = Math.round(newX / 2) * 2
+        newY = Math.round(newY / 2) * 2
+      }
+      onUpdateElement(element.id, { x: newX, y: newY })
+    }
+    
     setDragStart({ x: e.clientX, y: e.clientY })
   }
 
   const handleMouseUp = () => {
     setDraggingId(null)
+    setResizingId(null)
   }
 
   return (
@@ -104,12 +136,12 @@ export function SheetSetCanvas({
         <div className="border-l border-gray-300 mx-2 h-5" />
 
         <label className="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" checked={gridEnabled} readOnly className="w-4 h-4" />
+          <input type="checkbox" checked={gridEnabled} onChange={onToggleGrid} className="w-4 h-4 text-blue-600" />
           Grid
         </label>
 
-        <label className="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" checked={snapEnabled} readOnly className="w-4 h-4" />
+        <label className="flex items-center gap-2 text-sm cursor-pointer ml-2">
+          <input type="checkbox" checked={snapEnabled} onChange={onToggleSnap} className="w-4 h-4 text-blue-600" />
           Snap
         </label>
 
@@ -136,21 +168,41 @@ export function SheetSetCanvas({
             width: `${sheetWidthPx}px`,
             height: `${sheetHeightPx}px`,
             backgroundImage: gridEnabled
-              ? `linear-gradient(90deg, #f0f0f0 1px, transparent 1px), linear-gradient(#f0f0f0 1px, transparent 1px)`
+              ? `linear-gradient(90deg, #e5e7eb 1px, transparent 1px), linear-gradient(#e5e7eb 1px, transparent 1px)`
               : undefined,
-            backgroundSize: gridEnabled ? '20px 20px' : undefined,
+            backgroundSize: gridEnabled ? '2% 2%' : undefined,
           }}
         >
           {/* Master Elements (Background) */}
-          {sheet.background && (
+          {sheet.background && sheet.background.visible !== false && (
             <div
-              className="absolute inset-0 opacity-50"
+              className="absolute inset-0 pointer-events-none"
               style={{
                 backgroundColor: sheet.background.color,
-                backgroundImage: sheet.background.image ? `url(${sheet.background.image})` : undefined,
-                backgroundSize: 'cover',
+                backgroundImage: sheet.background.image 
+                  ? `url(${sheet.background.image})` 
+                  : sheet.background.pattern === 'dots'
+                  ? 'radial-gradient(circle, currentColor 1px, transparent 1px)'
+                  : sheet.background.pattern === 'grid'
+                  ? 'linear-gradient(90deg, currentColor 1px, transparent 1px), linear-gradient(currentColor 1px, transparent 1px)'
+                  : sheet.background.pattern === 'lines'
+                  ? 'linear-gradient(currentColor 1px, transparent 1px)'
+                  : sheet.background.pattern === 'diagonal'
+                  ? 'repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)'
+                  : undefined,
+                backgroundSize: sheet.background.pattern === 'dots' 
+                  ? '20px 20px' 
+                  : sheet.background.pattern === 'grid'
+                  ? '40px 40px'
+                  : sheet.background.pattern === 'lines'
+                  ? '100% 20px'
+                  : sheet.background.pattern === 'diagonal'
+                  ? '10px 10px'
+                  : 'cover',
+                opacity: sheet.background.opacity ?? 0.1,
                 backgroundPosition: 'center',
                 zIndex: 1,
+                color: '#000', // Used as currentColor for patterns
               }}
             />
           )}
@@ -219,11 +271,18 @@ export function SheetSetCanvas({
                   </div>
                 )}
 
-                {/* Selection Handle */}
+                {/* Selection & Drag Handle */}
                 {selectedElementId === element.id && !element.locked && (
-                  <div className="absolute -top-2 -right-2 bg-blue-600 rounded-full p-1 cursor-grab active:cursor-grabbing opacity-0 hover:opacity-100 transition">
-                    <Grip size={14} className="text-white" />
-                  </div>
+                  <>
+                    <div className="absolute -top-2 -right-2 bg-blue-600 rounded-full p-1 cursor-grab active:cursor-grabbing opacity-0 hover:opacity-100 transition">
+                      <Grip size={14} className="text-white" />
+                    </div>
+                    {/* Resize Handle */}
+                    <div 
+                      className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 cursor-nwse-resize rounded-sm shadow-sm"
+                      onMouseDown={(e) => handleResizeMouseDown(e, element)}
+                    />
+                  </>
                 )}
               </div>
             ))}
