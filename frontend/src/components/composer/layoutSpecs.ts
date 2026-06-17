@@ -24,7 +24,7 @@ export interface Region {
   imageIndex?: number
 }
 
-export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume' | 'Contents' | 'Spread'
+export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume' | 'Contents' | 'Spread' | 'About'
 
 export interface LayoutSpec {
   id: string
@@ -766,9 +766,9 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['cover'],
     imageCount: 0,
     regions: [
-      { role:'title',  x:10, y:30, w:80, h:20 },
-      { role:'body',   x:10, y:55, w:80, h:35 }
-    ]
+      { role: 'title',    c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
   },
   {
     id: 'cosmo-special-2-project',
@@ -777,10 +777,10 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['project'],
     imageCount: 1,
     regions: [
-      { role:'render', x:0,  y:0,   w:100, h:100 },
-      { role:'title',  x:5,  y:70,  w:60,  h:15  },
-      { role:'meta',   x:5,  y:86,  w:50,  h:8   }
-    ]
+      { role: 'image', c0: 1, cs: 12, r0: 1,  rs: 12, imageIndex: 0 },
+      { role: 'title', c0: 1, cs:  7, r0: 9,  rs:  2 },
+      { role: 'meta',  c0: 1, cs:  6, r0: 11, rs:  1 },
+    ],
   },
   {
     id: 'cosmo-special-2-about',
@@ -789,10 +789,10 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['about'],
     imageCount: 1,
     regions: [
-      { role:'render', x:0,  y:0,  w:50, h:100 },
-      { role:'title',  x:55, y:20, w:40, h:20  },
-      { role:'body',   x:55, y:45, w:40, h:40  }
-    ]
+      { role: 'image', c0: 1, cs: 6, r0: 1, rs: 12, imageIndex: 0 },
+      { role: 'title', c0: 7, cs: 5, r0: 3, rs:  2 },
+      { role: 'text',  c0: 7, cs: 5, r0: 6, rs:  5 },
+    ],
   },
   {
     id: 'cosmo-special-2-resume',
@@ -801,10 +801,10 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['resume'],
     imageCount: 0,
     regions: [
-      { role:'title',  x:5,  y:5,  w:90,  h:10 },
-      { role:'meta',   x:5,  y:18, w:40,  h:60 },
-      { role:'body',   x:48, y:18, w:47,  h:75 }
-    ]
+      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 1 },
+      { role: 'meta',  c0: 1, cs:  5, r0: 2, rs: 7 },
+      { role: 'text',  c0: 6, cs:  6, r0: 2, rs: 9 },
+    ],
   },
   {
     id: 'cosmo-special-2-contents',
@@ -813,9 +813,9 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['contents'],
     imageCount: 0,
     regions: [
-      { role:'title',    x:5,  y:5,  w:90, h:10 },
-      { role:'contents', x:5,  y:20, w:90, h:75 }
-    ]
+      { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
+      { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
+    ],
   },
   {
     id: 'cosmo-special-1-cover',
@@ -824,9 +824,9 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['cover'],
     imageCount: 0,
     regions: [
-      { role:'title',  x:10, y:30, w:80, h:20 },
-      { role:'body',   x:10, y:55, w:80, h:35 }
-    ]
+      { role: 'title',    c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
   },
   {
     id: 'cosmo-special-1-project',
@@ -835,9 +835,9 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['project'],
     imageCount: 0,
     regions: [
-      { role:'title',  x:10, y:30, w:80, h:20 },
-      { role:'body',   x:10, y:55, w:80, h:35 }
-    ]
+      { role: 'title', c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'text',  c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
   },
   {
     id: 'cosmo-special-1-about',
@@ -846,9 +846,9 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['about'],
     imageCount: 0,
     regions: [
-      { role:'title',  x:10, y:30, w:80, h:20 },
-      { role:'body',   x:10, y:55, w:80, h:35 }
-    ]
+      { role: 'title', c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'text',  c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
   },
   {
     id: 'cosmo-special-1-resume',
@@ -857,10 +857,10 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['resume'],
     imageCount: 0,
     regions: [
-      { role:'title',  x:5,  y:5,  w:90,  h:10 },
-      { role:'meta',   x:5,  y:18, w:40,  h:60 },
-      { role:'body',   x:48, y:18, w:47,  h:75 }
-    ]
+      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 1 },
+      { role: 'meta',  c0: 1, cs:  5, r0: 2, rs: 7 },
+      { role: 'text',  c0: 6, cs:  6, r0: 2, rs: 9 },
+    ],
   },
   {
     id: 'cosmo-special-1-contents',
@@ -869,9 +869,9 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     suits: ['contents'],
     imageCount: 0,
     regions: [
-      { role:'title',    x:5,  y:5,  w:90, h:10 },
-      { role:'contents', x:5,  y:20, w:90, h:75 }
-    ]
+      { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
+      { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
+    ],
   }
 ]
 
