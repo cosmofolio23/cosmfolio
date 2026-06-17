@@ -62,6 +62,14 @@ export interface SheetElement {
   isMaster?: boolean
   masterId?: string
 
+  // Image Effects for cleanup
+  imageEffects?: {
+    grayscale?: boolean
+    invert?: boolean
+    contrast?: number // 100 is normal
+    multiply?: boolean // blend mode multiply
+  }
+
   // Drawing-specific
   drawing?: DrawingMetadata
 
@@ -118,7 +126,7 @@ export interface BackgroundDefinition {
   image?: string
   opacity?: number
   blendMode?: BlendMode
-  pattern?: 'dots' | 'lines' | 'grid' | 'diagonal'
+  pattern?: 'dots' | 'lines' | 'grid' | 'diagonal' | 'topographic' | 'waves' | 'abstract-grid'
   visible: boolean
 }
 

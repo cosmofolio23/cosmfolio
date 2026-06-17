@@ -149,6 +149,10 @@ export function SheetProperties({
                   <option value="grid">Architectural Grid</option>
                   <option value="lines">Horizontal Lines</option>
                   <option value="diagonal">Diagonal Hatch</option>
+                  <option disabled>──────</option>
+                  <option value="topographic">Topographic Contours</option>
+                  <option value="waves">Parametric Waves</option>
+                  <option value="abstract-grid">Abstract Grid</option>
                 </select>
               </label>
 
@@ -246,6 +250,64 @@ export function SheetProperties({
               }}
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700"
             />
+
+            <hr className="my-4 border-gray-200" />
+
+            <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">Image Effects</h4>
+            
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 mb-2">
+              <input
+                type="checkbox"
+                checked={selectedElement.imageEffects?.grayscale || false}
+                onChange={e => onUpdateElement({ 
+                  imageEffects: { ...selectedElement.imageEffects, grayscale: e.target.checked } 
+                })}
+                className="rounded border-gray-300"
+              />
+              Grayscale
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 mb-2">
+              <input
+                type="checkbox"
+                checked={selectedElement.imageEffects?.invert || false}
+                onChange={e => onUpdateElement({ 
+                  imageEffects: { ...selectedElement.imageEffects, invert: e.target.checked } 
+                })}
+                className="rounded border-gray-300"
+              />
+              Invert Colors
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 mb-2">
+              <input
+                type="checkbox"
+                checked={selectedElement.imageEffects?.multiply || false}
+                onChange={e => onUpdateElement({ 
+                  imageEffects: { ...selectedElement.imageEffects, multiply: e.target.checked } 
+                })}
+                className="rounded border-gray-300"
+              />
+              Multiply (Transparent Whites)
+            </label>
+
+            <label className="block mt-3">
+              <span className="text-xs text-gray-700 flex justify-between">
+                Contrast
+                <span className="text-gray-400">{selectedElement.imageEffects?.contrast || 100}%</span>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={selectedElement.imageEffects?.contrast || 100}
+                onChange={e => onUpdateElement({ 
+                  imageEffects: { ...selectedElement.imageEffects, contrast: parseInt(e.target.value) } 
+                })}
+                className="w-full mt-1"
+              />
+            </label>
+
           </div>
         )}
 

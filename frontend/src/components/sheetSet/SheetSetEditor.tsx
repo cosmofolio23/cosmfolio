@@ -48,6 +48,7 @@ export function SheetSetEditor({
   const [isSaving, setIsSaving] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
+  const [spreadMode, setSpreadMode] = useState(false)
   
   // File upload state
   const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
@@ -61,7 +62,8 @@ export function SheetSetEditor({
   }, [])
 
   const currentSheet = sheetSet.sheets.find(s => s.id === selectedSheetId)
-  const selectedElement = currentSheet?.elements.find(e => e.id === selectedElementId) || null
+  const nextSheet = spreadMode && currentSheet ? sheetSet.sheets.find(s => s.order === currentSheet.order + 1) : undefined
+  const selectedElement = currentSheet?.elements.find(e => e.id === selectedElementId) || nextSheet?.elements.find(e => e.id === selectedElementId) || null
 
   // Auto-save
   useEffect(() => {
@@ -421,6 +423,8 @@ export function SheetSetEditor({
       {/* Canvas */}
       <SheetSetCanvas
         sheet={currentSheet}
+        nextSheet={nextSheet}
+        spreadMode={spreadMode}
         sheetSet={sheetSet}
         selectedElementId={selectedElementId}
         onSelectElement={setSelectedElementId}
@@ -437,6 +441,18 @@ export function SheetSetEditor({
 
       {/* Right Sidebar: Properties + AI */}
       <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto flex flex-col">
+        
+        {/* Spread Mode Toggle */}
+        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+          <span className="text-xs font-bold text-gray-700">📖 Spread View</span>
+          <button 
+            onClick={() => setSpreadMode(!spreadMode)}
+            className={`w-10 h-5 rounded-full relative transition-colors ${spreadMode ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}
+          >
+            <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${spreadMode ? 'translate-x-5' : 'translate-x-0'}`} />
+          </button>
+        </div>
+
         {/* Sheet Layout Switcher */}
         <div className="p-4 border-b border-gray-200 bg-[#FBE7A1]/10">
           <label className="text-xs font-bold text-gray-700 block mb-1.5 capitalize">
