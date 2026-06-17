@@ -10,6 +10,7 @@ import { Grip, Trash2, Copy } from 'lucide-react'
 import type { Sheet, SheetElement, SheetSet } from './sheetSetTypes'
 import { SHEET_SIZES, mmToPx } from './sheetSetTypes'
 import { generateScaleLabel } from './drawingScaleEngine'
+import { TitleBlockRenderer } from './TitleBlockEngine'
 
 interface SheetSetCanvasProps {
   sheet: Sheet
@@ -206,6 +207,12 @@ export function SheetSetCanvas({
               }}
             />
           )}
+
+          {/* Dynamic Master Title Block */}
+          <TitleBlockRenderer 
+            sheetSet={sheetSet} 
+            sheet={sheet} 
+          />
 
           {/* Elements */}
           <div className="absolute inset-0" style={{ zIndex: 10 }}>

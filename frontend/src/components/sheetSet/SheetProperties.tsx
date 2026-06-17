@@ -92,6 +92,31 @@ export function SheetProperties({
 
           <hr className="border-gray-200" />
 
+          {/* Master Title Block */}
+          <section>
+            <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">Master Title Block</h4>
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-700 mb-1 block">Style Template</span>
+                <select
+                  value={sheetSet.titleBlockTemplate || 'none'}
+                  onChange={e => onUpdateSheetSet({ titleBlockTemplate: e.target.value as any })}
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                >
+                  <option value="none">None</option>
+                  <option value="bottom-strip">Bottom Strip</option>
+                  <option value="right-column">Right Column</option>
+                  <option value="minimal-corner">Minimal Corner</option>
+                </select>
+              </label>
+              <p className="text-[10px] text-gray-500 leading-tight mt-1">
+                This title block is dynamically applied to all sheets in the set and automatically populated.
+              </p>
+            </div>
+          </section>
+
+          <hr className="border-gray-200" />
+
           {/* Backgrounds */}
           <section>
             <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">Background Overlays</h4>

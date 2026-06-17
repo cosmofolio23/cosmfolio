@@ -179,6 +179,8 @@ export interface Sheet {
 // SHEET SET (THE MAIN DOCUMENT)
 // ─────────────────────────────────────────────────────────────
 
+export type TitleBlockType = 'bottom-strip' | 'right-column' | 'minimal-corner' | 'none'
+
 export interface SheetSet {
   id: string
   projectId: string
@@ -190,13 +192,14 @@ export interface SheetSet {
   collegeName?: string
   guideName?: string
   location?: string
-  date: string
+  date?: string
 
   // Page setup
   sheetSize: SheetSize
   customWidth?: number          // mm
   customHeight?: number         // mm
   orientation: Orientation
+  titleBlockTemplate?: TitleBlockType
 
   // Master elements
   masterSheets: MasterSheet[]

@@ -19,6 +19,8 @@ import { LayoutMiniPreview } from './LayoutMiniPreview'
 import { peekSheetImage, clearSheetImage, type SheetImageHandoff } from '@/lib/sheetHandoff'
 import { AssetUploadModal } from './AssetUploadModal'
 import { SheetSetAssetLibrary, type ProjectAsset } from './SheetSetAssetLibrary'
+import { SheetSetSymbolsPanel } from './SheetSetSymbolsPanel'
+import { ThesisCompanion } from './ThesisCompanion'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -401,12 +403,20 @@ export function SheetSetEditor({
         onDragStart={() => {}} 
       />
 
+      {/* Architectural Symbols */}
+      <SheetSetSymbolsPanel 
+        onAddElement={addElement} 
+      />
+
       {/* Entourage Panel */}
       <SheetSetEntouragePanel
         sheetWidthMm={sheetWidthMm}
         sheetHeightMm={sheetHeightMm}
         onAddElement={addElement}
       />
+
+      {/* Thesis Tracker Widget */}
+      <ThesisCompanion sheets={sheetSet.sheets} />
 
       {/* Canvas */}
       <SheetSetCanvas
