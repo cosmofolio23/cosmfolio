@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Parametric Layout Engine
  *
  * Instead of hand-coding layouts, we describe each as a set of REGIONS on a
@@ -922,6 +922,126 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
   {
     id: 'cosmo-special-3-contents',
     name: 'Cosmo Special 3 · Contents',
+    category: 'Contents',
+    suits: ['contents'],
+    imageCount: 0,
+    regions: [
+      { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
+      { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
+    ],
+  },
+  {
+    id: 'cosmo-special-4-cover',
+    name: 'Cosmo Special 4 · Cover',
+    category: 'Cover',
+    suits: ['cover'],
+    imageCount: 0,
+    regions: [
+      { role: 'title',    c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
+  },
+  {
+    id: 'cosmo-special-4-project',
+    name: 'Cosmo Special 4 · Project',
+    category: 'Single',
+    suits: ['project'],
+    imageCount: 2,
+    regions: [
+      { role: 'image', c0: 1, cs: 12, r0: 1,  rs: 12, imageIndex: 0 },
+      { role: 'title', c0: 1, cs:  7, r0: 9,  rs:  2 },
+      { role: 'meta',  c0: 1, cs:  6, r0: 11, rs:  1 },
+      { role: 'image', c0: 7, cs:  6, r0: 1,  rs:  6, imageIndex: 1 },
+    ],
+  },
+  {
+    id: 'cosmo-special-4-about',
+    name: 'Cosmo Special 4 · About',
+    category: 'About',
+    suits: ['about'],
+    imageCount: 1,
+    regions: [
+      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 2 },
+      { role: 'text',  c0: 1, cs: 11, r0: 3, rs: 4 },
+      { role: 'image', c0: 1, cs: 12, r0: 7, rs: 6, imageIndex: 0 },
+    ],
+  },
+  {
+    id: 'cosmo-special-4-resume',
+    name: 'Cosmo Special 4 · Resume',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 1 },
+      { role: 'meta',  c0: 1, cs:  5, r0: 2, rs: 7 },
+      { role: 'text',  c0: 6, cs:  6, r0: 2, rs: 9 },
+    ],
+  },
+  {
+    id: 'cosmo-special-4-contents',
+    name: 'Cosmo Special 4 · Contents',
+    category: 'Contents',
+    suits: ['contents'],
+    imageCount: 0,
+    regions: [
+      { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
+      { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
+    ],
+  },
+  {
+    id: 'cosmo-special-5-cover',
+    name: 'Cosmo Special 5 · Cover',
+    category: 'Cover',
+    suits: ['cover'],
+    imageCount: 1,
+    regions: [
+      { role: 'title',    c0: 1, cs: 5, r0: 3, rs: 2 },
+      { role: 'subtitle', c0: 1, cs: 5, r0: 6, rs: 5 },
+      { role: 'image',    c0: 7, cs: 6, r0: 1, rs: 12, imageIndex: 0 },
+    ],
+  },
+  {
+    id: 'cosmo-special-5-project',
+    name: 'Cosmo Special 5 · Project',
+    category: 'Single',
+    suits: ['project'],
+    imageCount: 2,
+    regions: [
+      { role: 'image', c0: 1, cs: 12, r0: 1,  rs:  7, imageIndex: 0 },
+      { role: 'title', c0: 1, cs:  7, r0: 8,  rs:  2 },
+      { role: 'meta',  c0: 1, cs: 11, r0: 10, rs:  1 },
+      { role: 'text',  c0: 1, cs: 11, r0: 11, rs:  1 },
+      { role: 'image', c0: 7, cs:  6, r0: 1,  rs:  6, imageIndex: 1 },
+    ],
+  },
+  {
+    id: 'cosmo-special-5-about',
+    name: 'Cosmo Special 5 · About',
+    category: 'About',
+    suits: ['about'],
+    imageCount: 1,
+    regions: [
+      { role: 'title', c0: 1, cs: 5, r0: 3, rs: 2 },
+      { role: 'text',  c0: 1, cs: 5, r0: 6, rs: 5 },
+      { role: 'image', c0: 7, cs: 6, r0: 1, rs: 12, imageIndex: 0 },
+    ],
+  },
+  {
+    id: 'cosmo-special-5-resume',
+    name: 'Cosmo Special 5 · Resume',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 1 },
+      { role: 'meta',  c0: 1, cs:  5, r0: 2, rs: 7 },
+      { role: 'text',  c0: 6, cs:  6, r0: 2, rs: 9 },
+    ],
+  },
+  {
+    id: 'cosmo-special-5-contents',
+    name: 'Cosmo Special 5 · Contents',
     category: 'Contents',
     suits: ['contents'],
     imageCount: 0,

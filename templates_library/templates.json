@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "tpl_001",
     "name": "Nordic Minimal",
@@ -8426,6 +8426,130 @@
       "about": "cosmo-special-3-about",
       "resume": "cosmo-special-3-resume",
       "contents": "cosmo-special-3-contents"
+    }
+  },
+  {
+    "id": "cosmo-special-4",
+    "name": "Cosmo Special 4",
+    "category": "Cosmo Special",
+    "source": "behance-extract",
+    "origin_file": "Architecture-Portfolio",
+    "orientation": "landscape",
+    "page_count": 24,
+    "preview_image": "scripts/content_pipeline/previews/Architecture-Portfolio_cover.png",
+    "colors": {
+      "background": "#cac9c5",
+      "text": "#1f1f1d",
+      "accent": "#ad6b4f",
+      "primary": "#bcbab4",
+      "muted": "#414c67",
+      "secondary": "#818987"
+    },
+    "fonts": {
+      "heading": "Georgia",
+      "body": "Inter"
+    },
+    "layouts": {
+      "cover": {
+        "structure": "minimal",
+        "grid": "3-column",
+        "image_ratio": "3:4"
+      },
+      "project": {
+        "structure": "full-bleed",
+        "grid": "2-column",
+        "image_ratio": "1:1"
+      },
+      "about": {
+        "structure": "bottom-third",
+        "grid": "3-column",
+        "image_ratio": "1:1"
+      },
+      "resume": {
+        "structure": "columns",
+        "grid": "2-column",
+        "image_ratio": "1:1"
+      },
+      "contents": {
+        "structure": "index",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      }
+    },
+    "placeholders": {
+      "renders": 5,
+      "plans": 2,
+      "sections": 1
+    },
+    "description": "Cosmo Special 4 \u2014 extracted from Architecture-Portfolio",
+    "layout_ids": {
+      "cover": "cosmo-special-4-cover",
+      "project": "cosmo-special-4-project",
+      "about": "cosmo-special-4-about",
+      "resume": "cosmo-special-4-resume",
+      "contents": "cosmo-special-4-contents"
+    }
+  },
+  {
+    "id": "cosmo-special-5",
+    "name": "Cosmo Special 5",
+    "category": "Cosmo Special",
+    "source": "behance-extract",
+    "origin_file": "PORTFOLIO-INTERIOR-DESIGN-2024-2026",
+    "orientation": "portrait",
+    "page_count": 3,
+    "preview_image": "scripts/content_pipeline/previews/PORTFOLIO-INTERIOR-DESIGN-2024-2026_cover.png",
+    "colors": {
+      "background": "#f9f8f4",
+      "text": "#36261d",
+      "accent": "#6d5b4e",
+      "primary": "#8f7f72",
+      "muted": "#dedad6",
+      "secondary": "#b7a9a0"
+    },
+    "fonts": {
+      "heading": "Georgia",
+      "body": "Inter"
+    },
+    "layouts": {
+      "cover": {
+        "structure": "right-half",
+        "grid": "2-column",
+        "image_ratio": "3:4"
+      },
+      "project": {
+        "structure": "minimal",
+        "grid": "1-column",
+        "image_ratio": "4:3"
+      },
+      "about": {
+        "structure": "right-half",
+        "grid": "2-column",
+        "image_ratio": "1:1"
+      },
+      "resume": {
+        "structure": "columns",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      },
+      "contents": {
+        "structure": "index",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      }
+    },
+    "placeholders": {
+      "renders": 5,
+      "plans": 2,
+      "sections": 1
+    },
+    "description": "Cosmo Special 5 \u2014 extracted from PORTFOLIO-INTERIOR-DESIGN-2024-2026",
+    "layout_ids": {
+      "cover": "cosmo-special-5-cover",
+      "project": "cosmo-special-5-project",
+      "about": "cosmo-special-5-about",
+      "resume": "cosmo-special-5-resume",
+      "contents": "cosmo-special-5-contents"
     }
   }
 ]
