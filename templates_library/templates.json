@@ -8365,5 +8365,67 @@
       "resume": "cosmo-special-2-resume",
       "contents": "cosmo-special-2-contents"
     }
+  },
+  {
+    "id": "cosmo-special-3",
+    "name": "Cosmo Special 3",
+    "category": "Cosmo Special",
+    "source": "behance-extract",
+    "origin_file": "Architecture-Portfolio_Yavanikaa-Sindhu_2019-24",
+    "orientation": "portrait",
+    "page_count": 38,
+    "preview_image": "scripts/content_pipeline/previews/Architecture-Portfolio_Yavanikaa-Sindhu_2019-24_cover.png",
+    "colors": {
+      "background": "#fdfdfd",
+      "text": "#0d0d0d",
+      "accent": "#d3d3d3",
+      "primary": "#ededed",
+      "muted": "#afafaf",
+      "secondary": "#666666"
+    },
+    "fonts": {
+      "heading": "Georgia",
+      "body": "Inter"
+    },
+    "layouts": {
+      "cover": {
+        "structure": "minimal",
+        "grid": "2-column",
+        "image_ratio": "4:3"
+      },
+      "project": {
+        "structure": "minimal",
+        "grid": "1-column",
+        "image_ratio": "4:3"
+      },
+      "about": {
+        "structure": "right-half",
+        "grid": "2-column",
+        "image_ratio": "1:1"
+      },
+      "resume": {
+        "structure": "columns",
+        "grid": "2-column",
+        "image_ratio": "1:1"
+      },
+      "contents": {
+        "structure": "index",
+        "grid": "1-column",
+        "image_ratio": "1:1"
+      }
+    },
+    "placeholders": {
+      "renders": 5,
+      "plans": 2,
+      "sections": 1
+    },
+    "description": "Cosmo Special 3 \u2014 extracted from Architecture-Portfolio_Yavanikaa-Sindhu_2019-24",
+    "layout_ids": {
+      "cover": "cosmo-special-3-cover",
+      "project": "cosmo-special-3-project",
+      "about": "cosmo-special-3-about",
+      "resume": "cosmo-special-3-resume",
+      "contents": "cosmo-special-3-contents"
+    }
   }
 ]

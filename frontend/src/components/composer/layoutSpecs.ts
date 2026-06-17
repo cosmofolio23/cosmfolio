@@ -872,7 +872,64 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
       { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
       { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
     ],
-  }
+  },
+  {
+    id: 'cosmo-special-3-cover',
+    name: 'Cosmo Special 3 · Cover',
+    category: 'Cover',
+    suits: ['cover'],
+    imageCount: 0,
+    regions: [
+      { role: 'title',    c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
+  },
+  {
+    id: 'cosmo-special-3-project',
+    name: 'Cosmo Special 3 · Project',
+    category: 'Single',
+    suits: ['project'],
+    imageCount: 0,
+    regions: [
+      { role: 'title', c0: 2, cs: 10, r0: 4, rs: 2 },
+      { role: 'text',  c0: 2, cs: 10, r0: 7, rs: 4 },
+    ],
+  },
+  {
+    id: 'cosmo-special-3-about',
+    name: 'Cosmo Special 3 · About',
+    category: 'About',
+    suits: ['about'],
+    imageCount: 1,
+    regions: [
+      { role: 'title', c0: 1, cs: 5, r0: 3, rs: 2 },
+      { role: 'text',  c0: 1, cs: 5, r0: 6, rs: 5 },
+      { role: 'image', c0: 7, cs: 6, r0: 1, rs: 12, imageIndex: 0 },
+    ],
+  },
+  {
+    id: 'cosmo-special-3-resume',
+    name: 'Cosmo Special 3 · Resume',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 0,
+    regions: [
+      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 1 },
+      { role: 'meta',  c0: 1, cs:  5, r0: 2, rs: 7 },
+      { role: 'text',  c0: 6, cs:  6, r0: 2, rs: 9 },
+    ],
+  },
+  {
+    id: 'cosmo-special-3-contents',
+    name: 'Cosmo Special 3 · Contents',
+    category: 'Contents',
+    suits: ['contents'],
+    imageCount: 0,
+    regions: [
+      { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
+      { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
+    ],
+  },
 ]
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))
