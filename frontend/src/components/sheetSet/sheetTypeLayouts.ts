@@ -456,6 +456,8 @@ export interface WizardBuildConfig {
   projectName: string
   studentName?: string
   collegeName?: string
+  guideName?: string
+  location?: string
   sheetSize: SheetSize
   orientation: Orientation
   customWidth?: number
@@ -501,6 +503,8 @@ export function buildSheetSetFromSelection(cfg: WizardBuildConfig): SheetSet {
     submissionType: cfg.submissionType || 'professional',
     studentName: cfg.studentName,
     collegeName: cfg.collegeName,
+    guideName: cfg.guideName,
+    location: cfg.location,
     date: now.split('T')[0],
     sheetSize: cfg.sheetSize,
     customWidth: cfg.customWidth,

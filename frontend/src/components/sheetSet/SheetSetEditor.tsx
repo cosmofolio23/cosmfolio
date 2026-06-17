@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Save, Download, FileJson, AlertCircle } from 'lucide-react'
-import type { SheetSet, Sheet, SheetElement, DrawingMetadata, SheetSetTemplate } from './sheetSetTypes'
+import type { SheetSet, Sheet, SheetElement, DrawingMetadata, SheetSetTemplate, DrawingType, ArchScale } from './sheetSetTypes'
 import { SHEET_SIZES, mmToPx } from './sheetSetTypes'
 import { SheetSetNavigator } from './SheetSetNavigator'
 import { SheetSetCanvas } from './SheetSetCanvas'
@@ -17,6 +17,8 @@ import { SheetSetEntouragePanel } from './SheetSetEntouragePanel'
 import { layoutsForType, applyLayoutToSheet } from './sheetTypeLayouts'
 import { LayoutMiniPreview } from './LayoutMiniPreview'
 import { peekSheetImage, clearSheetImage, type SheetImageHandoff } from '@/lib/sheetHandoff'
+import { AssetUploadModal } from './AssetUploadModal'
+import { SheetSetAssetLibrary, type ProjectAsset } from './SheetSetAssetLibrary'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -44,6 +46,12 @@ export function SheetSetEditor({
   const [isSaving, setIsSaving] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
+  
+  // File upload state
+  const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
+  const [pendingUploadUrl, setPendingUploadUrl] = useState<string | null>(null)
+  const [isDraggingOver, setIsDraggingOver] = useState(false)
+  const [projectAssets, setProjectAssets] = useState<ProjectAsset[]>([])
 
   // Pick up an image handed off from a studio tool (Drawing Processor, etc.)
   useEffect(() => {
@@ -267,8 +275,79 @@ export function SheetSetEditor({
     setHandoff(null)
   }
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDraggingOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDraggingOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDraggingOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file)
+      setPendingUploadFile(file)
+      setPendingUploadUrl(url)
+    }
+  }
+
+  const handleUploadConfirm = (metadata: { drawingType: DrawingType; originalScale?: ArchScale }) => {
+    if (!pendingUploadUrl) return
+    const wPct = 40
+    const hPct = 40
+    
+    const assetId = `img-${Date.now()}`
+    
+    // Add to project library
+    setProjectAssets(prev => [...prev, {
+      id: assetId,
+      url: pendingUploadUrl,
+      name: pendingUploadFile?.name || 'Uploaded Drawing',
+      type: metadata.drawingType,
+      originalScale: metadata.originalScale
+    }])
+
+    // Add to current sheet
+    addElement({
+      id: assetId,
+      kind: 'drawing',
+      x: 50 - wPct / 2, y: 50 - hPct / 2, w: wPct, h: hPct, z: 100,
+      locked: false, visible: true,
+      drawing: {
+        drawingName: pendingUploadFile?.name || 'Uploaded Drawing',
+        drawingType: metadata.drawingType,
+        originalScale: metadata.originalScale || '1:100',
+        sheetScale: metadata.originalScale || '1:100',
+        vector: false,
+        url: pendingUploadUrl,
+      },
+    })
+    setPendingUploadFile(null)
+    setPendingUploadUrl(null)
+  }
+
   return (
-    <div className="flex h-full bg-gray-100 relative">
+    <div 
+      className={`flex h-full relative transition-colors ${isDraggingOver ? 'bg-blue-50' : 'bg-gray-100'}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {pendingUploadUrl && (
+        <AssetUploadModal 
+          assetUrl={pendingUploadUrl} 
+          onConfirm={handleUploadConfirm} 
+          onCancel={() => {
+            setPendingUploadFile(null)
+            setPendingUploadUrl(null)
+          }} 
+        />
+      )}
       {/* Handoff banner — an image pushed from a studio tool */}
       {handoff && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 bg-white rounded-xl shadow-xl border border-[#D4AF37]/40 px-3 py-2 flex items-center gap-3">
@@ -314,6 +393,12 @@ export function SheetSetEditor({
             })
           }
         }}
+      />
+
+      {/* Project Assets Library */}
+      <SheetSetAssetLibrary 
+        assets={projectAssets} 
+        onDragStart={() => {}} 
       />
 
       {/* Entourage Panel */}

@@ -44,6 +44,8 @@ export function SheetSetWizard({ onComplete, onCancel }: SheetSetWizardProps) {
   const [projectName, setProjectName] = useState('')
   const [studentName, setStudentName] = useState('')
   const [collegeName, setCollegeName] = useState('')
+  const [guideName, setGuideName] = useState('')
+  const [location, setLocation] = useState('')
 
   const stepIdx = STEPS.indexOf(step)
   const selections: SheetSelection[] = useMemo(
@@ -73,6 +75,8 @@ export function SheetSetWizard({ onComplete, onCancel }: SheetSetWizardProps) {
     projectName: projectName.trim(),
     studentName: studentName.trim() || undefined,
     collegeName: collegeName.trim() || undefined,
+    guideName: guideName.trim() || undefined,
+    location: location.trim() || undefined,
     sheetSize, orientation, customWidth, customHeight,
     selections, packId,
   })
@@ -251,6 +255,18 @@ export function SheetSetWizard({ onComplete, onCancel }: SheetSetWizardProps) {
                 <span className="text-sm font-medium text-gray-700">Institution</span>
                 <input type="text" placeholder="College / studio" value={collegeName}
                   onChange={e => setCollegeName(e.target.value)}
+                  className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent" />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Guide / Architect</span>
+                <input type="text" placeholder="e.g. Prof. Smith" value={guideName}
+                  onChange={e => setGuideName(e.target.value)}
+                  className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent" />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Location</span>
+                <input type="text" placeholder="e.g. New York, USA" value={location}
+                  onChange={e => setLocation(e.target.value)}
                   className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent" />
               </label>
 

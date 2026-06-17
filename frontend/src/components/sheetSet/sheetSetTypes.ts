@@ -189,6 +189,7 @@ export interface SheetSet {
   studentName?: string
   collegeName?: string
   guideName?: string
+  location?: string
   date: string
 
   // Page setup
