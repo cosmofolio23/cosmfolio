@@ -50,8 +50,33 @@ export function SheetSetCanvas({
   const canvasRef = useRef<HTMLDivElement>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [resizingId, setResizingId] = useState<string | null>(null)
+  const [resizingHandle, setResizingHandle] = useState<string | null>(null)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
+  const [isSpaceDown, setIsSpaceDown] = useState(false)
+  const [isPanning, setIsPanning] = useState(false)
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 })
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !e.repeat && e.target === document.body) {
+        e.preventDefault()
+        setIsSpaceDown(true)
+      }
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setIsSpaceDown(false)
+        setIsPanning(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
   const pageSize = SHEET_SIZES[sheetSet.sheetSize as keyof typeof SHEET_SIZES]
   const isPortrait = sheetSet.orientation === 'portrait'
   const sheetWidth = isPortrait ? pageSize.width : pageSize.height
@@ -60,13 +85,32 @@ export function SheetSetCanvas({
   const sheetHeightPx = mmToPx(sheetHeight) * (zoom / 100)
 
   const handleElementMouseDown = (e: React.MouseEvent, elementId: string) => {
-    if (e.button !== 0) return
+    if (e.button !== 0 || isSpaceDown) return
+    e.stopPropagation()
     setDraggingId(elementId)
     setDragStart({ x: e.clientX, y: e.clientY })
     onSelectElement(elementId)
   }
 
-  const handleResizeMouseDown = (e: React.MouseEvent, element: SheetElement) => {
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    if (isSpaceDown || e.button === 1) {
+      e.preventDefault()
+      setIsPanning(true)
+      setPanStart({ x: e.clientX, y: e.clientY })
+    } else {
+      onSelectElement('')
+    }
+  }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -10 : 10
+      onZoomChange(Math.min(200, Math.max(20, zoom + delta)))
+    }
+  }
+
+  const handleResizeMouseDown = (e: React.MouseEvent, element: SheetElement, handle: string) => {
     e.stopPropagation()
     if (e.button !== 0) return
     if (element.kind === 'drawing') {
@@ -74,11 +118,20 @@ export function SheetSetCanvas({
       if (!proceed) return
     }
     setResizingId(element.id)
+    setResizingHandle(handle)
     setDragStart({ x: e.clientX, y: e.clientY })
     onSelectElement(element.id)
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (isPanning && canvasRef.current) {
+      const deltaX = e.clientX - panStart.x
+      const deltaY = e.clientY - panStart.y
+      canvasRef.current.scrollBy(-deltaX, -deltaY)
+      setPanStart({ x: e.clientX, y: e.clientY })
+      return
+    }
+
     if ((!draggingId && !resizingId) || !canvasRef.current) return
 
     const id = draggingId || resizingId
@@ -93,14 +146,37 @@ export function SheetSetCanvas({
     const deltaX = e.clientX - dragStart.x
     const deltaY = e.clientY - dragStart.y
 
-    if (resizingId) {
-      let newW = Math.max(2, element.w + (deltaX / sheetWidthPx) * 100)
-      let newH = Math.max(2, element.h + (deltaY / sheetHeightPx) * 100)
+    if (resizingId && resizingHandle) {
+      let newX = element.x
+      let newY = element.y
+      let newW = element.w
+      let newH = element.h
+
+      const deltaWPct = (deltaX / sheetWidthPx) * 100
+      const deltaHPct = (deltaY / sheetHeightPx) * 100
+
+      if (resizingHandle.includes('e')) newW += deltaWPct
+      if (resizingHandle.includes('w')) {
+        newW -= deltaWPct
+        newX += deltaWPct
+      }
+      if (resizingHandle.includes('s')) newH += deltaHPct
+      if (resizingHandle.includes('n')) {
+        newH -= deltaHPct
+        newY += deltaHPct
+      }
+
+      // Constrain minimum size
+      if (newW < 2) { newX -= (2 - newW); newW = 2; }
+      if (newH < 2) { newY -= (2 - newH); newH = 2; }
+
       if (snapEnabled) {
         newW = Math.round(newW / 2) * 2
         newH = Math.round(newH / 2) * 2
+        newX = Math.round(newX / 2) * 2
+        newY = Math.round(newY / 2) * 2
       }
-      onUpdateElement(element.id, { w: newW, h: newH })
+      onUpdateElement(element.id, { x: newX, y: newY, w: newW, h: newH })
     } else if (draggingId) {
       let newX = Math.max(0, Math.min(100 - element.w, element.x + (deltaX / sheetWidthPx) * 100))
       let newY = Math.max(0, Math.min(100 - element.h, element.y + (deltaY / sheetHeightPx) * 100))
@@ -117,6 +193,8 @@ export function SheetSetCanvas({
   const handleMouseUp = () => {
     setDraggingId(null)
     setResizingId(null)
+    setResizingHandle(null)
+    setIsPanning(false)
   }
 
   const renderSheetBoard = (currentSheet: Sheet, index: number) => {
@@ -256,17 +334,38 @@ export function SheetSetCanvas({
                 </div>
               )}
 
-              {/* Selection & Drag Handle */}
+              {/* Selection & Resize Handles */}
               {selectedElementId === element.id && !element.locked && (
                 <>
-                  <div className="absolute -top-2 -right-2 bg-blue-600 rounded-full p-1 cursor-grab active:cursor-grabbing opacity-0 hover:opacity-100 transition">
-                    <Grip size={14} className="text-white" />
+                  {/* Floating Context Toolbar */}
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 p-1 flex items-center gap-1 z-50 whitespace-nowrap pointer-events-auto cursor-default">
+                    <button onClick={(e) => { e.stopPropagation(); onUpdateElement(element.id, { z: (element.z || 0) + 1 }) }} className="p-1.5 hover:bg-gray-100 rounded text-gray-600" title="Bring Forward">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 14h6v6H4zm10-10h6v6h-6zM10 10h10v10H10z"/></svg>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); onUpdateElement(element.id, { z: Math.max(0, (element.z || 0) - 1) }) }} className="p-1.5 hover:bg-gray-100 rounded text-gray-600" title="Send Backward">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h6v6H4zm10 10h6v6h-6zM10 10h10v10H10z"/></svg>
+                    </button>
+                    <div className="w-px h-4 bg-gray-300 mx-1" />
+                    <button onClick={(e) => { e.stopPropagation(); onDuplicateElement(element.id) }} className="p-1.5 hover:bg-gray-100 rounded text-gray-600" title="Duplicate">
+                      <Copy size={14} />
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); onDeleteElement(element.id); onSelectElement('') }} className="p-1.5 hover:bg-red-50 rounded text-red-600" title="Delete">
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                  {/* Resize Handle */}
-                  <div 
-                    className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 cursor-nwse-resize rounded-sm shadow-sm"
-                    onMouseDown={(e) => handleResizeMouseDown(e, element)}
-                  />
+
+                  {/* 8-Point Resize Handles */}
+                  {['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'].map(pos => (
+                    <div 
+                      key={pos}
+                      className={`absolute w-2.5 h-2.5 bg-white border-[1.5px] border-blue-500 shadow-sm ${
+                        pos.includes('n') ? '-top-[5px]' : pos.includes('s') ? '-bottom-[5px]' : 'top-1/2 -translate-y-1/2'
+                      } ${
+                        pos.includes('w') ? '-left-[5px]' : pos.includes('e') ? '-right-[5px]' : 'left-1/2 -translate-x-1/2'
+                      } cursor-${pos}-resize`}
+                      onMouseDown={(e) => handleResizeMouseDown(e, element, pos)}
+                    />
+                  ))}
                 </>
               )}
             </div>
@@ -338,43 +437,18 @@ export function SheetSetCanvas({
       {/* Canvas Area */}
       <div
         ref={canvasRef}
-        className="flex-1 overflow-auto flex items-center justify-center p-8"
+        className={`flex-1 overflow-auto flex items-center justify-center p-8 ${isSpaceDown ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+        onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
       >
         <div className="flex items-center gap-0">
           {sheetsToRender.map((s, index) => renderSheetBoard(s, index))}
         </div>
       </div>
 
-      {/* Element Inspector (when selected) */}
-      {selectedElementId && sheetsToRender.some(s => s.elements.some(e => e.id === selectedElementId)) && (
-        <div className="bg-gray-50 border-t border-gray-200 p-3 flex items-center gap-2 shrink-0">
-          <span className="text-xs text-gray-600">
-            {sheetsToRender.find(s => s.elements.some(e => e.id === selectedElementId))?.elements.find(e => e.id === selectedElementId)?.kind}
-          </span>
-
-          <div className="flex-1" />
-
-          <button
-            onClick={() => onDuplicateElement(selectedElementId)}
-            className="px-2 py-1 text-sm border rounded hover:bg-white flex items-center gap-1"
-          >
-            <Copy size={14} /> Duplicate
-          </button>
-
-          <button
-            onClick={() => {
-              onDeleteElement(selectedElementId)
-              onSelectElement('')
-            }}
-            className="px-2 py-1 text-sm border rounded hover:bg-red-50 text-red-600 flex items-center gap-1"
-          >
-            <Trash2 size={14} /> Delete
-          </button>
-        </div>
-      )}
     </div>
   )
 }
