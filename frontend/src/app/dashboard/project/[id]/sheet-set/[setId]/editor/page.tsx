@@ -55,6 +55,56 @@ export default function SheetSetEditorPage() {
     }
   }
 
+  const handleExport = async (html: string, currentSet: SheetSet) => {
+    try {
+      const response = await apiClient.post(
+        `/api/projects/${projectId}/sheet-sets/${setId}/export`,
+        {
+          html,
+          page_size: currentSet.sheetSize,
+          orientation: currentSet.orientation,
+        },
+        { responseType: 'blob' }
+      )
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${currentSet.projectName}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed:', err)
+      alert('Failed to export PDF')
+    }
+  }
+
+  const handleAICommand = async (cmd: string, payload: any) => {
+    try {
+      if (cmd === 'auto-fill-assets') {
+        const response = await apiClient.post(
+          `/api/projects/${projectId}/sheet-sets/${setId}/auto-fill`,
+          { sheetSet: payload }
+        )
+        return response.data
+      } else {
+        const response = await apiClient.post(
+          `/api/projects/${projectId}/sheet-sets/${setId}/ai-compose`,
+          {
+            command: cmd,
+            sheet: payload,
+          }
+        )
+        return response.data
+      }
+    } catch (err) {
+      console.error('AI Command failed:', err)
+      alert('AI Composition failed')
+      return null
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -86,6 +136,8 @@ export default function SheetSetEditorPage() {
     <SheetSetEditor
       initialSheetSet={sheetSet!}
       onSave={handleSave}
+      onExport={handleExport}
+      onAICommand={handleAICommand}
       onClose={() => router.push(`/dashboard/project/${projectId}/sheet-set`)}
     />
   )

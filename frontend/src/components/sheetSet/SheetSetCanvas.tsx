@@ -130,6 +130,7 @@ export function SheetSetCanvas({
       >
         {/* Sheet */}
         <div
+          id="sheet-canvas"
           className="relative bg-white shadow-2xl"
           style={{
             width: `${sheetWidthPx}px`,

@@ -58,6 +58,10 @@ export interface SheetElement {
   locked: boolean
   visible: boolean
 
+  // Identity Sync (Master Elements)
+  isMaster?: boolean
+  masterId?: string
+
   // Drawing-specific
   drawing?: DrawingMetadata
 
@@ -319,3 +323,4 @@ export type AISheetCommand =
   | 'generate-similar'
   | 'fix-alignment'
   | 'improve-presentation'
+  | 'auto-fill-assets'

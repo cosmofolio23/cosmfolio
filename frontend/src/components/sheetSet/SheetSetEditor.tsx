@@ -22,6 +22,8 @@ interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
   template?: SheetSetTemplate
   onSave?: (sheetSet: SheetSet) => void
+  onExport?: (html: string, sheetSet: SheetSet) => void
+  onAICommand?: (cmd: string, payload: any) => Promise<any>
   onClose?: () => void
 }
 
@@ -29,6 +31,8 @@ export function SheetSetEditor({
   initialSheetSet,
   template,
   onSave,
+  onExport,
+  onAICommand,
   onClose,
 }: SheetSetEditorProps) {
   const [sheetSet, setSheetSet] = useState<SheetSet>(
@@ -70,9 +74,24 @@ export function SheetSetEditor({
 
   const updateElement = (id: string, update: Partial<SheetElement>) => {
     if (!currentSheet) return
-    updateSheet(currentSheet.id, {
-      elements: currentSheet.elements.map(e => (e.id === id ? { ...e, ...update } : e)),
-    })
+    const elementToUpdate = currentSheet.elements.find(e => e.id === id)
+
+    if (elementToUpdate?.isMaster && elementToUpdate.masterId) {
+      // Sync across all sheets
+      setSheetSet(prev => ({
+        ...prev,
+        sheets: prev.sheets.map(s => ({
+          ...s,
+          elements: s.elements.map(e => 
+            e.masterId === elementToUpdate.masterId ? { ...e, ...update } : e
+          )
+        }))
+      }))
+    } else {
+      updateSheet(currentSheet.id, {
+        elements: currentSheet.elements.map(e => (e.id === id ? { ...e, ...update } : e)),
+      })
+    }
   }
 
   const deleteElement = (id: string) => {
@@ -160,11 +179,25 @@ export function SheetSetEditor({
   }
 
   const handleAICommand = async (cmd: any) => {
+    if (!currentSheet || !onAICommand) return
     setAiProcessing(true)
-    // Simulate AI processing
-    await new Promise(r => setTimeout(r, 2000))
-    setAiProcessing(false)
-    // In real implementation, would call API
+    try {
+      if (cmd === 'auto-fill-assets') {
+        const updatedSet = await onAICommand(cmd, sheetSet)
+        if (updatedSet) {
+          setSheetSet(updatedSet)
+        }
+      } else {
+        const updatedSheet = await onAICommand(cmd, currentSheet)
+        if (updatedSheet) {
+          updateSheet(currentSheet.id, updatedSheet)
+        }
+      }
+    } catch (err) {
+      console.error('AI command failed:', err)
+    } finally {
+      setAiProcessing(false)
+    }
   }
 
   if (!currentSheet) {
@@ -351,19 +384,27 @@ export function SheetSetEditor({
 
           <button
             onClick={() => {
-              const json = JSON.stringify(sheetSet, null, 2)
-              const blob = new Blob([json], { type: 'application/json' })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a')
-              a.href = url
-              a.download = `${sheetSet.projectName}.sheet-set.json`
-              a.click()
-              URL.revokeObjectURL(url)
+              if (onExport) {
+                const canvas = document.getElementById('sheet-canvas')
+                if (canvas) {
+                  onExport(canvas.outerHTML, sheetSet)
+                }
+              } else {
+                // Fallback to JSON if onExport not provided
+                const json = JSON.stringify(sheetSet, null, 2)
+                const blob = new Blob([json], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `${sheetSet.projectName}.sheet-set.json`
+                a.click()
+                URL.revokeObjectURL(url)
+              }
             }}
             className="px-3 py-2 border border-gray-300 rounded hover:bg-white text-sm"
-            title="Export as JSON"
+            title="Export to PDF"
           >
-            <FileJson size={16} />
+            <Download size={16} />
           </button>
 
           {onClose && (

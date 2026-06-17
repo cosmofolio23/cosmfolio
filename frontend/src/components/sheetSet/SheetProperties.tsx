@@ -53,6 +53,27 @@ export function SheetProperties({
         </p>
       </div>
 
+      <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+          <input
+            type="checkbox"
+            checked={selectedElement.isMaster || false}
+            onChange={e => {
+              if (e.target.checked) {
+                onUpdateElement({ isMaster: true, masterId: selectedElement.masterId || `master-${crypto.randomUUID()}` })
+              } else {
+                onUpdateElement({ isMaster: false, masterId: undefined })
+              }
+            }}
+            className="w-4 h-4 text-blue-600 rounded border-gray-300"
+          />
+          Sync across all sheets (Master)
+        </label>
+        <p className="text-[10px] text-gray-500 mt-1 ml-6 leading-tight">
+          When checked, changes to this element will automatically replicate to all sheets in the set.
+        </p>
+      </div>
+
       <div className="p-4 space-y-4">
         {/* Drawing Upload (if drawing element) */}
         {selectedElement.kind === 'drawing' && (

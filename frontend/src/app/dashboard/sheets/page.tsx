@@ -122,7 +122,7 @@ export default function SheetComposer() {
       })
       if (res.ok) {
         const data = await res.json()
-        router.push(`/dashboard/project/${data.id}/sheet`)
+        router.push(`/dashboard/project/${data.id}/sheet-set`)
       } else {
         alert('Failed to create sheet')
       }

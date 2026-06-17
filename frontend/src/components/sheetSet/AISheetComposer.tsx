@@ -68,6 +68,12 @@ const COMMANDS: Array<{ id: AISheetCommand; label: string; icon: string; descrip
     icon: '✨',
     description: 'Overall composition refinement',
   },
+  {
+    id: 'auto-fill-assets',
+    label: 'Auto-Fill Set',
+    icon: '🤖',
+    description: 'Auto-place library assets into sheet slots',
+  },
 ]
 
 export function AISheetComposer({ onCommand, isProcessing = false }: AISheetComposerProps) {

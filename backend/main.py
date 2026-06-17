@@ -91,8 +91,7 @@ except Exception as e:
 # Optional: Try to load more routes
 print("[STARTUP] Loading additional routes...")
 try:
-    from routes import sheets, layouts, design_system, ai_generation, previews, style_pack, templates
-    app.include_router(sheets.router, tags=["sheets"])  # routes already have /api/... prefix
+    from routes import layouts, design_system, ai_generation, previews, style_pack, templates
     app.include_router(layouts.router, prefix="/api/layouts", tags=["layouts"])
     app.include_router(design_system.router, prefix="/api/design", tags=["design"])
     app.include_router(ai_generation.router, prefix="/api/ai", tags=["ai"])

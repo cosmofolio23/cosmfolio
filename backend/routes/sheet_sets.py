@@ -6,13 +6,14 @@ JSON store. A sheet set belongs to a project (route param) and optionally links
 back to a Library project (library_project_id) when generated "from library".
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Response
 from typing import Optional
 from datetime import datetime
 from uuid import uuid4
 
 from .deps import get_current_user
 from database import supabase
+from services.sheet_export import get_sheet_export_service
 
 router = APIRouter()
 
@@ -114,3 +115,124 @@ async def delete_sheet_set(project_id: str, set_id: str, current_user: dict = De
     if not existing:
         raise HTTPException(status_code=404, detail="Sheet set not found")
     supabase.table("sheet_sets").delete().eq("id", set_id).execute()
+
+@router.post("/api/projects/{project_id}/sheet-sets/{set_id}/export")
+async def export_sheet_set(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Export a sheet layout as a PDF."""
+    html = payload.get("html", "")
+    page_size = payload.get("page_size", "A2")
+    orientation = payload.get("orientation", "landscape")
+    
+    export_svc = get_sheet_export_service()
+    result = export_svc.export_pdf(
+        sheet_id=set_id,
+        sheet_html=html,
+        page_size=page_size,
+        orientation=orientation
+    )
+    
+    return Response(
+        content=result["binary"],
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={result['filename']}"}
+    )
+
+@router.post("/api/projects/{project_id}/sheet-sets/{set_id}/ai-compose")
+async def ai_compose_sheet(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Apply architectural layout heuristic rules to a sheet."""
+    command = payload.get("command")
+    sheet = payload.get("sheet", {})
+    
+    elements = sheet.get("elements", [])
+    
+    if command == "fix-alignment":
+        for el in elements:
+            el["x"] = round(float(el.get("x", 0)) / 5) * 5
+            el["y"] = round(float(el.get("y", 0)) / 5) * 5
+    elif command == "make-jury-style":
+        for el in elements:
+            if el.get("kind") == "text":
+                text_obj = el.get("text", {})
+                text_obj["fontFamily"] = "Times New Roman"
+                if text_obj.get("role") in ["title", "heading"]:
+                    text_obj["content"] = str(text_obj.get("content", "")).upper()
+                el["text"] = text_obj
+    elif command == "improve-white-space":
+        for el in elements:
+            w = float(el.get("w", 0))
+            h = float(el.get("h", 0))
+            if w > 0 and h > 0:
+                el["w"] = w * 0.9
+                el["h"] = h * 0.9
+                el["x"] = float(el.get("x", 0)) + (w * 0.05)
+                el["y"] = float(el.get("y", 0)) + (h * 0.05)
+                
+    sheet["elements"] = elements
+    return sheet
+
+@router.post("/api/projects/{project_id}/sheet-sets/{set_id}/auto-fill")
+async def auto_fill_sheet_set(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """AI Auto-fill: Matches project assets to sheet template slots."""
+    sheet_set = payload.get("sheetSet", {})
+    
+    # 1. Fetch available assets for this project
+    assets_resp = supabase.table("assets").select("*").eq("project_id", project_id).execute()
+    assets = assets_resp.data or []
+    
+    used_asset_ids = set()
+    sheets = sheet_set.get("sheets", [])
+    
+    for sheet in sheets:
+        layout = sheet.get("layout", {})
+        slots = layout.get("slotDefinitions", [])
+        
+        grid_cols = layout.get("columnCount", 2)
+        grid_rows = layout.get("rowCount", 2)
+        cell_w = 100 / max(1, grid_cols)
+        cell_h = 100 / max(1, grid_rows)
+        
+        for idx, slot in enumerate(slots):
+            needs_type = slot.get("needsDrawingType")
+            if not needs_type:
+                continue
+                
+            matched_asset = None
+            for asset in assets:
+                if asset.get("id") not in used_asset_ids and asset.get("asset_type") == needs_type:
+                    matched_asset = asset
+                    used_asset_ids.add(asset.get("id"))
+                    break
+            
+            if matched_asset:
+                frame = slot.get("frame")
+                if frame:
+                    x, y, w, h = frame.get("x", 0), frame.get("y", 0), frame.get("w", 40), frame.get("h", 40)
+                else:
+                    col = idx % grid_cols
+                    row = (idx // grid_cols) % grid_rows
+                    x, y = col * cell_w + 5, row * cell_h + 5
+                    w, h = cell_w - 10, cell_h - 10
+                
+                new_element = {
+                    "id": f"elem-{uuid4()}",
+                    "kind": "drawing",
+                    "x": x,
+                    "y": y,
+                    "w": w,
+                    "h": h,
+                    "z": 10,
+                    "locked": False,
+                    "visible": True,
+                    "drawing": {
+                        "drawingName": matched_asset.get("title") or "Auto-placed Drawing",
+                        "drawingType": needs_type,
+                        "originalScale": slot.get("recommendedScale", "1:100"),
+                        "sheetScale": slot.get("recommendedScale", "1:100"),
+                        "url": matched_asset.get("file_url", ""),
+                        "vector": False
+                    }
+                }
+                sheet.setdefault("elements", []).append(new_element)
+                
+    sheet_set["sheets"] = sheets
+    return sheet_set
