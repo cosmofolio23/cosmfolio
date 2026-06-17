@@ -65,6 +65,7 @@ const CATEGORIES = [
   { id: 'technical', label: 'Technical', emoji: '📐' },
   { id: 'luxury', label: 'Luxury', emoji: '✨' },
   { id: 'student', label: 'Student', emoji: '🎓' },
+  { id: 'Cosmo Special', label: 'Cosmo Special', emoji: '★' },
 ]
 
 interface FilterPreset {
