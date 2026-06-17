@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 import TemplateMockup from '@/components/templates/TemplateMockup'
+import { buildEmptySheetSet } from '@/lib/buildSheetSet'
+import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
@@ -108,6 +110,8 @@ export default function SheetComposer() {
     setCreatingSheet(true)
     try {
       const savedToken = token || localStorage.getItem('auth_token')
+      
+      // 1. Create dummy project to hold the sheet set
       const res = await fetch(`${API_URL}/api/projects`, {
         method: 'POST',
         headers: {
@@ -120,12 +124,35 @@ export default function SheetComposer() {
           template_id: template.id
         })
       })
-      if (res.ok) {
-        const data = await res.json()
-        router.push(`/dashboard/project/${data.id}/sheet-set`)
-      } else {
-        alert('Failed to create sheet')
-      }
+      
+      if (!res.ok) throw new Error('Failed to create project container')
+      const projectData = await res.json()
+      const projectId = projectData.id
+
+      // 2. Build empty sheet set from template definition
+      // Map API template ID to frontend template pack (fallback to first if not found)
+      const templateModel = SHEET_SET_TEMPLATES.find(t => t.id === template.id) || SHEET_SET_TEMPLATES[0]
+      const sheetSetData = buildEmptySheetSet(templateModel, { name: sheetTitle })
+
+      // 3. Save sheet set to database
+      const res2 = await fetch(`${API_URL}/api/projects/${projectId}/sheet-sets`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: sheetTitle,
+          data: sheetSetData
+        })
+      })
+
+      if (!res2.ok) throw new Error('Failed to create sheet set payload')
+      const sheetSetRecord = await res2.json()
+
+      // 4. Redirect to the editor!
+      router.push(`/dashboard/project/${projectId}/sheet-set/${sheetSetRecord.id}/editor`)
+      
     } catch (e) {
       console.error('Error:', e)
       alert('Error creating sheet')
@@ -280,7 +307,7 @@ export default function SheetComposer() {
                     Preview
                   </button>
                   <button
-                    onClick={() => router.push(`/dashboard/templates/${template.id}/editor`)}
+                    onClick={() => { setSelectedTemplate(template); setSheetTitle(template.name) }}
                     className="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition"
                   >
                     Use Template
