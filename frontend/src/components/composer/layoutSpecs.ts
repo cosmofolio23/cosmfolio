@@ -1074,6 +1074,7 @@ interface TemplateLike {
     renders?: number; plans?: number; sections?: number; diagrams?: number
     legend?: boolean; text_description?: boolean; project_title?: boolean
   }
+  layout_ids?: Record<string, string>
 }
 
 function pickProjectSpec(grid: string, c: { renders: number; plans: number; sections: number; diagrams: number }): string {
@@ -1124,9 +1125,11 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   const diagrams = clamp(ph.diagrams ?? 0, 0, 6)
   const hasLegend = (ph as any).legend ?? plans > 0
   const grid = template.layouts?.project?.grid || ''
+  const ids = template.layout_ids || {}
   const pages: Page[] = []
 
-  const coverId = pickCoverSpec(template)
+  // Use explicit layout_ids when provided (e.g. Cosmo Special templates), else derive from structure hints
+  const coverId = (ids.cover && SPEC_BY_ID.has(ids.cover)) ? ids.cover : pickCoverSpec(template)
   const coverHasImage = getSpec(coverId).imageCount > 0
   pages.push({
     id: uid('p'), type: 'cover', layoutId: coverId,
@@ -1137,12 +1140,13 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
     ],
   })
 
+  const aboutId = (ids.about && SPEC_BY_ID.has(ids.about)) ? ids.about : 'text.statement'
   pages.push({
-    id: uid('p'), type: 'about', layoutId: 'text.statement',
+    id: uid('p'), type: 'about', layoutId: aboutId,
     blocks: [{ ...createBlock('title'), text: 'About' }, createBlock('description')],
   })
 
-  const projectSpec = pickProjectSpec(grid, { renders, plans, sections, diagrams })
+  const projectSpec = (ids.project && SPEC_BY_ID.has(ids.project)) ? ids.project : pickProjectSpec(grid, { renders, plans, sections, diagrams })
   for (let i = 1; i <= 2; i++) {
     const blocks: Block[] = [{ ...createBlock('title'), text: `Project 0${i}` }]
     blocks.push(createBlock('meta'))

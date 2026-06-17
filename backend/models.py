@@ -1093,7 +1093,7 @@ class ColorPalette(BaseModel):
 class FontSystem(BaseModel):
     heading: str
     body: str
-    accent: str
+    accent: Optional[str] = None
 
 class LayoutDefinitionTemplate(BaseModel):
     structure: str
@@ -1104,7 +1104,7 @@ class Placeholders(BaseModel):
     renders: int
     plans: int
     sections: int
-    diagrams: int
+    diagrams: Optional[int] = 0
     text_description: bool = True
     project_title: bool = True
     year: Optional[bool] = False
@@ -1124,6 +1124,7 @@ class PortfolioTemplateResponse(BaseModel):
     style_notes: Optional[str] = None
     page_count_range: Optional[str] = None
     orientation: Optional[str] = "portrait_A4"
+    layout_ids: Optional[Dict[str, str]] = None
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
