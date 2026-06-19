@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/auth'
 
 interface Command {
   id: string
@@ -14,6 +15,11 @@ interface Command {
 
 export default function CommandPalette() {
   const router = useRouter()
+  const { user } = useAuthStore()
+  const isAdmin = user?.email === 'abhinavvimal12@gmail.com' || 
+                  user?.email?.includes('@thecosmofolio.com') || 
+                  user?.email === 'admin@thecosmofolio.com'
+
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -35,14 +41,14 @@ export default function CommandPalette() {
       icon: '📄',
       action: () => router.push('/dashboard?new=sheet'),
     },
-    {
+    ...(isAdmin ? [{
       id: 'ai-studio',
       label: 'AI Studio',
       description: 'Open the AI writing assistant',
       category: 'Go To',
       icon: '✨',
       action: () => router.push('/dashboard/ai-studio'),
-    },
+    }] : []),
     {
       id: 'templates',
       label: 'Template Gallery',
