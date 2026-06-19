@@ -28,9 +28,7 @@ export default function Dashboard() {
   const router = useRouter()
 
   // MVP Launch Admin Check
-  const isAdmin = user?.email === 'abhinavvimal12@gmail.com' || 
-                  user?.email?.includes('@thecosmofolio.com') || 
-                  user?.email === 'admin@thecosmofolio.com'
+  const isAdmin = user?.email === 'boseraj001@gmail.com'
 
   useEffect(() => {
     if (!isAuthenticated) {

@@ -16,9 +16,7 @@ interface Command {
 export default function CommandPalette() {
   const router = useRouter()
   const { user } = useAuthStore()
-  const isAdmin = user?.email === 'abhinavvimal12@gmail.com' || 
-                  user?.email?.includes('@thecosmofolio.com') || 
-                  user?.email === 'admin@thecosmofolio.com'
+  const isAdmin = user?.email === 'boseraj001@gmail.com'
 
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
