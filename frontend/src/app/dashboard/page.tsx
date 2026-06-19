@@ -141,13 +141,20 @@ export default function Dashboard() {
           >
             📚 My Portfolios →
           </Link>
-          {isAdmin && (
+          {isAdmin ? (
             <Link
               href="/dashboard/sheets"
               className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
             >
               📄 Sheet Composer →
             </Link>
+          ) : (
+            <button
+              onClick={() => alert("Sheet Composer is launching very soon! Stay tuned.")}
+              className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary opacity-80 hover:opacity-100 transition font-semibold text-sm cursor-pointer"
+            >
+              📄 Sheet Composer <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#FBE7A1]/50 text-[#9C7416] font-medium">Coming Soon</span>
+            </button>
           )}
           {loaded && has('library') && (
             <Link
