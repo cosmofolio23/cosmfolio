@@ -201,8 +201,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* What would you like to create? */}
-        {!showNewProject && !creatingType && (
+        {/* What would you like to create? - Hidden for MVP Launch */}
+        {isAdmin && !showNewProject && !creatingType && (
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-charcoal mb-3">What would you like to create?</h2>
             <p className="text-stone-light mb-8 text-lg">Choose between a portfolio or presentation sheet</p>
