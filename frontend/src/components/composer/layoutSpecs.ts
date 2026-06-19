@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Parametric Layout Engine
  *
  * Instead of hand-coding layouts, we describe each as a set of REGIONS on a
@@ -34,6 +34,7 @@ export interface LayoutSpec {
   regions: Region[]
   imageCount: number
   kind?: 'overlay'   // cover overlay rendering
+  pro?: boolean      // Requires Pro subscription
 }
 
 export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume', 'Contents', 'Spread']
@@ -746,7 +747,7 @@ function buildProceduralMasterSpreads(): LayoutSpec[] {
   return specs
 }
 
-export const LAYOUT_CATALOG: LayoutSpec[] = [
+export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...COVER_SPECS,
   ...buildImageSpecs(),
   ...TEXT_SPECS,
@@ -1051,6 +1052,25 @@ export const LAYOUT_CATALOG: LayoutSpec[] = [
     ],
   },
 ]
+
+export const LAYOUT_CATALOG: LayoutSpec[] = (() => {
+  // We want exactly 10 free layouts across different categories
+  const freeIds = [
+    'cover.minimal', 'cover.split', 
+    'single.titleTopText', 'single.titleSideLeft',
+    'duoH.titleTopText', 
+    'quad.titleTopText',
+    'contact.center',
+    'resume.swissGrid',
+    'index.magazine',
+    'heroStripBottom.titleTop'
+  ]
+
+  return RAW_LAYOUT_CATALOG.map(spec => ({
+    ...spec,
+    pro: !freeIds.includes(spec.id)
+  }))
+})()
 
 const SPEC_BY_ID = new Map(LAYOUT_CATALOG.map(s => [s.id, s]))
 

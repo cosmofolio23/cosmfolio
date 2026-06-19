@@ -1314,6 +1314,10 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
+    if (pages.length >= 10) {
+      flashUpload('err', 'Free tier limit reached! Pro Mode with unlimited pages is launching next week.', 8000)
+      return
+    }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
     const blocks: Block[] = [{ ...createBlock('title'), text: type === 'project' ? `Project ${pages.filter(p => p.type === 'project').length + 1}` : type === 'resume' ? 'Curriculum Vitae' : type === 'contents' ? 'Table of Contents' : 'New Page' }]
     if (type === 'project') { 
@@ -1406,7 +1410,14 @@ export default function TemplateEditor() {
         headers: { Authorization: `Bearer ${authToken()}` }
       })
       
-      if (!res.ok) throw new Error('Export failed')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        if (errData?.detail === 'FREE_TIER_LIMIT_REACHED' || res.status === 403) {
+          flashUpload('err', 'You have reached your 3 free PDF exports! Pro Mode launching next week.', 8000)
+          return
+        }
+        throw new Error('Export failed')
+      }
       
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -2144,15 +2155,29 @@ export default function TemplateEditor() {
                         return (
                           <button
                             key={spec.id}
-                            onClick={() => setLayout(spec.id)}
-                            className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
+                            onClick={() => {
+                              if (spec.pro) {
+                                flashUpload('err', 'This layout is restricted to Pro Mode. Coming next week!', 4000)
+                              } else {
+                                setLayout(spec.id)
+                              }
+                            }}
+                            className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : spec.pro ? 'border-transparent opacity-70 cursor-not-allowed hover:bg-gray-100' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
                           >
-                            {recommended && (
+                            {spec.pro && (
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg z-10 whitespace-nowrap uppercase tracking-wider">Pro</div>
+                            )}
+                            {recommended && !spec.pro && (
                               <div className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-900 text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐</div>
                             )}
-                            <LayoutThumb spec={spec} tokens={tokens} active={active} />
-                            <div className="mt-1 px-0.5">
-                              <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight">{spec.name}</div>
+                            <div className={spec.pro ? 'opacity-50 grayscale' : ''}>
+                              <LayoutThumb spec={spec} tokens={tokens} active={active} />
+                            </div>
+                            <div className={`mt-1 px-0.5 ${spec.pro ? 'opacity-60' : ''}`}>
+                              <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight flex items-center justify-between">
+                                <span>{spec.name}</span>
+                                {spec.pro && <span className="text-[8px] bg-amber-100 text-amber-700 px-1 rounded">PRO</span>}
+                              </div>
                               <div className="text-[9px] text-gray-400">{spec.category}{spec.imageCount > 0 ? ` · ${spec.imageCount} img` : ''}</div>
                             </div>
                           </button>

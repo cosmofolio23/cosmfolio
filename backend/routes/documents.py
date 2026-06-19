@@ -92,6 +92,15 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No document found. Save your portfolio first.")
 
+        # Check export limit
+        from config.supabase import supabase
+        user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+        export_count = 0
+        if user_resp.data:
+            export_count = user_resp.data[0].get("export_count") or 0
+            if export_count >= 3:
+                raise HTTPException(status_code=403, detail="FREE_TIER_LIMIT_REACHED")
+
         # Simple HTML-to-PDF rendering (basic)
         # In production, use WeasyPrint or similar
         html_content = _render_document_to_html(doc)
@@ -116,6 +125,10 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
             title=doc.get('title', 'Portfolio'),
             options=pdf_options
         )
+        
+        # Increment export count on success
+        if user_resp.data:
+            supabase.table("users").update({"export_count": export_count + 1}).eq("id", current_user["user_id"]).execute()
         
         return Response(
             content=pdf_bytes,
