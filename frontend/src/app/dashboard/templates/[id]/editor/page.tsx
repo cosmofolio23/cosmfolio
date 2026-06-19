@@ -1395,22 +1395,30 @@ export default function TemplateEditor() {
     flashUpload('info', 'Saving and preparing PDF…', 0)
     try {
       const pid = await ensureProject()
-      // Save first — warn if the save itself fails but continue with last saved version
       try {
         await saveDocument()
       } catch (saveErr: any) {
-        flashUpload('info', `Note: Could not save latest changes (${saveErr?.message || 'network error'}). Exporting last saved version.`, 5000)
-        await new Promise(r => setTimeout(r, 1200))
+        flashUpload('info', `Note: Could not save latest changes. Exporting last saved version.`, 5000)
       }
       
-      const printWin = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
-      if (!printWin) {
-        flashUpload('err', 'Pop-up blocked. Allow popups for this site, then try again.')
-      } else {
-        flashUpload('ok', '✓ Opened PDF print viewer')
-      }
+      const res = await fetch(`${API_URL}/api/projects/${pid}/document/export-pdf`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` }
+      })
+      
+      if (!res.ok) throw new Error('Export failed')
+      
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${(portfolioTitle || 'portfolio').replace(/\s+/g, '_')}.pdf`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1500)
+      
+      flashUpload('ok', '✓ PDF Downloaded')
     } catch (e: any) {
-      flashUpload('err', 'Save your portfolio first, then export as PDF.')
+      flashUpload('err', 'Export failed. Try again or check your connection.')
     } finally {
       setIsExporting(false)
     }

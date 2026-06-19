@@ -4,8 +4,7 @@ Portfolio document persistence.
 Stores the full composer document (pages, blocks, design tokens) as a JSON
 file in Supabase Storage, keyed by project id. No schema migration required.
 """
-from fastapi import APIRouter, HTTPException, status, Header, Body
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException, status, Header, Body, Response
 from datetime import datetime
 from io import BytesIO
 import html
@@ -97,37 +96,31 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         # In production, use WeasyPrint or similar
         html_content = _render_document_to_html(doc)
 
-        # Try to use pdfkit/wkhtmltopdf if available, otherwise return HTML
-        try:
-            import pdfkit
-            publishing = doc.get('publishing', {}) or {}
-            page_size = publishing.get('pageSize', {}) or {}
-            width_mm = page_size.get('width', 210)
-            height_mm = page_size.get('height', 297)
-            pdf_options = {
-                'page-width': f'{width_mm}mm',
-                'page-height': f'{height_mm}mm',
-                'margin-top': '0mm',
-                'margin-bottom': '0mm',
-                'margin-left': '0mm',
-                'margin-right': '0mm',
-                'disable-smart-shrinking': None
-            }
-            pdf_bytes = pdfkit.from_string(html_content, False, options=pdf_options)
-            if pdf_bytes:
-                return FileResponse(
-                    BytesIO(pdf_bytes),
-                    media_type="application/pdf",
-                    filename=f"{doc.get('title', 'portfolio').replace(' ', '_')}.pdf"
-                )
-        except ImportError:
-            pass
-
-        # Fallback: return HTML with CSS for printing
-        return FileResponse(
-            BytesIO(html_content.encode()),
-            media_type="text/html",
-            filename=f"{doc.get('title', 'portfolio').replace(' ', '_')}.html"
+        from services.pdf_export import generate_pdf_from_html
+        
+        publishing = doc.get('publishing', {}) or {}
+        page_size = publishing.get('pageSize', {}) or {}
+        width_mm = page_size.get('width', 210)
+        height_mm = page_size.get('height', 297)
+        
+        pdf_options = {
+            'format': 'A4', # Default, will be overridden by custom width/height if supported
+            'width': f'{width_mm}mm',
+            'height': f'{height_mm}mm',
+            'margin': {'top': '0mm', 'right': '0mm', 'bottom': '0mm', 'left': '0mm'},
+            'printBackground': True,
+        }
+        
+        pdf_bytes = await generate_pdf_from_html(
+            html_content, 
+            title=doc.get('title', 'Portfolio'),
+            options=pdf_options
+        )
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={doc.get('title', 'portfolio').replace(' ', '_')}.pdf"}
         )
     except HTTPException:
         raise
