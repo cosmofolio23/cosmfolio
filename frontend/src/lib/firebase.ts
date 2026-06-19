@@ -33,7 +33,7 @@ export const auth = getAuth(app)
 
 // ==================== Auth Functions ====================
 
-export async function firebaseSignUp(email: string, password: string, name: string) {
+export async function firebaseSignUp(email: string, password: string, name: string, college_name?: string, state?: string, year_of_passing?: string, stream?: string) {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
@@ -41,7 +41,17 @@ export async function firebaseSignUp(email: string, password: string, name: stri
 
     // Tell our backend to save user info in Supabase DB
     const apiUrl = apiBase()
-    await fetch(`${apiUrl}/api/auth/signup?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&name=${encodeURIComponent(name)}`, {
+    const queryParams = new URLSearchParams({
+      email,
+      password,
+      name,
+      ...(college_name && { college_name }),
+      ...(state && { state }),
+      ...(year_of_passing && { year_of_passing }),
+      ...(stream && { stream })
+    }).toString();
+
+    await fetch(`${apiUrl}/api/auth/signup?${queryParams}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -54,14 +64,14 @@ export async function firebaseSignUp(email: string, password: string, name: stri
     // identitytoolkit.googleapis.com (auth/network-request-failed). Fall back
     // to registering through our own backend, which no blocker can intercept.
     if (err?.code === 'auth/network-request-failed') {
-      return backendSignUp(email, password, name)
+      return backendSignUp(email, password, name, college_name, state, year_of_passing, stream)
     }
     throw err
   }
 }
 
 /** Server-side registration fallback (see backendSignIn). */
-async function backendSignUp(email: string, password: string, name: string) {
+async function backendSignUp(email: string, password: string, name: string, college_name?: string, state?: string, year_of_passing?: string, stream?: string) {
   const apiUrl = apiBase()
   const res = await fetch(`${apiUrl}/api/auth/register`, {
     method: 'POST',
@@ -70,6 +80,10 @@ async function backendSignUp(email: string, password: string, name: string) {
       email,
       password,
       name,
+      college_name,
+      state,
+      year_of_passing,
+      stream,
       api_key: firebaseApiKey(),
     }),
   })

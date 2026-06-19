@@ -11,6 +11,10 @@ export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [collegeName, setCollegeName] = useState('')
+  const [state, setState] = useState('')
+  const [yearOfPassing, setYearOfPassing] = useState('')
+  const [stream, setStream] = useState('B.Arch')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -45,7 +49,12 @@ export default function SignUp() {
     setIsLoading(true)
 
     try {
-      await signup(email, password, name)
+      await signup(email, password, name, {
+        college_name: collegeName,
+        state,
+        year_of_passing: yearOfPassing,
+        stream
+      })
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Sign up failed. Please try again.')
@@ -79,7 +88,75 @@ export default function SignUp() {
               onChange={(e) => setName(e.target.value)}
               className="input-field"
               placeholder="John Doe"
+              required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                College/University
+              </label>
+              <input
+                type="text"
+                value={collegeName}
+                onChange={(e) => setCollegeName(e.target.value)}
+                className="input-field"
+                placeholder="Harvard GSD"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                State/Region
+              </label>
+              <input
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                className="input-field"
+                placeholder="NY"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Graduation Year
+              </label>
+              <input
+                type="number"
+                min="2000"
+                max="2040"
+                value={yearOfPassing}
+                onChange={(e) => setYearOfPassing(e.target.value)}
+                className="input-field"
+                placeholder="2025"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Stream/Major
+              </label>
+              <select
+                value={stream}
+                onChange={(e) => setStream(e.target.value)}
+                className="input-field bg-white"
+                required
+              >
+                <option value="B.Arch">B.Arch</option>
+                <option value="M.Arch">M.Arch</option>
+                <option value="B.Des">B.Des</option>
+                <option value="M.Des">M.Des</option>
+                <option value="Interior Design">Interior Design</option>
+                <option value="Landscape">Landscape</option>
+                <option value="Urban Planning">Urban Planning</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
 
           <div>

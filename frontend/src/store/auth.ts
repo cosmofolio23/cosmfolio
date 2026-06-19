@@ -15,7 +15,7 @@ interface AuthStore {
   isLoading: boolean
   isAuthenticated: boolean
 
-  signup: (email: string, password: string, name?: string) => Promise<void>
+  signup: (email: string, password: string, name?: string, demographics?: { college_name?: string, state?: string, year_of_passing?: string, stream?: string }) => Promise<void>
   login: (email: string, password: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
   logout: () => Promise<void>
@@ -28,10 +28,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: false,
   isAuthenticated: typeof window !== 'undefined' ? !!localStorage.getItem('auth_token') : false,
 
-  signup: async (email: string, password: string, name?: string) => {
+  signup: async (email: string, password: string, name?: string, demographics?: { college_name?: string, state?: string, year_of_passing?: string, stream?: string }) => {
     set({ isLoading: true })
     try {
-      const { user, token } = await firebaseSignUp(email, password, name || '')
+      const { user, token } = await firebaseSignUp(email, password, name || '', demographics?.college_name, demographics?.state, demographics?.year_of_passing, demographics?.stream)
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('auth_token', token)

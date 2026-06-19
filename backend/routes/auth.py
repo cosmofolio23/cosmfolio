@@ -31,6 +31,10 @@ class SignUpRequest(BaseModel):
     email: str
     password: str
     name: str | None = None
+    college_name: str | None = None
+    state: str | None = None
+    year_of_passing: str | None = None
+    stream: str | None = None
     api_key: str | None = None
 
 # ==================== Helper Functions ====================
@@ -53,7 +57,11 @@ def get_current_user_from_token(authorization: str = None):
 async def signup(
     email: str,
     password: str,
-    name: str = None
+    name: str = None,
+    college_name: str = None,
+    state: str = None,
+    year_of_passing: str = None,
+    stream: str = None
 ):
     """
     Register new user with Firebase Auth
@@ -82,6 +90,10 @@ async def signup(
                 "id": user_id,
                 "email": email,
                 "name": name,
+                "college_name": college_name,
+                "state": state,
+                "year_of_passing": year_of_passing,
+                "stream": stream,
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat()
             }).execute()
@@ -170,6 +182,10 @@ async def register(body: SignUpRequest):
                 "id": user_id,
                 "email": email,
                 "name": body.name,
+                "college_name": body.college_name,
+                "state": body.state,
+                "year_of_passing": body.year_of_passing,
+                "stream": body.stream,
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat(),
             }).execute()
