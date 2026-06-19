@@ -61,7 +61,8 @@ async def signup(
     college_name: str = None,
     state: str = None,
     year_of_passing: str = None,
-    stream: str = None
+    stream: str = None,
+    authorization: str = Header(None)
 ):
     """
     Register new user with Firebase Auth
@@ -76,13 +77,9 @@ async def signup(
                 detail="Firebase not initialized"
             )
 
-        # Create Firebase user
-        user = firebase_app.auth().create_user(
-            email=email,
-            password=password
-        )
-
-        user_id = user.uid
+        # Get user from authorization header
+        decoded_token = get_current_user_from_token(authorization)
+        user_id = decoded_token["uid"]
 
         # Store user info in Supabase database
         if supabase:
