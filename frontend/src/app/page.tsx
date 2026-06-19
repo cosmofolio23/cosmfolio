@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Logo from '@/components/Logo'
 import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
@@ -176,6 +176,82 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About The Founder Section */}
+      <section className="py-20 bg-white dark:bg-dark-bg-secondary">
+        <div className="container-centered">
+          <div className="max-w-4xl mx-auto glass-card rounded-3xl p-8 md:p-12 border border-gray-100 dark:border-white/10 shadow-xl relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent-primary/5 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent-gold/5 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10 flex flex-col md:flex-row gap-12 items-center">
+              <div className="flex-1 space-y-6 text-text-secondary dark:text-dark-text-secondary">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-semibold mb-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  About the Founder
+                </div>
+                <h2 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary leading-tight">
+                  Great designs deserve great presentations.
+                </h2>
+                
+                <p>I am Ar. Bose Raj, an architect, educator, and digital design enthusiast exploring the intersection of architecture, technology, and artificial intelligence.</p>
+                <p>Throughout my journey as an architecture student and educator, I experienced one common challenge faced by almost every designer — we spend months creating meaningful projects, but countless hours struggling to present them.</p>
+                <p>Late nights arranging sheets, searching for portfolio references, adjusting layouts, fixing typography, and trying to make our work look as good as the ideas behind it became a familiar part of architectural education.</p>
+                <p className="font-semibold text-text-primary dark:text-dark-text-primary">That experience became the starting point for Cosmo Folio.</p>
+                
+                <blockquote className="border-l-4 border-accent-primary pl-4 italic my-6 text-lg text-text-primary dark:text-dark-text-primary">
+                  "Architects should spend more time designing ideas, not fighting with presentation layouts."
+                </blockquote>
+                
+                <p>Cosmo Folio is created specifically for architects and designers — understanding our drawings, our storytelling process, and the way we communicate design.</p>
+                <p>My vision is to build tools that help every designer present their creativity with confidence and make powerful architectural presentations accessible to everyone.</p>
+                
+                <div className="pt-4 border-t border-gray-100 dark:border-white/10 mt-6 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-primary to-blue-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    BR
+                  </div>
+                  <div>
+                    <div className="font-bold text-text-primary dark:text-dark-text-primary">Ar. Bose Raj</div>
+                    <div className="text-sm">Founder, Cosmo Folio</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 bg-gray-50 dark:bg-dark-bg-primary">
+        <div className="container-centered max-w-3xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-text-primary dark:text-dark-text-primary mb-4">Frequently Asked Questions</h2>
+            <p className="text-text-secondary dark:text-dark-text-secondary">Everything you need to know about Cosmo Folio.</p>
+          </div>
+          
+          <div className="space-y-4">
+            {[
+              { q: "Is Cosmo Folio really free?", a: "Yes! You can instantly create a beautiful 10-page portfolio and export up to 3 high-quality PDFs completely for free. We are launching a Pro version next week for users who need unlimited pages, premium master templates, and unlimited exports." },
+              { q: "Can I download a PDF for job applications?", a: "Absolutely. Our engine generates print-ready PDFs at perfect A4 dimensions. They are optimized for emailing to architecture firms, applying to grad school, or printing." },
+              { q: "Do I own the rights to my portfolio?", a: "100% yes. We do not claim any ownership over your drawings, renders, or portfolio designs. Your work is entirely yours." },
+              { q: "Are the templates fully customizable?", a: "Every template is just a starting point. Once applied, you can drag and drop images, change colors, switch typography, and rearrange layouts on the canvas exactly how you want." }
+            ].map((faq, i) => (
+              <details key={i} className="group bg-white dark:bg-dark-bg-secondary rounded-xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
+                <summary className="flex items-center justify-between font-semibold p-6 cursor-pointer text-text-primary dark:text-dark-text-primary list-none">
+                  {faq.q}
+                  <span className="transition group-open:rotate-180">
+                    <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                  </span>
+                </summary>
+                <div className="px-6 pb-6 text-text-secondary dark:text-dark-text-secondary">
+                  {faq.a}
+                </div>
+              </details>
             ))}
           </div>
         </div>
