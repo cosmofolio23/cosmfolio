@@ -392,8 +392,8 @@ export default function Home() {
               <div className="flex-1 flex justify-center mt-12 md:mt-0">
                 <div className="relative w-64 h-64 md:w-[400px] md:h-[400px] rounded-full md:rounded-[3rem] overflow-hidden border-4 md:border-8 border-white/20 shadow-2xl md:rotate-3 md:hover:rotate-0 transition-transform duration-500">
                   <Image 
-                    src="/founder.jpg"
-                    alt="Ar. Bose Raj - Founder"
+                    src="/Founder.png"
+                    alt="P. Sushil Kumar - Founder"
                     fill
                     className="object-cover"
                   />
