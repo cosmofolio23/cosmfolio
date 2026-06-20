@@ -63,20 +63,25 @@ export default function Home() {
       <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
         <div className="container-centered py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Logo size="sm" variant="gold" />
+            <div className="bg-[#111111] p-1.5 rounded-lg flex items-center justify-center">
+              <Logo size="sm" variant="gold" />
+            </div>
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/pricing" className="hidden sm:inline-block text-sm font-medium text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition px-2">
-              Pricing
-            </Link>
-            <Link href="/signin" className="btn-secondary btn-small">
-              Sign In
-            </Link>
-            <Link href="/signup" className="btn-primary btn-small">
-              Sign Up
-            </Link>
-          </div>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4 text-sm font-medium">
+              <Link href="/about" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">About</Link>
+              <Link href="/pricing" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">Pricing</Link>
+              <Link href="/contact" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">Contact</Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/signin" className="btn-secondary btn-small">
+                Sign In
+              </Link>
+              <Link href="/signup" className="btn-primary btn-small hidden sm:inline-flex">
+                Sign Up
+              </Link>
+            </div>
         </div>
       </nav>
 
@@ -219,7 +224,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 md:py-28 bg-white dark:bg-dark-bg-secondary relative overflow-hidden">
+      <section id="how-it-works" className="py-20 md:py-28 bg-white dark:bg-dark-bg-secondary relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="container-centered relative z-10">
           <div className="text-center mb-16">
@@ -466,7 +471,7 @@ export default function Home() {
             <Link href="/signup" className="inline-block px-8 py-4 bg-white text-accent-primary font-semibold rounded-lg hover:shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 transition-all duration-300">
               Create Your Portfolio
             </Link>
-            <button className="glass px-8 py-4 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/30">
+            <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="glass px-8 py-4 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/30">
               Learn More
             </button>
           </div>
@@ -491,15 +496,15 @@ export default function Home() {
             </div>
             <div>
               <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-stone-light">
-                <li><a href="#" className="hover:text-white transition">Features</a></li>
-                <li><a href="/pricing" className="hover:text-white transition">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition">FAQ</a></li>
+              <ul className="space-y-2 text-sm text-stone-300">
+                <li><Link href="/about" className="hover:text-white transition">About Us</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Contact</h4>
-              <ul className="space-y-2 text-sm text-stone-light">
+              <ul className="space-y-2 text-sm text-stone-300">
+                <li><Link href="/contact" className="hover:text-white transition">Contact Us</Link></li>
                 <li><a href="mailto:cosmoatelier.live@gmail.com" className="hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
                 <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Instagram</a></li>
                 <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a></li>
@@ -507,9 +512,16 @@ export default function Home() {
             </div>
             <div>
               <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-stone-light">
+              <ul className="space-y-2 text-sm text-stone-300">
                 <li><a href="/privacy" className="hover:text-white transition">Privacy Policy</a></li>
                 <li><a href="/terms" className="hover:text-white transition">Terms of Service</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-stone-300">
+                <li>Need help?</li>
+                <li><a href="/support" className="hover:text-white transition underline">Contact Cosmofolio Support</a></li>
               </ul>
             </div>
           </div>
@@ -531,7 +543,7 @@ export default function Home() {
           <div className="absolute w-48 h-48 bg-accent-primary/20 rounded-full blur-[50px] animate-pulse" style={{ animationDelay: '500ms' }}></div>
           
           {/* Pulsing Logo */}
-          <div className="relative z-10 scale-150 mb-8 animate-pulse" style={{ animationDuration: '1.5s' }}>
+          <div className="relative z-10 scale-150 mb-8 animate-pulse bg-[#111111] p-3 rounded-2xl flex items-center justify-center shadow-2xl" style={{ animationDuration: '1.5s' }}>
             <Logo size="lg" variant="gold" />
           </div>
           

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
 
@@ -47,21 +48,29 @@ function Check() {
 }
 
 export default function PricingPage() {
+  const [currency, setCurrency] = useState<'INR' | 'USD'>('INR')
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation (matches homepage) */}
       <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
         <div className="container-centered py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
-            <Logo size="sm" variant="gold" />
+            <div className="bg-[#111111] p-1.5 rounded-lg flex items-center justify-center">
+              <Logo size="sm" variant="gold" />
+            </div>
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/pricing" className="hidden sm:inline-block text-sm font-semibold text-accent-primary dark:text-accent-gold px-2">
-              Pricing
-            </Link>
-            <Link href="/signin" className="btn-secondary btn-small">Sign In</Link>
-            <Link href="/signup" className="btn-primary btn-small">Sign Up</Link>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4 text-sm font-medium">
+              <Link href="/about" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">About</Link>
+              <Link href="/pricing" className="text-accent-primary dark:text-accent-gold transition">Pricing</Link>
+              <Link href="/contact" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">Contact</Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/signin" className="btn-secondary btn-small">Sign In</Link>
+              <Link href="/signup" className="btn-primary btn-small hidden sm:inline-flex">Sign Up</Link>
+            </div>
           </div>
         </div>
       </nav>
@@ -78,6 +87,17 @@ export default function PricingPage() {
           <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-3 max-w-xl mx-auto">
             Start free. Upgrade only when your portfolio needs more.
           </p>
+
+          <div className="mt-8 flex justify-center items-center gap-3">
+            <span className={`text-sm font-medium ${currency === 'INR' ? 'text-text-primary dark:text-dark-text-primary' : 'text-text-tertiary dark:text-dark-text-tertiary'}`}>INR (₹)</span>
+            <button 
+              onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')}
+              className="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary/20 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2"
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-accent-gold transition duration-200 ease-in-out ${currency === 'USD' ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+            <span className={`text-sm font-medium ${currency === 'USD' ? 'text-text-primary dark:text-dark-text-primary' : 'text-text-tertiary dark:text-dark-text-tertiary'}`}>USD ($)</span>
+          </div>
         </div>
       </section>
 
@@ -89,7 +109,9 @@ export default function PricingPage() {
             <div className="glass-card rounded-3xl p-8 border border-gray-100 dark:border-white/10 shadow-md flex flex-col">
               <h2 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Free</h2>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">₹0</span>
+                <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
+                  {currency === 'INR' ? '₹0' : '$0'}
+                </span>
                 <span className="text-sm text-text-secondary dark:text-dark-text-secondary">/ forever</span>
               </div>
               <ul className="mt-8 space-y-3 flex-1">
@@ -104,7 +126,7 @@ export default function PricingPage() {
                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4">
                   <span className="font-semibold text-text-primary dark:text-dark-text-primary">Best for:</span> Trying CosmoFolio, quick portfolios
                 </p>
-                <Link href="/signup" className="btn-secondary w-full text-center block">
+                <Link href="/signup" className="btn-secondary w-full text-center block py-3 md:py-2 text-base md:text-sm">
                   Start Free
                 </Link>
               </div>
@@ -117,7 +139,9 @@ export default function PricingPage() {
               </div>
               <h2 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Pro</h2>
               <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">₹299</span>
+                <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
+                  {currency === 'INR' ? '₹299' : '$3.99'}
+                </span>
                 <span className="text-sm text-text-secondary dark:text-dark-text-secondary">one-time</span>
               </div>
               <ul className="mt-8 space-y-3 flex-1">
@@ -180,9 +204,16 @@ export default function PricingPage() {
       <footer className="bg-charcoal text-white py-12 md:py-16">
         <div className="container-centered">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-8 mb-8 border-b border-slate">
-            <Link href="/" className="font-bold text-lg">CosmoFolio</Link>
-            <div className="flex gap-6 text-sm text-stone-light">
+            <Link href="/" className="font-bold text-lg flex items-center gap-2">
+              <div className="bg-[#111111] p-1 rounded flex items-center justify-center">
+                <Logo size="sm" variant="gold" />
+              </div>
+              CosmoFolio
+            </Link>
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-stone-300">
+              <Link href="/about" className="hover:text-white transition">About Us</Link>
               <Link href="/pricing" className="hover:text-white transition">Pricing</Link>
+              <Link href="/contact" className="hover:text-white transition">Contact</Link>
               <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
               <Link href="/terms" className="hover:text-white transition">Terms</Link>
             </div>
