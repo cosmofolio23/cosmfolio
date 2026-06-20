@@ -95,25 +95,36 @@ async def generate_pdf_from_html(
 
 async def _generate_pdf_fallback(html_content: str) -> bytes:
     """
-    Fallback PDF generation if Puppeteer unavailable.
-    Uses weasyprint if available, otherwise returns error PDF.
+    Fallback PDF generation when a headless browser isn't available.
+
+    Order: xhtml2pdf (pure Python, NO native deps — works on Render's Python
+    buildpack) -> WeasyPrint (needs pango/cairo system libs) -> error PDF.
     """
+    from io import BytesIO
+
+    # 1) xhtml2pdf — pure Python, no system libraries required.
     try:
-        from weasyprint import HTML, CSS
-        from io import BytesIO
-
-        # Create BytesIO object
-        pdf_buffer = BytesIO()
-
-        # Generate PDF with weasyprint
-        HTML(string=html_content).write_pdf(pdf_buffer)
-        return pdf_buffer.getvalue()
-
+        from xhtml2pdf import pisa
+        buf = BytesIO()
+        result = pisa.CreatePDF(src=html_content, dest=buf, encoding="utf-8")
+        if not result.err:
+            return buf.getvalue()
+        logger.warning("xhtml2pdf reported errors; trying WeasyPrint")
     except ImportError:
-        logger.error("Neither pyppeteer nor weasyprint available")
-        # Return a simple HTML-to-PDF conversion as last resort
-        # (This would need wkhtmltopdf or similar external tool)
-        return _create_error_pdf("PDF generation unavailable").encode()
+        logger.info("xhtml2pdf not installed; trying WeasyPrint")
+    except Exception as e:
+        logger.warning(f"xhtml2pdf failed ({e}); trying WeasyPrint")
+
+    # 2) WeasyPrint — higher fidelity but needs native libs (may be absent).
+    try:
+        from weasyprint import HTML
+        buf = BytesIO()
+        HTML(string=html_content).write_pdf(buf)
+        return buf.getvalue()
+    except Exception as e:
+        logger.error(f"WeasyPrint unavailable: {e}")
+
+    return _create_error_pdf("PDF generation unavailable").encode()
 
 
 def _create_error_pdf(error_message: str) -> str:
