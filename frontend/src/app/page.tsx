@@ -63,7 +63,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
+      <nav className="sticky top-0 z-40 bg-charcoal border-b border-white/10 shadow-elevation-1 text-white">
         <div className="container-centered py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Logo size="md" variant="gold" />
@@ -71,9 +71,9 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-4 text-sm font-medium">
-              <Link href="/about" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">About</Link>
-              <Link href="/pricing" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">Pricing</Link>
-              <Link href="/contact" className="text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition">Contact</Link>
+              <Link href="/about" className="text-stone-300 hover:text-white transition">About</Link>
+              <Link href="/pricing" className="text-stone-300 hover:text-white transition">Pricing</Link>
+              <Link href="/contact" className="text-stone-300 hover:text-white transition">Contact</Link>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/signin" className="btn-secondary btn-small">
