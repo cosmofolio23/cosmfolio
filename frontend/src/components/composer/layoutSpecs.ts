@@ -819,62 +819,6 @@ export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
     ],
   },
   {
-    id: 'cosmo-special-1-cover',
-    name: 'Cosmo Special 1 · Cover',
-    category: 'Cover',
-    suits: ['cover'],
-    imageCount: 0,
-    regions: [
-      { role: 'title',    c0: 2, cs: 10, r0: 4, rs: 2 },
-      { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 4 },
-    ],
-  },
-  {
-    id: 'cosmo-special-1-project',
-    name: 'Cosmo Special 1 · Project',
-    category: 'Single',
-    suits: ['project'],
-    imageCount: 0,
-    regions: [
-      { role: 'title', c0: 2, cs: 10, r0: 4, rs: 2 },
-      { role: 'text',  c0: 2, cs: 10, r0: 7, rs: 4 },
-    ],
-  },
-  {
-    id: 'cosmo-special-1-about',
-    name: 'Cosmo Special 1 · About',
-    category: 'About',
-    suits: ['about'],
-    imageCount: 0,
-    regions: [
-      { role: 'title', c0: 2, cs: 10, r0: 4, rs: 2 },
-      { role: 'text',  c0: 2, cs: 10, r0: 7, rs: 4 },
-    ],
-  },
-  {
-    id: 'cosmo-special-1-resume',
-    name: 'Cosmo Special 1 · Resume',
-    category: 'Resume',
-    suits: ['resume'],
-    imageCount: 0,
-    regions: [
-      { role: 'title', c0: 1, cs: 11, r0: 1, rs: 1 },
-      { role: 'meta',  c0: 1, cs:  5, r0: 2, rs: 7 },
-      { role: 'text',  c0: 6, cs:  6, r0: 2, rs: 9 },
-    ],
-  },
-  {
-    id: 'cosmo-special-1-contents',
-    name: 'Cosmo Special 1 · Contents',
-    category: 'Contents',
-    suits: ['contents'],
-    imageCount: 0,
-    regions: [
-      { role: 'title',    c0: 1, cs: 11, r0: 1, rs:  1 },
-      { role: 'contents', c0: 1, cs: 11, r0: 3, rs:  9 },
-    ],
-  },
-  {
     id: 'cosmo-special-3-cover',
     name: 'Cosmo Special 3 · Cover',
     category: 'Cover',
@@ -1095,6 +1039,15 @@ interface TemplateLike {
     legend?: boolean; text_description?: boolean; project_title?: boolean
   }
   layout_ids?: Record<string, string>
+  extracted_content?: {
+    title?: string
+    author?: string
+    about?: string
+    resume?: string
+    contents?: string[]
+    project_titles?: string[]
+    contact?: string
+  }
 }
 
 function pickProjectSpec(grid: string, c: { renders: number; plans: number; sections: number; diagrams: number }): string {
@@ -1146,6 +1099,9 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   const hasLegend = (ph as any).legend ?? plans > 0
   const grid = template.layouts?.project?.grid || ''
   const ids = template.layout_ids || {}
+  // Real text pulled from the source portfolio (PDF-sourced templates only).
+  const ec = template.extracted_content || {}
+  const projectTitles = ec.project_titles || []
   const pages: Page[] = []
 
   // Use explicit layout_ids when provided (e.g. Cosmo Special templates), else derive from structure hints
@@ -1154,8 +1110,8 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   pages.push({
     id: uid('p'), type: 'cover', layoutId: coverId,
     blocks: [
-      { ...createBlock('title'), text: template.name || 'Portfolio' },
-      { ...createBlock('subtitle'), text: 'Architecture & Design — 2026' },
+      { ...createBlock('title'), text: ec.title || template.name || 'Portfolio' },
+      { ...createBlock('subtitle'), text: ec.author || 'Architecture & Design — 2026' },
       ...(coverHasImage ? [{ ...createBlock('render'), label: 'Cover Image' }] : []),
     ],
   })
@@ -1163,12 +1119,16 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   const aboutId = (ids.about && SPEC_BY_ID.has(ids.about)) ? ids.about : 'text.statement'
   pages.push({
     id: uid('p'), type: 'about', layoutId: aboutId,
-    blocks: [{ ...createBlock('title'), text: 'About' }, createBlock('description')],
+    blocks: [
+      { ...createBlock('title'), text: 'About' },
+      ...(ec.about ? [{ ...createBlock('description'), text: ec.about }] : [createBlock('description')]),
+    ],
   })
 
   const projectSpec = (ids.project && SPEC_BY_ID.has(ids.project)) ? ids.project : pickProjectSpec(grid, { renders, plans, sections, diagrams })
   for (let i = 1; i <= 2; i++) {
-    const blocks: Block[] = [{ ...createBlock('title'), text: `Project 0${i}` }]
+    const realTitle = projectTitles[i - 1]
+    const blocks: Block[] = [{ ...createBlock('title'), text: realTitle || `Project 0${i}` }]
     blocks.push(createBlock('meta'))
     blocks.push(createBlock('description'))
     for (let r = 0; r < Math.min(renders, 4); r++) blocks.push({ ...createBlock('render'), label: `Render — View 0${r + 1}` })
@@ -1179,9 +1139,23 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
     pages.push({ id: uid('p'), type: 'project', layoutId: projectSpec, blocks })
   }
 
+  // Résumé page — only when the source had real résumé text to seed it with.
+  if (ec.resume && ids.resume && SPEC_BY_ID.has(ids.resume)) {
+    pages.push({
+      id: uid('p'), type: 'resume', layoutId: ids.resume,
+      blocks: [
+        { ...createBlock('title'), text: 'Curriculum Vitae' },
+        { ...createBlock('description'), text: ec.resume },
+      ],
+    })
+  }
+
   pages.push({
     id: uid('p'), type: 'contact', layoutId: 'contact.center',
-    blocks: [{ ...createBlock('title'), text: 'Get in Touch' }, { ...createBlock('description'), text: 'hello@yourstudio.com\n+1 (555) 123-4567\nyourstudio.com' }],
+    blocks: [
+      { ...createBlock('title'), text: 'Get in Touch' },
+      { ...createBlock('description'), text: ec.contact || 'hello@yourstudio.com\n+1 (555) 123-4567\nyourstudio.com' },
+    ],
   })
 
   return pages

@@ -8243,70 +8243,8 @@
     "orientation": "landscape_A1"
   },
   {
-    "id": "cosmo-special-1",
-    "name": "Cosmo Special 1",
-    "category": "Cosmo Special",
-    "source": "pdf-extract",
-    "origin_file": "dummy-portfolio.pdf",
-    "orientation": "portrait",
-    "page_count": 1,
-    "preview_image": "scripts/content_pipeline/previews/dummy-portfolio_cover.png",
-    "colors": {
-      "background": "#fefefe",
-      "text": "#a9a9a9",
-      "accent": "#fefefe",
-      "primary": "#e2e2e2",
-      "muted": "#f2f2f2",
-      "secondary": "#cdcdcd"
-    },
-    "fonts": {
-      "heading": "Georgia",
-      "body": "Inter"
-    },
-    "layouts": {
-      "cover": {
-        "structure": "minimal",
-        "grid": "1-column",
-        "image_ratio": "4:3"
-      },
-      "project": {
-        "structure": "minimal",
-        "grid": "1-column",
-        "image_ratio": "4:3"
-      },
-      "about": {
-        "structure": "minimal",
-        "grid": "1-column",
-        "image_ratio": "4:3"
-      },
-      "resume": {
-        "structure": "columns",
-        "grid": "1-column",
-        "image_ratio": "1:1"
-      },
-      "contents": {
-        "structure": "index",
-        "grid": "1-column",
-        "image_ratio": "1:1"
-      }
-    },
-    "placeholders": {
-      "renders": 5,
-      "plans": 2,
-      "sections": 1
-    },
-    "description": "Cosmo Special 1 \u2014 extracted from dummy-portfolio.pdf",
-    "layout_ids": {
-      "cover": "cosmo-special-1-cover",
-      "project": "cosmo-special-1-project",
-      "about": "cosmo-special-1-about",
-      "resume": "cosmo-special-1-resume",
-      "contents": "cosmo-special-1-contents"
-    }
-  },
-  {
     "id": "cosmo-special-2",
-    "name": "Cosmo Special 2",
+    "name": "Cosmo Special 1",
     "category": "Cosmo Special",
     "source": "pdf-extract",
     "origin_file": "Cosmo special 1.pdf",
@@ -8315,11 +8253,11 @@
     "preview_image": "scripts/content_pipeline/previews/Cosmo special 1_cover.png",
     "colors": {
       "background": "#fefefe",
-      "text": "#717171",
-      "accent": "#e9e9ea",
-      "primary": "#cbcbcb",
-      "muted": "#b0b0b0",
-      "secondary": "#929292"
+      "text": "#3d3d3c",
+      "accent": "#8a8886",
+      "primary": "#b5b3a5",
+      "muted": "#eeebea",
+      "secondary": "#d8d4d1"
     },
     "fonts": {
       "heading": "Georgia",
@@ -8357,18 +8295,49 @@
       "plans": 2,
       "sections": 1
     },
-    "description": "Cosmo Special 2 \u2014 extracted from Cosmo special 1.pdf",
+    "description": "Cosmo Special 1 \u2014 imported portfolio",
     "layout_ids": {
       "cover": "cosmo-special-2-cover",
       "project": "cosmo-special-2-project",
       "about": "cosmo-special-2-about",
       "resume": "cosmo-special-2-resume",
       "contents": "cosmo-special-2-contents"
+    },
+    "extracted_content": {
+      "title": "Architecture",
+      "author": "Portfolio",
+      "about": "Reya Kundu\nD.O.B. 06.03.1999\nIndian\nLanguages\nEnglish, Hindi, Bengali, Punjabi, French\nInterests\nPainting, Photography, Graphic\nDesigning, Music, Digital Art\nContact\n+91 9780467713\nreya.kundu@gmail.com\nreya.kundu.barch17@cept.ac.in\nH. No. 2306, Sector 35/C \nChandigarh, 160022\nCEPT University, Ahmedabad, 380009\nThe time spent in learning what architecture \u201cmeans\u201d has only taught me that its \nnotion is fluid and malleable, influenced by infinite agencies.\nHence, to me, the purpose of architectural designing is not about finding a \ncompromise; rather it is about using it as a medium to devise a s",
+      "resume": "Reya Kundu\nD.O.B. 06.03.1999\nIndian\nLanguages\nEnglish, Hindi, Bengali, Punjabi, French\nInterests\nPainting, Photography, Graphic\nDesigning, Music, Digital Art\nContact\n+91 9780467713\nreya.kundu@gmail.com\nreya.kundu.barch17@cept.ac.in\nH. No. 2306, Sector 35/C \nChandigarh, 160022\nCEPT University, Ahmedabad, 380009\nThe time spent in learning what architecture \u201cmeans\u201d has only taught me that its \nnotion is fluid and malleable, influenced by infinite agencies.\nHence, to me, the purpose of architectural designing is not about finding a \ncompromise; rather it is about using it as a medium to devise a solution without \ncompromising. It is where science meets romance, through simple transformations \nof predefined ideas, to generate passive, economical structures that hold and \nrepresent communities. \nPUBLICATIONS\nARCHITECTURE: Reflection of Changes in Society \u2013 A Study of Influence on Hospital Stru",
+      "contents": [
+        "WORKS Selected",
+        "Design Projects",
+        "Artist\u2019s Retreat | Aalloa Hills, Gujarat",
+        "Vann Vidyalaya | Palodia, Gujarat",
+        "Bhojanalay | Sarvoday Parivar Trust Campus Pindval, Gujarat",
+        "The Living Barn | Chandigarh",
+        "World Environment School | Vizag",
+        "Trans-Sit : Leisure On The Go | Bopal, Gujarat",
+        "Freelance Proposals",
+        "Farmhouse | Palsana, Gujarat",
+        "4 BHK Residence | Deramandi, New Delhi",
+        "1 BHK Residence | Chandigarh"
+      ],
+      "project_titles": [
+        "Reya Kundu",
+        "PUBLICATIONS",
+        "WORKS",
+        "Selected",
+        "THE LIVING BARN",
+        "| Chandigarh",
+        "PROJECT VIEW",
+        ": Entrance"
+      ],
+      "contact": ""
     }
   },
   {
     "id": "cosmo-special-3",
-    "name": "Cosmo Special 3",
+    "name": "Cosmo Special 2",
     "category": "Cosmo Special",
     "source": "behance-extract",
     "origin_file": "Architecture-Portfolio_Yavanikaa-Sindhu_2019-24",
@@ -8419,7 +8388,7 @@
       "plans": 2,
       "sections": 1
     },
-    "description": "Cosmo Special 3 \u2014 extracted from Architecture-Portfolio_Yavanikaa-Sindhu_2019-24",
+    "description": "Cosmo Special 2 \u2014 imported portfolio",
     "layout_ids": {
       "cover": "cosmo-special-3-cover",
       "project": "cosmo-special-3-project",
@@ -8430,7 +8399,7 @@
   },
   {
     "id": "cosmo-special-4",
-    "name": "Cosmo Special 4",
+    "name": "Cosmo Special 3",
     "category": "Cosmo Special",
     "source": "behance-extract",
     "origin_file": "Architecture-Portfolio",
@@ -8481,7 +8450,7 @@
       "plans": 2,
       "sections": 1
     },
-    "description": "Cosmo Special 4 \u2014 extracted from Architecture-Portfolio",
+    "description": "Cosmo Special 3 \u2014 imported portfolio",
     "layout_ids": {
       "cover": "cosmo-special-4-cover",
       "project": "cosmo-special-4-project",
@@ -8492,7 +8461,7 @@
   },
   {
     "id": "cosmo-special-5",
-    "name": "Cosmo Special 5",
+    "name": "Cosmo Special 4",
     "category": "Cosmo Special",
     "source": "behance-extract",
     "origin_file": "PORTFOLIO-INTERIOR-DESIGN-2024-2026",
@@ -8543,7 +8512,7 @@
       "plans": 2,
       "sections": 1
     },
-    "description": "Cosmo Special 5 \u2014 extracted from PORTFOLIO-INTERIOR-DESIGN-2024-2026",
+    "description": "Cosmo Special 4 \u2014 imported portfolio",
     "layout_ids": {
       "cover": "cosmo-special-5-cover",
       "project": "cosmo-special-5-project",

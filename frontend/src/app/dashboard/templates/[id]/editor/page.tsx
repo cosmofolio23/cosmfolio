@@ -54,15 +54,23 @@ const BODY_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', '
 
 function seedCustomPages(data: any, orientation: string, size: string, purpose: string, targetPages: number, targetProjects: number): Page[] {
   const list: Page[] = []
-  
+
+  // Real layouts + text pulled from the source portfolio (Cosmo Special templates).
+  const ids = data.layout_ids || {}
+  const ec = data.extracted_content || {}
+  const projTitles: string[] = ec.project_titles || []
+  // Use an extracted layout id only if it actually exists in the catalog.
+  const useId = (id: string | undefined, fallback: string) =>
+    (id && LAYOUT_CATALOG.some(s => s.id === id)) ? id : fallback
+
   // 1. Cover Page
   list.push({
     id: uid('p'),
     type: 'cover',
-    layoutId: 'cover.fullBleed.center',
+    layoutId: useId(ids.cover, 'cover.fullBleed.center'),
     blocks: [
-      { id: uid(), type: 'title', text: data.name || 'Architecture Portfolio' },
-      { id: uid(), type: 'subtitle', text: `${purpose.toUpperCase()} PORTFOLIO` },
+      { id: uid(), type: 'title', text: ec.title || data.name || 'Architecture Portfolio' },
+      { id: uid(), type: 'subtitle', text: ec.author || `${purpose.toUpperCase()} PORTFOLIO` },
       { id: uid(), type: 'meta', fields: [{ label: 'Name', value: 'Student Name' }, { label: 'Year', value: '2026' }] }
     ]
   })
@@ -71,7 +79,7 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   list.push({
     id: uid('p'),
     type: 'about',
-    layoutId: 'index.minimal.default',
+    layoutId: useId(ids.contents, 'index.minimal.default'),
     blocks: [
       { id: uid(), type: 'title', text: 'Selected Works' },
       { id: uid(), type: 'contents', label: 'Contents' }
@@ -82,20 +90,25 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   list.push({
     id: uid('p'),
     type: 'about',
-    layoutId: 'about.portraitFull',
+    layoutId: useId(ids.about, 'about.portraitFull'),
     blocks: [
       { id: uid(), type: 'title', text: 'About Me' },
-      { id: uid(), type: 'description', text: 'Architect and designer. Passionate about sustainable urban spaces.' }
+      { id: uid(), type: 'description', text: ec.about || 'Architect and designer. Passionate about sustainable urban spaces.' }
     ]
   })
   list.push({
     id: uid('p'),
     type: 'resume',
-    layoutId: 'about.cardStack',
-    blocks: [
-      { id: uid(), type: 'title', text: 'Curriculum Vitae' },
-      { id: uid(), type: 'legend', label: 'EDUCATION', legendItems: [{ key: '2022-26', label: 'B.Arch Graduate' }] }
-    ]
+    layoutId: useId(ids.resume, 'about.cardStack'),
+    blocks: ec.resume
+      ? [
+          { id: uid(), type: 'title', text: 'Curriculum Vitae' },
+          { id: uid(), type: 'description', text: ec.resume }
+        ]
+      : [
+          { id: uid(), type: 'title', text: 'Curriculum Vitae' },
+          { id: uid(), type: 'legend', label: 'EDUCATION', legendItems: [{ key: '2022-26', label: 'B.Arch Graduate' }] }
+        ]
   })
 
   // 4. Projects
@@ -104,12 +117,12 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   
   for (let pIdx = 0; pIdx < targetProjects; pIdx++) {
     const pNum = String(pIdx + 1).padStart(2, '0')
-    const pTitle = `Project ${pNum}`
-    
+    const pTitle = projTitles[pIdx] || `Project ${pNum}`
+
     list.push({
       id: uid('p'),
       type: 'project',
-      layoutId: 'single.titleTopText',
+      layoutId: useId(ids.project, 'single.titleTopText'),
       blocks: [
         { id: uid(), type: 'title', text: pTitle },
         { id: uid(), type: 'subtitle', text: 'Project Description Subtitle' },

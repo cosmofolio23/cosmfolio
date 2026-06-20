@@ -1,0 +1,7 @@
+# Heavy / generated / user-supplied artifacts — never commit
+node_modules/
+input/
+output/
+previews/
+__pycache__/
+*.pyc

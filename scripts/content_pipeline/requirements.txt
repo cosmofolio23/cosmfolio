@@ -1,0 +1,6 @@
+pymupdf
+Pillow
+scikit-learn
+numpy
+playwright
+requests

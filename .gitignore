@@ -52,3 +52,7 @@ yarn-error.log*
 *.tmp
 temp/
 .vercel
+
+# Content pipeline generated artifacts
+/output/
+/demo-assets/
