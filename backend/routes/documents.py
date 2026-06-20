@@ -40,9 +40,13 @@ async def save_document(
     try:
         storage = get_storage_client()
         url = await storage.upload_json(_doc_path(project_id), document)
-        supabase.table("projects").update(
-            {"updated_at": datetime.utcnow().isoformat()}
-        ).eq("id", project_id).execute()
+        # Sync the editor's title back to the projects table so "My Portfolios"
+        # (which reads project.title) reflects renames made inside the editor.
+        update_fields = {"updated_at": datetime.utcnow().isoformat()}
+        doc_title = document.get("title")
+        if isinstance(doc_title, str) and doc_title.strip():
+            update_fields["title"] = doc_title.strip()
+        supabase.table("projects").update(update_fields).eq("id", project_id).execute()
         return {"ok": True, "url": url}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Failed to save document: {e}")
