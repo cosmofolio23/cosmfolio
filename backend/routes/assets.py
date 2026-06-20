@@ -397,7 +397,7 @@ async def list_assets(
             count_response = supabase.table("assets").select("id", count="exact").eq(
                 "portfolio_id", portfolio_id
             ).execute()
-        total = count_response.count
+        total = count_response.count or 0
 
         # Paginate
         offset = (page - 1) * page_size
