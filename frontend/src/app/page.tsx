@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Logo from '@/components/Logo'
 import { useAuthStore } from '@/store/auth'
@@ -374,13 +375,28 @@ export default function Home() {
                 <p>My vision is to build tools that help every designer present their creativity with confidence and make powerful architectural presentations accessible to everyone.</p>
                 
                 <div className="pt-4 border-t border-gray-100 dark:border-white/10 mt-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-primary to-blue-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                    BR
+                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg relative">
+                    <Image 
+                      src="/founder.jpg"
+                      alt="Ar. Bose Raj"
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <div>
                     <div className="font-bold text-text-primary dark:text-dark-text-primary">Ar. Bose Raj</div>
                     <div className="text-sm">Founder, Cosmo Folio</div>
                   </div>
+                </div>
+              </div>
+              <div className="flex-1 flex justify-center mt-12 md:mt-0">
+                <div className="relative w-64 h-64 md:w-[400px] md:h-[400px] rounded-full md:rounded-[3rem] overflow-hidden border-4 md:border-8 border-white/20 shadow-2xl md:rotate-3 md:hover:rotate-0 transition-transform duration-500">
+                  <Image 
+                    src="/founder.jpg"
+                    alt="Ar. Bose Raj - Founder"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </div>
             </div>

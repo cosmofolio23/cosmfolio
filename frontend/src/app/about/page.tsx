@@ -62,11 +62,13 @@ export default function AboutPage() {
             </div>
             <div className="order-1 md:order-2 flex justify-center">
               <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
-                {/* Fallback image if founder photo is not uploaded */}
-                <div className="w-full h-full bg-stone-100 flex items-center justify-center text-stone-300">
-                  <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
+                <div className="w-full h-full bg-stone-100 flex items-center justify-center text-stone-300 relative">
+                  <Image 
+                    src="/founder.jpg"
+                    alt="Ar. Bose Raj - Founder"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </div>
             </div>
