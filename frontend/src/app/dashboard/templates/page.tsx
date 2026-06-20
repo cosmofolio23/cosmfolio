@@ -221,8 +221,7 @@ export default function TemplateMarketplace() {
           localStorage.removeItem('user_id')
         }
         useAuthStore.getState().setToken('')
-        alert('Your session has expired. Please sign in again.')
-        router.push('/auth/login')
+        router.push('/signin')
         return
       }
       
