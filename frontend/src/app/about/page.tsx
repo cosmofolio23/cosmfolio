@@ -33,8 +33,7 @@ export default function AboutPage() {
               About CosmoFolio
             </h1>
             <p className="text-lg text-text-secondary dark:text-dark-text-secondary max-w-2xl mx-auto leading-relaxed">
-              CosmoFolio is the ultimate portfolio generation tool built specifically for architecture and design students. 
-              We streamline the process of building professional presentations so you can focus on what matters most: your designs.
+              CosmoFolio is the ultimate architectural presentation ecosystem. It's not just a portfolio generator—it's a comprehensive suite featuring a <strong>Sheet Composer</strong>, <strong>Thesis Companion</strong>, and <strong>Project Library</strong>. We streamline every aspect of building professional presentations so you can focus on what matters most: your designs.
             </p>
           </div>
 
