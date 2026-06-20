@@ -60,10 +60,10 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="order-1 md:order-2 flex justify-center">
-              <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
+              <div className="relative w-56 h-56 md:w-72 md:h-72 rounded-full overflow-hidden border-4 border-white shadow-xl">
                 <div className="w-full h-full bg-stone-100 flex items-center justify-center text-gray-300 relative">
                   <Image 
-                    src="/founder.jpg"
+                    src="/Founder.png"
                     alt="Ar. Bose Raj - Founder"
                     fill
                     className="object-cover"
