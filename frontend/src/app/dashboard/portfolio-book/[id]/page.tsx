@@ -116,6 +116,10 @@ export default function PortfolioBookPage() {
         @media print {
           @page { size: ${pageSize && pageSize.width > pageSize.height ? 'landscape' : 'portrait'}; margin: 0; }
           html, body { margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          /* Each page = exactly one sheet; clip the 1px overflow that was
+             spilling onto a blank second sheet. */
+          .pf-print-page { height: 100vh; overflow: hidden; break-after: page; page-break-after: always; break-inside: avoid; }
+          .pf-print-page:last-child { break-after: auto; page-break-after: auto; }
         }
       `}</style>
       {/* Header */}
@@ -190,10 +194,10 @@ export default function PortfolioBookPage() {
           </div>
         )}
 
-        {/* Print View (All Pages) */}
-        <div className="hidden print:flex flex-col w-full items-center m-0 p-0">
+        {/* Print View (All Pages) — each wrapper is exactly one printed sheet */}
+        <div className="hidden print:block w-full m-0 p-0">
           {pages.map((p, idx) => (
-            <div key={p.id} className="w-full relative" style={{ pageBreakAfter: 'always', breakAfter: 'page' }}>
+            <div key={p.id} className="pf-print-page w-full relative">
               <PageComposer
                 page={p}
                 tokens={tokens}
