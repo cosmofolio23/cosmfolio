@@ -59,7 +59,8 @@ def verify_firebase_token_fallback(token: str) -> dict:
             cert_str,
             algorithms=["RS256"],
             audience=project_id,
-            issuer=f"https://securetoken.google.com/{project_id}"
+            issuer=f"https://securetoken.google.com/{project_id}",
+            leeway=120
         )
         return {
             "user_id": decoded.get("sub") or decoded.get("uid"),

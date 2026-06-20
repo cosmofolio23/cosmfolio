@@ -222,13 +222,7 @@ export default function TemplateMarketplace() {
       })
       
       if (res.status === 401) {
-        // Token expired or invalid
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('auth_token')
-          localStorage.removeItem('user_id')
-        }
-        useAuthStore.getState().setToken('')
-        router.push('/signin')
+        alert('Authentication error. If this persists, please try refreshing the page.')
         return
       }
       
