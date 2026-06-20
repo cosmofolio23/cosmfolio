@@ -5,15 +5,50 @@ Phase 6: Task 6.4 - Publication, sharing, and download endpoints
 
 import logging
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from services.publication import get_publication_service
 from services.social_export import get_social_export_service
 from services.download_export import get_download_export_service
 from .deps import get_current_user
+from database import supabase
 
 logger = logging.getLogger(__name__)
+
+def verify_portfolio_ownership(portfolio_id: str, user_id: str):
+    """Verify that the portfolio exists and belongs to the current user"""
+    try:
+        portfolio_res = supabase.table("portfolios").select("project_id").eq("id", portfolio_id).execute()
+        if not portfolio_res.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Portfolio {portfolio_id} not found"
+            )
+        
+        portfolio = portfolio_res.data[0]
+        project_id = portfolio.get("project_id")
+        
+        project_res = supabase.table("projects").select("user_id").eq("id", project_id).execute()
+        if not project_res.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Associated project not found"
+            )
+            
+        if project_res.data[0].get("user_id") != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't own this portfolio"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying portfolio ownership: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 # ==================== ROUTER SETUP ====================
 
@@ -88,16 +123,13 @@ async def publish_portfolio(
     """
 
     try:
-        # TODO: Verify portfolio ownership
-        # portfolio = await db.get_portfolio(portfolio_id, current_user.id)
-        # if not portfolio:
-        #     raise HTTPException(status_code=404, detail="Portfolio not found")
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
 
         publication_service = get_publication_service()
 
         result = publication_service.publish_portfolio(
             portfolio_id=portfolio_id,
-            user_id=current_user.id,
+            user_id=current_user["user_id"],
             is_password_protected=request.is_password_protected,
             password=request.password if request.is_password_protected else None,
         )
@@ -107,9 +139,11 @@ async def publish_portfolio(
             public_url=result["public_url"],
             public_token=result["public_token"],
             public_slug=result["public_slug"],
-            is_password_protected=result["is_password_protected"],
+            is_password_protected=result.get("is_password_protected", False),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error publishing portfolio: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -132,20 +166,44 @@ async def get_public_link(
     """
 
     try:
-        # TODO: Verify portfolio ownership
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
+
+        # Check cache
+        try:
+            from services.cache import get_cache_service
+            cache_service = get_cache_service()
+            cache_key = f"public-link:{portfolio_id}"
+            cached = cache_service.get(cache_key)
+            if cached is not None:
+                return cached
+        except Exception as ce:
+            logger.warning(f"Cache retrieval error: {ce}")
+            cache_service = None
+
         publication_service = get_publication_service()
 
         link_settings = publication_service.get_public_link_settings(
             portfolio_id=portfolio_id,
-            user_id=current_user.id,
+            user_id=current_user["user_id"],
         )
 
-        return {
+        result = {
             "status": "success",
             "portfolio_id": portfolio_id,
             **link_settings,
         }
 
+        # Store in cache
+        if cache_service:
+            try:
+                cache_service.set(cache_key, result, ttl=300)
+            except Exception as ce:
+                logger.warning(f"Cache store error: {ce}")
+
+        return result
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting public link: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -168,12 +226,12 @@ async def unpublish_portfolio(
     """
 
     try:
-        # TODO: Verify portfolio ownership
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
         publication_service = get_publication_service()
 
         result = publication_service.unpublish_portfolio(
             portfolio_id=portfolio_id,
-            user_id=current_user.id,
+            user_id=current_user["user_id"],
         )
 
         return {
@@ -182,6 +240,8 @@ async def unpublish_portfolio(
             **result,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error unpublishing portfolio: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -206,12 +266,12 @@ async def create_share_token(
     """
 
     try:
-        # TODO: Verify portfolio ownership
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
         publication_service = get_publication_service()
 
         result = publication_service.create_share_token(
             portfolio_id=portfolio_id,
-            user_id=current_user.id,
+            user_id=current_user["user_id"],
             expires_in_days=request.expires_in_days,
             custom_message=request.custom_message,
         )
@@ -222,6 +282,8 @@ async def create_share_token(
             expires_at=result["expires_at"],
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating share token: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -246,12 +308,12 @@ async def get_portfolio_analytics(
     """
 
     try:
-        # TODO: Verify portfolio ownership
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
         publication_service = get_publication_service()
 
         analytics = publication_service.get_analytics(
             portfolio_id=portfolio_id,
-            user_id=current_user.id,
+            user_id=current_user["user_id"],
             days=days,
         )
 
@@ -261,6 +323,8 @@ async def get_portfolio_analytics(
             **analytics,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting analytics: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -285,10 +349,7 @@ async def get_social_preview(
     """
 
     try:
-        # TODO: Get portfolio data
-        # portfolio = await db.get_portfolio(portfolio_id, current_user.id)
-        # if not portfolio:
-        #     raise HTTPException(status_code=404, detail="Portfolio not found")
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
 
         social_service = get_social_export_service()
 
@@ -296,7 +357,7 @@ async def get_social_preview(
         portfolio_data = {
             "title": "Architecture Portfolio",
             "description": "Professional architecture portfolio",
-            "author": current_user.name or "",
+            "author": current_user.get("name") or current_user.get("email", ""),
             "keywords": ["architecture", "design", "portfolio"],
         }
 
@@ -312,6 +373,8 @@ async def get_social_preview(
             "preview_card": preview_card,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating social preview: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -336,10 +399,7 @@ async def download_portfolio(
     """
 
     try:
-        # TODO: Get portfolio data and files
-        # portfolio = await db.get_portfolio(portfolio_id, current_user.id)
-        # if not portfolio:
-        #     raise HTTPException(status_code=404, detail="Portfolio not found")
+        verify_portfolio_ownership(portfolio_id, current_user["user_id"])
 
         download_service = get_download_export_service()
 
@@ -347,7 +407,7 @@ async def download_portfolio(
         portfolio_data = {
             "title": "Architecture Portfolio",
             "description": "Professional architecture portfolio",
-            "author": current_user.name or "",
+            "author": current_user.get("name") or current_user.get("email", ""),
         }
 
         # Sample files (in production, fetch from storage)
@@ -404,6 +464,8 @@ async def download_portfolio(
             "download_url": f"/api/downloads/{portfolio_id}/{result['format']}/{result['filename']}",
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error downloading portfolio: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -436,15 +498,14 @@ async def batch_download_portfolios(
 
         download_service = get_download_export_service()
 
-        # TODO: Fetch all portfolios and verify ownership
         portfolio_data_map = {}
         files_map = {}
 
         for pid in portfolio_ids:
-            # portfolio = await db.get_portfolio(pid, current_user.id)
+            verify_portfolio_ownership(pid, current_user["user_id"])
             portfolio_data_map[pid] = {
                 "title": "Portfolio",
-                "author": current_user.name or "",
+                "author": current_user.get("name") or current_user.get("email", ""),
             }
             files_map[pid] = {}
 
@@ -460,6 +521,8 @@ async def batch_download_portfolios(
             **result,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in batch download: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -489,6 +552,8 @@ async def get_export_settings():
             "supported_formats": list(formats.keys()),
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting export settings: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
