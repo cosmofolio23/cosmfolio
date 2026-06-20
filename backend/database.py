@@ -165,6 +165,15 @@ CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_assets_project_id ON assets(project_id);
 CREATE INDEX IF NOT EXISTS idx_portfolios_project_id ON portfolios(project_id);
 CREATE INDEX IF NOT EXISTS idx_export_logs_portfolio_id ON export_logs(portfolio_id);
+
+CREATE TABLE IF NOT EXISTS support_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT NOW()
+);
 """
 
 def init_supabase():

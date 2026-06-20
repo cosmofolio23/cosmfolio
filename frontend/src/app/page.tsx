@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Logo from '@/components/Logo'
 import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
+import VideoModal from '@/components/VideoModal'
 
 function FeatureIcon({ type }: { type: string }) {
   const icons = {
@@ -43,8 +44,10 @@ function FeatureIcon({ type }: { type: string }) {
 }
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState('portfolio')
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const [isLoadingSplash, setIsLoadingSplash] = useState(true)
 
   useEffect(() => {
@@ -82,6 +85,7 @@ export default function Home() {
                 Sign Up
               </Link>
             </div>
+          </div>
         </div>
       </nav>
 
@@ -111,7 +115,10 @@ export default function Home() {
               <Link href="/signup" className="btn-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
                 Start Designing Your Portfolio
               </Link>
-              <button className="glass dark:glass-dark px-6 py-3 rounded-lg font-medium text-text-primary dark:text-dark-text-primary hover:bg-white/90 dark:hover:bg-white/20 transition-all duration-300">
+              <button 
+                onClick={() => setIsVideoModalOpen(true)}
+                className="glass dark:glass-dark px-6 py-3 rounded-lg font-medium text-text-primary dark:text-dark-text-primary hover:bg-white/90 dark:hover:bg-white/20 transition-all duration-300"
+              >
                 View Demo
               </button>
             </div>
@@ -491,22 +498,6 @@ export default function Home() {
                 </a>
                 <a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="text-stone-light hover:text-white transition">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                </a>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
-                <li><Link href="/about" className="hover:text-white transition">About Us</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Contact</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
-                <li><Link href="/contact" className="hover:text-white transition">Contact Us</Link></li>
-                <li><a href="mailto:cosmoatelier.live@gmail.com" className="hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
-                <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Instagram</a></li>
                 <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a></li>
               </ul>
             </div>
@@ -558,6 +549,12 @@ export default function Home() {
           </span>
         </div>
       </div>
+
+      <VideoModal 
+        isOpen={isVideoModalOpen} 
+        onClose={() => setIsVideoModalOpen(false)} 
+        videoSrc="/demo.mp4" 
+      />
     </div>
   )
 }

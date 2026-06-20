@@ -10,16 +10,31 @@ export default function ContactPage() {
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('submitting')
-    // Simulate form submission
-    setTimeout(() => {
+    
+    try {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message })
+      })
+      
+      if (!res.ok) throw new Error('Submission failed')
+      
       setStatus('success')
       setName('')
       setEmail('')
       setMessage('')
-    }, 1000)
+      
+      // Reset success status after a delay
+      setTimeout(() => setStatus('idle'), 5000)
+    } catch (err) {
+      console.error(err)
+      setStatus('idle')
+      alert('Failed to send message. Please try emailing us directly.')
+    }
   }
 
   return (

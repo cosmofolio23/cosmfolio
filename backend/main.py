@@ -137,6 +137,15 @@ try:
         print("[OK] Sheet-set routes loaded")
     except Exception as e:
         print(f"[WARNING] Sheet-set routes failed to load: {e}")
+
+    # Support / Contact route
+    try:
+        from routes import support
+        app.include_router(support.router, prefix="/api/support", tags=["support"])
+        print("[OK] Support routes loaded")
+    except Exception as e:
+        print(f"[WARNING] Support routes failed to load: {e}")
+
 except Exception as e:
     print(f"[WARNING] Some additional routes failed: {e}")
 
