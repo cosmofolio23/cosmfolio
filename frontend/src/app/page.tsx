@@ -66,7 +66,10 @@ export default function Home() {
             <Logo size="sm" variant="gold" />
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            <Link href="/pricing" className="hidden sm:inline-block text-sm font-medium text-text-primary dark:text-dark-text-primary hover:text-accent-primary dark:hover:text-accent-gold transition px-2">
+              Pricing
+            </Link>
             <Link href="/signin" className="btn-secondary btn-small">
               Sign In
             </Link>
@@ -90,7 +93,7 @@ export default function Home() {
         <div className="container-centered relative z-10 pt-32 pb-24">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-gold/20 text-accent-gold text-xs font-bold mb-6 uppercase tracking-wider backdrop-blur-sm border border-accent-gold/30 animate-pulse">
-              ✨ AI Generator — Coming Soon
+              ✨ Architecture Portfolio Tool — Now Live
             </div>
             <h1 className="text-white text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Professional Architecture Portfolios, Generated in Seconds
@@ -386,7 +389,7 @@ export default function Home() {
           
           <div className="space-y-4">
             {[
-              { q: "Is Cosmo Folio really free?", a: "Yes! You can instantly create a beautiful 5-page portfolio and export up to 3 high-quality PDFs completely for free. We are launching a Pro version next week for users who need unlimited pages, premium master templates, and unlimited exports." },
+              { q: "Is Cosmo Folio really free?", a: "Yes! You can instantly create a beautiful 5-page portfolio and export up to 3 high-quality PDFs completely for free. We are preparing a Pro version with unlimited pages, premium master templates, and unlimited exports — stay tuned!" },
               { q: "Can I download a PDF for job applications?", a: "Absolutely. Our engine generates print-ready PDFs at any standard size (A4, A3, Letter, and more) in both portrait and landscape orientation. They are optimized for emailing to architecture firms, applying to grad school, or printing." },
               { q: "Do I own the rights to my portfolio?", a: "100% yes. We do not claim any ownership over your drawings, renders, or portfolio designs. Your work is entirely yours." },
               { q: "Are the templates fully customizable?", a: "Every template is just a starting point. Once applied, you can drag and drop images, change colors, switch typography, and rearrange layouts on the canvas exactly how you want." }
@@ -422,19 +425,19 @@ export default function Home() {
                 title: "Cosmo Sheet",
                 subtitle: "AI Jury Boards",
                 desc: "Export your portfolio sheets directly into modular competition panels and print-ready jury boards automatically.",
-                badge: "Coming Q3"
+                badge: "In Development"
               },
               {
                 title: "Cosmo Thesis",
                 subtitle: "AI Thesis Companion",
                 desc: "Format site analyses, diagrams, zoning flows, and design reports with intelligent layout guidelines.",
-                badge: "Coming Q4"
+                badge: "Planned"
               },
               {
                 title: "Cosmo Library",
                 subtitle: "Your Architectural Journey",
                 desc: "A digital vault to store your CAD files, models, texture packs, and presentation graphics in one place.",
-                badge: "Coming Soon"
+                badge: "Exploring"
               }
             ].map((item, idx) => (
               <div key={idx} className="glass-card p-8 rounded-3xl relative border border-white/20 dark:border-white/5 flex flex-col justify-between shadow-md hover:-translate-y-1 transition-all duration-300 bg-white/40 dark:bg-black/20">
@@ -490,7 +493,7 @@ export default function Home() {
               <h4 className="font-bold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-stone-light">
                 <li><a href="#" className="hover:text-white transition">Features</a></li>
-                <li><a href="#" className="hover:text-white transition">Pricing</a></li>
+                <li><a href="/pricing" className="hover:text-white transition">Pricing</a></li>
                 <li><a href="#" className="hover:text-white transition">FAQ</a></li>
               </ul>
             </div>
@@ -517,7 +520,11 @@ export default function Home() {
       </footer>
 
       {/* Splash Screen Animation Overlay */}
-      <div className={`fixed inset-0 z-50 bg-[#07070A] flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${isLoadingSplash ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div
+        className={`fixed inset-0 z-50 bg-[#07070A] flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${isLoadingSplash ? 'opacity-100' : 'opacity-0 pointer-events-none invisible'}`}
+        aria-hidden="true"
+        role="presentation"
+      >
         <div className="relative flex flex-col items-center">
           {/* Cosmic glow effects */}
           <div className="absolute w-64 h-64 bg-accent-gold/20 rounded-full blur-[60px] animate-pulse"></div>
@@ -529,14 +536,14 @@ export default function Home() {
           </div>
           
           {/* Animated title */}
-          <h1 className="relative z-10 text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
+          <span className="relative z-10 text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
             Cosmo<span className="text-gold-gradient">Folio</span>
-          </h1>
+          </span>
           
           {/* Progress message */}
-          <p className="relative z-10 text-stone-light text-xs tracking-widest uppercase animate-pulse">
+          <span className="relative z-10 text-stone-light text-xs tracking-widest uppercase animate-pulse">
             Designing Presentation...
-          </p>
+          </span>
         </div>
       </div>
     </div>
