@@ -375,6 +375,10 @@ function RegionView({
   const [draftYear, setDraftYear] = useState(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'year')?.value || '')
   const [draftLoc, setDraftLoc] = useState(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'location')?.value || '')
   const [draftTypo, setDraftTypo] = useState(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || '')
+  // Title text formatting overrides
+  const [draftColor, setDraftColor] = useState(block?.color || '')
+  const [draftFont, setDraftFont] = useState(block?.fontFamily || '')
+  const [draftScale, setDraftScale] = useState(block?.fontSize || 1)
 
   const openEditTitleBlock = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -383,10 +387,19 @@ function RegionView({
     setDraftYear(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'year')?.value || '2026')
     setDraftLoc(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'location')?.value || 'Location')
     setDraftTypo(firstOfType('meta')?.fields?.find(f => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || 'Residential')
+    setDraftColor(block?.color || '')
+    setDraftFont(block?.fontFamily || '')
+    setDraftScale(block?.fontSize || 1)
     setEditingTitleBlock(true)
   }
 
   const handleSaveTitleBlock = (scope: 'page' | 'project' | 'all') => {
+    // Title text formatting (colour / font / size) always applies to this block.
+    patchBlock(block.id, {
+      color: draftColor || undefined,
+      fontFamily: draftFont || undefined,
+      fontSize: draftScale,
+    })
     if (!onUpdateGlobalPages) {
       // fallback to current page only
       patchBlock(block.id, { text: draftTitle })
@@ -469,6 +482,7 @@ function RegionView({
                   title: block.text || 'Project Title',
                   subline: firstOfType('subtitle')?.text || '',
                 }}
+                override={{ color: block.color, fontFamily: block.fontFamily, scale: block.fontSize }}
               />
               <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center">
                 <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
@@ -532,6 +546,36 @@ function RegionView({
                         onChange={e => setDraftLoc(e.target.value)}
                         className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
                       />
+                    </div>
+                  </div>
+
+                  {/* Text formatting: colour / font / size */}
+                  <div className="pt-1.5 border-t border-slate-800 space-y-1.5">
+                    <span className="text-[8px] text-slate-400 uppercase block">Text Style</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <label className="text-[8px] text-slate-400 uppercase">Colour</label>
+                        <input type="color" value={draftColor || '#ffffff'} onChange={e => setDraftColor(e.target.value)}
+                          className="w-6 h-6 rounded cursor-pointer border border-slate-700 bg-transparent" />
+                      </div>
+                      <select value={draftFont} onChange={e => setDraftFont(e.target.value)}
+                        className="flex-1 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]">
+                        <option value="">Template font</option>
+                        <option value="Playfair Display">Playfair Display</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Oswald">Oswald</option>
+                        <option value="Poppins">Poppins</option>
+                        <option value="Bebas Neue">Bebas Neue</option>
+                        <option value="Inter">Inter</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[8px] text-slate-400 uppercase">Size</label>
+                      <input type="range" min="0.5" max="2.5" step="0.1" value={draftScale}
+                        onChange={e => setDraftScale(parseFloat(e.target.value))}
+                        className="flex-1 h-1 accent-blue-500" />
+                      <span className="text-[9px] font-mono w-8 text-right">{Math.round(draftScale * 100)}%</span>
                     </div>
                   </div>
 

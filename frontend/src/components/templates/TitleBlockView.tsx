@@ -15,12 +15,14 @@ export interface TitleBlockContent {
 const pickFg = (fill: string, p: DemoPalette) => (fill === 'dark' ? '#fff' : fill === 'accent' ? '#fff' : p.primary)
 
 export function TitleBlockView({
-  style, p, fonts, content,
+  style, p, fonts, content, override,
 }: {
   style: TitleBlockStyle
   p: DemoPalette
   fonts: { heading: string; body: string }
   content: TitleBlockContent
+  /** Per-block user overrides from the title editor (colour / font / size). */
+  override?: { color?: string; fontFamily?: string; scale?: number }
 }) {
   const num = content.number ?? 'PROJECT 01'
   const title = content.title ?? 'CULTURAL CENTER'
@@ -53,9 +55,11 @@ export function TitleBlockView({
   const showRuleUnder = style.rule === 'under' || style.rule === 'double'
 
   const titleStyle: React.CSSProperties = {
-    fontFamily: fonts.heading, color: fg, fontWeight: style.weight,
+    fontFamily: override?.fontFamily || fonts.heading,
+    color: override?.color || fg,
+    fontWeight: style.weight,
     letterSpacing: `${style.tracking}em`, textTransform: style.caps ? 'uppercase' : 'none',
-    fontSize: '1.6em', lineHeight: 1.04,
+    fontSize: `${1.6 * (override?.scale || 1)}em`, lineHeight: 1.04,
   }
 
   return (
