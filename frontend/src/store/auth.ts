@@ -20,6 +20,7 @@ interface AuthStore {
   loginWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   setToken: (token: string) => void
+  fetchCurrentUser: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -142,6 +143,33 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ token })
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token)
+    }
+  },
+
+  fetchCurrentUser: async () => {
+    try {
+      const userData = await apiClient.getCurrentUser()
+      if (userData) {
+        set({
+          user: {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name || '',
+            created_at: userData.created_at
+          }
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch current user:', error)
+      const err = error as any
+      if (err.response && err.response.status === 401) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('user_id')
+        }
+        apiClient.clearToken()
+        set({ user: null, token: null, isAuthenticated: false })
+      }
     }
   },
 }))
