@@ -386,8 +386,8 @@ export default function Home() {
           
           <div className="space-y-4">
             {[
-              { q: "Is Cosmo Folio really free?", a: "Yes! You can instantly create a beautiful 10-page portfolio and export up to 3 high-quality PDFs completely for free. We are launching a Pro version next week for users who need unlimited pages, premium master templates, and unlimited exports." },
-              { q: "Can I download a PDF for job applications?", a: "Absolutely. Our engine generates print-ready PDFs at perfect A4 dimensions. They are optimized for emailing to architecture firms, applying to grad school, or printing." },
+              { q: "Is Cosmo Folio really free?", a: "Yes! You can instantly create a beautiful 5-page portfolio and export up to 3 high-quality PDFs completely for free. We are launching a Pro version next week for users who need unlimited pages, premium master templates, and unlimited exports." },
+              { q: "Can I download a PDF for job applications?", a: "Absolutely. Our engine generates print-ready PDFs at any standard size (A4, A3, Letter, and more) in both portrait and landscape orientation. They are optimized for emailing to architecture firms, applying to grad school, or printing." },
               { q: "Do I own the rights to my portfolio?", a: "100% yes. We do not claim any ownership over your drawings, renders, or portfolio designs. Your work is entirely yours." },
               { q: "Are the templates fully customizable?", a: "Every template is just a starting point. Once applied, you can drag and drop images, change colors, switch typography, and rearrange layouts on the canvas exactly how you want." }
             ].map((faq, i) => (
