@@ -132,9 +132,18 @@ export default function PricingPage() {
                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4">
                   <span className="font-semibold text-text-primary dark:text-dark-text-primary">Best for:</span> Final submissions, applications, thesis
                 </p>
-                <Link href="/signup" className="btn-primary w-full text-center block">
-                  Upgrade to Pro
-                </Link>
+                {/* Pro checkout isn't built yet — be honest: coming soon + join the beta. */}
+                <div className="w-full flex items-center justify-center gap-2 rounded-lg border border-accent-gold/40 bg-accent-gold/10 text-text-primary dark:text-dark-text-primary font-semibold py-3 px-4 cursor-default select-none">
+                  <svg className="w-4 h-4 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  Coming Soon
+                </div>
+                <p className="text-xs text-center text-text-secondary dark:text-dark-text-secondary mt-3">
+                  Pro is launching soon.{' '}
+                  <Link href="/signup" className="font-semibold text-accent-primary dark:text-accent-gold hover:underline">
+                    Join the beta
+                  </Link>{' '}
+                  and we&apos;ll notify you.
+                </p>
               </div>
             </div>
           </div>
