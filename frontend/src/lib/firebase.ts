@@ -51,12 +51,20 @@ export async function firebaseSignUp(email: string, password: string, name: stri
       ...(stream && { stream })
     }).toString();
 
-    await fetch(`${apiUrl}/api/auth/signup?${queryParams}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+    // Best-effort: sync the profile/demographics to our DB WITHOUT blocking signup.
+    // The Firebase account already exists at this point, so a cold or redeploying
+    // backend must not make the user wait ~50s on this step. Fire-and-forget with
+    // keepalive (so it still completes if the page navigates) + a safety timeout.
+    try {
+      const ctrl = new AbortController()
+      const t = setTimeout(() => ctrl.abort(), 12000)
+      fetch(`${apiUrl}/api/auth/signup?${queryParams}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        keepalive: true,
+        signal: ctrl.signal,
+      }).catch(() => {}).finally(() => clearTimeout(t))
+    } catch { /* non-fatal — profile sync is best-effort */ }
 
     return { user, token }
   } catch (err: any) {
