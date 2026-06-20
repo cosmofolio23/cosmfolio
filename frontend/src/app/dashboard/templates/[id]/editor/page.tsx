@@ -1462,7 +1462,7 @@ export default function TemplateEditor() {
 
   const exportToPDF = async () => {
     setIsExporting(true)
-    flashUpload('info', 'Saving and preparing PDF…', 0)
+    flashUpload('info', 'Saving and preparing your PDF…', 0)
     try {
       const pid = await ensureProject()
       try {
@@ -1470,31 +1470,25 @@ export default function TemplateEditor() {
       } catch (saveErr: any) {
         flashUpload('info', `Note: Could not save latest changes. Exporting last saved version.`, 5000)
       }
-      
-      const res = await fetch(`${API_URL}/api/projects/${pid}/document/export-pdf`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${authToken()}` }
-      })
-      
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        const detail = errData?.error?.message || errData?.detail || `status ${res.status}`
-        if (detail === 'FREE_TIER_LIMIT_REACHED' || res.status === 403) {
-          flashUpload('err', 'You have reached your 3 free PDF exports! Pro Mode launching next week.', 8000)
-          return
-        }
-        throw new Error(detail)
+
+      // Free-tier export limit (client-side counter).
+      const EXPORT_KEY = 'cosmofolio_export_count'
+      const used = parseInt(localStorage.getItem(EXPORT_KEY) || '0', 10) || 0
+      if (used >= 3) {
+        flashUpload('err', 'You have reached your 3 free PDF exports! Pro Mode launching next week.', 8000)
+        return
       }
-      
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${(portfolioTitle || 'portfolio').replace(/\s+/g, '_')}.pdf`
-      a.click()
-      setTimeout(() => URL.revokeObjectURL(url), 1500)
-      
-      flashUpload('ok', '✓ PDF Downloaded')
+
+      // High-fidelity export: render the REAL pages in the browser and use the
+      // browser's print-to-PDF (full CSS support → matches the editor exactly).
+      // The xhtml2pdf server path cannot render grid/full-bleed layouts.
+      const win = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
+      if (!win) {
+        flashUpload('err', 'Pop-up blocked. Allow pop-ups for this site, then click PDF again.', 8000)
+        return
+      }
+      localStorage.setItem(EXPORT_KEY, String(used + 1))
+      flashUpload('ok', '✓ Opening print view — choose “Save as PDF” in the dialog.', 6000)
     } catch (e: any) {
       flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
     } finally {

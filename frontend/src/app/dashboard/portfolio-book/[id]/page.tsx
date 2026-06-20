@@ -111,6 +111,13 @@ export default function PortfolioBookPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col print:bg-white print:bg-none print:min-h-0 print:block">
+      {/* Edge-to-edge print: no browser print margins, no page shrink */}
+      <style>{`
+        @media print {
+          @page { size: ${pageSize && pageSize.width > pageSize.height ? 'landscape' : 'portrait'}; margin: 0; }
+          html, body { margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 print:hidden">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
