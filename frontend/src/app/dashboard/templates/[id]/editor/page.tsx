@@ -282,7 +282,7 @@ export default function TemplateEditor() {
   const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportUsed, setExportUsed] = useState(0)
-  const [exportLimit] = useState(3)
+  const [exportLimit] = useState(2)
   const [exportBypass, setExportBypass] = useState(false)
   const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
   const [previewSpread, setPreviewSpread] = useState(false)

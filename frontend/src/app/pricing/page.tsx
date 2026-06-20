@@ -6,7 +6,7 @@ import Logo from '@/components/Logo'
 const FREE_FEATURES = [
   'Unlimited portfolios',
   '5 pages per portfolio',
-  '2 PDF export',
+  '2 PDF exports',
   'Standard templates',
   'Full design tools',
 ]
@@ -22,7 +22,7 @@ const PRO_FEATURES = [
 const FAQS = [
   {
     q: 'Is CosmoFolio really free?',
-    a: 'Yes! You can instantly create a beautiful 5-page portfolio and export 1 high-quality PDF completely for free. Upgrade to Pro for unlimited pages, premium templates, and additional exports.',
+    a: 'Yes! You can instantly create a beautiful 5-page portfolio and export 2 high-quality PDFs completely for free. Upgrade to Pro for unlimited pages, premium templates, and additional exports.',
   },
   {
     q: 'Can I download a PDF for job applications?',

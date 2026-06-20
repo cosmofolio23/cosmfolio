@@ -102,7 +102,7 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         is_bypass = current_user.get("email") == "boseraj001@gmail.com"
         if user_resp.data and not is_bypass:
             export_count = user_resp.data[0].get("export_count") or 0
-            if export_count >= 3:
+            if export_count >= 2:
                 raise HTTPException(status_code=403, detail="FREE_TIER_LIMIT_REACHED")
 
         # Simple HTML-to-PDF rendering (basic)
