@@ -77,7 +77,8 @@ interface FilterPreset {
 
 export default function TemplateMarketplace() {
   const router = useRouter()
-  const { isAuthenticated, token } = useAuthStore()
+  const { isAuthenticated, token, user } = useAuthStore()
+  const isAdmin = user?.email === 'boseraj001@gmail.com'
   const [templates, setTemplates] = useState<Template[]>([])
   const [libTab, setLibTab] = useState<LibTab>('portfolios')
   const [isLoading, setIsLoading] = useState(true)
@@ -157,6 +158,11 @@ export default function TemplateMarketplace() {
   useEffect(() => {
     let filtered = templates
 
+    // Cosmo Special templates are admin-only until they're polished for launch
+    if (!isAdmin) {
+      filtered = filtered.filter(t => t.category !== 'Cosmo Special')
+    }
+
     // Category filter (multiple selection)
     if (selectedCategories.size > 0) {
       filtered = filtered.filter(t => selectedCategories.has(t.category))
@@ -190,7 +196,7 @@ export default function TemplateMarketplace() {
     }
 
     setFilteredTemplates(filtered)
-  }, [searchQuery, selectedCategories, pageCountRange, sourceFilter, templates])
+  }, [searchQuery, selectedCategories, pageCountRange, sourceFilter, templates, isAdmin])
 
   const handleUseTemplate = async (template: Template) => {
     try {
