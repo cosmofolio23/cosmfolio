@@ -86,6 +86,7 @@ def _decode_jwt_payload(token: str) -> dict:
 
 
 def get_current_user(authorization: str = Header(None)):
+    """Extract and verify token from Authorization header"""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -93,6 +94,7 @@ def get_current_user(authorization: str = Header(None)):
         )
 
     token = authorization[7:].strip()
+    last_error = "Unknown auth error"
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -144,8 +146,8 @@ def get_current_user(authorization: str = Header(None)):
                     "email": resp.user.email or "",
                     "auth": "supabase"
                 }
-    except Exception:
-        pass
+    except Exception as e:
+        last_error = str(e)
 
     # METHOD 4: Decode JWT payload manually (DEBUG fallback ONLY)
     if settings.DEBUG or os.getenv("DEBUG", "").lower() in ("true", "1", "t"):
@@ -171,10 +173,10 @@ def get_current_user(authorization: str = Header(None)):
                     "email": email,
                     "auth": "jwt_decoded_debug_fallback"
                 }
-        except Exception:
-            pass
+        except Exception as e:
+            last_error = str(e)
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials. Please sign in again."
+        detail=f"Could not validate credentials. Reason: {last_error}"
     )
