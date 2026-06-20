@@ -89,16 +89,19 @@ export default function Home() {
 
         <div className="container-centered relative z-10 pt-32 pb-24">
           <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-gold/20 text-accent-gold text-xs font-bold mb-6 uppercase tracking-wider backdrop-blur-sm border border-accent-gold/30 animate-pulse">
+              ✨ AI Generator — Coming Soon
+            </div>
             <h1 className="text-white text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Professional Architecture Portfolios, Generated in Seconds
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Upload your renders, plans, and diagrams. AI arranges them into stunning portfolio variations with 280+ sophisticated layouts and curated design systems.
+              Create professional architecture portfolios with intelligent templates, sophisticated design systems, and custom layouts. Built specifically for architects.
             </p>
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
               <Link href="/signup" className="btn-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
-                Start Free Now
+                Start Designing Your Portfolio
               </Link>
               <button className="glass dark:glass-dark px-6 py-3 rounded-lg font-medium text-text-primary dark:text-dark-text-primary hover:bg-white/90 dark:hover:bg-white/20 transition-all duration-300">
                 View Demo
@@ -108,18 +111,18 @@ export default function Home() {
             {/* Trust Badges */}
             <div className="flex flex-col sm:flex-row gap-8 justify-center items-center pt-16 border-t border-white border-opacity-20 mt-16">
               <div className="text-center">
-                <div className="text-2xl font-bold text-accent">50+</div>
+                <div className="text-2xl font-bold text-accent">280+</div>
                 <div className="text-sm text-blue-100">Layout Variations</div>
               </div>
               <div className="hidden sm:block w-px h-12 bg-white bg-opacity-20"></div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-accent">7</div>
-                <div className="text-sm text-blue-100">Design Systems</div>
+                <div className="text-2xl font-bold text-accent">100+</div>
+                <div className="text-sm text-blue-100">Design Styles</div>
               </div>
               <div className="hidden sm:block w-px h-12 bg-white bg-opacity-20"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-accent">100%</div>
-                <div className="text-sm text-blue-100">AI-Powered</div>
+                <div className="text-sm text-blue-100">Customizable</div>
               </div>
             </div>
           </div>
@@ -143,13 +146,13 @@ export default function Home() {
               },
               {
                 icon: 'design',
-                title: '7 Premium Design Systems',
-                description: 'Minimal, Dark Studio, Scandinavian, Journal, Competition, Parametric, and Corporate themes.',
+                title: '100+ Design Styles',
+                description: 'Minimalist, Dark Studio, Scandinavian, Journal, Parametric, and Corporate styles tailored for design presentation.',
               },
               {
                 icon: 'ai',
-                title: 'AI-Powered Curation',
-                description: 'Intelligent layout recommendations based on your assets. Let AI find the perfect arrangement.',
+                title: 'Intelligent Curation',
+                description: 'Smart layout recommendations to match your project drawings. Arrange sheets effortlessly.',
               },
               {
                 icon: 'organize',
@@ -182,6 +185,32 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Built For Section */}
+      <section className="py-12 bg-bg-subtle border-t border-b border-gray-100 dark:border-white/5">
+        <div className="container-centered">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="max-w-md text-left">
+              <h3 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">Built Specifically For:</h3>
+              <p className="text-sm text-text-secondary dark:text-dark-text-secondary mt-1">Presenting architectural ideas at every stage of your design education and career.</p>
+            </div>
+            <div className="flex flex-wrap gap-3 justify-start md:justify-end max-w-2xl">
+              {[
+                "Internship Portfolio",
+                "Architecture Thesis",
+                "University Applications",
+                "Studio Work",
+                "Competition Submission"
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm">
+                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  <span className="text-sm font-medium text-text-primary dark:text-dark-text-primary">{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -235,6 +264,69 @@ export default function Home() {
                 <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{item.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Before / After Cosmo Section */}
+      <section className="py-20 md:py-28 bg-gray-50 dark:bg-dark-bg-primary relative overflow-hidden">
+        <div className="container-centered relative z-10">
+          <div className="text-center mb-16">
+            <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Comparison</span>
+            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">Ditch the Layout Struggle</h2>
+            <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto">Why spend late nights fighting with Photoshop or InDesign when you can design with structure?</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left">
+            {/* Before Column */}
+            <div className="glass-card rounded-3xl p-8 border border-red-500/10 shadow-lg relative overflow-hidden bg-red-500/5">
+              <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">Before Cosmo</div>
+              <h3 className="text-xl font-bold text-red-500 mb-6 flex items-center gap-2">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                The Traditional Nightmare
+              </h3>
+              <ul className="space-y-4">
+                {[
+                  { title: "Photoshop layers chaos", desc: "Manually adjusting 50+ hidden smart objects and layer masks." },
+                  { title: "Random Pinterest references", desc: "Copying snippets from multiple portfolios, resulting in messy visual layouts." },
+                  { title: "Hours arranging sheets", desc: "Losing sleep over standard grid alignments, margin sizing, and font sizes." },
+                  { title: "Huge, heavy files", desc: "Crashing tools, slow export times, and blurry compressed drawings." }
+                ].map((item, i) => (
+                  <li key={i} className="flex gap-3 items-start">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 flex-shrink-0"></div>
+                    <div>
+                      <h4 className="font-semibold text-text-primary dark:text-dark-text-primary text-sm">{item.title}</h4>
+                      <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* After Column */}
+            <div className="glass-card rounded-3xl p-8 border border-accent-gold/30 shadow-lg relative overflow-hidden bg-accent-gold/5">
+              <div className="absolute top-0 right-0 bg-accent-gold text-charcoal text-xs font-bold px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">With Cosmo</div>
+              <h3 className="text-xl font-bold text-accent-gold mb-6 flex items-center gap-2">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Sleek Design Curation
+              </h3>
+              <ul className="space-y-4">
+                {[
+                  { title: "Choose curated style", desc: "Select pre-aligned minimalist, parametric, or studio design styles instantly." },
+                  { title: "Drop & replace drawings", desc: "Drag plans, sections, and renders directly into correct template grids." },
+                  { title: "Instant A4 exports", desc: "Perfect PDF proportion margins rendered automatically on export." },
+                  { title: "Zero manual alignment", desc: "Built-in spacing, layouts, and typography grids keep pages crisp and clean." }
+                ].map((item, i) => (
+                  <li key={i} className="flex gap-3 items-start">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent-gold mt-2 flex-shrink-0"></div>
+                    <div>
+                      <h4 className="font-semibold text-text-primary dark:text-dark-text-primary text-sm">{item.title}</h4>
+                      <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -315,6 +407,51 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Ecosystem Coming Soon Section */}
+      <section className="py-20 bg-bg-subtle relative overflow-hidden">
+        <div className="container-centered relative z-10">
+          <div className="text-center mb-16">
+            <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Future Suite</span>
+            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">Cosmo Design Ecosystem</h2>
+            <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto">Get early access to our next generation of architectural design tools.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 text-left">
+            {[
+              {
+                title: "Cosmo Sheet",
+                subtitle: "AI Jury Boards",
+                desc: "Export your portfolio sheets directly into modular competition panels and print-ready jury boards automatically.",
+                badge: "Coming Q3"
+              },
+              {
+                title: "Cosmo Thesis",
+                subtitle: "AI Thesis Companion",
+                desc: "Format site analyses, diagrams, zoning flows, and design reports with intelligent layout guidelines.",
+                badge: "Coming Q4"
+              },
+              {
+                title: "Cosmo Library",
+                subtitle: "Your Architectural Journey",
+                desc: "A digital vault to store your CAD files, models, texture packs, and presentation graphics in one place.",
+                badge: "Coming Soon"
+              }
+            ].map((item, idx) => (
+              <div key={idx} className="glass-card p-8 rounded-3xl relative border border-white/20 dark:border-white/5 flex flex-col justify-between shadow-md hover:-translate-y-1 transition-all duration-300 bg-white/40 dark:bg-black/20">
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">{item.title}</h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10 text-accent-primary dark:text-accent-gold border border-accent-primary/20 dark:border-accent-gold/20 uppercase tracking-wider">{item.badge}</span>
+                  </div>
+                  <h4 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-widest mb-4">{item.subtitle}</h4>
+                  <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 md:py-28 bg-gradient-to-r from-primary to-primary-light text-white">
         <div className="container-centered text-center">
@@ -324,7 +461,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup" className="inline-block px-8 py-4 bg-white text-accent-primary font-semibold rounded-lg hover:shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 transition-all duration-300">
-              Start Free Today
+              Create Your Portfolio
             </Link>
             <button className="glass px-8 py-4 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/30">
               Learn More
