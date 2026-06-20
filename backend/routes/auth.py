@@ -56,7 +56,7 @@ def _decode_jwt_payload(token: str) -> dict:
 
 
 def get_current_user_from_token(authorization: str = None):
-    """Extract and verify Firebase token from Authorization header (with best-effort manual decoding fallback)"""
+    """Extract and verify Firebase token from Authorization header (with secure cryptographic fallback)"""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token")
 
@@ -68,27 +68,48 @@ def get_current_user_from_token(authorization: str = None):
     try:
         from firebase_config import firebase_app
         if firebase_app:
-            return verify_firebase_token(token)
+            decoded = verify_firebase_token(token)
+            return decoded
     except Exception:
         pass
 
-    # Method 2: Fallback to decoding JWT payload manually (e.g. if Firebase Admin is not initialized)
+    # Method 2: Firebase Cryptographic Fallback (using Google's certificates directly)
     try:
-        payload = _decode_jwt_payload(token)
-        user_id = (
-            payload.get("sub") or
-            payload.get("user_id") or
-            payload.get("uid") or
-            payload.get("id")
-        )
-        if user_id and str(user_id) not in ("", "undefined", "null"):
-            return {
-                "uid": str(user_id),
-                "email": payload.get("email", ""),
-                "name": payload.get("name", "")
-            }
+        from .deps import verify_firebase_token_fallback
+        verified_user = verify_firebase_token_fallback(token)
+        return {
+            "uid": verified_user["user_id"],
+            "email": verified_user["email"],
+            "name": ""
+        }
     except Exception:
         pass
+
+    # Method 3: Fallback to decoding JWT payload manually (DEBUG fallback ONLY)
+    if settings.DEBUG or os.getenv("DEBUG", "").lower() in ("true", "1", "t"):
+        try:
+            import time
+            payload = _decode_jwt_payload(token)
+            
+            # Check expiration
+            exp = payload.get("exp")
+            if exp and time.time() > exp:
+                raise ValueError("Token has expired")
+
+            user_id = (
+                payload.get("sub") or
+                payload.get("user_id") or
+                payload.get("uid") or
+                payload.get("id")
+            )
+            if user_id and str(user_id) not in ("", "undefined", "null"):
+                return {
+                    "uid": str(user_id),
+                    "email": payload.get("email", ""),
+                    "name": payload.get("name", "")
+                }
+        except Exception:
+            pass
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

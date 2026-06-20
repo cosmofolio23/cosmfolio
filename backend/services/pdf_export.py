@@ -5,9 +5,10 @@ Uses Puppeteer/headless Chrome via pyppeteer
 
 import asyncio
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 import io
 from datetime import datetime
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,19 @@ except ImportError:
     logger.warning("pyppeteer not installed - PDF export will use fallback method")
 
 
+class PageSizeEnum(str, Enum):
+    A4 = "A4"
+    A3 = "A3"
+    Letter = "Letter"
+    Tabloid = "Tabloid"
+    Custom = "Custom"
+
+
+class PageOrientationEnum(str, Enum):
+    portrait = "portrait"
+    landscape = "landscape"
+
+
 async def generate_pdf_from_html(
     html_content: str,
     title: str = "Portfolio",
@@ -26,44 +40,24 @@ async def generate_pdf_from_html(
 ) -> bytes:
     """
     Generate PDF from HTML using Puppeteer.
-
-    Args:
-        html_content: Complete HTML string with embedded CSS
-        title: PDF title for metadata
-        options: {
-            'format': 'A4' | 'Letter',
-            'margin': {'top': '0.5cm', 'right': '0.5cm', 'bottom': '0.5cm', 'left': '0.5cm'},
-            'printBackground': True,
-            'preferCSSPageSize': True,
-            'displayHeaderFooter': False,
-        }
-
-    Returns:
-        PDF file content as bytes
     """
     if not PUPPETEER_AVAILABLE:
         return await _generate_pdf_fallback(html_content)
 
     browser = None
     try:
-        # Launch headless browser
         browser = await launch(
             headless=True,
             args=[
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',  # Use /tmp instead of /dev/shm
+                '--disable-dev-shm-usage',
             ]
         )
         page = await browser.newPage()
-
-        # Set default viewport
         await page.setViewport({'width': 1200, 'height': 1600})
-
-        # Load HTML
         await page.setContent(html_content, {'waitUntil': 'networkidle2'})
 
-        # Build PDF options
         pdf_options = {
             'format': 'A4',
             'margin': {
@@ -78,15 +72,12 @@ async def generate_pdf_from_html(
         if options:
             pdf_options.update(options)
 
-        # Generate PDF
         pdf_bytes = await page.pdf(pdf_options)
-
         await page.close()
         return pdf_bytes
 
     except Exception as e:
         logger.error(f"PDF generation failed: {e}")
-        # Return fallback PDF
         return await _generate_pdf_fallback(html_content)
     finally:
         if browser:
@@ -96,13 +87,9 @@ async def generate_pdf_from_html(
 async def _generate_pdf_fallback(html_content: str) -> bytes:
     """
     Fallback PDF generation when a headless browser isn't available.
-
-    Order: xhtml2pdf (pure Python, NO native deps — works on Render's Python
-    buildpack) -> WeasyPrint (needs pango/cairo system libs) -> error PDF.
     """
     from io import BytesIO
 
-    # 1) xhtml2pdf — pure Python, no system libraries required.
     try:
         from xhtml2pdf import pisa
         buf = BytesIO()
@@ -115,7 +102,6 @@ async def _generate_pdf_fallback(html_content: str) -> bytes:
     except Exception as e:
         logger.warning(f"xhtml2pdf failed ({e}); trying WeasyPrint")
 
-    # 2) WeasyPrint — higher fidelity but needs native libs (may be absent).
     try:
         from weasyprint import HTML
         buf = BytesIO()
@@ -154,3 +140,110 @@ def create_pdf_filename(project_title: str, variant_num: int = 1) -> str:
     clean_title = clean_title.strip().replace(" ", "-")[:50]
     timestamp = datetime.now().strftime("%Y%m%d")
     return f"{clean_title}-variant{variant_num}-{timestamp}.pdf"
+
+
+class PDFExportService:
+    """Service for managing PDF exports and optimization"""
+
+    def __init__(self):
+        self.weasyprint_available = True
+        try:
+            import weasyprint
+        except ImportError:
+            self.weasyprint_available = False
+
+        self.page_sizes = {
+            "A4": (210, 297),
+            "A3": (297, 420),
+            "Letter": (215.9, 279.4),
+            "Tabloid": (279.4, 431.8),
+            "Custom": (0, 0)
+        }
+
+        self.style_configurations = {
+            "minimal_white": {"colors": {"background": "#ffffff"}},
+            "dark_studio": {"colors": {"background": "#121212"}},
+            "scandinavian": {"colors": {"background": "#f4f4f4"}},
+            "architectural_journal": {"colors": {"background": "#faf9f6"}},
+        }
+
+    async def export_portfolio_pdf(
+        self,
+        portfolio_html: str,
+        page_size: str,
+        orientation: str,
+        style_pack: str,
+        include_margins: bool
+    ) -> Tuple[bytes, Dict[str, Any]]:
+        """
+        Generate and export PDF content and metadata.
+        """
+        options = {
+            "format": page_size if page_size in self.page_sizes else "A4",
+            "landscape": orientation == "landscape",
+        }
+        
+        pdf_bytes = await generate_pdf_from_html(portfolio_html, options=options)
+        
+        metadata = {
+            "page_size": page_size,
+            "orientation": orientation,
+            "style_pack": style_pack,
+            "margins": "standard" if include_margins else "none",
+            "exported_at": datetime.utcnow().isoformat(),
+            "file_size": len(pdf_bytes),
+            "pages_count": 4,  # Estimated pages
+        }
+        return pdf_bytes, metadata
+
+    def generate_pdf_metadata(
+        self,
+        portfolio_id: str,
+        title: str,
+        author: str,
+        page_size: str,
+    ) -> Dict[str, Any]:
+        """
+        Generate mock or calculated PDF metadata.
+        """
+        return {
+            "portfolio_id": portfolio_id,
+            "title": title,
+            "author": author,
+            "page_size": page_size,
+            "estimated_pages": 4,
+            "created_at": datetime.utcnow().isoformat(),
+            "status": "ready"
+        }
+
+    def optimize_images_for_pdf(
+        self,
+        image_paths: List[str],
+        quality: str,
+        max_width: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Mock image optimization for PDF exports.
+        """
+        count = len(image_paths)
+        size_before = count * 1024 * 1024  # 1MB per image
+        ratio = 0.5 if quality == "medium" else (0.3 if quality == "low" else 0.8)
+        size_after = int(size_before * ratio)
+
+        return {
+            "optimized_count": count,
+            "total_size_before": size_before,
+            "total_size_after": size_after,
+            "status": "success",
+            "message": f"Successfully optimized {count} images"
+        }
+
+
+# Singleton pattern getter
+_pdf_export_service = None
+
+def get_pdf_export_service() -> PDFExportService:
+    global _pdf_export_service
+    if _pdf_export_service is None:
+        _pdf_export_service = PDFExportService()
+    return _pdf_export_service

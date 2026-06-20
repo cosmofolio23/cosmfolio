@@ -35,6 +35,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add Security & Rate Limiting Middlewares (Phase 7: Complete Security Implementation)
+try:
+    from middleware.rate_limit import RateLimitMiddleware
+    from middleware.security import SecurityHeadersMiddleware
+    
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RateLimitMiddleware)
+    print("[OK] Security and Rate Limiting middlewares registered")
+except Exception as e:
+    print(f"[WARNING] Failed to register security/rate limit middlewares: {e}")
+
 # Register error handlers so custom exceptions (CosmoFolioException, etc.) return
 # proper JSON responses *through* the CORS middleware. Without this, an unhandled
 # exception (e.g. a failed asset upload) bubbles to Starlette's ServerErrorMiddleware
@@ -73,7 +84,7 @@ except Exception as e:
 # Try to load routes (but don't crash if they fail)
 print("[STARTUP] Loading routes...")
 try:
-    from routes import auth, projects, assets, portfolios, publication, documents
+    from routes import auth, projects, assets, portfolios, publication, documents, search, versioning, portfolio_pages, layout_customization, optimization, preview_export
     print("[OK] Core routes loaded")
 
     # Include routers - each prefix carefully chosen based on routes inside the file
@@ -81,8 +92,19 @@ try:
     app.include_router(projects.router, prefix="/api/projects", tags=["projects"])  # routes: "", /{id}
     app.include_router(assets.router, prefix="/api/projects", tags=["assets"])  # routes: /{portfolio_id}/assets/...
     app.include_router(documents.router, prefix="/api/projects", tags=["documents"])  # routes: /{project_id}/document
+    app.include_router(publication.router, tags=["publication"])  # prefix is already defined in router as /api/portfolios
     app.include_router(portfolios.router, prefix="/api/portfolios", tags=["portfolios"])  # routes: /{project_id}/generate
-    app.include_router(publication.router, prefix="/api/portfolios", tags=["publication"])  # routes: /{portfolio_id}/publish
+    app.include_router(publication.public_router, prefix="/api/portfolios", tags=["public-portfolios"])
+    
+    # Asset Search & Versioning routers (missing pre-launch registrations)
+    app.include_router(search.router, prefix="/api/portfolios", tags=["search"])
+    app.include_router(versioning.router, prefix="/api/portfolios", tags=["versioning"])
+
+    # Page composition, customization, optimization & export routers
+    app.include_router(portfolio_pages.router, prefix="/api/portfolios", tags=["portfolio-pages"])
+    app.include_router(layout_customization.router, prefix="/api/portfolios", tags=["layout-customization"])
+    app.include_router(optimization.router, prefix="/api/portfolios", tags=["optimization"])
+    app.include_router(preview_export.router, prefix="/api/portfolios", tags=["preview-export"])
 
 except Exception as e:
     print(f"[WARNING] Failed to load some routes: {type(e).__name__}: {e}")

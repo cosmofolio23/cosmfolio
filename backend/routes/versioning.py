@@ -16,6 +16,53 @@ from database import supabase
 
 router = APIRouter()
 
+
+# ==================== HELPERS ====================
+
+def _verify_portfolio_owner(portfolio_id: str, user_id: str) -> str:
+    """Verify ownership of project/portfolio and return owner user_id"""
+    owner_id = None
+    try:
+        # Check projects table first (since portfolio_id is project_id from the frontend)
+        project = supabase.table("projects").select("user_id").eq("id", portfolio_id).execute()
+        if project.data:
+            owner_id = project.data[0]["user_id"]
+        else:
+            # If not in projects, try portfolios table
+            portfolio = supabase.table("portfolios").select("project_id").eq("id", portfolio_id).execute()
+            if portfolio.data:
+                parent_project_id = portfolio.data[0]["project_id"]
+                project = supabase.table("projects").select("user_id").eq("id", parent_project_id).execute()
+                if project.data:
+                    owner_id = project.data[0]["user_id"]
+    except Exception as e:
+        print(f"[WARNING] Error verifying portfolio owner: {e}")
+        
+    if not owner_id:
+        raise ResourceNotFoundException("Project or Portfolio", portfolio_id)
+        
+    if owner_id != user_id:
+        raise AuthorizationException()
+        
+    return owner_id
+
+
+def _get_asset_record(asset_id: str, portfolio_id: str):
+    """Fetch asset safely trying project_id first, then falling back to portfolio_id"""
+    try:
+        res = supabase.table("assets").select("*").eq("id", asset_id).eq("project_id", portfolio_id).execute()
+        if res.data:
+            return res
+    except Exception:
+        pass
+        
+    # Fallback to portfolio_id
+    res = supabase.table("assets").select("*").eq("id", asset_id).eq("portfolio_id", portfolio_id).execute()
+    if not res.data:
+        raise ResourceNotFoundException("Asset", asset_id)
+    return res
+
+
 # ==================== VERSION HISTORY ====================
 
 @router.get("/{portfolio_id}/assets/{asset_id}/versions")
@@ -32,22 +79,11 @@ async def get_asset_versions(
     Returns paginated list of versions
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Verify asset exists
-        asset = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
-
-        if not asset.data:
-            raise ResourceNotFoundException("Asset", asset_id)
+        asset = _get_asset_record(asset_id, portfolio_id)
 
         # Get version history
         versioning_service = get_versioning_service()
@@ -92,22 +128,11 @@ async def get_asset_version(
     Returns: {version_num, file_size, mime_type, created_at, storage_path, notes}
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Verify asset exists
-        asset = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
-
-        if not asset.data:
-            raise ResourceNotFoundException("Asset", asset_id)
+        asset = _get_asset_record(asset_id, portfolio_id)
 
         # Get version
         versioning_service = get_versioning_service()
@@ -149,22 +174,11 @@ async def restore_asset_version(
     Creates a new version record with restoration notes
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Verify asset exists
-        asset = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
-
-        if not asset.data:
-            raise ResourceNotFoundException("Asset", asset_id)
+        asset = _get_asset_record(asset_id, portfolio_id)
 
         # Restore version
         versioning_service = get_versioning_service()
@@ -207,22 +221,11 @@ async def compare_asset_versions(
     Returns: differences in file size, mime type, storage location
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Verify asset exists
-        asset = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
-
-        if not asset.data:
-            raise ResourceNotFoundException("Asset", asset_id)
+        asset = _get_asset_record(asset_id, portfolio_id)
 
         # Compare versions
         versioning_service = get_versioning_service()
@@ -275,22 +278,11 @@ async def cleanup_old_versions(
     Returns: {deleted_count, kept_count}
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Verify asset exists
-        asset = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
-
-        if not asset.data:
-            raise ResourceNotFoundException("Asset", asset_id)
+        asset = _get_asset_record(asset_id, portfolio_id)
 
         # Cleanup versions
         versioning_service = get_versioning_service()
@@ -327,14 +319,8 @@ async def get_portfolio_versioning_stats(
     Returns: total_assets, total_versions, avg_versions_per_asset
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get stats
         versioning_service = get_versioning_service()
@@ -357,3 +343,4 @@ async def get_portfolio_versioning_stats(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+

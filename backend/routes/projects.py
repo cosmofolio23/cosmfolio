@@ -56,12 +56,21 @@ async def get_project(project_id: str, authorization: str = Header(None)):
 async def update_project(project_id: str, req: ProjectUpdate, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     try:
+        # Check ownership first
+        existing = supabase.table("projects").select("*").eq("id", project_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        if existing.data[0]["user_id"] != current_user["user_id"]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
         update_data = req.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow().isoformat()
         if "project_type" in update_data and update_data["project_type"]:
             update_data["project_type"] = update_data["project_type"].value
         response = supabase.table("projects").update(update_data).eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
         return response.data[0] if response.data else None
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -69,8 +78,17 @@ async def update_project(project_id: str, req: ProjectUpdate, authorization: str
 async def delete_project(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     try:
+        # Check ownership first
+        existing = supabase.table("projects").select("*").eq("id", project_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        if existing.data[0]["user_id"] != current_user["user_id"]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
         supabase.table("projects").delete().eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
         return {"message": "Project deleted"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -145,7 +163,9 @@ async def unpublish_project(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     try:
         # Verify ownership
-        supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        response = supabase.table("projects").select("*").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
         # Update project
         update_data = {
@@ -156,6 +176,8 @@ async def unpublish_project(project_id: str, authorization: str = Header(None)):
         supabase.table("projects").update(update_data).eq("id", project_id).execute()
 
         return {"message": "Project unpublished", "is_published": False}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

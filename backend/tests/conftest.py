@@ -78,12 +78,30 @@ def test_asset():
     }
 
 
+import base64
+import json
+import time
+
+def create_mock_jwt(user_id: str, email: str = "test@example.com", expired: bool = False) -> str:
+    header = {"alg": "HS256", "typ": "JWT"}
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "name": "Test User",
+        "exp": int(time.time()) - 3600 if expired else int(time.time()) + 3600
+    }
+    header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
+    payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+    signature = "dummy_signature"
+    return f"{header_b64}.{payload_b64}.{signature}"
+
+
 @pytest.fixture
 def auth_headers(test_user):
     """Create authorization headers for testing"""
-    # This would use a test token in production
+    token = create_mock_jwt(test_user["user_id"], test_user["email"])
     return {
-        "Authorization": f"Bearer test_token_{test_user['user_id']}"
+        "Authorization": f"Bearer {token}"
     }
 
 

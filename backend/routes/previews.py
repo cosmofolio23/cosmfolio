@@ -16,6 +16,53 @@ from database import supabase
 
 router = APIRouter()
 
+
+# ==================== HELPERS ====================
+
+def _verify_portfolio_owner(portfolio_id: str, user_id: str) -> str:
+    """Verify ownership of project/portfolio and return owner user_id"""
+    owner_id = None
+    try:
+        # Check projects table first (since portfolio_id is project_id from the frontend)
+        project = supabase.table("projects").select("user_id").eq("id", portfolio_id).execute()
+        if project.data:
+            owner_id = project.data[0]["user_id"]
+        else:
+            # If not in projects, try portfolios table
+            portfolio = supabase.table("portfolios").select("project_id").eq("id", portfolio_id).execute()
+            if portfolio.data:
+                parent_project_id = portfolio.data[0]["project_id"]
+                project = supabase.table("projects").select("user_id").eq("id", parent_project_id).execute()
+                if project.data:
+                    owner_id = project.data[0]["user_id"]
+    except Exception as e:
+        print(f"[WARNING] Error verifying portfolio owner: {e}")
+        
+    if not owner_id:
+        raise ResourceNotFoundException("Project or Portfolio", portfolio_id)
+        
+    if owner_id != user_id:
+        raise AuthorizationException()
+        
+    return owner_id
+
+
+def _get_asset_record(asset_id: str, portfolio_id: str):
+    """Fetch asset safely trying project_id first, then falling back to portfolio_id"""
+    try:
+        res = supabase.table("assets").select("*").eq("id", asset_id).eq("project_id", portfolio_id).execute()
+        if res.data:
+            return res
+    except Exception:
+        pass
+        
+    # Fallback to portfolio_id
+    res = supabase.table("assets").select("*").eq("id", asset_id).eq("portfolio_id", portfolio_id).execute()
+    if not res.data:
+        raise ResourceNotFoundException("Asset", asset_id)
+    return res
+
+
 # ==================== THUMBNAIL ENDPOINTS ====================
 
 @router.get("/{portfolio_id}/assets/{asset_id}/preview")
@@ -36,19 +83,11 @@ async def get_asset_preview(
     - **accept**: Accept header for format negotiation
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -120,19 +159,11 @@ async def get_blur_placeholder(
     - **quality**: Compression quality (20-100)
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -178,19 +209,11 @@ async def get_preview_metadata(
     Returns: width, height, aspect_ratio, dominant_color, preview_urls, srcset
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -226,19 +249,11 @@ async def get_responsive_config(
     Returns: src, srcSet, sizes, alt, loading, width, height
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -278,19 +293,11 @@ async def get_thumbnail_variants(
     Returns: Dictionary of size -> {url, width, height, quality}
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset (just to verify it exists)
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -324,14 +331,8 @@ async def get_preview_statistics(
     Returns: total_assets, thumbnail_status breakdown, storage estimates
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         preview_service = get_preview_service()
         stats = await preview_service.get_preview_stats(portfolio_id)
@@ -364,19 +365,11 @@ async def get_srcset(
     Format: url 250w, url 500w, url 1200w
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset (just to verify it exists)
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -415,19 +408,11 @@ async def get_dominant_color(
     Returns: {color: "#RRGGBB", rgb: (r, g, b), hex: "RRGGBB"}
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -467,14 +452,8 @@ async def get_batch_preview_metadata(
     Useful for loading multiple assets on a page
     """
     try:
-        # Verify portfolio ownership
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-
-        if not portfolio.data:
-            raise ResourceNotFoundException("Portfolio", portfolio_id)
-
-        if portfolio.data[0]["user_id"] != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         preview_service = get_preview_service()
         results = {}

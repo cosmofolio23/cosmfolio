@@ -99,7 +99,8 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         # Check export limit (supabase is imported at module level)
         user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
         export_count = 0
-        if user_resp.data:
+        is_bypass = current_user.get("email") == "boseraj001@gmail.com"
+        if user_resp.data and not is_bypass:
             export_count = user_resp.data[0].get("export_count") or 0
             if export_count >= 3:
                 raise HTTPException(status_code=403, detail="FREE_TIER_LIMIT_REACHED")
@@ -142,6 +143,43 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"PDF export failed: {str(e)[:100]}")
+
+
+@router.post("/{project_id}/document/track-export")
+async def track_export(project_id: str, authorization: str = Header(None)):
+    """Increment export count after a successful client-side PDF export.
+    
+    The editor uses browser print-to-PDF (not the server xhtml2pdf path),
+    so we need a separate endpoint to keep the server-side counter in sync
+    for the admin dashboard.
+    """
+    current_user = get_current_user(authorization)
+    _verify_owner(project_id, current_user["user_id"])
+    try:
+        user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+        export_count = 0
+        if user_resp.data:
+            export_count = user_resp.data[0].get("export_count") or 0
+        supabase.table("users").update({"export_count": export_count + 1}).eq("id", current_user["user_id"]).execute()
+        return {"export_count": export_count + 1, "limit": 3}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Track export failed: {str(e)[:100]}")
+
+
+@router.get("/{project_id}/document/export-count")
+async def get_export_count(project_id: str, authorization: str = Header(None)):
+    """Return current export count for client-side sync on editor load."""
+    current_user = get_current_user(authorization)
+    _verify_owner(project_id, current_user["user_id"])
+    try:
+        user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+        export_count = 0
+        if user_resp.data:
+            export_count = user_resp.data[0].get("export_count") or 0
+        is_bypass = current_user.get("email") == "boseraj001@gmail.com"
+        return {"export_count": export_count, "limit": 3, "is_bypass": is_bypass}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Get export count failed: {str(e)[:100]}")
 
 
 def _render_document_to_html(doc: dict) -> str:

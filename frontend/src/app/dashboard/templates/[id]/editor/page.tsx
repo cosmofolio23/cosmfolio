@@ -240,7 +240,7 @@ export default function TemplateEditor() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
-  const { isAuthenticated, token } = useAuthStore()
+  const { isAuthenticated, token, user } = useAuthStore()
   const templateId = params.id as string
 
   const [template, setTemplate] = useState<Template | null>(null)
@@ -281,6 +281,9 @@ export default function TemplateEditor() {
   const [documentVersion, setDocumentVersion] = useState<number>(0)
   const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [exportUsed, setExportUsed] = useState(0)
+  const [exportLimit] = useState(3)
+  const [exportBypass, setExportBypass] = useState(false)
   const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
   const [previewSpread, setPreviewSpread] = useState(false)
   const [editSpreadMode, setEditSpreadMode] = useState<boolean>(true)
@@ -569,6 +572,27 @@ export default function TemplateEditor() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated])
+
+  // Sync export count from server when projectId is available
+  useEffect(() => {
+    if (!projectId) return
+    const syncExportCount = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-count`, {
+          headers: { Authorization: `Bearer ${authToken()}` },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setExportUsed(data.export_count || 0)
+          setExportBypass(!!data.is_bypass)
+          // Also sync to localStorage for offline consistency
+          localStorage.setItem('cosmofolio_export_count_v2', String(data.export_count || 0))
+        }
+      } catch { /* silent fail — use localStorage fallback */ }
+    }
+    syncExportCount()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
 
   const init = async () => {
     const existingProject = searchParams.get('project')
@@ -1456,7 +1480,7 @@ export default function TemplateEditor() {
       await saveDocument()
       router.push('/dashboard/my-portfolios')
     } catch (e: any) {
-      flashUpload('err', `Save failed: ${e?.message || 'network error'}. Try again or check your connection.`)
+      flashUpload('err', `Save failed: ${e?.message || 'network error'}. Try again in a moment.`)
     } finally { setIsSaving(false) }
   }
 
@@ -1471,11 +1495,9 @@ export default function TemplateEditor() {
         flashUpload('info', `Note: Could not save latest changes. Exporting last saved version.`, 5000)
       }
 
-      // Free-tier export limit (client-side counter).
-      const EXPORT_KEY = 'cosmofolio_export_count'
-      const used = parseInt(localStorage.getItem(EXPORT_KEY) || '0', 10) || 0
-      if (used >= 3) {
-        flashUpload('err', 'You have reached your 3 free PDF exports! Pro Mode launching next week.', 8000)
+      // Free-tier export limit — use server-synced count
+      if (exportUsed >= exportLimit && !exportBypass) {
+        flashUpload('err', `You have used all ${exportLimit} free PDF exports! Pro version with unlimited exports coming soon.`, 8000)
         return
       }
 
@@ -1487,8 +1509,20 @@ export default function TemplateEditor() {
         flashUpload('err', 'Pop-up blocked. Allow pop-ups for this site, then click PDF again.', 8000)
         return
       }
-      localStorage.setItem(EXPORT_KEY, String(used + 1))
-      flashUpload('ok', '✓ Opening print view — choose “Save as PDF” in the dialog.', 6000)
+
+      // Increment both client-side and server-side counters
+      const newCount = exportUsed + 1
+      setExportUsed(newCount)
+      localStorage.setItem('cosmofolio_export_count_v2', String(newCount))
+
+      // Fire-and-forget server-side increment for admin dashboard accuracy
+      fetch(`${API_URL}/api/projects/${pid}/document/track-export`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` },
+      }).catch(() => { /* silent */ })
+
+      const remaining = exportLimit - newCount
+      flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
     } catch (e: any) {
       flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
     } finally {
@@ -1652,7 +1686,7 @@ export default function TemplateEditor() {
                 <button onClick={() => setPreviewSpread(false)} className={`px-3 py-1.5 font-medium ${!previewSpread ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>📄 Single</button>
                 <button onClick={() => setPreviewSpread(true)} className={`px-3 py-1.5 font-medium ${previewSpread ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>📖 Spread</button>
               </div>
-              <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900 disabled:opacity-50">{isExporting ? '⏳ Exporting…' : '📄 Export PDF'}</button>
+              <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900 disabled:opacity-50">{isExporting ? '⏳ Exporting…' : `📄 Export PDF${!exportBypass ? ` (${exportUsed}/${exportLimit})` : ''}`}</button>
               <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
             </div>
           </div>
@@ -1809,7 +1843,7 @@ export default function TemplateEditor() {
             <button onClick={toggleOrientation} className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50" title="Reflow page orientations (Portrait <-> Landscape)">🔄 Reflow Format</button>
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
             <button onClick={saveAsMyTemplate} className="px-3 py-2 border rounded-lg text-sm font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30" title="Save this design as a reusable template">⭐ Save Template</button>
-            <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title="Download as PDF">{isExporting ? '⏳' : '📄 PDF'}</button>
+            <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title={`Download as PDF${!exportBypass ? ` — ${exportLimit - exportUsed} of ${exportLimit} free exports remaining` : ''}`}>{isExporting ? '⏳' : `📄 PDF${!exportBypass ? ` ${exportUsed}/${exportLimit}` : ''}`}</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
         </div>

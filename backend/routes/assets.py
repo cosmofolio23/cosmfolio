@@ -30,6 +30,53 @@ from error_handlers import (
 
 router = APIRouter()
 
+
+# ==================== HELPERS ====================
+
+def _verify_portfolio_owner(portfolio_id: str, user_id: str) -> str:
+    """Verify ownership of project/portfolio and return owner user_id"""
+    owner_id = None
+    try:
+        # Check projects table first (since portfolio_id is project_id from the frontend)
+        project = supabase.table("projects").select("user_id").eq("id", portfolio_id).execute()
+        if project.data:
+            owner_id = project.data[0]["user_id"]
+        else:
+            # If not in projects, try portfolios table
+            portfolio = supabase.table("portfolios").select("project_id").eq("id", portfolio_id).execute()
+            if portfolio.data:
+                parent_project_id = portfolio.data[0]["project_id"]
+                project = supabase.table("projects").select("user_id").eq("id", parent_project_id).execute()
+                if project.data:
+                    owner_id = project.data[0]["user_id"]
+    except Exception as e:
+        print(f"[WARNING] Error verifying portfolio owner: {e}")
+        
+    if not owner_id:
+        raise ResourceNotFoundException("Project or Portfolio", portfolio_id)
+        
+    if owner_id != user_id:
+        raise AuthorizationException()
+        
+    return owner_id
+
+
+def _get_asset_record(asset_id: str, portfolio_id: str):
+    """Fetch asset safely trying project_id first, then falling back to portfolio_id"""
+    try:
+        res = supabase.table("assets").select("*").eq("id", asset_id).eq("project_id", portfolio_id).execute()
+        if res.data:
+            return res
+    except Exception:
+        pass
+        
+    # Fallback to portfolio_id
+    res = supabase.table("assets").select("*").eq("id", asset_id).eq("portfolio_id", portfolio_id).execute()
+    if not res.data:
+        raise ResourceNotFoundException("Asset", asset_id)
+    return res
+
+
 # ==================== ASSET UPLOAD ====================
 
 @router.post("/{portfolio_id}/assets")
@@ -43,22 +90,8 @@ async def upload_asset(
 ):
     """Upload single asset file"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Validate asset type
         valid_types = ["render", "plan", "section", "diagram", "detail", "material",
@@ -230,22 +263,8 @@ async def bulk_upload_assets(
 ):
     """Upload multiple assets at once"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Upload batch (uploads to storage)
         upload_manager = get_upload_manager()
@@ -356,22 +375,8 @@ async def list_assets(
 ):
     """List portfolio assets with filtering and sorting"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Build query - use project_id (actual column name in DB)
         # Try project_id first, fall back to portfolio_id if column doesn't exist
@@ -496,27 +501,11 @@ async def get_asset(
 ):
     """Get asset details with metadata and tags"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        response = _get_asset_record(asset_id, portfolio_id)
 
         if not response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -554,27 +543,11 @@ async def update_asset(
 ):
     """Update asset metadata and tags"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        response = _get_asset_record(asset_id, portfolio_id)
 
         if not response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -650,27 +623,11 @@ async def delete_asset(
 ):
     """Delete asset and all associated files"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        response = _get_asset_record(asset_id, portfolio_id)
 
         if not response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -709,27 +666,11 @@ async def get_asset_versions(
 ):
     """Get version history for asset"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -766,27 +707,11 @@ async def restore_asset_version(
 ):
     """Restore asset to previous version"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         # Get asset
-        asset_response = supabase.table("assets").select("*").eq(
-            "id", asset_id
-        ).eq("portfolio_id", portfolio_id).execute()
+        asset_response = _get_asset_record(asset_id, portfolio_id)
 
         if not asset_response.data:
             raise ResourceNotFoundException("Asset", asset_id)
@@ -844,22 +769,8 @@ async def get_upload_progress(
 ):
     """Get upload progress"""
     try:
-        # Verify ownership - check both portfolios AND projects tables
-        # (frontend uses project_id, but legacy code looks in portfolios)
-        owner_id = None
-        portfolio = supabase.table("portfolios").select("*").eq("id", portfolio_id).execute()
-        if portfolio.data:
-            owner_id = portfolio.data[0]["user_id"]
-        else:
-            # Try projects table (frontend uses project_id here)
-            project = supabase.table("projects").select("*").eq("id", portfolio_id).execute()
-            if project.data:
-                owner_id = project.data[0]["user_id"]
-            else:
-                raise ResourceNotFoundException("Project", portfolio_id)
-
-        if owner_id != current_user["user_id"]:
-            raise AuthorizationException()
+        # Verify ownership
+        _verify_portfolio_owner(portfolio_id, current_user["user_id"])
 
         upload_manager = get_upload_manager()
         progress = upload_manager.get_upload_progress(upload_id)

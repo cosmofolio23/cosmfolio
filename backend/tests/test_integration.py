@@ -12,6 +12,8 @@ from datetime import datetime
 from main import app
 
 
+from tests.conftest import create_mock_jwt
+
 # ==================== SETUP ====================
 
 @pytest.fixture
@@ -23,10 +25,44 @@ def client():
 @pytest.fixture
 def auth_headers():
     """Generate authorization headers"""
+    token = create_mock_jwt("user_456", "user456@example.com")
     return {
-        "Authorization": "Bearer test_token_123",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
+
+
+@pytest.fixture(autouse=True)
+def mock_supabase_db():
+    """Mock Supabase DB operations for publication routes"""
+    with patch('routes.publication.supabase') as mock_db:
+        class TableQuery:
+            def __init__(self, table_name):
+                self.table_name = table_name
+                self.filters = {}
+                
+            def select(self, *args, **kwargs):
+                return self
+                
+            def eq(self, field, value):
+                self.filters[field] = value
+                return self
+                
+            def execute(self):
+                if self.table_name == "portfolios":
+                    p_id = self.filters.get("id")
+                    if p_id == "port_123":
+                        return Mock(data=[{"project_id": "proj_123"}])
+                    return Mock(data=[])
+                elif self.table_name == "projects":
+                    proj_id = self.filters.get("id")
+                    if proj_id == "proj_123":
+                        return Mock(data=[{"user_id": "user_456"}])
+                    return Mock(data=[])
+                return Mock(data=[])
+                
+        mock_db.table.side_effect = lambda name: TableQuery(name)
+        yield mock_db
 
 
 # ==================== WORKFLOW TESTS ====================
@@ -34,7 +70,7 @@ def auth_headers():
 class TestPortfolioWorkflow:
     """Integration tests for complete portfolio workflow"""
 
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_publication_service')
     def test_publish_portfolio_workflow(self, mock_pub_service, client, auth_headers):
         """Test: Create → Design → Publish → Share workflow"""
 
@@ -60,7 +96,7 @@ class TestPortfolioWorkflow:
         assert data["status"] == "published"
         assert "public_url" in data
 
-    @patch('services.social_export.get_social_export_service')
+    @patch('routes.publication.get_social_export_service')
     def test_share_to_social_workflow(self, mock_social_service, client, auth_headers):
         """Test: Generate social preview → Share workflow"""
 
@@ -87,7 +123,7 @@ class TestPortfolioWorkflow:
         assert "preview_card" in data
         assert data["preview_card"]["platform"] == "linkedin"
 
-    @patch('services.download_export.get_download_export_service')
+    @patch('routes.publication.get_download_export_service')
     def test_download_workflow(self, mock_download_service, client, auth_headers):
         """Test: Export → Download workflow"""
 
@@ -120,13 +156,13 @@ class TestPortfolioWorkflow:
 class TestPublicationAPI:
     """Integration tests for Publication API endpoints"""
 
-    @patch('middleware.auth.get_current_user')
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_current_user')
+    @patch('routes.publication.get_publication_service')
     def test_publish_endpoint(self, mock_pub_service, mock_auth, client, auth_headers):
         """Test POST /api/portfolios/{id}/publish"""
 
         # Mock authentication
-        mock_auth.return_value = Mock(id="user_456", name="Jane Doe")
+        mock_auth.return_value = {"user_id": "user_456", "name": "Jane Doe"}
 
         # Mock service
         mock_service = Mock()
@@ -147,12 +183,12 @@ class TestPublicationAPI:
         assert response.status_code == 200
         assert response.json()["status"] == "published"
 
-    @patch('middleware.auth.get_current_user')
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_current_user')
+    @patch('routes.publication.get_publication_service')
     def test_get_public_link_endpoint(self, mock_pub_service, mock_auth, client, auth_headers):
         """Test GET /api/portfolios/{id}/public-link"""
 
-        mock_auth.return_value = Mock(id="user_456")
+        mock_auth.return_value = {"user_id": "user_456"}
 
         mock_service = Mock()
         mock_service.get_public_link_settings.return_value = {
@@ -171,12 +207,12 @@ class TestPublicationAPI:
         data = response.json()
         assert "public_url" in data
 
-    @patch('middleware.auth.get_current_user')
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_current_user')
+    @patch('routes.publication.get_publication_service')
     def test_share_endpoint(self, mock_pub_service, mock_auth, client, auth_headers):
         """Test POST /api/portfolios/{id}/share"""
 
-        mock_auth.return_value = Mock(id="user_456")
+        mock_auth.return_value = {"user_id": "user_456"}
 
         mock_service = Mock()
         mock_service.create_share_token.return_value = {
@@ -196,12 +232,12 @@ class TestPublicationAPI:
         data = response.json()
         assert "share_url" in data
 
-    @patch('middleware.auth.get_current_user')
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_current_user')
+    @patch('routes.publication.get_publication_service')
     def test_analytics_endpoint(self, mock_pub_service, mock_auth, client, auth_headers):
         """Test GET /api/portfolios/{id}/analytics"""
 
-        mock_auth.return_value = Mock(id="user_456")
+        mock_auth.return_value = {"user_id": "user_456"}
 
         mock_service = Mock()
         mock_service.get_analytics.return_value = {
@@ -227,7 +263,7 @@ class TestPublicationAPI:
 class TestErrorHandling:
     """Test error handling and edge cases"""
 
-    @patch('middleware.auth.get_current_user')
+    @patch('routes.publication.get_current_user')
     def test_unauthenticated_request(self, mock_auth, client):
         """Test request without authentication"""
 
@@ -244,19 +280,19 @@ class TestErrorHandling:
         """Test with invalid portfolio ID"""
 
         response = client.get(
-            "/api/portfolios/",
+            "/api/portfolios/non_existent_portfolio_id_123/public-link",
             headers=auth_headers,
         )
 
         assert response.status_code == 404
 
-    @patch('middleware.auth.get_current_user')
+    @patch('routes.publication.get_current_user')
     def test_service_exception_handling(self, mock_auth, client, auth_headers):
         """Test service exceptions are caught"""
 
-        mock_auth.return_value = Mock(id="user_456")
+        mock_auth.return_value = {"user_id": "user_456"}
 
-        with patch('services.publication.get_publication_service') as mock_service:
+        with patch('routes.publication.get_publication_service') as mock_service:
             mock_service.return_value.publish_portfolio.side_effect = Exception("Service error")
 
             response = client.post(
@@ -273,7 +309,7 @@ class TestErrorHandling:
 class TestConcurrency:
     """Test concurrent operations"""
 
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_publication_service')
     def test_concurrent_publishes(self, mock_pub_service):
         """Test concurrent portfolio publications"""
 
@@ -311,7 +347,7 @@ class TestCachingIntegration:
     """Test caching in integration workflows"""
 
     @patch('services.cache.get_cache_service')
-    @patch('services.publication.get_publication_service')
+    @patch('routes.publication.get_publication_service')
     def test_cache_hit_on_repeated_request(self, mock_pub_service, mock_cache, client, auth_headers):
         """Test cache hit on repeated requests"""
 

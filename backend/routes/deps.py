@@ -3,16 +3,80 @@ from fastapi import HTTPException, status, Header
 import base64
 import json
 import os
+import time
+import requests
+import jwt
+from config import settings
+
+_GOOGLE_CERTS_CACHE = {
+    "certs": {},
+    "expires_at": 0
+}
+
+def _get_google_public_certs() -> dict:
+    """Get Google's public certificates for Firebase ID token verification (with caching)"""
+    now = time.time()
+    if _GOOGLE_CERTS_CACHE["expires_at"] > now and _GOOGLE_CERTS_CACHE["certs"]:
+        return _GOOGLE_CERTS_CACHE["certs"]
+        
+    try:
+        res = requests.get(
+            "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com",
+            timeout=10
+        )
+        if res.status_code == 200:
+            certs = res.json()
+            _GOOGLE_CERTS_CACHE["certs"] = certs
+            # Cache for 1 hour
+            _GOOGLE_CERTS_CACHE["expires_at"] = now + 3600
+            return certs
+    except Exception as e:
+        print(f"[ERROR] Failed to fetch Google public certs: {e}")
+        
+    return _GOOGLE_CERTS_CACHE["certs"] or {}
+
+
+def verify_firebase_token_fallback(token: str) -> dict:
+    """
+    Verify Firebase ID token cryptographically using public certificates.
+    Useful when the Firebase Admin SDK is not initialized.
+    """
+    try:
+        header = jwt.get_unverified_header(token)
+        kid = header.get("kid")
+        if not kid:
+            raise ValueError("Token missing 'kid' header")
+            
+        certs = _get_google_public_certs()
+        cert_str = certs.get(kid)
+        if not cert_str:
+            raise ValueError(f"Matching certificate for kid {kid} not found")
+            
+        project_id = "cosmo-folio-62c7f"
+        
+        decoded = jwt.decode(
+            token,
+            cert_str,
+            algorithms=["RS256"],
+            audience=project_id,
+            issuer=f"https://securetoken.google.com/{project_id}"
+        )
+        return {
+            "user_id": decoded.get("sub") or decoded.get("uid"),
+            "email": decoded.get("email", ""),
+            "auth": "firebase_verified_fallback"
+        }
+    except Exception as e:
+        raise ValueError(f"Token verification failed: {e}")
 
 
 def _decode_jwt_payload(token: str) -> dict:
-    """Decode JWT payload without verification - works for any JWT (Firebase/Supabase/custom)"""
+    """Decode JWT payload without verification - ONLY used in local DEBUG mode"""
     try:
         parts = token.split(".")
         if len(parts) != 3:
             return {}
         payload_b64 = parts[1]
-        # Fix base64 padding
         payload_b64 += "=" * (4 - len(payload_b64) % 4)
         payload_bytes = base64.urlsafe_b64decode(payload_b64)
         return json.loads(payload_bytes.decode("utf-8"))
@@ -48,7 +112,14 @@ def get_current_user(authorization: str = Header(None)):
     except Exception:
         pass
 
-    # METHOD 2: Supabase auth.get_user
+    # METHOD 2: Firebase Cryptographic Fallback (using Google's certificates directly)
+    try:
+        verified_user = verify_firebase_token_fallback(token)
+        return verified_user
+    except Exception:
+        pass
+
+    # METHOD 3: Supabase auth.get_user
     try:
         from database import supabase
         if supabase:
@@ -62,27 +133,32 @@ def get_current_user(authorization: str = Header(None)):
     except Exception:
         pass
 
-    # METHOD 3: Decode JWT payload manually (no verification - works for Firebase/Supabase/any JWT)
-    try:
-        payload = _decode_jwt_payload(token)
-        # Firebase: sub = uid, user_id = uid
-        # Supabase: sub = user uuid
-        user_id = (
-            payload.get("sub") or
-            payload.get("user_id") or
-            payload.get("uid") or
-            payload.get("id")
-        )
-        email = payload.get("email", "")
+    # METHOD 4: Decode JWT payload manually (DEBUG fallback ONLY)
+    if settings.DEBUG or os.getenv("DEBUG", "").lower() in ("true", "1", "t"):
+        try:
+            payload = _decode_jwt_payload(token)
+            
+            # Check expiration
+            exp = payload.get("exp")
+            if exp and time.time() > exp:
+                raise ValueError("Token has expired")
 
-        if user_id and str(user_id) not in ("", "undefined", "null"):
-            return {
-                "user_id": str(user_id),
-                "email": email,
-                "auth": "jwt_decoded"
-            }
-    except Exception:
-        pass
+            user_id = (
+                payload.get("sub") or
+                payload.get("user_id") or
+                payload.get("uid") or
+                payload.get("id")
+            )
+            email = payload.get("email", "")
+
+            if user_id and str(user_id) not in ("", "undefined", "null"):
+                return {
+                    "user_id": str(user_id),
+                    "email": email,
+                    "auth": "jwt_decoded_debug_fallback"
+                }
+        except Exception:
+            pass
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
