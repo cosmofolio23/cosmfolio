@@ -166,6 +166,19 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
     ]
   })
 
+  // Hard cap total pages to the requested budget (free tier = 5). Keep the cover
+  // first and contact last; fill the middle preferring project pages.
+  if (list.length > targetPages) {
+    const cover = list[0]
+    const contact = list[list.length - 1]
+    const middle = list.slice(1, -1)
+    const slots = Math.max(0, targetPages - 2) // minus cover + contact
+    const projects = middle.filter(p => p.type === 'project')
+    const others = middle.filter(p => p.type !== 'project')
+    const keep = new Set([...projects, ...others].slice(0, slots))
+    const ordered = middle.filter(p => keep.has(p))
+    return [cover, ...ordered, contact].slice(0, targetPages)
+  }
   return list
 }
 
@@ -1367,8 +1380,8 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    if (pages.length >= 10) {
-      flashUpload('err', 'Free tier limit reached! Pro Mode with unlimited pages is launching next week.', 8000)
+    if (pages.length >= 5) {
+      flashUpload('err', 'Free tier is limited to 5 pages. Pro Mode with unlimited pages is launching next week.', 8000)
       return
     }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
