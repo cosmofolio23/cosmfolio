@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Header, Depends
-from .deps import get_current_user
+from .deps import get_current_user as get_current_user_from_deps
 from pydantic import BaseModel
 from datetime import datetime
 import json
@@ -378,7 +378,7 @@ async def logout(authorization: str = Header(None)):
 
 
 @router.get("/admin/users")
-async def get_admin_users(current_user: dict = Depends(get_current_user)):
+async def get_admin_users(current_user: dict = Depends(get_current_user_from_deps)):
     """
     Get all registered users for admin dashboard.
     Gated strictly for boseraj001@gmail.com
