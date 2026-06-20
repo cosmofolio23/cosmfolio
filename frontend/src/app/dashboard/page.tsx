@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { auth } from '@/lib/firebase'
 import { useAuthStore } from '@/store/auth'
 import { useEntitlements } from '@/store/entitlements'
 import { apiClient } from '@/lib/api'
@@ -57,11 +58,17 @@ export default function Dashboard() {
     if (!newProjectTitle.trim()) return
 
     try {
+      let currentToken = localStorage.getItem('auth_token')
+      if (auth.currentUser) {
+        currentToken = await auth.currentUser.getIdToken(true)
+        useAuthStore.getState().setToken(currentToken)
+      }
+
       // Create project with type
       const res = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/projects`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Authorization': `Bearer ${currentToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({

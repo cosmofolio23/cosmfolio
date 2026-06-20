@@ -9,6 +9,7 @@ import TemplateSpread from '@/components/templates/TemplateSpread'
 import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
 import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
 import SetupModal from '@/components/composer/SetupModal'
+import { auth } from '@/lib/firebase'
 
 type LibTab = 'portfolios' | LibraryView | 'mytemplates'
 const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
@@ -200,11 +201,17 @@ export default function TemplateMarketplace() {
 
   const handleUseTemplate = async (template: Template) => {
     try {
+      let currentToken = token || localStorage.getItem('auth_token')
+      if (auth.currentUser) {
+        currentToken = await auth.currentUser.getIdToken(true) // Force refresh
+        useAuthStore.getState().setToken(currentToken)
+      }
+
       // Create a new project from template
       const res = await fetch(`${API_URL}/api/projects`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token || localStorage.getItem('auth_token')}`,
+          Authorization: `Bearer ${currentToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -866,11 +873,16 @@ export default function TemplateMarketplace() {
               <button
                 onClick={async () => {
                   try {
-                    const savedToken = token || localStorage.getItem('auth_token')
+                    let savedToken = token || localStorage.getItem('auth_token')
                     if (!savedToken) {
                       alert('Please sign in to create a portfolio')
                       router.push('/signin')
                       return
+                    }
+
+                    if (auth.currentUser) {
+                      savedToken = await auth.currentUser.getIdToken(true)
+                      useAuthStore.getState().setToken(savedToken)
                     }
 
                     // Step 1: Create a new project
