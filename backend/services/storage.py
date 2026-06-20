@@ -340,8 +340,25 @@ class StorageClient:
             logger.info(f"Uploaded to Supabase: {file_path}")
 
         except Exception as e:
+            # The upsert flag isn't always honoured, so re-saving an existing path
+            # (e.g. documents/{id}.json on every autosave) can fail with a duplicate
+            # error. Fall back to update() so overwrites reliably persist.
+            msg = str(e).lower()
+            if any(s in msg for s in ("exist", "duplicate", "409", "conflict")):
+                try:
+                    bucket = self.supabase.storage.from_(self.config.SUPABASE_BUCKET)
+                    try:
+                        bucket.update(path=file_path, file=file_data,
+                                      file_options={"content-type": mime_type, "upsert": "true"})
+                    except TypeError:
+                        bucket.update(file_path, file_data,
+                                      {"content-type": mime_type, "upsert": "true"})
+                    logger.info(f"Updated existing Supabase object: {file_path}")
+                    return
+                except Exception as e2:
+                    logger.error(f"Supabase update fallback failed for {file_path}: {e2}")
+                    raise Exception(f"Supabase upload failed at {file_path}: {e2}") from e2
             logger.error(f"Supabase upload error for path {file_path}: {str(e)}")
-            # Re-raise with more context
             raise Exception(f"Supabase upload failed at {file_path}: {str(e)}") from e
 
     # ==================== DOWNLOAD OPERATIONS ====================
@@ -427,7 +444,13 @@ class StorageClient:
         return await self.get_public_url(path)
 
     async def download_json(self, path: str):
-        """Fetch a JSON document from storage. Returns parsed object or None if missing."""
+        """Fetch a JSON document from storage.
+
+        Returns the parsed object, or None if the document genuinely does not
+        exist yet. A real storage failure (permission / bucket / network) is
+        RAISED so the caller can report it instead of silently masking it as an
+        empty document — which would look to the user like 'nothing saved'.
+        """
         try:
             res = self.supabase.storage.from_(self.config.SUPABASE_BUCKET).download(path)
             if res is None:
@@ -436,8 +459,13 @@ class StorageClient:
                 return json.loads(res.decode("utf-8"))
             return json.loads(res)
         except Exception as e:
-            logger.info(f"No document at {path}: {e}")
-            return None
+            msg = str(e).lower()
+            if any(s in msg for s in ("not found", "does not exist", "not_found", "no such", "404", "keynotfound")):
+                logger.info(f"No document yet at {path}")
+                return None
+            # A genuine storage error — surface it instead of pretending it's empty.
+            logger.error(f"Storage read FAILED at {path}: {e}")
+            raise Exception(f"Storage read failed at {path}: {e}") from e
 
         raise Exception("No SUPABASE_URL configured - cannot generate public URL")
 

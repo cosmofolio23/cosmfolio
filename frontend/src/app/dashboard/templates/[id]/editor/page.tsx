@@ -545,6 +545,15 @@ export default function TemplateEditor() {
             loadedRef.current = true
             return
           }
+          // res ok + exists:false on a project we expected to have saved work →
+          // legitimately empty (brand-new project); fall through to seed.
+        } else {
+          // A real load failure (storage error) — DON'T silently overwrite with a
+          // fresh template; warn the user so saved work isn't lost.
+          let why = `status ${res.status}`
+          try { const e = await res.json(); why = e?.error?.message || e?.detail || why } catch {}
+          flashUpload('err', `Couldn't load your saved portfolio (${why}). Avoid editing and refresh in a moment.`, 0)
+          console.error('Document load failed:', why)
         }
       }
       // "My Template": hydrate a user-saved template from localStorage
