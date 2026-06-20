@@ -140,7 +140,7 @@ export default function PricingPage() {
               <h2 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Pro</h2>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
-                  {currency === 'INR' ? '₹299' : '$3.99'}
+                  {currency === 'INR' ? '₹299' : '$12'}
                 </span>
                 <span className="text-sm text-text-secondary dark:text-dark-text-secondary">one-time</span>
               </div>
