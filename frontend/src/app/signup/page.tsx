@@ -65,11 +65,11 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen aurora-bg flex items-center justify-center relative overflow-hidden">
-      <div className="glass-card rounded-2xl p-8 max-w-md w-full relative z-10 shadow-2xl">
+      <div className="glass-panel p-8 max-w-md w-full relative z-10">
         <div className="flex flex-col items-center mb-5">
-          <Logo size="lg" variant="gold" showWordmark />
+          <Logo size="lg" variant="gold" />
         </div>
-        <p className="text-center text-text-secondary dark:text-dark-text-secondary mb-8">Create your free account</p>
+        <p className="text-center text-stone-300 mb-8">Create your free account</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -79,7 +79,7 @@ export default function SignUp() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Full Name
             </label>
             <input
@@ -94,7 +94,7 @@ export default function SignUp() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 College/University
               </label>
               <input
@@ -107,7 +107,7 @@ export default function SignUp() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 State/Region
               </label>
               <input
@@ -123,7 +123,7 @@ export default function SignUp() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Graduation Year
               </label>
               <input
@@ -138,7 +138,7 @@ export default function SignUp() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Stream/Major
               </label>
               <select
@@ -160,7 +160,7 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Email
             </label>
             <input
@@ -174,7 +174,7 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Password
             </label>
             <div className="relative">
@@ -189,7 +189,7 @@ export default function SignUp() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-400 hover:text-white"
               >
                 {showPassword ? '👁️' : '👁️‍🗨️'}
               </button>
@@ -197,7 +197,7 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Confirm Password
             </label>
             <div className="relative">
@@ -212,7 +212,7 @@ export default function SignUp() {
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-400 hover:text-white"
               >
                 {showConfirm ? '👁️' : '👁️‍🗨️'}
               </button>
@@ -228,9 +228,9 @@ export default function SignUp() {
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-6">
+        <p className="text-center text-stone-400 mt-6">
           Already have an account?{' '}
-          <Link href="/signin" className="text-primary font-semibold hover:text-secondary">
+          <Link href="/signin" className="text-accent-gold font-semibold hover:text-white transition">
             Sign in
           </Link>
         </p>
@@ -240,7 +240,7 @@ export default function SignUp() {
             <div className="w-full border-t border-border-subtle dark:border-dark-border-subtle" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-transparent text-text-tertiary dark:text-dark-text-tertiary backdrop-blur-md">Or continue with</span>
+            <span className="px-2 bg-transparent text-stone-400 backdrop-blur-md">Or continue with</span>
           </div>
         </div>
 
@@ -258,7 +258,7 @@ export default function SignUp() {
           Sign up with Google
         </button>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <p className="text-xs text-stone-500 text-center mt-4">
           By signing up, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

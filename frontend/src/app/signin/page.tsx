@@ -42,11 +42,11 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen aurora-bg flex items-center justify-center relative overflow-hidden">
-      <div className="glass-card rounded-2xl p-8 max-w-md w-full relative z-10 shadow-2xl">
+      <div className="glass-panel p-8 max-w-md w-full relative z-10">
         <div className="flex flex-col items-center mb-5">
-          <Logo size="lg" variant="gold" showWordmark />
+          <Logo size="lg" variant="gold" />
         </div>
-        <p className="text-center text-text-secondary dark:text-dark-text-secondary mb-8">Sign in to your account</p>
+        <p className="text-center text-stone-300 mb-8">Sign in to your account</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -56,7 +56,7 @@ export default function SignIn() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Email
             </label>
             <input
@@ -70,7 +70,7 @@ export default function SignIn() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Password
             </label>
             <div className="relative">
@@ -85,7 +85,7 @@ export default function SignIn() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-400 hover:text-white"
               >
                 {showPassword ? '👁️' : '👁️‍🗨️'}
               </button>
@@ -106,7 +106,7 @@ export default function SignIn() {
             <div className="w-full border-t border-border-subtle dark:border-dark-border-subtle" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-transparent text-text-tertiary dark:text-dark-text-tertiary backdrop-blur-md">Or continue with</span>
+            <span className="px-2 bg-transparent text-stone-400 backdrop-blur-md">Or continue with</span>
           </div>
         </div>
 
@@ -124,9 +124,9 @@ export default function SignIn() {
           Sign in with Google
         </button>
 
-        <p className="text-center text-gray-600 mt-4">
+        <p className="text-center text-stone-400 mt-4">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-primary font-semibold hover:text-secondary">
+          <Link href="/signup" className="text-accent-gold font-semibold hover:text-white transition">
             Sign up
           </Link>
         </p>
