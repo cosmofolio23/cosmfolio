@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { Block, DesignTokens, LegendItem, MetaField } from './types'
 
 /* ----------------------------- Editable Text ----------------------------- */
@@ -39,6 +40,42 @@ export function EditableText({
   const [isSelected, setIsSelected] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [isPolishing, setIsPolishing] = useState(false)
+  const [tbPos, setTbPos] = useState<{ top: number; left: number } | null>(null)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  // Position the floating toolbar above the text in viewport (fixed) coords so it
+  // is never clipped by the page's overflow:hidden. getBoundingClientRect already
+  // accounts for the canvas CSS zoom.
+  const updateTbPos = () => {
+    const r = wrapperRef.current?.getBoundingClientRect()
+    if (r) setTbPos({ top: r.top, left: r.left + r.width / 2 })
+  }
+  useEffect(() => {
+    if (!isSelected) return
+    updateTbPos()
+    const h = () => updateTbPos()
+    window.addEventListener('scroll', h, true)
+    window.addEventListener('resize', h)
+    return () => { window.removeEventListener('scroll', h, true); window.removeEventListener('resize', h) }
+  }, [isSelected])
+
+  const beginEdit = () => {
+    setIsSelected(true)
+    setIsEditing(true)
+    setTimeout(() => {
+      updateTbPos()
+      ref.current?.focus()
+      if (ref.current) {
+        const range = document.createRange()
+        const sel = window.getSelection()
+        range.selectNodeContents(ref.current)
+        range.collapse(false)
+        sel?.removeAllRanges()
+        sel?.addRange(range)
+      }
+    }, 10)
+  }
 
   // Sync external value changes (e.g., AI auto-fill) when the element is NOT focused
   const prevValueRef = useRef(value)
@@ -100,7 +137,7 @@ export function EditableText({
         data-placeholder={placeholder}
         onClick={(e) => {
           e.stopPropagation()
-          setIsSelected(true)
+          beginEdit()
         }}
         onDoubleClick={handleDoubleClick}
         onKeyDown={(e) => {
@@ -121,11 +158,13 @@ export function EditableText({
         {value}
       </div>
 
-      {/* Floating Toolbar */}
-      {isSelected && onFormatChange && (
-        <div 
-          className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
-          onMouseDown={e => e.preventDefault()} // Prevent losing focus from editor
+      {/* Floating Toolbar — portalled to body so the page's overflow:hidden
+          never clips it (Google-Docs-style toolbar above the text). */}
+      {isSelected && onFormatChange && mounted && tbPos && createPortal(
+        <div
+          className="fixed z-[9999] flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
+          style={{ top: Math.max(8, tbPos.top - 8), left: tbPos.left, transform: 'translate(-50%, -100%)' }}
+          onMouseDown={e => { e.preventDefault(); e.stopPropagation() }} // keep editor focus + don't trigger click-outside deselect
           onClick={e => e.stopPropagation()}
         >
           <div className="flex items-center gap-1">
@@ -223,7 +262,8 @@ export function EditableText({
               </button>
             </>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
