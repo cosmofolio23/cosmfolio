@@ -61,6 +61,7 @@ const config: Config = {
         'slate-light': '#455A64',
         stone: '#78909C',
         'stone-light': '#90A4AE',
+        'stone-300': '#D6D3D1',
         ash: '#BDBDBD',
         cream: '#F5F5F0',
         success: '#2E7D32',
