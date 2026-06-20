@@ -468,6 +468,34 @@ export default function TemplateEditor() {
   const ensurePromiseRef = useRef<Promise<string> | null>(null)
   const markDirty = () => { dirtyRef.current = true }
 
+  // ── Canvas zoom (Photoshop-style: fit page on screen, then zoom in to scroll) ──
+  const canvasRef = useRef<HTMLElement>(null)
+  const [canvasZoom, setCanvasZoom] = useState(1)
+  const clampZoom = (z: number) => Math.max(0.15, Math.min(3, z))
+  const zoomIn = () => setCanvasZoom(z => clampZoom(+(z + 0.1).toFixed(2)))
+  const zoomOut = () => setCanvasZoom(z => clampZoom(+(z - 0.1).toFixed(2)))
+  const fitToScreen = () => {
+    const m = canvasRef.current
+    if (!m) return
+    const ps = publishingPortfolio.pageSize
+    const pad = 80
+    const pageW = Math.min(760, m.clientWidth - pad)
+    const isSpread = editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1
+    const effW = isSpread ? pageW * 2 : pageW
+    const pageH = effW * (ps.height / ps.width) / (isSpread ? 2 : 1)
+    const zH = (m.clientHeight - pad) / pageH
+    const zW = (m.clientWidth - pad) / effW
+    setCanvasZoom(clampZoom(Math.min(zH, zW, 1)))
+  }
+  // Fit the page to the canvas once the editor is ready and whenever the page
+  // shape changes (size or single/spread mode).
+  useEffect(() => {
+    if (isLoading) return
+    const id = window.setTimeout(fitToScreen, 50)
+    return () => window.clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, publishingPortfolio.pageSize, editSpreadMode])
+
   // Push state to history (called after mutations)
   const pushHistory = () => {
     const newHist = history.slice(0, historyIdx + 1)
@@ -1854,7 +1882,7 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main className={`${isMobile ? 'flex-1' : 'flex-1'} overflow-y-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40 overflow-x-hidden`}>
+        <main ref={canvasRef} className={`relative ${isMobile ? 'flex-1' : 'flex-1'} overflow-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
           <style>{`
             .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
             .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
@@ -1877,7 +1905,7 @@ export default function TemplateEditor() {
               const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
               const rightIdx = leftIdx + 1
               return (
-                <div className="flex gap-0 items-stretch justify-center mx-auto relative overflow-visible max-w-[1520px] select-none py-2">
+                <div className="flex gap-0 items-stretch justify-center mx-auto relative overflow-visible max-w-[1520px] select-none py-2" style={{ zoom: canvasZoom } as React.CSSProperties}>
                   {/* Left Page */}
                   <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
                     <PageComposer
@@ -1951,7 +1979,7 @@ export default function TemplateEditor() {
             })()
           ) : (
             /* Single Page Canvas (Covers, or when Spread Mode is disabled) */
-            <div className="max-w-[760px] mx-auto relative select-none">
+            <div className="max-w-[760px] mx-auto relative select-none" style={{ zoom: canvasZoom } as React.CSSProperties}>
               <PageComposer
                 page={currentPage}
                 tokens={tokens}
@@ -1981,6 +2009,17 @@ export default function TemplateEditor() {
               : `Page ${currentIdx + 1} of ${pages.length}`}
             {' · '}
             <span>Active Editing: {currentPage.type.toUpperCase()} layout ({getSpec(currentPage.layoutId).name})</span>
+          </div>
+
+          {/* Zoom controls — Photoshop-style; canvas scrolls when zoomed past the pane */}
+          <div className="sticky bottom-2 z-30 flex justify-center pointer-events-none mt-2">
+            <div className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">
+              <button onClick={zoomOut} title="Zoom out" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">−</button>
+              <button onClick={() => setCanvasZoom(1)} title="Reset to 100%" className="px-2 text-xs font-medium text-gray-700 tabular-nums min-w-[44px]">{Math.round(canvasZoom * 100)}%</button>
+              <button onClick={zoomIn} title="Zoom in" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">+</button>
+              <div className="w-px h-4 bg-gray-200 mx-0.5" />
+              <button onClick={fitToScreen} title="Fit page to screen" className="px-2.5 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-xs font-medium">Fit</button>
+            </div>
           </div>
         </main>
 
