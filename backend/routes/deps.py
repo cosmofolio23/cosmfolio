@@ -116,7 +116,8 @@ def get_current_user(authorization: str = Header(None)):
     try:
         verified_user = verify_firebase_token_fallback(token)
         return verified_user
-    except Exception:
+    except Exception as e:
+        print(f"[AUTH ERROR] Firebase Cryptographic Fallback failed: {e}")
         pass
 
     # METHOD 3: Supabase auth.get_user
