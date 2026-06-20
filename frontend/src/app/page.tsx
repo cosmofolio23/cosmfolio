@@ -353,31 +353,28 @@ export default function Home() {
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent-gold/5 rounded-full blur-3xl"></div>
             
             <div className="relative z-10 flex flex-col md:flex-row gap-12 items-center">
-              <div className="flex-1 space-y-6 text-text-secondary dark:text-dark-text-secondary">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-semibold mb-2">
+              <div className="flex-1 space-y-5 text-text-secondary dark:text-dark-text-secondary text-sm md:text-base">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs md:text-sm font-semibold mb-1">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   About the Founder
                 </div>
-                <h2 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary leading-tight">
+                <h2 className="text-2xl md:text-3xl font-bold text-text-primary dark:text-dark-text-primary leading-tight">
                   Great designs deserve great presentations.
                 </h2>
                 
-                <p>I am Ar. Bose Raj, an architect, educator, and digital design enthusiast exploring the intersection of architecture, technology, and artificial intelligence.</p>
-                <p>Throughout my journey as an architecture student and educator, I experienced one common challenge faced by almost every designer — we spend months creating meaningful projects, but countless hours struggling to present them.</p>
-                <p>Late nights arranging sheets, searching for portfolio references, adjusting layouts, fixing typography, and trying to make our work look as good as the ideas behind it became a familiar part of architectural education.</p>
-                <p className="font-semibold text-text-primary dark:text-dark-text-primary">That experience became the starting point for Cosmo Folio.</p>
+                <p>I am Ar. Bose Raj, an architect and educator. During my journey, I experienced a common challenge: designers spend months creating meaningful projects, but countless hours struggling to present them.</p>
+                <p>Late nights arranging sheets, adjusting layouts, and fixing typography became a frustrating part of architectural education.</p>
                 
-                <blockquote className="border-l-4 border-accent-primary pl-4 italic my-6 text-lg text-text-primary dark:text-dark-text-primary">
+                <blockquote className="border-l-4 border-accent-primary pl-4 italic my-4 text-base md:text-lg text-text-primary dark:text-dark-text-primary">
                   "Architects should spend more time designing ideas, not fighting with presentation layouts."
                 </blockquote>
                 
-                <p>Cosmo Folio is created specifically for architects and designers — understanding our drawings, our storytelling process, and the way we communicate design.</p>
-                <p>My vision is to build tools that help every designer present their creativity with confidence and make powerful architectural presentations accessible to everyone.</p>
+                <p>That experience inspired Cosmo Folio. My vision is to build intuitive tools that help every designer present their creativity with confidence, making powerful architectural presentations accessible to everyone.</p>
                 
                 <div className="pt-4 border-t border-gray-100 dark:border-white/10 mt-6 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg relative">
                     <Image 
-                      src="/founder.jpg"
+                      src="/Founder.png"
                       alt="Ar. Bose Raj"
                       fill
                       className="object-cover"
@@ -389,11 +386,11 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 flex justify-center mt-12 md:mt-0">
-                <div className="relative w-64 h-64 md:w-[400px] md:h-[400px] rounded-full md:rounded-[3rem] overflow-hidden border-4 md:border-8 border-white/20 shadow-2xl md:rotate-3 md:hover:rotate-0 transition-transform duration-500">
+              <div className="flex-1 flex justify-center mt-10 md:mt-0">
+                <div className="relative w-56 h-56 md:w-[320px] md:h-[320px] rounded-full md:rounded-[2rem] overflow-hidden border-4 md:border-8 border-white/20 shadow-2xl md:rotate-3 md:hover:rotate-0 transition-transform duration-500">
                   <Image 
                     src="/Founder.png"
-                    alt="P. Sushil Kumar - Founder"
+                    alt="Ar. Bose Raj - Founder"
                     fill
                     className="object-cover"
                   />
