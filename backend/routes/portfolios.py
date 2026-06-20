@@ -919,6 +919,20 @@ async def save_customization(
             ps["page_layouts"] = body["page_layouts"]
         # Full parametric composer document (pages + tokens) from the editor
         if body.get("composer_doc") is not None:
+            pages = body["composer_doc"].get("pages", [])
+            
+            # Check user limits
+            user_res = supabase.table("users").select("*").eq("id", current_user["user_id"]).execute()
+            user_data = user_res.data[0] if user_res.data else {}
+            is_free = user_data.get("subscription_tier", "free") == "free"
+            is_admin = current_user.get("email", "").lower() in ['boseraj001@gmail.com', 'boseraj008@gmail.com']
+            
+            if not is_admin:
+                if is_free and len(pages) > 5:
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Free tier is limited to 5 pages per portfolio. Please upgrade to Pro.")
+                elif not is_free and len(pages) > 30:
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Pro tier is limited to 30 pages per portfolio.")
+
             ps["composer_doc"] = body["composer_doc"]
 
         # Save back

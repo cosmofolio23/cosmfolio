@@ -41,15 +41,34 @@ async def export_portfolio_as_pdf(
         if not portfolio.data or portfolio.data[0].get("user_id") != current_user["user_id"]:
             raise AuthorizationException()
 
-        # Get portfolio data with all related content
+        # Check user limits
+        user_res = supabase.table("users").select("*").eq("id", current_user["user_id"]).execute()
+        user_data = user_res.data[0] if user_res.data else {}
+        is_free = user_data.get("subscription_tier", "free") == "free"
+        downloads = user_data.get("pdf_downloads", 0)
+        
+        is_admin = current_user.get("email", "").lower() in ['boseraj001@gmail.com', 'boseraj008@gmail.com']
+        
         portfolio_data = portfolio.data[0]
+        page_structure = portfolio_data.get("page_structure", {})
+        pages = page_structure.get("pages", [])
+        
+        if not is_admin:
+            # Enforce Page Limits
+            if is_free and len(pages) > 5:
+                raise HTTPException(status_code=403, detail="Free tier is limited to 5 pages per portfolio. Please upgrade to Pro.")
+            elif not is_free and len(pages) > 30:
+                raise HTTPException(status_code=403, detail="Pro tier is limited to 30 pages per portfolio.")
+            
+            # Enforce Download Limit for Free Users
+            if is_free and downloads >= 2:
+                raise HTTPException(status_code=403, detail="Free tier is limited to 2 PDF exports. Please upgrade to Pro.")
 
         # Get projects and assets
         projects = supabase.table("projects").select("*").eq("user_id", current_user["user_id"]).execute()
         assets = supabase.table("assets").select("*").eq("project_id", projects.data[0]["id"]).execute() if projects.data else None
 
         # Extract embedded style pack from page_structure if present (Batch 2)
-        page_structure = portfolio_data.get("page_structure", {})
         style_pack_data = page_structure.get("style_pack") if isinstance(page_structure, dict) else None
         effective_style_pack = portfolio_data.get("style_pack") or style_pack
 
@@ -73,6 +92,7 @@ async def export_portfolio_as_pdf(
             },
             style_pack=effective_style_pack,
             responsive=True,
+            is_free=(is_free and not is_admin),
         )
 
         # Export to PDF
@@ -87,6 +107,10 @@ async def export_portfolio_as_pdf(
 
         # Log export
         logger.info(f"PDF exported for portfolio {portfolio_id}: {len(pdf_bytes)} bytes")
+        
+        # Increment download count for Free users
+        if is_free and not is_admin:
+            supabase.table("users").update({"pdf_downloads": downloads + 1}).eq("id", current_user["user_id"]).execute()
 
         return {
             "status": "success",

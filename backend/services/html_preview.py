@@ -121,6 +121,7 @@ class HTMLPreviewService:
         layout: str = "default",
         include_meta: bool = True,
         responsive: bool = True,
+        is_free: bool = False,
     ) -> str:
         """
         Generate responsive HTML portfolio preview
@@ -155,6 +156,7 @@ class HTMLPreviewService:
                 tokens=tokens,
                 include_meta=include_meta,
                 responsive=responsive,
+                is_free=is_free,
             )
 
             logger.info(f"HTML preview generated: {len(html)} characters")
@@ -172,6 +174,7 @@ class HTMLPreviewService:
         tokens: Dict[str, str],
         include_meta: bool,
         responsive: bool,
+        is_free: bool = False,
     ) -> str:
         """Build complete HTML document"""
 
@@ -199,6 +202,16 @@ class HTMLPreviewService:
             tokens=tokens,
         )
 
+        watermark_html = ""
+        if is_free:
+            watermark_html = """
+<div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden; opacity: 0.1;">
+    <div style="font-size: 120px; font-weight: 900; color: #000; text-transform: uppercase; letter-spacing: 0.5em; transform: rotate(-35deg); user-select: none; white-space: nowrap; font-family: sans-serif;">
+        COSMOFOLIO
+    </div>
+</div>
+"""
+
         # Assemble document
         html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -206,6 +219,7 @@ class HTMLPreviewService:
 <body>
 {css}
 {body_html}
+{watermark_html}
 </body>
 </html>
 """

@@ -3,6 +3,7 @@ import Script from 'next/script'
 import './globals.css'
 import CookieConsent from '@/components/CookieConsent'
 import AuthInit from '@/components/AuthInit'
+import ContentProtector from '@/components/ContentProtector'
 import MobileWarningBanner from '@/components/MobileWarningBanner'
 
 export const metadata: Metadata = {
@@ -66,6 +67,7 @@ export default function RootLayout({
         )}
       </head>
       <body className="min-h-screen bg-white text-charcoal font-sans antialiased flex flex-col">
+        <ContentProtector />
         <MobileWarningBanner />
         <AuthInit />
         {children}
