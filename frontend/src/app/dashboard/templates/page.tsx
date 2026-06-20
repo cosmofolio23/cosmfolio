@@ -213,6 +213,19 @@ export default function TemplateMarketplace() {
           project_type: 'portfolio',
         }),
       })
+      
+      if (res.status === 401) {
+        // Token expired or invalid
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('user_id')
+        }
+        useAuthStore.getState().setToken('')
+        alert('Your session has expired. Please sign in again.')
+        router.push('/auth/login')
+        return
+      }
+      
       if (!res.ok) throw new Error('Failed to create project')
       const newProject = await res.json()
       
