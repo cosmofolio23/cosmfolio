@@ -93,8 +93,8 @@ export default function PortfolioBookPage() {
           <p className="text-gray-400 mb-4">
             {error === 'No portfolio created yet' ? 'Create content first' : error || 'Not found'}
           </p>
-          <Link href="/dashboard/my-portfolios" className="text-blue-400 hover:underline">
-            ← Back to Portfolios
+          <Link href={`/dashboard/templates/saved/editor?project=${projectId}`} className="text-blue-400 hover:underline">
+            ← Back to editor
           </Link>
         </div>
       </div>

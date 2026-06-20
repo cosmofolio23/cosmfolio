@@ -618,6 +618,9 @@ export default function TemplateEditor() {
         backgrounds: doc.publishing.backgrounds || [],
         masterPages: doc.publishing.masterPages || [],
         grid: doc.publishing.grid || prev.grid,
+        // Restore the saved page size/orientation — without this the editor reverts
+        // to the default A4 portrait after navigating to Book/Web and back.
+        pageSize: doc.publishing.pageSize || prev.pageSize,
       }))
     }
     if (doc.documentVersion) setDocumentVersion(doc.documentVersion)
@@ -1462,11 +1465,12 @@ export default function TemplateEditor() {
       
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        if (errData?.detail === 'FREE_TIER_LIMIT_REACHED' || res.status === 403) {
+        const detail = errData?.error?.message || errData?.detail || `status ${res.status}`
+        if (detail === 'FREE_TIER_LIMIT_REACHED' || res.status === 403) {
           flashUpload('err', 'You have reached your 3 free PDF exports! Pro Mode launching next week.', 8000)
           return
         }
-        throw new Error('Export failed')
+        throw new Error(detail)
       }
       
       const blob = await res.blob()
@@ -1479,7 +1483,7 @@ export default function TemplateEditor() {
       
       flashUpload('ok', '✓ PDF Downloaded')
     } catch (e: any) {
-      flashUpload('err', 'Export failed. Try again or check your connection.')
+      flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
     } finally {
       setIsExporting(false)
     }

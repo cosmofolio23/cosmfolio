@@ -25,8 +25,8 @@ export default function SetupModal({ isOpen, onClose, onComplete }: Props) {
   const [customWidth, setCustomWidth] = useState(297)
   const [customHeight, setCustomHeight] = useState(210)
   const [purpose, setPurpose] = useState<SetupSettings['purpose']>('university')
-  const [pages, setPages] = useState(24)
-  const [projects, setProjects] = useState(4)
+  const [pages, setPages] = useState(5)
+  const [projects, setProjects] = useState(3)
 
   if (!isOpen) return null
 
@@ -219,13 +219,14 @@ export default function SetupModal({ isOpen, onClose, onComplete }: Props) {
                     <span className="font-mono text-blue-400 font-bold">{pages} Pages</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="range" min="8" max="64" step="2"
+                    <input
+                      type="range" min="1" max="5" step="1"
                       value={pages}
                       onChange={e => setPages(parseInt(e.target.value))}
                       className="flex-1 h-1 accent-blue-500 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
+                  <p className="text-[10px] text-slate-500 pt-1">Free plan includes up to 5 pages. More pages unlock in Pro — launching next week.</p>
                 </div>
                 {/* Projects */}
                 <div className="space-y-1">
@@ -234,8 +235,8 @@ export default function SetupModal({ isOpen, onClose, onComplete }: Props) {
                     <span className="font-mono text-blue-400 font-bold">{projects} Projects</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="range" min="1" max="12" step="1"
+                    <input
+                      type="range" min="1" max="3" step="1"
                       value={projects}
                       onChange={e => setProjects(parseInt(e.target.value))}
                       className="flex-1 h-1 accent-blue-500 bg-slate-800 rounded-lg appearance-none cursor-pointer"

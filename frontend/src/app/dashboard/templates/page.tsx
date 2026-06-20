@@ -220,8 +220,9 @@ export default function TemplateMarketplace() {
       const orientationParam = setupSettings?.orientation || 'landscape'
       const sizeParam = setupSettings?.size || 'a4'
       const purposeParam = setupSettings?.purpose || 'university'
-      const pagesParam = setupSettings?.pages || 24
-      const projectsParam = setupSettings?.projects || 4
+      // Free tier: hard-cap at 5 pages / 3 projects (Pro unlocks more next week)
+      const pagesParam = Math.min(5, setupSettings?.pages || 5)
+      const projectsParam = Math.min(3, setupSettings?.projects || 3)
 
       // Redirect to editor with the new project and configuration query params
       router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}&orientation=${orientationParam}&size=${sizeParam}&purpose=${purposeParam}&pages=${pagesParam}&projects=${projectsParam}`)

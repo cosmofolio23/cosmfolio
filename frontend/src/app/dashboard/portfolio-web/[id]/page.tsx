@@ -87,7 +87,7 @@ export default function PortfolioWebPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Portfolio Not Found</h1>
           <p className="text-gray-400 mb-4">{error || 'Not found'}</p>
-          <Link href="/dashboard/my-portfolios" className="text-blue-400 hover:underline">← Back to Portfolios</Link>
+          <Link href={`/dashboard/templates/saved/editor?project=${projectId}`} className="text-blue-400 hover:underline">← Back to editor</Link>
         </div>
       </div>
     )

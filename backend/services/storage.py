@@ -451,23 +451,40 @@ class StorageClient:
         RAISED so the caller can report it instead of silently masking it as an
         empty document — which would look to the user like 'nothing saved'.
         """
+        client_err = None
         try:
             res = self.supabase.storage.from_(self.config.SUPABASE_BUCKET).download(path)
-            if res is None:
-                return None
-            if isinstance(res, (bytes, bytearray)):
-                return json.loads(res.decode("utf-8"))
-            return json.loads(res)
+            if res is not None:
+                if isinstance(res, (bytes, bytearray)):
+                    return json.loads(res.decode("utf-8"))
+                return json.loads(res)
         except Exception as e:
             msg = str(e).lower()
             if any(s in msg for s in ("not found", "does not exist", "not_found", "no such", "404", "keynotfound")):
                 logger.info(f"No document yet at {path}")
                 return None
-            # A genuine storage error — surface it instead of pretending it's empty.
-            logger.error(f"Storage read FAILED at {path}: {e}")
-            raise Exception(f"Storage read failed at {path}: {e}") from e
+            client_err = e
+            logger.warning(f"Storage client read failed at {path}: {e} — trying public URL")
 
-        raise Exception("No SUPABASE_URL configured - cannot generate public URL")
+        # Fallback: the documents bucket is public, so read it over HTTP. This makes
+        # document loads resilient to flaky or inconsistent supabase-client downloads
+        # downloads (e.g. the Book/Web views intermittently seeing 'no document').
+        try:
+            public_url = await self.get_public_url(path)
+            if public_url:
+                import requests
+                r = requests.get(public_url, timeout=15)
+                if r.status_code == 200:
+                    return r.json()
+                if r.status_code in (400, 404):
+                    return None
+        except Exception as e:
+            logger.error(f"Public-URL read also failed at {path}: {e}")
+
+        # Neither path worked — surface the original client error if there was one.
+        if client_err:
+            raise Exception(f"Storage read failed at {path}: {client_err}") from client_err
+        return None
 
     # ==================== DELETE OPERATIONS ====================
 
