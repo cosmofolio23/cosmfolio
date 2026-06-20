@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status, Header
+from fastapi import APIRouter, HTTPException, status, Header, Depends
+from .deps import get_current_user
 from pydantic import BaseModel
 from datetime import datetime
 import json
@@ -374,3 +375,32 @@ async def logout(authorization: str = Header(None)):
         return {"message": "Logged out successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/admin/users")
+async def get_admin_users(current_user: dict = Depends(get_current_user)):
+    """
+    Get all registered users for admin dashboard.
+    Gated strictly for boseraj001@gmail.com
+    """
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Admin access only"
+        )
+    
+    if not supabase:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection not available"
+        )
+        
+    try:
+        # Fetch all users, sorted by created_at descending
+        res = supabase.table("users").select("*").order("created_at", desc=True).execute()
+        return res.data
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to fetch users: {str(e)}"
+        )

@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     description: 'Build a professional architecture portfolio in minutes from preset templates. Free to start.',
     url: 'https://thecosmofolio.com',
     siteName: 'CosmoFolio',
-    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'CosmoFolio' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'CosmoFolio Social Share Card' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'CosmoFolio — Architecture Portfolio Generator',
     description: 'Build a professional architecture portfolio in minutes from preset templates.',
-    images: ['/logo.png'],
+    images: ['/og-image.png'],
   },
 }
 
@@ -33,6 +33,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="en">
       <head>
@@ -42,6 +44,24 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4751453750202709" 
           crossOrigin="anonymous" 
         ></script>
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body>
         {children}

@@ -45,11 +45,16 @@ function FeatureIcon({ type }: { type: string }) {
 export default function Home() {
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
+  const [isLoadingSplash, setIsLoadingSplash] = useState(true)
 
   useEffect(() => {
     if (isAuthenticated && user) {
       router.push('/dashboard')
     }
+    const timer = setTimeout(() => {
+      setIsLoadingSplash(false)
+    }, 1500)
+    return () => clearTimeout(timer)
   }, [isAuthenticated, user, router])
 
   return (
@@ -181,6 +186,59 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20 md:py-28 bg-white dark:bg-dark-bg-secondary relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="container-centered relative z-10">
+          <div className="text-center mb-16">
+            <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Process</span>
+            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">How CosmoFolio Works</h2>
+            <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto">Create and download your architecture portfolio in three simple steps.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connection Line (Desktop) */}
+            <div className="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-accent-primary/20 via-accent-gold/30 to-accent-primary/20 -translate-y-12 z-0"></div>
+
+            {[
+              {
+                step: "01",
+                title: "Sign Up",
+                desc: "Create your profile with your college, stream, and graduation year details to customize your layouts.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                )
+              },
+              {
+                step: "02",
+                title: "Pick a Template",
+                desc: "Choose from our catalog of architectural templates and edit layouts, colors, and content instantly on the canvas.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+                )
+              },
+              {
+                step: "03",
+                title: "Export PDF",
+                desc: "Export your portfolio directly to a high-quality, print-ready PDF at perfect A4 proportions for applications.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                )
+              }
+            ].map((item, idx) => (
+              <div key={idx} className="glass-card p-8 rounded-3xl relative z-10 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300">
+                <div className="absolute -top-6 w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent-primary to-blue-500 dark:from-accent-gold dark:to-yellow-500 text-white flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">
+                  {item.icon}
+                </div>
+                <span className="text-6xl font-bold text-gray-100 dark:text-white/5 mt-4 select-none">{item.step}</span>
+                <h3 className="text-xl font-bold text-text-primary dark:text-dark-text-primary mt-2 mb-3">{item.title}</h3>
+                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* About The Founder Section */}
       <section className="py-20 bg-white dark:bg-dark-bg-secondary">
         <div className="container-centered">
@@ -278,10 +336,18 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-charcoal text-white py-12 md:py-16">
         <div className="container-centered">
-          <div className="grid md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate">
+          <div className="grid md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate text-left">
             <div>
               <h4 className="font-bold mb-4">CosmoFolio</h4>
-              <p className="text-stone-light text-sm">Professional architecture portfolio generation.</p>
+              <p className="text-stone-light text-sm mb-4">Professional architecture portfolio generation.</p>
+              <div className="flex gap-4">
+                <a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="text-stone-light hover:text-white transition">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+                <a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="text-stone-light hover:text-white transition">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+              </div>
             </div>
             <div>
               <h4 className="font-bold mb-4">Product</h4>
@@ -292,26 +358,50 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Company</h4>
+              <h4 className="font-bold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-stone-light">
-                <li><a href="#" className="hover:text-white transition">About</a></li>
-                <li><a href="#" className="hover:text-white transition">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition">Contact</a></li>
+                <li><a href="mailto:cosmoatelier.live@gmail.com" className="hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
+                <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Instagram</a></li>
+                <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-stone-light">
-                <li><a href="/privacy" className="hover:text-white transition">Privacy</a></li>
-                <li><a href="/terms" className="hover:text-white transition">Terms</a></li>
+                <li><a href="/privacy" className="hover:text-white transition">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-white transition">Terms of Service</a></li>
               </ul>
             </div>
           </div>
           <div className="text-center text-stone-light text-sm">
-            <p>&copy; 2025 CosmoFolio. All rights reserved.</p>
+            <p>&copy; 2026 CosmoFolio. All rights reserved.</p>
           </div>
         </div>
       </footer>
+
+      {/* Splash Screen Animation Overlay */}
+      <div className={`fixed inset-0 z-50 bg-[#07070A] flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${isLoadingSplash ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="relative flex flex-col items-center">
+          {/* Cosmic glow effects */}
+          <div className="absolute w-64 h-64 bg-accent-gold/20 rounded-full blur-[60px] animate-pulse"></div>
+          <div className="absolute w-48 h-48 bg-accent-primary/20 rounded-full blur-[50px] animate-pulse" style={{ animationDelay: '500ms' }}></div>
+          
+          {/* Pulsing Logo */}
+          <div className="relative z-10 scale-150 mb-8 animate-pulse" style={{ animationDuration: '1.5s' }}>
+            <Logo size="lg" variant="gold" />
+          </div>
+          
+          {/* Animated title */}
+          <h1 className="relative z-10 text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
+            Cosmo<span className="text-gold-gradient">Folio</span>
+          </h1>
+          
+          {/* Progress message */}
+          <p className="relative z-10 text-stone-light text-xs tracking-widest uppercase animate-pulse">
+            Designing Presentation...
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

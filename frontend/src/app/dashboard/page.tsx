@@ -172,6 +172,14 @@ export default function Dashboard() {
               📊 Analytics →
             </Link>
           )}
+          {isAdmin && (
+            <Link
+              href="/dashboard/admin"
+              className="inline-block bg-accent-gold/20 border border-accent-gold/50 rounded-xl px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:bg-accent-gold/30 transition font-semibold text-sm"
+            >
+              🔑 Admin Dashboard →
+            </Link>
+          )}
         </div>
 
         {/* Student Tools - Hidden for MVP Launch */}
