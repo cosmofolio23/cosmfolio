@@ -109,7 +109,7 @@ export default function PortfolioWebPage() {
           transition={{ delay: 0.2 }}
           className="pointer-events-auto"
         >
-          <Link href={`/dashboard/templates/${projectId}/editor`} className="text-gray-400 hover:text-white transition px-4 py-2 bg-black/40 backdrop-blur rounded-full text-sm font-medium border border-white/10">
+          <Link href={`/dashboard/templates/saved/editor?project=${projectId}`} className="text-gray-400 hover:text-white transition px-4 py-2 bg-black/40 backdrop-blur rounded-full text-sm font-medium border border-white/10">
             ← Exit Web Mode
           </Link>
         </motion.div>

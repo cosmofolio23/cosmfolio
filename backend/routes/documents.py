@@ -96,8 +96,7 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No document found. Save your portfolio first.")
 
-        # Check export limit
-        from config.supabase import supabase
+        # Check export limit (supabase is imported at module level)
         user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
         export_count = 0
         if user_resp.data:

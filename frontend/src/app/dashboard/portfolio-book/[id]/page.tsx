@@ -115,8 +115,8 @@ export default function PortfolioBookPage() {
       <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 print:hidden">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard/my-portfolios" className="text-gray-400 hover:text-white text-sm">
-              ← Back
+            <Link href={`/dashboard/templates/saved/editor?project=${projectId}`} className="text-gray-400 hover:text-white text-sm">
+              ← Back to editor
             </Link>
             <h1 className="text-white font-semibold">📖 {project.title}</h1>
           </div>
