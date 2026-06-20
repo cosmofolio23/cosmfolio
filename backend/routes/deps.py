@@ -115,10 +115,22 @@ def get_current_user(authorization: str = Header(None)):
     # METHOD 2: Firebase Cryptographic Fallback (using Google's certificates directly)
     try:
         verified_user = verify_firebase_token_fallback(token)
+        # Lazy sync user to ensure foreign keys don't fail
+        try:
+            from database import supabase
+            if supabase:
+                supabase.table("users").upsert({
+                    "id": verified_user["user_id"],
+                    "email": verified_user.get("email", ""),
+                    "updated_at": __import__('datetime').datetime.utcnow().isoformat()
+                }).execute()
+        except Exception as e:
+            print(f"[AUTH WARNING] Lazy sync failed: {e}")
         return verified_user
     except Exception as e:
         print(f"[AUTH ERROR] Firebase Cryptographic Fallback failed: {e}")
         pass
+
 
     # METHOD 3: Supabase auth.get_user
     try:
