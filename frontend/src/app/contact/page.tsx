@@ -43,9 +43,7 @@ export default function ContactPage() {
       <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
         <div className="container-centered py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-[#111111] p-1.5 rounded-lg flex items-center justify-center">
-              <Logo size="sm" variant="gold" />
-            </div>
+            <Logo size="md" variant="gold" />
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </Link>
           <div className="flex items-center gap-6">
@@ -181,9 +179,7 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-1 md:col-span-1">
               <div className="flex items-center gap-2 mb-6">
-                <div className="bg-[#111111] p-1.5 rounded-lg flex items-center justify-center">
-                  <Logo size="sm" variant="gold" />
-                </div>
+                <Logo size="md" variant="gold" />
                 <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
               </div>
             </div>

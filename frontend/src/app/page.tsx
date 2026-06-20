@@ -65,9 +65,7 @@ export default function Home() {
       <nav className="sticky top-0 z-40 glass-nav shadow-elevation-1">
         <div className="container-centered py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-[#111111] p-1.5 rounded-lg flex items-center justify-center">
-              <Logo size="sm" variant="gold" />
-            </div>
+            <Logo size="md" variant="gold" />
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </div>
           <div className="flex items-center gap-6">
@@ -549,7 +547,7 @@ export default function Home() {
           <div className="absolute w-48 h-48 bg-accent-primary/20 rounded-full blur-[50px] animate-pulse" style={{ animationDelay: '500ms' }}></div>
           
           {/* Pulsing Logo */}
-          <div className="relative z-10 scale-150 mb-8 animate-pulse bg-[#111111] p-3 rounded-2xl flex items-center justify-center shadow-2xl" style={{ animationDuration: '1.5s' }}>
+          <div className="relative z-10 scale-150 mb-8 animate-pulse flex items-center justify-center shadow-2xl" style={{ animationDuration: '1.5s' }}>
             <Logo size="lg" variant="gold" />
           </div>
           
