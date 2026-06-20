@@ -55,15 +55,15 @@ export default function PricingPage() {
       {/* Navigation (matches homepage) */}
       <nav className="sticky top-0 z-40 bg-charcoal border-b border-white/10 shadow-elevation-1 text-white">
         <div className="container-centered py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 text-white hover:text-white/90">
             <Logo size="md" variant="gold" />
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </Link>
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-4 text-sm font-medium">
-              <Link href="/about" className="text-stone-300 hover:text-white transition">About</Link>
+              <Link href="/about" className="text-gray-300 hover:text-white transition">About</Link>
               <Link href="/pricing" className="text-white transition">Pricing</Link>
-              <Link href="/contact" className="text-stone-300 hover:text-white transition">Contact</Link>
+              <Link href="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/signin" className="btn-secondary btn-small">Sign In</Link>
@@ -206,7 +206,7 @@ export default function PricingPage() {
               <Logo size="md" variant="gold" />
               CosmoFolio
             </Link>
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-stone-300">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-gray-300">
               <Link href="/about" className="hover:text-white transition">About Us</Link>
               <Link href="/pricing" className="hover:text-white transition">Pricing</Link>
               <Link href="/contact" className="hover:text-white transition">Contact</Link>

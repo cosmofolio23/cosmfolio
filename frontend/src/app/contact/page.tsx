@@ -42,14 +42,14 @@ export default function ContactPage() {
       {/* Navigation */}
       <nav className="sticky top-0 z-40 bg-charcoal border-b border-white/10 shadow-elevation-1 text-white">
         <div className="container-centered py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 text-white hover:text-white/90">
             <Logo size="md" variant="gold" />
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
           </Link>
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-4 text-sm font-medium">
-              <Link href="/about" className="text-stone-300 hover:text-white transition">About</Link>
-              <Link href="/pricing" className="text-stone-300 hover:text-white transition">Pricing</Link>
+              <Link href="/about" className="text-gray-300 hover:text-white transition">About</Link>
+              <Link href="/pricing" className="text-gray-300 hover:text-white transition">Pricing</Link>
               <Link href="/contact" className="text-white transition">Contact</Link>
             </div>
             <div className="flex items-center gap-3">
@@ -185,14 +185,14 @@ export default function ContactPage() {
             </div>
             <div>
               <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li><Link href="/about" className="hover:text-white transition">About Us</Link></li>
                 <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Contact</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li><a href="mailto:cosmoatelier.live@gmail.com" className="hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
                 <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Instagram</a></li>
                 <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a></li>
@@ -200,7 +200,7 @@ export default function ContactPage() {
             </div>
             <div>
               <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
               </ul>

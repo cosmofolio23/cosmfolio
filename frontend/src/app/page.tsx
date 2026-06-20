@@ -71,9 +71,9 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-4 text-sm font-medium">
-              <Link href="/about" className="text-stone-300 hover:text-white transition">About</Link>
-              <Link href="/pricing" className="text-stone-300 hover:text-white transition">Pricing</Link>
-              <Link href="/contact" className="text-stone-300 hover:text-white transition">Contact</Link>
+              <Link href="/about" className="text-gray-300 hover:text-white transition">About</Link>
+              <Link href="/pricing" className="text-gray-300 hover:text-white transition">Pricing</Link>
+              <Link href="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/signin" className="btn-secondary btn-small">
@@ -516,32 +516,32 @@ export default function Home() {
             </div>
             <div>
               <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
-                <li><Link href="/about" className="text-stone-300 hover:text-white transition">About Us</Link></li>
-                <li><Link href="/pricing" className="text-stone-300 hover:text-white transition">Pricing</Link></li>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><Link href="/about" className="text-gray-300 hover:text-white transition">About Us</Link></li>
+                <li><Link href="/pricing" className="text-gray-300 hover:text-white transition">Pricing</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Contact</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
-                <li><Link href="/contact" className="text-stone-300 hover:text-white transition">Contact Us</Link></li>
-                <li><a href="mailto:cosmoatelier.live@gmail.com" className="text-stone-300 hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
-                <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-white transition">Instagram</a></li>
-                <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="text-stone-300 hover:text-white transition">LinkedIn</a></li>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><Link href="/contact" className="text-gray-300 hover:text-white transition">Contact Us</Link></li>
+                <li><a href="mailto:cosmoatelier.live@gmail.com" className="text-gray-300 hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
+                <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition">Instagram</a></li>
+                <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition">LinkedIn</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
-                <li><a href="/privacy" className="text-stone-300 hover:text-white transition">Privacy Policy</a></li>
-                <li><a href="/terms" className="text-stone-300 hover:text-white transition">Terms of Service</a></li>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="/privacy" className="text-gray-300 hover:text-white transition">Privacy Policy</a></li>
+                <li><a href="/terms" className="text-gray-300 hover:text-white transition">Terms of Service</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-stone-300">
-                <li><Link href="/contact" className="text-stone-300 hover:text-white transition">Need help?</Link></li>
-                <li><Link href="/contact" className="text-stone-300 hover:text-white transition underline">Contact Cosmofolio Support</Link></li>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><Link href="/contact" className="text-gray-300 hover:text-white transition">Need help?</Link></li>
+                <li><Link href="/contact" className="text-gray-300 hover:text-white transition underline">Contact Cosmofolio Support</Link></li>
               </ul>
             </div>
           </div>

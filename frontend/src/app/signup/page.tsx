@@ -69,7 +69,7 @@ export default function SignUp() {
         <div className="flex flex-col items-center mb-5">
           <Logo size="lg" variant="gold" />
         </div>
-        <p className="text-center text-stone-300 mb-8">Create your free account</p>
+        <p className="text-center text-gray-300 mb-8">Create your free account</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -79,7 +79,7 @@ export default function SignUp() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Full Name
             </label>
             <input
@@ -94,7 +94,7 @@ export default function SignUp() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 College/University
               </label>
               <input
@@ -107,7 +107,7 @@ export default function SignUp() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 State/Region
               </label>
               <input
@@ -123,7 +123,7 @@ export default function SignUp() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Graduation Year
               </label>
               <input
@@ -138,7 +138,7 @@ export default function SignUp() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Stream/Major
               </label>
               <select
@@ -160,7 +160,7 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Email
             </label>
             <input
@@ -174,7 +174,7 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Password
             </label>
             <div className="relative">
@@ -197,7 +197,7 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Confirm Password
             </label>
             <div className="relative">

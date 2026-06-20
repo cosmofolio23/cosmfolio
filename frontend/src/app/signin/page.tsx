@@ -46,7 +46,7 @@ export default function SignIn() {
         <div className="flex flex-col items-center mb-5">
           <Logo size="lg" variant="gold" />
         </div>
-        <p className="text-center text-stone-300 mb-8">Sign in to your account</p>
+        <p className="text-center text-gray-300 mb-8">Sign in to your account</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -56,7 +56,7 @@ export default function SignIn() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Email
             </label>
             <input
@@ -70,7 +70,7 @@ export default function SignIn() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Password
             </label>
             <div className="relative">
