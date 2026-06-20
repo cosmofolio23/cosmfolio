@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import Logo from '@/components/Logo'
 import { useAuthStore } from '@/store/auth'
 import { useRouter } from 'next/navigation'
-import VideoModal from '@/components/VideoModal'
+import WalkthroughModal from '@/components/WalkthroughModal'
 
 function FeatureIcon({ type }: { type: string }) {
   const icons = {
@@ -578,11 +578,9 @@ export default function Home() {
           </span>
         </div>
       </div>
-
-      <VideoModal 
+      <WalkthroughModal 
         isOpen={isVideoModalOpen} 
         onClose={() => setIsVideoModalOpen(false)} 
-        videoSrc="/demo.mp4" 
       />
     </div>
   )
