@@ -131,9 +131,9 @@ def get_current_user(authorization: str = Header(None)):
             print(f"[AUTH WARNING] Lazy sync failed: {e}")
         return verified_user
     except Exception as e:
-        print(f"[AUTH ERROR] Firebase Cryptographic Fallback failed: {e}")
+        last_error = f"Firebase Fallback Error: {e}"
+        print(f"[AUTH ERROR] {last_error}")
         pass
-
 
     # METHOD 3: Supabase auth.get_user
     try:
@@ -147,7 +147,7 @@ def get_current_user(authorization: str = Header(None)):
                     "auth": "supabase"
                 }
     except Exception as e:
-        last_error = str(e)
+        last_error = f"{last_error} | Supabase Error: {e}"
 
     # METHOD 4: Decode JWT payload manually (DEBUG fallback ONLY)
     if settings.DEBUG or os.getenv("DEBUG", "").lower() in ("true", "1", "t"):
