@@ -26,22 +26,6 @@ export class APIClient {
       }
       return config
     })
-
-    // Add interceptor for 403 (banned/deleted users)
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 403 && typeof window !== 'undefined') {
-          // Check if it's the specific deleted account error
-          if (error.response?.data?.detail?.includes('deleted')) {
-             localStorage.removeItem('auth_token');
-             alert('Your account has been deleted by an administrator.');
-             window.location.href = '/signin';
-          }
-        }
-        return Promise.reject(error)
-      }
-    )
   }
 
   setToken(token: string) {
