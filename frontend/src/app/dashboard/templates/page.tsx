@@ -138,14 +138,14 @@ export default function TemplateMarketplace() {
         })
         if (res.ok) {
           const data = await res.json()
-          setIsPro(!!data.is_pro || !!data.is_bypass)
+          setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass)
         }
       } catch (e) {
         console.error(e)
       }
     }
     fetchStatus()
-  }, [isAuthenticated])
+  }, [isAuthenticated, isAdmin])
 
   // Load filter presets on mount
   useEffect(() => {
@@ -273,8 +273,8 @@ export default function TemplateMarketplace() {
       const sizeParam = setupSettings?.size || 'a4'
       const purposeParam = setupSettings?.purpose || 'university'
       // Use dynamic limits based on isPro status
-      const maxPages = isPro ? 30 : 5
-      const maxProjects = isPro ? 10 : 3
+      const maxPages = isAdmin ? 100 : isPro ? 30 : 6
+      const maxProjects = isAdmin ? 100 : isPro ? 10 : 3
       const pagesParam = Math.min(maxPages, setupSettings?.pages || maxPages)
       const projectsParam = Math.min(maxProjects, setupSettings?.projects || maxProjects)
 
@@ -980,6 +980,7 @@ export default function TemplateMarketplace() {
       <SetupModal
         isOpen={isSetupModalOpen}
         isPro={isPro}
+        isAdmin={isAdmin}
         onClose={() => setIsSetupModalOpen(false)}
         onComplete={(settings) => {
           setSetupSettings(settings)
