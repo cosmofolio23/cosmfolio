@@ -585,10 +585,17 @@ export default function TemplateEditor() {
           const data = await res.json()
           setExportUsed(data.export_count || 0)
           setExportBypass(!!data.is_bypass)
-          // Also sync to localStorage for offline consistency
           localStorage.setItem('cosmofolio_export_count_v2', String(data.export_count || 0))
+        } else {
+          // fallback
+          const local = Number(localStorage.getItem('cosmofolio_export_count_v2')) || 0
+          setExportUsed(local)
         }
-      } catch { /* silent fail — use localStorage fallback */ }
+      } catch { 
+        // offline fallback
+        const local = Number(localStorage.getItem('cosmofolio_export_count_v2')) || 0
+        setExportUsed(local)
+      }
     }
     syncExportCount()
     // eslint-disable-next-line react-hooks/exhaustive-deps

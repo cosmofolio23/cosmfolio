@@ -99,7 +99,8 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         # Check export limit (supabase is imported at module level)
         user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
         export_count = 0
-        is_bypass = current_user.get("email") == "boseraj001@gmail.com"
+        email = current_user.get("email") or ""
+        is_bypass = email.lower() == "boseraj001@gmail.com"
         if user_resp.data and not is_bypass:
             user_data = user_resp.data[0]
             export_count = user_data.get("export_count") or 0
@@ -199,7 +200,8 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
                 "is_pro": False
             }).execute()
             
-        is_bypass = current_user.get("email") == "boseraj001@gmail.com"
+        email = current_user.get("email") or ""
+        is_bypass = email.lower() == "boseraj001@gmail.com"
         return {"export_count": export_count, "limit": 2, "is_bypass": is_bypass, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Get export count failed: {str(e)[:100]}")
