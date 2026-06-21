@@ -8,7 +8,7 @@ export default function MobileWarningBanner() {
   if (!isVisible) return null
 
   return (
-    <div className="md:hidden bg-amber-500 text-black px-4 py-3 shadow-lg flex items-start justify-between z-[100] relative">
+    <div className="md:hidden print:hidden bg-amber-500 text-black px-4 py-3 shadow-lg flex items-start justify-between z-[100] relative">
       <div className="flex items-start gap-3">
         <span className="text-xl leading-none">⚠️</span>
         <p className="text-sm font-medium">
