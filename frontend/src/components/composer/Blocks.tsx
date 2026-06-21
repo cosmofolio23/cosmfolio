@@ -386,19 +386,25 @@ export function ImageBlock({
             onMouseLeave={onMouseUp}
             style={{ cursor: panActive ? 'move' : 'default' }}
           >
-            <img
-              src={block.imageUrl}
-              alt={block.label || ''}
+            <div
               className="w-full h-full pointer-events-none"
               style={{
-                objectFit: block.fit || 'cover',
                 transform: `scale(${block.zoom || 1}) translate(${block.xOffset || 0}%, ${block.yOffset || 0}%)`,
                 transformOrigin: 'center center',
                 transition: dragStart ? 'none' : 'transform 0.1s ease',
                 filter: block.cssFilter || 'none',
               }}
-              draggable={false}
-            />
+            >
+              <div
+                className="w-full h-full"
+                style={{
+                  backgroundImage: `url(${block.imageUrl})`,
+                  backgroundSize: block.fit === 'contain' ? 'contain' : 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              />
+            </div>
             {panActive && (
               <div className="absolute inset-0 border-2 border-dashed border-blue-500 pointer-events-none flex items-center justify-center bg-blue-500/10">
                 <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded shadow">

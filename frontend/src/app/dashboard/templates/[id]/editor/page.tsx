@@ -275,7 +275,7 @@ export default function TemplateEditor() {
   const searchParams = useSearchParams()
   const { isAuthenticated, token, user } = useAuthStore()
   const templateId = params.id as string
-  const isAdmin = user?.email === 'boseraj001@gmail.com'
+  const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
   const [isPro, setIsPro] = useState(isAdmin)
 
   // Fetch isPro status
@@ -338,7 +338,7 @@ export default function TemplateEditor() {
   const [isExporting, setIsExporting] = useState(false)
   const [exportUsed, setExportUsed] = useState(0)
   const [exportLimit] = useState(2)
-  const [exportBypass, setExportBypass] = useState(false)
+  const [exportBypass, setExportBypass] = useState(isAdmin)
   const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
   const [previewSpread, setPreviewSpread] = useState(false)
   const [editSpreadMode, setEditSpreadMode] = useState<boolean>(true)
@@ -657,7 +657,7 @@ export default function TemplateEditor() {
         if (res.ok) {
           const data = await res.json()
           setExportUsed(data.export_count || 0)
-          setExportBypass(!!data.is_bypass)
+          setExportBypass(isAdmin || !!data.is_bypass)
           localStorage.setItem('cosmofolio_export_count_v2', String(data.export_count || 0))
         } else {
           // fallback
@@ -1484,7 +1484,7 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    if (pages.length >= 6) {
+    if (!isPro && !isAdmin && pages.length >= 6) {
       flashUpload('err', 'Free tier is limited to 6 pages. Pro Mode with unlimited pages is launching next week.', 8000)
       return
     }
@@ -1597,7 +1597,7 @@ export default function TemplateEditor() {
         if (trackRes.ok) {
           const trackData = await trackRes.json()
           // Sync bypass state in case admin just upgraded this user
-          if (trackData.is_bypass !== undefined) setExportBypass(!!trackData.is_bypass)
+          if (trackData.is_bypass !== undefined) setExportBypass(isAdmin || !!trackData.is_bypass)
         }
       } catch { /* silent */ }
 
@@ -1897,15 +1897,13 @@ export default function TemplateEditor() {
     )
   }
 
-  return (
-    <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
-      {/* Top bar */}
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm" id="tour-top-bar">
         <div className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard/my-portfolios" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
-            <div>
-              <input value={portfolioTitle} onChange={e => { markDirty(); setPortfolioTitle(e.target.value) }} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded" placeholder="Untitled" />
+            <div className="flex flex-col relative group">
+              <input value={portfolioTitle} onChange={e => { markDirty(); setPortfolioTitle(e.target.value) }} onBlur={saveDocument} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded transition" placeholder="Untitled" />
+              <span className="absolute -bottom-4 left-2 text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Change name to save your work</span>
               <div className="flex items-center gap-2 px-2 mt-0.5">
                 <p className="text-[11px] text-gray-400">Template: {template.name} · {template.category}</p>
                 {(!portfolioTitle || portfolioTitle.trim().toLowerCase() === 'untitled portfolio' || portfolioTitle.trim().toLowerCase() === 'untitled') && (

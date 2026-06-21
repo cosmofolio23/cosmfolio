@@ -154,7 +154,7 @@ function MasterElementView({
     return <div onClick={handleSelect} style={{ ...style, width: el.width ?? 40, height: el.height ?? 40, background: el.color || tokens.accent }} />
   }
   if (el.type === 'image' && el.imageUrl) {
-    return <img onClick={handleSelect} src={el.imageUrl} alt="" style={{ ...style, width: el.width ?? 60, height: el.height ?? 60, objectFit: 'contain' }} />
+    return <div onClick={handleSelect} style={{ ...style, width: el.width ?? 60, height: el.height ?? 60, backgroundImage: `url(${el.imageUrl})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
   }
   if (el.type === 'watermark') {
     return (
