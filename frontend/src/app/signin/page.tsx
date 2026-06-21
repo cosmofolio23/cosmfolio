@@ -123,13 +123,10 @@ export default function SignIn() {
           </button>
         </form>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border-subtle dark:border-dark-border-subtle" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-3 text-stone-400 text-xs" style={{ backgroundColor: 'rgba(10,10,16,0.95)' }}>Or continue with</span>
-          </div>
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-stone-400 text-xs whitespace-nowrap">Or continue with</span>
+          <div className="flex-1 h-px bg-white/10" />
         </div>
 
         <button
