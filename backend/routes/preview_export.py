@@ -45,7 +45,7 @@ async def export_portfolio_as_pdf(
         user_res = supabase.table("users").select("*").eq("id", current_user["user_id"]).execute()
         user_data = user_res.data[0] if user_res.data else {}
         is_free = user_data.get("subscription_tier", "free") == "free"
-        downloads = user_data.get("pdf_downloads", 0)
+        export_count = user_data.get("export_count", 0)
         
         is_admin = current_user.get("email", "").lower() in ['boseraj001@gmail.com', 'boseraj008@gmail.com']
         
@@ -60,9 +60,9 @@ async def export_portfolio_as_pdf(
             elif not is_free and len(pages) > 30:
                 raise HTTPException(status_code=403, detail="Pro tier is limited to 30 pages per portfolio.")
             
-            # Enforce Download Limit for Free Users
-            if is_free and downloads >= 2:
-                raise HTTPException(status_code=403, detail="Free tier is limited to 2 PDF exports. Please upgrade to Pro.")
+            # Enforce Download Limit for All Users (2 PDF exports)
+            if export_count >= 2:
+                raise HTTPException(status_code=403, detail="All tiers are limited to 2 PDF exports for this beta.")
 
         # Get projects and assets
         projects = supabase.table("projects").select("*").eq("user_id", current_user["user_id"]).execute()
