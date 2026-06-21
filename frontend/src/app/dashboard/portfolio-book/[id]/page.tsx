@@ -33,6 +33,7 @@ export default function PortfolioBookPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isBypass, setIsBypass] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const authToken = () => token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
 
@@ -76,13 +77,65 @@ export default function PortfolioBookPage() {
         project,
       })
       // Auto-open the print dialog when opened as a PDF fallback (?print=1)
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('print') === '1') {
-        window.setTimeout(() => window.print(), 1000)
+      if (typeof window !== 'undefined') {
+        const search = new URLSearchParams(window.location.search)
+        if (search.get('print') === '1') {
+          window.setTimeout(() => window.print(), 1000)
+        } else if (search.get('download') === '1') {
+          window.setTimeout(() => executeDownloadPdf(data.document.publishing?.pageSize, project.title), 1500)
+        }
       }
     } catch (e: any) {
       setError(e.message)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const executeDownloadPdf = async (sizeSettings: any, projectTitle: string) => {
+    setIsDownloading(true)
+    try {
+      const { jsPDF } = await import('jspdf')
+      const html2canvas = (await import('html2canvas')).default
+      
+      // Wait for all images to load properly
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      const elements = window.document.querySelectorAll('.pf-print-page')
+      if (elements.length === 0) throw new Error('No pages found')
+
+      const pdf = new jsPDF({
+        orientation: sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: sizeSettings ? [sizeSettings.width, sizeSettings.height] : 'a4'
+      })
+
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+
+      for (let i = 0; i < elements.length; i++) {
+        const el = elements[i] as HTMLElement
+        const canvas = await html2canvas(el, {
+          scale: 2, // High resolution
+          useCORS: true,
+          logging: false
+        })
+        
+        const imgData = canvas.toDataURL('image/jpeg', 0.95)
+        if (i > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+      }
+
+      pdf.save(`${projectTitle || 'Portfolio'}.pdf`)
+      
+      // Optionally close the window after a short delay since it was opened specifically for downloading
+      setTimeout(() => window.close(), 1000)
+    } catch (e) {
+      console.error('Failed to generate PDF:', e)
+      alert('Failed to generate PDF directly. Falling back to print dialog.')
+      window.print()
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -136,6 +189,18 @@ export default function PortfolioBookPage() {
           .pf-print-page:last-child { break-after: auto; page-break-after: auto; }
         }
       `}</style>
+
+      {/* Downloading Overlay */}
+      {isDownloading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="text-center bg-white p-8 rounded-xl shadow-2xl max-w-sm mx-auto">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Generating PDF...</h2>
+            <p className="text-sm text-gray-500">This may take a few moments depending on the number of pages. Please do not close this window.</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 print:hidden">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -166,7 +231,7 @@ export default function PortfolioBookPage() {
               🌐 Web
             </Link>
             <button
-              onClick={() => window.print()}
+              onClick={() => executeDownloadPdf(pageSize, project.title)}
               className="px-4 py-2 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
             >
               PDF

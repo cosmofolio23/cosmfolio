@@ -1602,7 +1602,7 @@ export default function TemplateEditor() {
       } catch { /* silent */ }
 
       // Open print window after increment is registered
-      const win = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
+      const win = window.open(`/dashboard/portfolio-book/${pid}?download=1`, '_blank')
       if (!win) {
         flashUpload('err', 'Pop-up blocked. Allow pop-ups for this site, then click PDF again.', 8000)
         return
@@ -1610,9 +1610,9 @@ export default function TemplateEditor() {
 
       if (!exportBypass) {
         const remaining = exportLimit - (exportUsed + 1)
-        flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
+        flashUpload('ok', `✓ Generating your PDF. Please wait... ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
       } else {
-        flashUpload('ok', '✓ Opening print view — choose "Save as PDF" in the dialog.', 6000)
+        flashUpload('ok', '✓ Generating your PDF. Please wait...', 6000)
       }
     } catch (e: any) {
       flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
