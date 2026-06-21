@@ -22,9 +22,9 @@ interface Props {
 export default function SetupModal({ isOpen, isPro = false, onClose, onComplete }: Props) {
   const [step, setStep] = useState(1)
   const [orientation, setOrientation] = useState<SetupSettings['orientation']>('landscape')
-  const [size, setSize] = useState<SetupSettings['size']>('a4')
-  const [customWidth, setCustomWidth] = useState(297)
-  const [customHeight, setCustomHeight] = useState(210)
+  const size: SetupSettings['size'] = 'a4'
+  const customWidth = 297
+  const customHeight = 210
   const [purpose, setPurpose] = useState<SetupSettings['purpose']>('university')
   const [pages, setPages] = useState(5)
   const [projects, setProjects] = useState(3)
@@ -32,7 +32,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
   if (!isOpen) return null
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1)
+    if (step < 3) setStep(step + 1)
     else {
       onComplete({
         orientation,
@@ -60,7 +60,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
         <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-350">Portfolio Setup Wizard</h3>
-            <p className="text-[10px] text-slate-500">Step {step} of 4</p>
+            <p className="text-[10px] text-slate-500">Step {step} of 3</p>
           </div>
           <button 
             type="button" 
@@ -73,7 +73,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
 
         {/* Step Indicator Bars */}
         <div className="flex px-6 gap-1.5 pt-3">
-          {[1, 2, 3, 4].map(s => (
+          {[1, 2, 3].map(s => (
             <div 
               key={s} 
               className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? 'bg-blue-500' : 'bg-slate-800'}`} 
@@ -117,64 +117,6 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
           {step === 2 && (
             <div className="space-y-4">
               <div className="text-center">
-                <h4 className="text-base font-bold text-white">Select Page Dimensions</h4>
-                <p className="text-[11px] text-slate-400 mt-1">Choose your printing size or digital screen canvas</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 pt-2">
-                {[
-                  { id: 'a4' as const, label: 'A4 Format', desc: '297 × 210 mm (Standard)' },
-                  { id: 'a3' as const, label: 'A3 Portfolio', desc: '420 × 297 mm (Large)' },
-                  { id: '1920x1080' as const, label: 'Full HD Screen', desc: '16:9 Presentation Format' },
-                  { id: 'website' as const, label: 'Website Portfolio', desc: 'Interactive digital layout' },
-                  { id: 'custom' as const, label: 'Custom Canvas', desc: 'Specify width and height' }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setSize(item.id)}
-                    className={`flex flex-col items-start p-3 rounded-xl border text-left transition hover:bg-slate-800/40 ${
-                      size === item.id 
-                        ? 'border-blue-500 bg-blue-500/10 text-white' 
-                        : 'border-slate-800 bg-slate-950/20 text-slate-400'
-                    }`}
-                  >
-                    <span className="text-xs font-semibold">{item.label}</span>
-                    <span className="text-[9px] opacity-75 mt-0.5">{item.desc}</span>
-                  </button>
-                ))}
-              </div>
-
-              {size === 'custom' && (
-                <div className="flex gap-3 pt-2 items-center justify-center animate-fadeIn">
-                  <div className="flex items-center gap-1.5 bg-slate-950/40 border border-slate-800 rounded-lg px-2 py-1">
-                    <span className="text-[9px] text-slate-500 uppercase font-mono">W:</span>
-                    <input 
-                      type="number" 
-                      value={customWidth} 
-                      onChange={e => setCustomWidth(parseInt(e.target.value) || 297)}
-                      className="w-16 bg-transparent text-white text-xs text-center outline-none" 
-                    />
-                    <span className="text-[9px] text-slate-500">mm</span>
-                  </div>
-                  <span className="text-slate-600 text-xs">×</span>
-                  <div className="flex items-center gap-1.5 bg-slate-950/40 border border-slate-800 rounded-lg px-2 py-1">
-                    <span className="text-[9px] text-slate-500 uppercase font-mono">H:</span>
-                    <input 
-                      type="number" 
-                      value={customHeight} 
-                      onChange={e => setCustomHeight(parseInt(e.target.value) || 210)}
-                      className="w-16 bg-transparent text-white text-xs text-center outline-none" 
-                    />
-                    <span className="text-[9px] text-slate-500">mm</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <div className="text-center">
                 <h4 className="text-base font-bold text-white">Define Portfolio Purpose</h4>
                 <p className="text-[11px] text-slate-400 mt-1">We will optimize page flow and furniture for your goals</p>
               </div>
@@ -206,7 +148,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
             </div>
           )}
 
-          {step === 4 && (
+          {step === 3 && (
             <div className="space-y-5">
               <div className="text-center">
                 <h4 className="text-base font-bold text-white">Project Scale & Length</h4>
@@ -269,7 +211,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
             onClick={handleNext}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-900/20"
           >
-            {step === 4 ? 'Complete Setup ✓' : 'Next Step →'}
+            {step === 3 ? 'Complete Setup ✓' : 'Next Step →'}
           </button>
         </div>
       </div>
