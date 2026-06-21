@@ -15,5 +15,6 @@ async def get_env_debug():
         "is_sb_secret": key.startswith("sb_secret_"),
         "supabase_url": os.getenv("SUPABASE_URL", "NOT_SET"),
         "supabase_version": getattr(__import__('supabase'), '__version__', 'unknown'),
-        "repr": repr(key)
+        "repr": repr(key),
+        "init_error": getattr(__import__('database'), 'supabase_init_error', 'unknown')
     }

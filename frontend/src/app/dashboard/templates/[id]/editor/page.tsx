@@ -1497,7 +1497,7 @@ export default function TemplateEditor() {
 
       // Free-tier export limit — use server-synced count
       if (exportUsed >= exportLimit && !exportBypass) {
-        flashUpload('err', `You have used all ${exportLimit} free PDF exports! Pro version with unlimited exports coming soon.`, 8000)
+        flashUpload('err', `You have used all ${exportLimit} PDF exports! Pro version with unlimited pages coming soon.`, 8000)
         return
       }
 

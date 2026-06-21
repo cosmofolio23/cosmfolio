@@ -12,8 +12,11 @@ same so callers don't change.
 """
 
 from __future__ import annotations
+import logging
 import os
 import re
+
+logger = logging.getLogger(__name__)
 
 # filename keyword → canonical image type
 _TYPE_KEYWORDS = [
@@ -97,7 +100,7 @@ def _detect_orientation(filename: str, ctype: str) -> str:
 
 
 _VISION_MODEL = "yorickvp/llava-13b"
-_vision_version = None  # cached latest version id
+_VISION_MODEL_VERSION = "e37337b315d6b460e8c95c2b1f72bb5881b57eebc0aa106ae63272ae2e28a22f"  # pinned to a known-working version
 
 _VISION_PROMPT = (
     "You are analysing an architecture portfolio image. Classify it. Reply with ONLY "
@@ -119,15 +122,17 @@ def _vision_analyze(image_url: str, filename: str = ""):
         return None
     if os.getenv("ENABLE_VISION_TAGGING") != "1":
         return None
+    # Validate image_url is a full URL
+    if not image_url.startswith(("http://", "https://", "data:")):
+        logger.warning("Vision analysis skipped: image_url is not a valid URL (%s)", image_url[:80])
+        return None
     try:
         import replicate
         import json
         import re
-        global _vision_version
-        if _vision_version is None:
-            _vision_version = list(replicate.models.get(_VISION_MODEL).versions.list())[0].id
+        model_ref = f"{_VISION_MODEL}:{_VISION_MODEL_VERSION}"
         out = replicate.run(
-            f"{_VISION_MODEL}:{_vision_version}",
+            model_ref,
             input={"image": image_url, "prompt": _VISION_PROMPT, "max_tokens": 150, "temperature": 0.1},
         )
         text = "".join(out) if isinstance(out, (list, tuple)) else str(out)
@@ -143,7 +148,8 @@ def _vision_analyze(image_url: str, filename: str = ""):
         if o in ("landscape", "portrait", "square"):
             result["orientation"] = o
         return result or None
-    except Exception:
+    except Exception as e:
+        logger.error("Vision analysis failed for %s: %s", image_url[:80], e)
         return None
 
 

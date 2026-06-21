@@ -13,15 +13,18 @@ print(f"[INFO] Config check:")
 print(f"  SUPABASE_URL: {settings.SUPABASE_URL[:30] if settings.SUPABASE_URL else 'NOT SET'}...")
 print(f"  SUPABASE_KEY: {'service_role' if settings.SUPABASE_SERVICE_ROLE_KEY else 'anon'}...")
 
+supabase_init_error = None
 try:
     if settings.SUPABASE_URL and _key:
         supabase = create_client(settings.SUPABASE_URL, _key)
         print("[OK] Supabase initialized successfully")
     else:
         print("[ERROR] SUPABASE_URL or key not configured")
+        supabase_init_error = "SUPABASE_URL or key not configured"
 except Exception as e:
-    print(f"[ERROR] Supabase initialization failed: {type(e).__name__}: {e}")
     import traceback
+    supabase_init_error = traceback.format_exc()
+    print(f"[ERROR] Supabase initialization failed: {type(e).__name__}: {e}")
     traceback.print_exc()
 
 Base = declarative_base()
