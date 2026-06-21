@@ -645,8 +645,8 @@ function RegionView({
       )}
 
       {/* Editor CSS Watermark */}
-      <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden opacity-10">
-        <div className="text-[120px] font-black text-black uppercase tracking-[0.5em] -rotate-[35deg] select-none whitespace-nowrap drop-shadow-xl" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+      <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden opacity-[0.03]">
+        <div className="text-6xl font-black text-black uppercase tracking-[0.3em] -rotate-12 select-none whitespace-nowrap" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           COSMOFOLIO
         </div>
       </div>
