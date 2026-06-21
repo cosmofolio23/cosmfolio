@@ -236,7 +236,7 @@ export default function SignUp() {
             <div className="w-full border-t border-border-subtle dark:border-dark-border-subtle" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-transparent text-stone-400 backdrop-blur-md">Or continue with</span>
+            <span className="px-3 text-stone-400 text-xs" style={{ backgroundColor: 'rgba(10,10,16,0.95)' }}>Or continue with</span>
           </div>
         </div>
 
