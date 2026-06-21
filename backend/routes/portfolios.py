@@ -686,6 +686,22 @@ async def export_portfolio_pdf(
             portfolio.get("variant_number", 1)
         )
 
+        # Track export usage for the user
+        try:
+            user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+            if user_resp.data:
+                export_count = user_resp.data[0].get("export_count") or 0
+                supabase.table("users").update({"export_count": export_count + 1}).eq("id", current_user["user_id"]).execute()
+            else:
+                supabase.table("users").insert({
+                    "id": current_user["user_id"],
+                    "email": current_user.get("email", ""),
+                    "export_count": 1,
+                    "is_pro": False
+                }).execute()
+        except Exception as e:
+            print(f"Failed to track export in backend: {e}")
+
         return {
             "pdf": pdf_bytes,
             "filename": filename,

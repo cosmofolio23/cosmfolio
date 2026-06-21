@@ -631,9 +631,7 @@ export default function TemplateEditor() {
     if (!projectId) return
     const syncExportCount = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-count`, {
-          headers: { Authorization: `Bearer ${authToken()}` },
-        })
+        const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-count`, { headers: { Authorization: `Bearer ${authToken()}` } })
         if (res.ok) {
           const data = await res.json()
           setExportUsed(data.export_count || 0)
