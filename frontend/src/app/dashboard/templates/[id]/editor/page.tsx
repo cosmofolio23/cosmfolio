@@ -1954,7 +1954,7 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main ref={canvasRef} className={`relative ${isMobile ? 'flex-1' : 'flex-1'} overflow-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
+        <main ref={canvasRef} className={`relative group/canvas ${isMobile ? 'flex-1' : 'flex-1'} overflow-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
           <style>{`
             .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
             .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
