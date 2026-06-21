@@ -561,8 +561,9 @@ export default function TemplateEditor() {
         console.error('Failed to load design packs:', e)
       }
     }
-    // Load assets from localStorage
-    const assetsSaved = localStorage.getItem('uploadedAssets')
+    // Load assets from localStorage (scoped to user)
+    const assetKey = `uploadedAssets_${user?.id || 'guest'}`
+    const assetsSaved = localStorage.getItem(assetKey)
     if (assetsSaved) {
       try {
         setAssets(JSON.parse(assetsSaved))
@@ -852,7 +853,7 @@ export default function TemplateEditor() {
       const newAsset: Asset = { id: uid('a'), url, name: file.name, uploadedAt: new Date().toISOString(), size: file.size }
       const updated = [...assets, newAsset]
       setAssets(updated)
-      localStorage.setItem('uploadedAssets', JSON.stringify(updated))
+      localStorage.setItem(`uploadedAssets_${user?.id || 'guest'}`, JSON.stringify(updated))
       flashUpload('ok', `✓ ${file.name} uploaded`)
       return url
     } catch (e: any) {
@@ -1583,13 +1584,13 @@ export default function TemplateEditor() {
   const deleteAsset = (assetId: string) => {
     const updated = assets.filter(a => a.id !== assetId)
     setAssets(updated)
-    localStorage.setItem('uploadedAssets', JSON.stringify(updated))
+    localStorage.setItem(`uploadedAssets_${user?.id || 'guest'}`, JSON.stringify(updated))
   }
 
   const clearAllAssets = () => {
     if (confirm('Delete all unused assets? This cannot be undone.')) {
       setAssets([])
-      localStorage.removeItem('uploadedAssets')
+      localStorage.removeItem(`uploadedAssets_${user?.id || 'guest'}`)
     }
   }
 
