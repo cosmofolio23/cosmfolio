@@ -1508,25 +1508,25 @@ export default function TemplateEditor() {
         return
       }
 
-      // High-fidelity export: render the REAL pages in the browser and use the
-      // browser's print-to-PDF (full CSS support → matches the editor exactly).
-      // The xhtml2pdf server path cannot render grid/full-bleed layouts.
+      // Increment client-side counter immediately
+      const newCount = exportUsed + 1
+      setExportUsed(newCount)
+      localStorage.setItem('cosmofolio_export_count_v2', String(newCount))
+
+      // Wait for server-side increment to prevent background tab cancellation
+      try {
+        await fetch(`${API_URL}/api/projects/${pid}/document/track-export`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken()}` },
+        })
+      } catch { /* silent */ }
+
+      // Open print window after increment is registered
       const win = window.open(`/dashboard/portfolio-book/${pid}?print=1`, '_blank')
       if (!win) {
         flashUpload('err', 'Pop-up blocked. Allow pop-ups for this site, then click PDF again.', 8000)
         return
       }
-
-      // Increment both client-side and server-side counters
-      const newCount = exportUsed + 1
-      setExportUsed(newCount)
-      localStorage.setItem('cosmofolio_export_count_v2', String(newCount))
-
-      // Fire-and-forget server-side increment for admin dashboard accuracy
-      fetch(`${API_URL}/api/projects/${pid}/document/track-export`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${authToken()}` },
-      }).catch(() => { /* silent */ })
 
       const remaining = exportLimit - newCount
       flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
