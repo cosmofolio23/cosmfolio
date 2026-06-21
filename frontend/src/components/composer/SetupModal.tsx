@@ -23,8 +23,6 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
   const [step, setStep] = useState(1)
   const [orientation, setOrientation] = useState<SetupSettings['orientation']>('landscape')
   const size: SetupSettings['size'] = 'a4'
-  const customWidth = 297
-  const customHeight = 210
   const [purpose, setPurpose] = useState<SetupSettings['purpose']>('university')
   const [pages, setPages] = useState(5)
   const [projects, setProjects] = useState(3)
@@ -37,8 +35,8 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
       onComplete({
         orientation,
         size,
-        customWidth: size === 'custom' ? customWidth : undefined,
-        customHeight: size === 'custom' ? customHeight : undefined,
+        customWidth: undefined,
+        customHeight: undefined,
         purpose,
         pages,
         projects
