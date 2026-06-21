@@ -512,6 +512,11 @@ export default function TemplateEditor() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, publishingPortfolio.pageSize, editSpreadMode])
 
+  const [tokens, setTokens] = useState<DesignTokens>({
+    background: '#FFFFFF', text: '#1a1a1a', primary: '#111111', accent: '#888888', muted: '#dddddd',
+    headingFont: 'Montserrat', bodyFont: 'Inter',
+  })
+
   // Push state to history (called after mutations)
   const pushHistory = () => {
     const newHist = history.slice(0, historyIdx + 1)
@@ -560,11 +565,6 @@ export default function TemplateEditor() {
       markDirty()
     }
   }
-
-  const [tokens, setTokens] = useState<DesignTokens>({
-    background: '#FFFFFF', text: '#1a1a1a', primary: '#111111', accent: '#888888', muted: '#dddddd',
-    headingFont: 'Montserrat', bodyFont: 'Inter',
-  })
 
   const authToken = () => token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
 
@@ -2715,6 +2715,7 @@ export default function TemplateEditor() {
                     className="w-full"
                   />
                 </div>
+              </div>
             )}
 
             {rightTab === 'filters' && (
@@ -2767,6 +2768,7 @@ export default function TemplateEditor() {
             )}
 
             {rightTab === 'style' && (
+              <div className="space-y-5">
                 <div className="border-t pt-3 mt-3">
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Design Packs</h4>
                   <div className="flex gap-1.5 mb-2">
