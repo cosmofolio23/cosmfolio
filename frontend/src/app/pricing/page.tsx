@@ -25,7 +25,7 @@ const PRO_FEATURES = [
 const FAQS = [
   {
     q: 'Is CosmoFolio really free?',
-    a: 'Yes! You can instantly create a beautiful 5-page portfolio and export 2 high-quality PDFs completely for free. Upgrade to Pro for unlimited pages and premium templates.',
+    a: 'Yes! You can instantly create a beautiful 6-page portfolio and export 2 high-quality PDFs completely for free. Upgrade to Pro for unlimited pages and premium templates.',
   },
   {
     q: 'Can I download a PDF for job applications?',
