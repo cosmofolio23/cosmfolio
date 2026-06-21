@@ -530,22 +530,69 @@ async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_curr
 
 @router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
-    """Admin only: Delete a user from both Supabase and Firebase"""
+    """Admin only: Delete a user from Firebase + all Supabase tables."""
     if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    errors = []
     try:
-        # 1. Delete from Firebase if Firebase is initialized
+        # ── 1. Firebase ────────────────────────────────────────────────────────
         if firebase_app:
             try:
                 from firebase_admin import auth as firebase_auth
                 firebase_auth.delete_user(user_id)
             except Exception as fe:
-                # User might not exist in Firebase or not found
-                print(f"Firebase delete warning: {fe}")
-                
-        # 2. Delete from Supabase (Supabase cascade should handle projects/portfolios if foreign keys are set up)
+                # user may already be gone from Firebase
+                errors.append(f"Firebase: {fe}")
+
+        # ── 2. Supabase — explicit cascade (FKs point to auth.users, not
+        #       public.users, so we must delete child rows manually first) ──────
+
+        # library_assets and library_tags cascade from library_projects
+        try:
+            supabase.table("library_projects").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"library_projects: {e}")
+
+        # portfolio_pages cascade from portfolios; project_text/assets cascade from projects
+        try:
+            supabase.table("portfolios").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"portfolios: {e}")
+
+        try:
+            supabase.table("projects").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"projects: {e}")
+
+        # Sheet sets
+        try:
+            supabase.table("sheet_sets").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"sheet_sets: {e}")
+
+        # AI tables
+        try:
+            supabase.table("ai_usage_logs").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"ai_usage_logs: {e}")
+
+        try:
+            supabase.table("user_ai_settings").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"user_ai_settings: {e}")
+
+        # Entitlements
+        try:
+            supabase.table("user_entitlements").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"user_entitlements: {e}")
+
+        # ── 3. Finally delete from public.users ────────────────────────────────
         supabase.table("users").delete().eq("id", user_id).execute()
-        
-        return {"success": True, "message": "User deleted successfully"}
+
+        msg = "User deleted successfully"
+        if errors:
+            msg += f" (non-fatal warnings: {'; '.join(errors)})"
+        return {"success": True, "message": msg}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
