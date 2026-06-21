@@ -10,6 +10,7 @@ import LibraryBrowser, { type LibraryView } from '@/components/templates/Library
 import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
 import SetupModal from '@/components/composer/SetupModal'
 import { auth } from '@/lib/firebase'
+import { apiClient } from '@/lib/api'
 
 type LibTab = 'portfolios' | LibraryView | 'mytemplates'
 const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
@@ -201,31 +202,50 @@ export default function TemplateMarketplace() {
 
   const handleUseTemplate = async (template: Template) => {
     try {
-      let currentToken = token || localStorage.getItem('auth_token')
+      // Get a guaranteed-fresh token. On a freshly loaded page the Firebase SDK may
+      // not have rehydrated the session yet (auth.currentUser null) while the stored
+      // token has already expired — wait briefly for it, then force-refresh.
+      let currentToken = token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
+      for (let i = 0; i < 12 && !auth.currentUser; i++) {
+        await new Promise(r => setTimeout(r, 200))
+      }
       if (auth.currentUser) {
-        currentToken = await auth.currentUser.getIdToken(true) // Force refresh
+        currentToken = await auth.currentUser.getIdToken(true) // force refresh
         useAuthStore.getState().setToken(currentToken)
+        apiClient.setToken(currentToken)
+      }
+      if (!currentToken) {
+        alert('Your session has expired. Please sign in again.')
+        router.push('/signin')
+        return
       }
 
-      // Create a new project from template
-      const res = await fetch(`${API_URL}/api/projects`, {
+      const createReq = (tok: string) => fetch(`${API_URL}/api/projects`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${currentToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: template.name,
           description: template.description || '',
           project_type: 'portfolio',
         }),
       })
-      
+
+      let res = await createReq(currentToken)
+
+      // One retry with a forced token refresh if the token was rejected.
+      if (res.status === 401 && auth.currentUser) {
+        currentToken = await auth.currentUser.getIdToken(true)
+        useAuthStore.getState().setToken(currentToken)
+        apiClient.setToken(currentToken)
+        res = await createReq(currentToken)
+      }
+
       if (res.status === 401) {
-        alert('Authentication error. If this persists, please try refreshing the page.')
+        alert('Your session has expired. Please sign in again.')
+        router.push('/signin')
         return
       }
-      
+
       if (!res.ok) throw new Error('Failed to create project')
       const newProject = await res.json()
       
