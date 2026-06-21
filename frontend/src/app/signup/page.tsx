@@ -7,6 +7,10 @@ import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 import Navbar from '@/components/Navbar'
 
+const API_URL = process.env.NODE_ENV === 'production'
+  ? 'https://cosmfolio-backend.onrender.com'
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+
 export default function SignUp() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -20,16 +24,47 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const { signup, loginWithGoogle } = useAuthStore()
+
+  // Google sign-in profile completion step
+  const [showProfileStep, setShowProfileStep] = useState(false)
+  const [gCollegeName, setGCollegeName] = useState('')
+  const [gState, setGState] = useState('')
+  const [gYear, setGYear] = useState('')
+  const [gStream, setGStream] = useState('B.Arch')
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+
+  const { signup, loginWithGoogle, token } = useAuthStore()
   const router = useRouter()
 
   const handleGoogleSignIn = async () => {
     setError('')
     try {
       await loginWithGoogle()
-      router.push('/dashboard')
+      // Show demographics step instead of going straight to dashboard
+      setShowProfileStep(true)
     } catch (err: any) {
       setError(err.message || 'Google sign in failed')
+    }
+  }
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSavingProfile(true)
+    try {
+      const t = token || localStorage.getItem('auth_token') || ''
+      await fetch(`${API_URL}/api/auth/update-demographics`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+        body: JSON.stringify({
+          college_name: gCollegeName || null,
+          state: gState || null,
+          year_of_passing: gYear || null,
+          stream: gStream || null,
+        }),
+      })
+    } catch { /* non-fatal */ } finally {
+      setIsSavingProfile(false)
+      router.push('/dashboard')
     }
   }
 
@@ -62,6 +97,66 @@ export default function SignUp() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // ── Google profile-completion step ──────────────────────────────────────
+  if (showProfileStep) {
+    return (
+      <div className="min-h-screen flex flex-col aurora-bg relative overflow-hidden">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="glass-panel p-8 max-w-md w-full relative z-10">
+            <div className="flex flex-col items-center mb-5">
+              <Logo size="lg" variant="gold" />
+            </div>
+            <h2 className="text-center text-white font-semibold text-xl mb-1">One last step!</h2>
+            <p className="text-center text-stone-400 text-sm mb-6">Tell us a bit about yourself so we can personalise your experience.</p>
+            <form onSubmit={handleProfileSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">College / University</label>
+                  <input type="text" placeholder="e.g. SPA Delhi" value={gCollegeName} onChange={e => setGCollegeName(e.target.value)}
+                    className="input-field w-full" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">State / Region</label>
+                  <input type="text" placeholder="e.g. Maharashtra" value={gState} onChange={e => setGState(e.target.value)}
+                    className="input-field w-full" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Graduation Year</label>
+                  <input type="text" placeholder="e.g. 2026" value={gYear} onChange={e => setGYear(e.target.value)}
+                    className="input-field w-full" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Stream / Major</label>
+                  <select value={gStream} onChange={e => setGStream(e.target.value)} className="input-field w-full">
+                    <option>B.Arch</option>
+                    <option>M.Arch</option>
+                    <option>B.Planning</option>
+                    <option>M.Planning</option>
+                    <option>Interior Design</option>
+                    <option>Landscape Architecture</option>
+                    <option>Urban Design</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" disabled={isSavingProfile}
+                className="btn-primary w-full py-3 mt-2 disabled:opacity-50">
+                {isSavingProfile ? 'Saving…' : 'Continue to Dashboard →'}
+              </button>
+              <button type="button" onClick={() => router.push('/dashboard')}
+                className="w-full text-center text-stone-500 text-xs hover:text-stone-300 transition">
+                Skip for now
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
