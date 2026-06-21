@@ -40,13 +40,15 @@ interface Props {
   overflowVisible?: boolean
   onUpdateMasterElement?: (id: string, patch: Partial<MasterElement>) => void
   pageSize?: PageSize
+  /** Free-tier watermark — shown for free users, hidden for Pro/admin. */
+  showWatermark?: boolean
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents'
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true }: Props) {
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -197,6 +199,32 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
           onApplyScope={onApplyScope}
           onSelectionChange={onFreeSelectionChange}
         />
+      )}
+
+      {/* Free-tier watermark — tiled diagonally across the whole page; a neutral
+          grey + light/dark text-shadow keeps it legible on light, dark and busy
+          photo backgrounds. Hidden for Pro/admin via showWatermark. */}
+      {showWatermark && (
+        <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none" aria-hidden="true">
+          <div className="absolute inset-[-25%] flex flex-col justify-around -rotate-[30deg]">
+            {Array.from({ length: 9 }).map((_, r) => (
+              <div
+                key={r}
+                className="flex justify-around whitespace-nowrap font-black uppercase tracking-[0.35em]"
+                style={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  fontSize: '1.5rem',
+                  color: 'rgba(140,140,140,0.32)',
+                  textShadow: '0 1px 1px rgba(255,255,255,0.18), 0 -1px 1px rgba(0,0,0,0.18)',
+                }}
+              >
+                {Array.from({ length: 6 }).map((_, c) => (
+                  <span key={c}>CosmoFolio&nbsp;·&nbsp;Free</span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
@@ -643,13 +671,6 @@ function RegionView({
           )}
         </div>
       )}
-
-      {/* Editor CSS Watermark */}
-      <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden opacity-[0.03]">
-        <div className="text-6xl font-black text-black uppercase tracking-[0.3em] -rotate-12 select-none whitespace-nowrap" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-          COSMOFOLIO
-        </div>
-      </div>
     </div>
   )
 }
