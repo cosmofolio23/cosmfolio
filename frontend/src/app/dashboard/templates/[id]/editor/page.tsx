@@ -2155,13 +2155,13 @@ export default function TemplateEditor() {
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10" id="tour-right-tabs">
             {([
+              ['publishing', '📐', 'Publishing'],
               ['guide',      '📋', 'Guide'],
               ['layout',     '▦',  'Layout'],
               ['blocks',     '▤',  'Blocks'],
               ['canvas',     '✦',  'Canvas'],
               ['style',      '🎨', 'Style'],
               ['filters',    '📸', 'Filters'],
-              ['publishing', '📐', 'Publishing'],
             ] as const).map(([t, icon, label]) => (
               <button key={t} onClick={() => setRightTab(t)} title={label}
                 className={`flex-1 py-3 text-base transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
