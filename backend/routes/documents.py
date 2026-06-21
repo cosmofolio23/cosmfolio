@@ -97,12 +97,14 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No document found. Save your portfolio first.")
 
         # Check export limit (supabase is imported at module level)
-        user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+        user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
         export_count = 0
         is_bypass = current_user.get("email") == "boseraj001@gmail.com"
         if user_resp.data and not is_bypass:
-            export_count = user_resp.data[0].get("export_count") or 0
-            if export_count >= 2:
+            user_data = user_resp.data[0]
+            export_count = user_data.get("export_count") or 0
+            is_pro = user_data.get("is_pro") or False
+            if export_count >= 2 and not is_pro:
                 raise HTTPException(status_code=403, detail="FREE_TIER_LIMIT_REACHED")
 
         # Simple HTML-to-PDF rendering (basic)
@@ -156,12 +158,13 @@ async def track_export(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     _verify_owner(project_id, current_user["user_id"])
     try:
-        user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+        user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
         export_count = 0
         if user_resp.data:
             export_count = user_resp.data[0].get("export_count") or 0
         supabase.table("users").update({"export_count": export_count + 1}).eq("id", current_user["user_id"]).execute()
-        return {"export_count": export_count + 1, "limit": 3}
+        is_pro = user_resp.data[0].get("is_pro") if user_resp.data else False
+        return {"export_count": export_count + 1, "limit": 3, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Track export failed: {str(e)[:100]}")
 
@@ -172,12 +175,14 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     _verify_owner(project_id, current_user["user_id"])
     try:
-        user_resp = supabase.table("users").select("export_count").eq("id", current_user["user_id"]).execute()
+        user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
         export_count = 0
+        is_pro = False
         if user_resp.data:
             export_count = user_resp.data[0].get("export_count") or 0
+            is_pro = user_resp.data[0].get("is_pro") or False
         is_bypass = current_user.get("email") == "boseraj001@gmail.com"
-        return {"export_count": export_count, "limit": 3, "is_bypass": is_bypass}
+        return {"export_count": export_count, "limit": 3, "is_bypass": is_bypass, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Get export count failed: {str(e)[:100]}")
 

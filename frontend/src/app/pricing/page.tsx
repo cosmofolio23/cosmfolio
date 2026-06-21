@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { useAuthStore } from '@/store/auth'
 
 const FREE_FEATURES = [
   'Unlimited portfolios',
@@ -50,6 +51,44 @@ function Check() {
 
 export default function PricingPage() {
   const [currency, setCurrency] = useState<'INR' | 'USD'>('INR')
+  const { isAuthenticated } = useAuthStore()
+  
+  const [promoCode, setPromoCode] = useState('')
+  const [isApplying, setIsApplying] = useState(false)
+  const [promoMessage, setPromoMessage] = useState('')
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return
+    setIsApplying(true)
+    setPromoMessage('')
+    try {
+      const API_URL = process.env.NODE_ENV === 'production'
+        ? 'https://cosmfolio-backend.onrender.com'
+        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const token = localStorage.getItem('auth_token')
+      
+      const res = await fetch(`${API_URL}/api/user/apply-coupon`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token || ''}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code: promoCode.trim() })
+      })
+      
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.detail || 'Invalid coupon code')
+      }
+      
+      setPromoMessage(data.message || 'Coupon applied successfully! You are now a Pro user.')
+      setPromoCode('')
+    } catch (err: any) {
+      setPromoMessage(err.message || 'Failed to apply promo code')
+    } finally {
+      setIsApplying(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -138,17 +177,44 @@ export default function PricingPage() {
                   <span className="font-semibold text-text-primary dark:text-dark-text-primary">Best for:</span> Final submissions, applications, thesis
                 </p>
                 {/* Pro checkout isn't built yet — be honest: coming soon + join the beta. */}
-                <div className="w-full flex items-center justify-center gap-2 rounded-lg border border-accent-gold/40 bg-accent-gold/10 text-text-primary dark:text-dark-text-primary font-semibold py-3 px-4 cursor-default select-none">
-                  <svg className="w-4 h-4 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                  Coming Soon
+                <div className="w-full flex flex-col gap-3">
+                  {!isAuthenticated ? (
+                    <>
+                      <div className="w-full flex items-center justify-center gap-2 rounded-lg border border-accent-gold/40 bg-accent-gold/10 text-text-primary dark:text-dark-text-primary font-semibold py-3 px-4 cursor-default select-none">
+                        <svg className="w-4 h-4 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                        Coming Soon
+                      </div>
+                      <p className="text-xs text-center text-text-secondary dark:text-dark-text-secondary mt-1">
+                        Sign up for free to be notified when Pro launches, or apply a promo code if you have one.
+                      </p>
+                    </>
+                  ) : (
+                    <div className="mt-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-4">
+                      <p className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary mb-3">HAVE A PROMO CODE?</p>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="Enter code" 
+                          value={promoCode}
+                          onChange={e => setPromoCode(e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm bg-white dark:bg-black/30 border border-gray-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-accent-gold"
+                        />
+                        <button 
+                          onClick={handleApplyPromo}
+                          disabled={isApplying || !promoCode.trim()}
+                          className="btn-primary py-2 px-4 text-sm"
+                        >
+                          {isApplying ? '...' : 'Apply'}
+                        </button>
+                      </div>
+                      {promoMessage && (
+                        <p className={`text-xs mt-3 font-semibold ${promoMessage.includes('success') ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {promoMessage}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-center text-text-secondary dark:text-dark-text-secondary mt-3">
-                  Pro is launching soon.{' '}
-                  <Link href="/signup" className="font-semibold text-accent-primary dark:text-accent-gold hover:underline">
-                    Join the beta
-                  </Link>{' '}
-                  and we&apos;ll notify you.
-                </p>
               </div>
             </div>
           </div>

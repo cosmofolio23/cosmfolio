@@ -584,7 +584,7 @@ export default function TemplateEditor() {
         if (res.ok) {
           const data = await res.json()
           setExportUsed(data.export_count || 0)
-          setExportBypass(!!data.is_bypass)
+          setExportBypass(!!data.is_bypass || !!data.is_pro)
           // Also sync to localStorage for offline consistency
           localStorage.setItem('cosmofolio_export_count_v2', String(data.export_count || 0))
         }
@@ -1522,7 +1522,11 @@ export default function TemplateEditor() {
       }).catch(() => { /* silent */ })
 
       const remaining = exportLimit - newCount
-      flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
+      if (exportBypass) {
+        flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. (Pro User - Unlimited Exports)`, 6000)
+      } else {
+        flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
+      }
     } catch (e: any) {
       flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
     } finally {

@@ -448,18 +448,50 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
             detail="Forbidden: Admin access only"
         )
     
-    if not supabase:
+    try:
+        if not supabase:
+            raise Exception("Database connection not available")
+            
+        # Get users sorted by creation date (newest first)
+        result = supabase.table("users").select("*").order("created_at", desc=True).execute()
+        return result.data
+        
+    except Exception as e:
+        print(f"Error fetching users: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection not available"
-        )
-        
-    try:
-        # Fetch all users, sorted by created_at descending
-        res = supabase.table("users").select("*").order("created_at", desc=True).execute()
-        return res.data
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to fetch users: {str(e)}"
         )
+
+@router.post("/admin/users/{user_id}/reset-exports")
+async def reset_user_exports(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Reset a user's export count to 0"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        supabase.table("users").update({"export_count": 0}).eq("id", user_id).execute()
+        return {"success": True, "message": "Export count reset successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post("/admin/users/{user_id}/upgrade")
+async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Upgrade user to Pro (unlimited exports)"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        supabase.table("users").update({"is_pro": True}).eq("id", user_id).execute()
+        return {"success": True, "message": "User upgraded to Pro successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post("/admin/users/{user_id}/downgrade")
+async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Downgrade user to Free"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        supabase.table("users").update({"is_pro": False}).eq("id", user_id).execute()
+        return {"success": True, "message": "User downgraded successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
