@@ -113,11 +113,27 @@ def get_current_user(authorization: str = Header(None)):
         if firebase_app:
             from firebase_admin import auth as firebase_auth
             decoded = firebase_auth.verify_id_token(token)
+            uid = decoded.get("uid") or decoded.get("sub")
+            
+            # Check if user is marked as deleted
+            try:
+                from database import supabase
+                if supabase:
+                    check = supabase.table("users").select("export_count").eq("id", uid).execute()
+                    if check.data and check.data[0].get("export_count") == -999:
+                        raise HTTPException(status_code=403, detail="Your account has been deleted by an administrator.")
+            except HTTPException:
+                raise
+            except Exception:
+                pass
+                
             return {
-                "user_id": decoded.get("uid") or decoded.get("sub"),
+                "user_id": uid,
                 "email": decoded.get("email", ""),
                 "auth": "firebase"
             }
+    except HTTPException:
+        raise
     except Exception:
         pass
 
@@ -128,14 +144,23 @@ def get_current_user(authorization: str = Header(None)):
         try:
             from database import supabase
             if supabase:
+                # Check if user is marked as deleted
+                check = supabase.table("users").select("export_count").eq("id", verified_user["user_id"]).execute()
+                if check.data and check.data[0].get("export_count") == -999:
+                    raise HTTPException(status_code=403, detail="Your account has been deleted by an administrator.")
+                
                 supabase.table("users").upsert({
                     "id": verified_user["user_id"],
                     "email": verified_user.get("email", ""),
                     "updated_at": __import__('datetime').datetime.utcnow().isoformat()
                 }).execute()
+        except HTTPException:
+            raise
         except Exception as e:
             print(f"[AUTH WARNING] Lazy sync failed: {e}")
         return verified_user
+    except HTTPException:
+        raise
     except Exception as e:
         last_error = f"Firebase Fallback Error: {e}"
         print(f"[AUTH ERROR] {last_error}")

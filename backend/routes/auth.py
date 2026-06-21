@@ -484,8 +484,8 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
         if not supabase:
             raise Exception("Database connection not available")
             
-        # Get users sorted by creation date (newest first)
-        result = supabase.table("users").select("*").order("created_at", desc=True).execute()
+        # Get users sorted by creation date (newest first), excluding deleted users
+        result = supabase.table("users").select("*").neq("export_count", -999).order("created_at", desc=True).execute()
         return result.data
         
     except Exception as e:
@@ -543,8 +543,8 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
                 # User might not exist in Firebase or not found
                 print(f"Firebase delete warning: {fe}")
                 
-        # 2. Delete from Supabase (Supabase cascade should handle projects/portfolios if foreign keys are set up)
-        supabase.table("users").delete().eq("id", user_id).execute()
+        # 2. Mark as deleted in Supabase (export_count = -999) to prevent recreation
+        supabase.table("users").update({"export_count": -999}).eq("id", user_id).execute()
         
         return {"success": True, "message": "User deleted successfully"}
     except Exception as e:
