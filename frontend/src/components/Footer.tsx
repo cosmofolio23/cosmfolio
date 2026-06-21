@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Logo from '@/components/Logo'
 
 export default function Footer() {
   return (
@@ -7,7 +8,10 @@ export default function Footer() {
         {/* Changed md:grid-cols-4 to md:grid-cols-5 per audit report */}
         <div className="grid md:grid-cols-5 gap-8 mb-8 pb-8 border-b border-slate text-left">
           <div>
-            <h4 className="font-bold mb-4">CosmoFolio</h4>
+            <Link href="/" className="flex items-center gap-2 mb-4 hover:opacity-90 transition text-white">
+              <Logo size="md" variant="gold" />
+              <span className="text-xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
+            </Link>
             <p className="text-stone-light text-sm mb-4">Professional architecture portfolio generation.</p>
             <div className="flex gap-4">
               <a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="text-stone-light hover:text-white transition">
