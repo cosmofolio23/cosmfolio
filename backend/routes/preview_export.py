@@ -55,8 +55,8 @@ async def export_portfolio_as_pdf(
         
         if not is_admin:
             # Enforce Page Limits
-            if is_free and len(pages) > 5:
-                raise HTTPException(status_code=403, detail="Free tier is limited to 5 pages per portfolio. Please upgrade to Pro.")
+            if is_free and len(pages) > 6:
+                raise HTTPException(status_code=403, detail="Free tier is limited to 6 pages per portfolio. Please upgrade to Pro.")
             elif not is_free and len(pages) > 30:
                 raise HTTPException(status_code=403, detail="Pro tier is limited to 30 pages per portfolio.")
             

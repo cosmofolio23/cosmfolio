@@ -928,8 +928,8 @@ async def save_customization(
             is_admin = current_user.get("email", "").lower() == 'boseraj001@gmail.com'
             
             if not is_admin:
-                if is_free and len(pages) > 5:
-                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Free tier is limited to 5 pages per portfolio. Please upgrade to Pro.")
+                if is_free and len(pages) > 6:
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Free tier is limited to 6 pages per portfolio. Please upgrade to Pro.")
                 elif not is_free and len(pages) > 30:
                     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Pro tier is limited to 30 pages per portfolio.")
 

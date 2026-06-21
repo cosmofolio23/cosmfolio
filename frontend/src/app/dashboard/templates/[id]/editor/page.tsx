@@ -1431,8 +1431,8 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    if (pages.length >= 5) {
-      flashUpload('err', 'Free tier is limited to 5 pages. Pro Mode with unlimited pages is launching next week.', 8000)
+    if (pages.length >= 6) {
+      flashUpload('err', 'Free tier is limited to 6 pages. Pro Mode with unlimited pages is launching next week.', 8000)
       return
     }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
