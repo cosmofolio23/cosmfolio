@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
+import Navbar from '@/components/Navbar'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -41,8 +42,10 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen aurora-bg flex items-center justify-center relative overflow-hidden">
-      <div className="glass-panel p-8 max-w-md w-full relative z-10">
+    <div className="min-h-screen flex flex-col aurora-bg relative overflow-hidden">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="glass-panel p-8 max-w-md w-full relative z-10">
         <div className="flex flex-col items-center mb-5">
           <Logo size="lg" variant="gold" />
         </div>
@@ -149,6 +152,7 @@ export default function SignIn() {
             Sign up
           </Link>
         </p>
+      </div>
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
+import Navbar from '@/components/Navbar'
 
 export default function SignUp() {
   const [name, setName] = useState('')
@@ -57,15 +58,17 @@ export default function SignUp() {
       })
       router.push('/dashboard')
     } catch (err: any) {
-      setError(err.message || 'Sign up failed. Please try again.')
+      setError(err.message || 'Signup failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen aurora-bg flex items-center justify-center relative overflow-hidden">
-      <div className="glass-panel p-8 max-w-md w-full relative z-10">
+    <div className="min-h-screen flex flex-col aurora-bg relative overflow-hidden">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="glass-panel p-8 max-w-lg w-full relative z-10 my-8">
         <div className="flex flex-col items-center mb-5">
           <Logo size="lg" variant="gold" />
         </div>
@@ -264,6 +267,7 @@ export default function SignUp() {
           {' '}and{' '}
           <Link href="/privacy" className="underline hover:text-gray-300">Privacy Policy</Link>
         </p>
+      </div>
       </div>
     </div>
   )
