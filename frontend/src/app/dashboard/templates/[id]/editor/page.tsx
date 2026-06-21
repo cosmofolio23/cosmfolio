@@ -2061,8 +2061,9 @@ export default function TemplateEditor() {
             (() => {
               const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
               const rightIdx = leftIdx + 1
+              const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
               return (
-                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom, height: Math.round(1075 * canvasZoom) }}>
+                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
                 <div className="flex gap-0 items-stretch justify-center relative overflow-visible py-2 origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                   {/* Left Page */}
                   <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
@@ -2137,9 +2138,11 @@ export default function TemplateEditor() {
               )
             })()
           ) : (
-            /* Single Page Canvas (Covers, or when Spread Mode is disabled) */
-            /* transform:scale keeps layout at natural size (no text reflow), zoom was causing text to rewrap */
-            <div className="mx-auto select-none" style={{ width: 760 * canvasZoom, height: Math.round(1075 * canvasZoom) }}>
+            <>
+              {(() => {
+              const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
+              return (
+            <div className="mx-auto select-none" style={{ width: 760 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
               <div className="origin-top-left" style={{ width: 760, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                 <PageComposer
                   page={currentPage}
@@ -2164,6 +2167,9 @@ export default function TemplateEditor() {
                 />
               </div>
             </div>
+              )
+              })()}
+            </>
           )}
           <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400 font-medium`}>
             {editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 

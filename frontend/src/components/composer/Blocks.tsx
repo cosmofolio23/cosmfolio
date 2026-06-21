@@ -891,7 +891,7 @@ export function ContentsBlock({
         <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
           <div className="col-span-5 bg-black/5 rounded overflow-hidden relative flex flex-col justify-end p-3 min-h-[160px]">
             {featured.thumbnail ? (
-              <img src={featured.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80" />
+              <div className="absolute inset-0 w-full h-full opacity-80" style={{ backgroundImage: `url(${featured.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             ) : (
               <div className="absolute inset-0 bg-gray-200" />
             )}
@@ -958,7 +958,7 @@ export function ContentsBlock({
             <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2">
               <div className="w-12 h-12 bg-black/5 rounded overflow-hidden flex-shrink-0">
                 {it.thumbnail ? (
-                  <img src={it.thumbnail} alt="" className="w-full h-full object-cover" />
+                  <div className="w-full h-full" style={{ backgroundImage: `url(${it.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-400">{it.num}</div>
                 )}

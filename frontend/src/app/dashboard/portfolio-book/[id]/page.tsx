@@ -62,6 +62,7 @@ export default function PortfolioBookPage() {
     try {
       const res = await fetch(`${API_URL}/api/projects/${projectId}/document`, {
         headers: { Authorization: `Bearer ${authToken()}` },
+        cache: 'no-store',
       })
       if (!res.ok) throw new Error('Portfolio not found')
       const data = await res.json()
@@ -69,6 +70,7 @@ export default function PortfolioBookPage() {
 
       const projRes = await fetch(`${API_URL}/api/projects/${projectId}`, {
         headers: { Authorization: `Bearer ${authToken()}` },
+        cache: 'no-store',
       })
       const project = projRes.ok ? await projRes.json() : { title: 'Portfolio' }
 
@@ -121,11 +123,34 @@ export default function PortfolioBookPage() {
 
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i] as HTMLElement
+
+        // html2canvas struggles with aspect-ratio CSS, so we force explicit pixel dimensions
+        const targetWidth = el.offsetWidth > 800 ? el.offsetWidth : 1200
+        const aspectRatio = pdfWidth / pdfHeight
+        const targetHeight = Math.round(targetWidth / aspectRatio)
+        
+        const oldStyleText = el.style.cssText
+        el.style.width = `${targetWidth}px`
+        el.style.height = `${targetHeight}px`
+        
+        const child = el.firstElementChild as HTMLElement
+        let oldChildStyle = ''
+        if (child) {
+          oldChildStyle = child.style.cssText
+          child.style.width = `${targetWidth}px`
+          child.style.height = `${targetHeight}px`
+          child.style.aspectRatio = 'auto'
+        }
+
         const canvas = await html2canvas(el, {
           scale: 2, // High resolution
           useCORS: true,
           logging: false
         })
+        
+        // Restore styles
+        el.style.cssText = oldStyleText
+        if (child) child.style.cssText = oldChildStyle
         
         const imgData = canvas.toDataURL('image/jpeg', 0.95)
         if (i > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
