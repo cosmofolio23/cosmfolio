@@ -1884,7 +1884,14 @@ export default function TemplateEditor() {
             <Link href="/dashboard/my-portfolios" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
             <div>
               <input value={portfolioTitle} onChange={e => { markDirty(); setPortfolioTitle(e.target.value) }} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded" placeholder="Untitled" />
-              <p className="text-[11px] text-gray-400 px-2">Template: {template.name} · {template.category}</p>
+              <div className="flex items-center gap-2 px-2 mt-0.5">
+                <p className="text-[11px] text-gray-400">Template: {template.name} · {template.category}</p>
+                {(!portfolioTitle || portfolioTitle.trim().toLowerCase() === 'untitled portfolio' || portfolioTitle.trim().toLowerCase() === 'untitled') && (
+                  <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider animate-pulse">
+                    Change name to save your work
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3" id="tour-publishing-tools">
