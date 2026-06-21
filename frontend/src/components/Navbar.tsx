@@ -20,6 +20,7 @@ export default function Navbar() {
         </Link>
         <div className="flex items-center gap-6">
           <div className="hidden md:flex items-center gap-4 text-sm font-medium">
+            <Link href="/" className={`transition ${isActive('/') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>Home</Link>
             <Link href="/about" className={`transition ${isActive('/about') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>About</Link>
             <Link href="/pricing" className={`transition ${isActive('/pricing') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>Pricing</Link>
             <Link href="/contact" className={`transition ${isActive('/contact') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>Contact</Link>
@@ -49,6 +50,7 @@ export default function Navbar() {
         {/* Mobile menu dropdown */}
         {isMobileMenuOpen && (
           <div className="absolute top-full left-0 right-0 bg-charcoal border-b border-white/10 shadow-elevation-2 p-4 flex flex-col gap-4 md:hidden">
+            <Link href="/" className={`transition ${isActive('/') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>Home</Link>
             <Link href="/about" className={`transition ${isActive('/about') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>About</Link>
             <Link href="/pricing" className={`transition ${isActive('/pricing') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>Pricing</Link>
             <Link href="/contact" className={`transition ${isActive('/contact') ? 'text-white' : 'text-gray-300 hover:text-white'}`}>Contact</Link>
