@@ -163,7 +163,7 @@ async def track_export(project_id: str, authorization: str = Header(None)):
             export_count = user_resp.data[0].get("export_count") or 0
         supabase.table("users").update({"export_count": export_count + 1}).eq("id", current_user["user_id"]).execute()
         is_pro = user_resp.data[0].get("is_pro") if user_resp.data else False
-        return {"export_count": export_count + 1, "limit": 3, "is_pro": is_pro}
+        return {"export_count": export_count + 1, "limit": 2, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Track export failed: {str(e)[:100]}")
 
@@ -181,7 +181,7 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
             export_count = user_resp.data[0].get("export_count") or 0
             is_pro = user_resp.data[0].get("is_pro") or False
         is_bypass = current_user.get("email") == "boseraj001@gmail.com"
-        return {"export_count": export_count, "limit": 3, "is_bypass": is_bypass, "is_pro": is_pro}
+        return {"export_count": export_count, "limit": 2, "is_bypass": is_bypass, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Get export count failed: {str(e)[:100]}")
 

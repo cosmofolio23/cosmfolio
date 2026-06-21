@@ -98,6 +98,7 @@ export default function TemplateMarketplace() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [filterPresets, setFilterPresets] = useState<Map<string, FilterPreset>>(new Map())
   const [showCustomize, setShowCustomize] = useState(false)
+  const [isPro, setIsPro] = useState(false)
   const [customColors, setCustomColors] = useState<Record<string, string>>({})
   const [customFonts, setCustomFonts] = useState<Record<string, string>>({})
   const [customizeName, setCustomizeName] = useState('')
@@ -118,7 +119,7 @@ export default function TemplateMarketplace() {
     localStorage.setItem('template_favorites', JSON.stringify(Array.from(favorites)))
   }, [favorites])
 
-  // Fetch templates
+  // Fetch templates and isPro status
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/signin')
@@ -126,6 +127,24 @@ export default function TemplateMarketplace() {
     }
     fetchTemplates()
     fetchPortfolios()
+    
+    // Fetch is_pro status
+    const fetchStatus = async () => {
+      try {
+        const savedToken = token || localStorage.getItem('auth_token')
+        if (!savedToken) return
+        const res = await fetch(`${API_URL}/api/documents/export-count`, {
+          headers: { 'Authorization': `Bearer ${savedToken}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setIsPro(!!data.is_pro || !!data.is_bypass)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    fetchStatus()
   }, [isAuthenticated])
 
   // Load filter presets on mount
@@ -253,9 +272,11 @@ export default function TemplateMarketplace() {
       const orientationParam = setupSettings?.orientation || 'landscape'
       const sizeParam = setupSettings?.size || 'a4'
       const purposeParam = setupSettings?.purpose || 'university'
-      // Free tier: hard-cap at 5 pages / 3 projects (Pro unlocks more next week)
-      const pagesParam = Math.min(5, setupSettings?.pages || 5)
-      const projectsParam = Math.min(3, setupSettings?.projects || 3)
+      // Use dynamic limits based on isPro status
+      const maxPages = isPro ? 30 : 5
+      const maxProjects = isPro ? 10 : 3
+      const pagesParam = Math.min(maxPages, setupSettings?.pages || maxPages)
+      const projectsParam = Math.min(maxProjects, setupSettings?.projects || maxProjects)
 
       // Redirect to editor with the new project and configuration query params
       router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}&orientation=${orientationParam}&size=${sizeParam}&purpose=${purposeParam}&pages=${pagesParam}&projects=${projectsParam}`)
@@ -956,13 +977,14 @@ export default function TemplateMarketplace() {
       )}
       
       {/* Portfolio Setup Modal */}
-      <SetupModal 
-        isOpen={isSetupModalOpen} 
-        onClose={() => setIsSetupModalOpen(false)} 
-        onComplete={settings => {
+      <SetupModal
+        isOpen={isSetupModalOpen}
+        isPro={isPro}
+        onClose={() => setIsSetupModalOpen(false)}
+        onComplete={(settings) => {
           setSetupSettings(settings)
           setIsSetupModalOpen(false)
-        }} 
+        }}
       />
     </div>
   )

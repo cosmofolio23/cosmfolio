@@ -14,11 +14,12 @@ export interface SetupSettings {
 
 interface Props {
   isOpen: boolean
+  isPro?: boolean
   onClose: () => void
   onComplete: (settings: SetupSettings) => void
 }
 
-export default function SetupModal({ isOpen, onClose, onComplete }: Props) {
+export default function SetupModal({ isOpen, isPro = false, onClose, onComplete }: Props) {
   const [step, setStep] = useState(1)
   const [orientation, setOrientation] = useState<SetupSettings['orientation']>('landscape')
   const [size, setSize] = useState<SetupSettings['size']>('a4')
@@ -220,13 +221,15 @@ export default function SetupModal({ isOpen, onClose, onComplete }: Props) {
                   </div>
                   <div className="flex items-center gap-3">
                     <input
-                      type="range" min="1" max="5" step="1"
+                      type="range" min="1" max={isPro ? "30" : "5"} step="1"
                       value={pages}
                       onChange={e => setPages(parseInt(e.target.value))}
                       className="flex-1 h-1 accent-blue-500 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 pt-1">Free plan includes up to 5 pages. More pages unlock in Pro — launching next week.</p>
+                  <p className="text-[10px] text-slate-500 pt-1">
+                    {isPro ? "Pro plan unlocked: Up to 30 pages per portfolio." : "Free plan includes up to 5 pages. More pages unlock in Pro."}
+                  </p>
                 </div>
                 {/* Projects */}
                 <div className="space-y-1">
@@ -236,7 +239,7 @@ export default function SetupModal({ isOpen, onClose, onComplete }: Props) {
                   </div>
                   <div className="flex items-center gap-3">
                     <input
-                      type="range" min="1" max="3" step="1"
+                      type="range" min="1" max={isPro ? "10" : "3"} step="1"
                       value={projects}
                       onChange={e => setProjects(parseInt(e.target.value))}
                       className="flex-1 h-1 accent-blue-500 bg-slate-800 rounded-lg appearance-none cursor-pointer"
