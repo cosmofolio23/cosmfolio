@@ -74,7 +74,7 @@ export default function TermsOfService() {
         <h2 className="text-xl font-semibold mt-8 mb-3">9. Contact</h2>
         <p className="mb-6">
           Questions? Email{' '}
-          <a className="text-blue-600 underline" href="mailto:boseraj001@gmail.com">boseraj001@gmail.com</a>.
+          <a className="text-blue-600 underline" href="mailto:thecosmofolio@gmail.com">thecosmofolio@gmail.com</a>.
         </p>
 
         <div className="mt-12 pt-6 border-t border-gray-200 text-sm text-gray-500">

@@ -33,7 +33,7 @@ export default function Footer() {
             <h4 className="font-bold mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><Link href="/contact" className="text-gray-300 hover:text-white transition">Contact Us</Link></li>
-              <li><a href="mailto:cosmoatelier.live@gmail.com" className="text-gray-300 hover:text-white transition">cosmoatelier.live@gmail.com</a></li>
+              <li><a href="mailto:thecosmofolio@gmail.com" className="text-gray-300 hover:text-white transition">thecosmofolio@gmail.com</a></li>
               <li><a href="https://www.instagram.com/cosmoatelier.in" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition">Instagram</a></li>
               <li><a href="https://www.linkedin.com/company/cosmo-atelier" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition">LinkedIn</a></li>
             </ul>

@@ -65,8 +65,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-text-primary dark:text-dark-text-primary mb-1">Email Us</h3>
-                    <a href="mailto:cosmoatelier.live@gmail.com" className="text-text-secondary dark:text-dark-text-secondary hover:text-accent-primary dark:hover:text-accent-gold transition">
-                      cosmoatelier.live@gmail.com
+                    <a href="mailto:thecosmofolio@gmail.com" className="text-text-secondary dark:text-dark-text-secondary hover:text-accent-primary dark:hover:text-accent-gold transition">
+                      thecosmofolio@gmail.com
                     </a>
                   </div>
                 </div>
