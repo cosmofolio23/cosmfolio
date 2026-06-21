@@ -1696,7 +1696,7 @@ export default function TemplateEditor() {
             <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
               {pages.map((page) => (
                 <div key={page.id}>
-                  <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} showWatermark={!exportBypass} />
+                  <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} />
                   <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
                 </div>
               ))}

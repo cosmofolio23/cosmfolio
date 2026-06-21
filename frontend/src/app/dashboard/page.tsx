@@ -124,7 +124,10 @@ export default function Dashboard() {
             </div>
           </div>
           <button
-            onClick={() => router.push('/signin')}
+            onClick={() => {
+              useAuthStore.getState().logout()
+              router.push('/signin')
+            }}
             className="btn-tertiary text-sm"
           >
             Sign Out

@@ -10,6 +10,15 @@ from pathlib import Path
 backend_dir = Path(__file__).parent
 sys.path.insert(0, str(backend_dir))
 
+# Try to load environment variables FIRST
+print("[STARTUP] Loading environment variables...")
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("[STARTUP] Environment variables loaded")
+except Exception as e:
+    print(f"[WARNING] Failed to load .env: {e}")
+
 print("[STARTUP] Python path setup complete")
 print(f"[STARTUP] Backend directory: {backend_dir}")
 print(f"[STARTUP] Files in backend: {len(list(backend_dir.glob('*.py')))}")
@@ -29,7 +38,7 @@ app = FastAPI(
 # Add CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "https://thecosmofolio.com", "https://www.thecosmofolio.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,14 +81,6 @@ async def docs():
     """Redirect to API documentation"""
     return {"docs": "/docs"}
 
-# Try to load environment variables
-print("[STARTUP] Loading environment variables...")
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-    print("[STARTUP] Environment variables loaded")
-except Exception as e:
-    print(f"[WARNING] Failed to load .env: {e}")
 
 # Try to load routes (but don't crash if they fail)
 print("[STARTUP] Loading routes...")

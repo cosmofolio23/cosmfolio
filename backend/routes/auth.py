@@ -3,6 +3,7 @@ from .deps import get_current_user as get_current_user_from_deps
 from pydantic import BaseModel
 from datetime import datetime
 import json
+import os
 import re
 import requests
 from firebase_config import verify_firebase_token, firebase_app

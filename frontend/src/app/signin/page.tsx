@@ -70,9 +70,28 @@ export default function SignIn() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-300">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!email) return alert('Please enter your email first to reset your password.')
+                  try {
+                    const { sendPasswordResetEmail } = await import('firebase/auth')
+                    const { auth } = await import('@/lib/firebase')
+                    await sendPasswordResetEmail(auth, email)
+                    alert('Password reset email sent! Please check your inbox.')
+                  } catch (e: any) {
+                    alert('Failed to send reset email: ' + e.message)
+                  }
+                }}
+                className="text-xs text-accent-gold hover:text-white transition"
+              >
+                Forgot password?
+              </button>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}

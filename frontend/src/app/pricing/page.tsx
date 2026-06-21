@@ -15,7 +15,7 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   'Unlimited portfolios',
   '30 pages per portfolio',
-  '2 PDF exports',
+  'Unlimited PDF exports',
   'Standard + Premium templates',
   'Full design tools',
 ]

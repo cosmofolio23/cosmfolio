@@ -52,7 +52,7 @@ def verify_firebase_token_fallback(token: str) -> dict:
         if not cert_str:
             raise ValueError(f"Matching certificate for kid {kid} not found")
 
-        project_id = "cosmo-folio-62c7f"
+        project_id = os.getenv("FIREBASE_PROJECT_ID", "cosmo-folio-62c7f")
 
         # Google returns X.509 *certificates*, but PyJWT needs a public KEY — passing
         # the certificate string straight to jwt.decode fails on every token. Extract

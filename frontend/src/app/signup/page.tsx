@@ -228,13 +228,6 @@ export default function SignUp() {
           </button>
         </form>
 
-        <p className="text-center text-stone-400 mt-6">
-          Already have an account?{' '}
-          <Link href="/signin" className="text-accent-gold font-semibold hover:text-white transition">
-            Sign in
-          </Link>
-        </p>
-
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border-subtle dark:border-dark-border-subtle" />
@@ -258,8 +251,18 @@ export default function SignUp() {
           Sign up with Google
         </button>
 
+        <p className="text-center text-stone-400 mt-6">
+          Already have an account?{' '}
+          <Link href="/signin" className="text-accent-gold font-semibold hover:text-white transition">
+            Sign in
+          </Link>
+        </p>
+
         <p className="text-xs text-stone-500 text-center mt-4">
-          By signing up, you agree to our Terms of Service and Privacy Policy
+          By signing up, you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-stone-300">Terms of Service</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="underline hover:text-stone-300">Privacy Policy</Link>
         </p>
       </div>
     </div>

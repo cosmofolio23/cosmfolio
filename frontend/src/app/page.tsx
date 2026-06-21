@@ -49,22 +49,30 @@ export default function Home() {
   const router = useRouter()
   const [isLoadingSplash, setIsLoadingSplash] = useState(true)
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated && user) {
       router.push('/dashboard')
     }
-    const timer = setTimeout(() => {
+    
+    // Check sessionStorage so splash only shows once per session
+    if (typeof window !== 'undefined' && sessionStorage.getItem('splashShown')) {
       setIsLoadingSplash(false)
-    }, 1500)
-    return () => clearTimeout(timer)
+    } else {
+      const timer = setTimeout(() => {
+        setIsLoadingSplash(false)
+        if (typeof window !== 'undefined') sessionStorage.setItem('splashShown', 'true')
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
   }, [isAuthenticated, user, router])
 
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="sticky top-0 z-40 bg-charcoal border-b border-white/10 shadow-elevation-1 text-white">
-        <div className="container-centered py-4 flex justify-between items-center">
+        <div className="container-centered py-4 flex justify-between items-center relative">
           <div className="flex items-center gap-2">
             <Logo size="md" variant="gold" />
             <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
@@ -75,15 +83,40 @@ export default function Home() {
               <Link href="/pricing" className="text-gray-300 hover:text-white transition">Pricing</Link>
               <Link href="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               <Link href="/signin" className="btn-secondary btn-small">
                 Sign In
               </Link>
-              <Link href="/signup" className="btn-primary btn-small hidden sm:inline-flex">
+              <Link href="/signup" className="btn-primary btn-small">
                 Sign Up
               </Link>
             </div>
+            {/* Mobile menu button */}
+            <button 
+              className="md:hidden text-gray-300 hover:text-white"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
           </div>
+          {/* Mobile menu dropdown */}
+          {isMobileMenuOpen && (
+            <div className="absolute top-full left-0 right-0 bg-charcoal border-b border-white/10 shadow-elevation-2 p-4 flex flex-col gap-4 md:hidden">
+              <Link href="/about" className="text-gray-300 hover:text-white transition">About</Link>
+              <Link href="/pricing" className="text-gray-300 hover:text-white transition">Pricing</Link>
+              <Link href="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
+              <div className="flex flex-col gap-3 mt-2 pt-4 border-t border-white/10">
+                <Link href="/signin" className="btn-secondary text-center w-full">Sign In</Link>
+                <Link href="/signup" className="btn-primary text-center w-full">Sign Up</Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
