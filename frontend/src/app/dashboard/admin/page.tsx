@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import { auth } from '@/lib/firebase'
 import Logo from '@/components/Logo'
 
 interface UserRecord {
@@ -72,15 +73,27 @@ export default function AdminDashboard() {
     setIsLoading(true)
     setError(null)
     try {
-      const token = localStorage.getItem('auth_token')
+      // Always force-refresh the Firebase token — localStorage token expires after 1 hour
+      let token = localStorage.getItem('auth_token')
+      try {
+        if (auth.currentUser) {
+          token = await auth.currentUser.getIdToken(true)
+          localStorage.setItem('auth_token', token)
+          useAuthStore.getState().setToken(token)
+        }
+      } catch { /* use existing token as fallback */ }
+
       const headers = { 'Authorization': `Bearer ${token || ''}` }
-      
+
       const [usersRes, couponsRes] = await Promise.all([
         fetch(`${API_URL}/api/auth/admin/users`, { headers }),
         fetch(`${API_URL}/api/admin/coupons`, { headers })
       ])
 
-      if (!usersRes.ok) throw new Error('Failed to fetch user list')
+      if (!usersRes.ok) {
+        const body = await usersRes.text()
+        throw new Error(`Failed to fetch user list (${usersRes.status}): ${body}`)
+      }
       const usersData = await usersRes.json()
       setUsers(usersData)
       
