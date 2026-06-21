@@ -148,6 +148,23 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!confirm(`CRITICAL WARNING: Are you sure you want to permanently delete user ${email}? This will delete all their data and cannot be undone.`)) return
+    
+    try {
+      const token = localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/auth/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token || ''}` }
+      })
+      if (!res.ok) throw new Error(await res.text())
+      // Optimistic update
+      setUsers(users.filter(u => u.id !== userId))
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete user')
+    }
+  }
+
   // --- Admin Actions for Coupons ---
   const handleCreateCoupon = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -423,14 +440,21 @@ export default function AdminDashboard() {
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                 </button>
                               )}
-                              <button 
-                                onClick={() => handleTogglePro(item.id, !!item.is_pro)}
-                                className={`px-2 py-1.5 rounded text-xs font-semibold transition-colors ${item.is_pro ? 'bg-gray-100 dark:bg-white/10 text-gray-500 hover:bg-red-500/10 hover:text-red-500' : 'bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white'}`}
-                                title={item.is_pro ? "Downgrade to Free" : "Upgrade to Pro"}
-                              >
-                                {item.is_pro ? "Downgrade" : "Upgrade"}
-                              </button>
-                            </div>
+                                <button 
+                                  onClick={() => handleTogglePro(item.id, !!item.is_pro)}
+                                  className={`px-2 py-1.5 rounded text-xs font-semibold transition-colors ${item.is_pro ? 'bg-gray-100 dark:bg-white/10 text-gray-500 hover:bg-red-500/10 hover:text-red-500' : 'bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white'}`}
+                                  title={item.is_pro ? "Downgrade to Free" : "Upgrade to Pro"}
+                                >
+                                  {item.is_pro ? "Downgrade" : "Upgrade"}
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteUser(item.id, item.email)}
+                                  className="px-2 py-1.5 rounded text-xs font-semibold bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition-colors"
+                                  title="Delete User"
+                                >
+                                  Delete
+                                </button>
+                              </div>
                           </td>
                         </tr>
                       ))}

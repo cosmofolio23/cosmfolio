@@ -504,3 +504,25 @@ async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_curr
         return {"success": True, "message": "User downgraded successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Delete a user from both Supabase and Firebase"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        # 1. Delete from Firebase if Firebase is initialized
+        if firebase_app:
+            try:
+                from firebase_admin import auth as firebase_auth
+                firebase_auth.delete_user(user_id)
+            except Exception as fe:
+                # User might not exist in Firebase or not found
+                print(f"Firebase delete warning: {fe}")
+                
+        # 2. Delete from Supabase (Supabase cascade should handle projects/portfolios if foreign keys are set up)
+        supabase.table("users").delete().eq("id", user_id).execute()
+        
+        return {"success": True, "message": "User deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
