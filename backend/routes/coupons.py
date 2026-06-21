@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 
 from database import supabase
-from routes.deps import get_current_user_from_deps
+from routes.deps import get_current_user as get_current_user_from_deps
 
 router = APIRouter()
 
