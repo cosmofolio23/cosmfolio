@@ -12,8 +12,25 @@ try:
     firebase_key_str = os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY')
 
     if firebase_key_str:
-        # Parse the JSON from environment variable
-        firebase_key = json.loads(firebase_key_str)
+        # Clean up the string in case it's wrapped in quotes
+        firebase_key_str = firebase_key_str.strip()
+        if (firebase_key_str.startswith("'") and firebase_key_str.endswith("'")) or \
+           (firebase_key_str.startswith('"') and firebase_key_str.endswith('"')):
+            firebase_key_str = firebase_key_str[1:-1]
+        
+        # If the string contains literal '\n' characters, json.loads handles it natively if it's properly escaped.
+        # However, Render sometimes injects real newlines into JSON strings. json.loads natively handles both.
+        try:
+            firebase_key = json.loads(firebase_key_str)
+        except json.JSONDecodeError as e:
+            print(f"[WARNING] JSONDecodeError parsing Firebase key: {e}")
+            # Try to fix unescaped newlines in private_key
+            import re
+            fixed_str = re.sub(r'\\n', r'\\\\n', firebase_key_str)
+            try:
+                firebase_key = json.loads(fixed_str)
+            except Exception as e2:
+                print(f"[WARNING] Secondary parse failed: {e2}")
     else:
         print("[WARNING] FIREBASE_SERVICE_ACCOUNT_KEY not set")
 except Exception as e:
