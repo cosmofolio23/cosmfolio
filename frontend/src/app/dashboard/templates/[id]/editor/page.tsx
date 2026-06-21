@@ -275,6 +275,28 @@ export default function TemplateEditor() {
   const searchParams = useSearchParams()
   const { isAuthenticated, token, user } = useAuthStore()
   const templateId = params.id as string
+  const isAdmin = user?.email === 'boseraj001@gmail.com'
+  const [isPro, setIsPro] = useState(isAdmin)
+
+  // Fetch isPro status
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const savedToken = token || localStorage.getItem('auth_token')
+        if (!savedToken) return
+        const res = await fetch(`${API_URL}/api/documents/export-count`, {
+          headers: { 'Authorization': `Bearer ${savedToken}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    fetchStatus()
+  }, [isAuthenticated, isAdmin])
 
   const [template, setTemplate] = useState<Template | null>(null)
   const [pages, setPages] = useState<Page[]>([])
@@ -2347,27 +2369,27 @@ export default function TemplateEditor() {
                           <button
                             key={spec.id}
                             onClick={() => {
-                              if (spec.pro) {
-                                flashUpload('err', 'This layout is restricted to Pro Mode. Coming next week!', 4000)
+                              if (spec.pro && !isPro) {
+                                flashUpload('err', 'This layout is restricted to Pro Mode. Upgrade to unlock!', 4000)
                               } else {
                                 setLayout(spec.id)
                               }
                             }}
-                            className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : spec.pro ? 'border-transparent opacity-70 cursor-not-allowed hover:bg-gray-100' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
+                            className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : (spec.pro && !isPro) ? 'border-transparent opacity-70 cursor-not-allowed hover:bg-gray-100' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
                           >
-                            {spec.pro && (
+                            {spec.pro && !isPro && (
                               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg z-10 whitespace-nowrap uppercase tracking-wider">Pro</div>
                             )}
-                            {recommended && !spec.pro && (
+                            {recommended && !(spec.pro && !isPro) && (
                               <div className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-900 text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐</div>
                             )}
-                            <div className={spec.pro ? 'opacity-50 grayscale' : ''}>
+                            <div className={(spec.pro && !isPro) ? 'opacity-50 grayscale' : ''}>
                               <LayoutThumb spec={spec} tokens={tokens} active={active} />
                             </div>
-                            <div className={`mt-1 px-0.5 ${spec.pro ? 'opacity-60' : ''}`}>
+                            <div className={`mt-1 px-0.5 ${(spec.pro && !isPro) ? 'opacity-60' : ''}`}>
                               <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight flex items-center justify-between">
                                 <span>{spec.name}</span>
-                                {spec.pro && <span className="text-[8px] bg-amber-100 text-amber-700 px-1 rounded">PRO</span>}
+                                {spec.pro && <span className={`text-[8px] px-1 rounded ${isPro ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>PRO</span>}
                               </div>
                               <div className="text-[9px] text-gray-400">{spec.category}{spec.imageCount > 0 ? ` · ${spec.imageCount} img` : ''}</div>
                             </div>
