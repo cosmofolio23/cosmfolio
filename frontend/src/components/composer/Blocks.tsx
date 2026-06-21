@@ -107,7 +107,7 @@ export function EditableText({
 
   const handleBlur = (e: React.FocusEvent) => {
     const relatedTarget = e.relatedTarget as HTMLElement
-    if (relatedTarget && wrapperRef.current?.contains(relatedTarget)) {
+    if (relatedTarget && (wrapperRef.current?.contains(relatedTarget) || relatedTarget.closest('.floating-toolbar-portal'))) {
       return
     }
     setIsEditing(false)
@@ -119,6 +119,7 @@ export function EditableText({
     if (!isSelected) return
     const handleDocumentClick = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        if ((e.target as Element).closest('.floating-toolbar-portal')) return;
         setIsSelected(false)
         setIsEditing(false)
         onChange(ref.current?.textContent || '')
@@ -162,7 +163,7 @@ export function EditableText({
           never clips it (Google-Docs-style toolbar above the text). */}
       {isSelected && onFormatChange && mounted && tbPos && createPortal(
         <div
-          className="fixed z-[9999] flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
+          className="fixed z-[9999] floating-toolbar-portal flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
           style={{ top: Math.max(8, tbPos.top - 8), left: tbPos.left, transform: 'translate(-50%, -100%)' }}
           onMouseDown={e => { 
             const target = e.target as HTMLElement
