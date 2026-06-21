@@ -34,10 +34,14 @@ const startTour = () => {
     showProgress: true,
     steps: [
       { element: '#tour-top-bar', popover: { title: 'Welcome to CosmoFolio', description: 'This is where you build your portfolio. Let\'s take a quick tour!', side: 'bottom', align: 'start' }},
-      { element: '#tour-pages-panel', popover: { title: 'Pages & Layouts', description: 'Here you can add new pages, reorder them, and select different layout templates for each page.', side: 'right', align: 'start' }},
-      { element: '#tour-style-panel', popover: { title: 'Design & Tools', description: 'Use this panel to change colors, fonts, apply design packs, or use the AI Assistant.', side: 'left', align: 'start' }},
-      { element: '#tour-canvas', popover: { title: 'The Canvas', description: 'This is your workspace. Click any text to edit it, use the floating toolbar for formatting, and drag-and-drop images directly into the placeholders.', side: 'top', align: 'center' }},
-      { element: '#tour-publishing-tools', popover: { title: 'Export & Publish', description: 'When you are finished, click Web to publish an interactive site, or use the Spreads tab to export a print-ready PDF.', side: 'bottom', align: 'end' }}
+      { element: '#tour-pages-panel', popover: { title: 'Pages & Layouts', description: 'Here you can add new pages, duplicate them, and reorder them by dragging.', side: 'right', align: 'start' }},
+      { element: '#tour-right-tabs', popover: { title: 'Design Panels', description: 'Navigate between Layouts, Blocks, Style (Fonts & Colors), and AI Filters.', side: 'left', align: 'start' }},
+      { element: '#tour-style-panel', popover: { title: 'Global Styling', description: 'Inside the Style tab, you can set your global typography, spacing, and apply premade Design Packs.', side: 'left', align: 'start' }},
+      { element: '#tour-canvas', popover: { title: 'The Canvas', description: 'This is your workspace. Click any text to edit it, and double-click to reveal the text formatting toolbar (Font, Size, Color, Alignment).', side: 'top', align: 'center' }},
+      { element: '.tour-image-block:first-of-type', popover: { title: 'Working with Images', description: 'Drag and drop images straight into placeholders. When you hover over an image, a toolbar appears allowing you to Zoom, Pan, Fit, or Replace the image.', side: 'top', align: 'center' }},
+      { element: '#tour-canvas-zoom', popover: { title: 'Canvas Zoom & Pan', description: 'Use these controls to zoom the canvas in and out, or fit the entire page to your screen.', side: 'top', align: 'center' }},
+      { element: '#tour-undo', popover: { title: 'Undo & Redo', description: 'Made a mistake? You can instantly undo or redo your actions here.', side: 'bottom', align: 'end' }},
+      { element: '#tour-publishing-tools', popover: { title: 'Export & Publish', description: 'Click "Book" for a 3D flipbook preview, "Web" to publish an interactive portfolio site, or use the "Spreads" tab to generate a print-ready PDF.', side: 'bottom', align: 'end' }}
     ]
   });
   driverObj.drive();
@@ -1883,8 +1887,10 @@ export default function TemplateEditor() {
             }`}>
               {saveStatus === 'saving' ? '⏳ Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? '✗ Error' : ''}
             </span>
-            <button onClick={undo} disabled={historyIdx <= 0} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Undo (Ctrl+Z)">↶</button>
-            <button onClick={redo} disabled={historyIdx >= history.length - 1} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Redo (Ctrl+Shift+Z)">↷</button>
+            <div id="tour-undo" className="flex gap-1">
+              <button onClick={undo} disabled={historyIdx <= 0} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Undo (Ctrl+Z)">↶</button>
+              <button onClick={redo} disabled={historyIdx >= history.length - 1} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Redo (Ctrl+Shift+Z)">↷</button>
+            </div>
             {projectId && (
               <>
                 <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
@@ -2003,7 +2009,7 @@ export default function TemplateEditor() {
 
           {/* Zoom controls — Photoshop-style; canvas scrolls when zoomed past the pane */}
           <div className="sticky top-0 z-30 flex justify-center pointer-events-none -mt-2 mb-3">
-            <div className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">
+            <div id="tour-canvas-zoom" className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">
               <button onClick={zoomOut} title="Zoom out" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">−</button>
               <button onClick={() => setCanvasZoom(1)} title="Reset to 100%" className="px-2 text-xs font-medium text-gray-700 tabular-nums min-w-[44px]">{Math.round(canvasZoom * 100)}%</button>
               <button onClick={zoomIn} title="Zoom in" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">+</button>
@@ -2138,7 +2144,7 @@ export default function TemplateEditor() {
         )}
         <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`} id="tour-style-panel">
           {/* Tabs */}
-          <div className="flex border-b sticky top-0 bg-white z-10">
+          <div className="flex border-b sticky top-0 bg-white z-10" id="tour-right-tabs">
             {([
               ['guide',      '📋', 'Guide'],
               ['layout',     '▦',  'Layout'],
