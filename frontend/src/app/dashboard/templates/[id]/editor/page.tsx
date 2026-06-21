@@ -1961,7 +1961,7 @@ export default function TemplateEditor() {
               const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
               const rightIdx = leftIdx + 1
               return (
-                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom }}>
+                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom, height: Math.round(1075 * canvasZoom) }}>
                 <div className="flex gap-0 items-stretch justify-center relative overflow-visible py-2 origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                   {/* Left Page */}
                   <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
@@ -2038,7 +2038,7 @@ export default function TemplateEditor() {
           ) : (
             /* Single Page Canvas (Covers, or when Spread Mode is disabled) */
             /* transform:scale keeps layout at natural size (no text reflow), zoom was causing text to rewrap */
-            <div className="mx-auto select-none" style={{ width: 760 * canvasZoom }}>
+            <div className="mx-auto select-none" style={{ width: 760 * canvasZoom, height: Math.round(1075 * canvasZoom) }}>
               <div className="origin-top-left" style={{ width: 760, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                 <PageComposer
                   page={currentPage}
