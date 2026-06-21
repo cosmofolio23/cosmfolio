@@ -179,7 +179,7 @@ export function EditableText({
             <select
               value={fontFamily || ''}
               onChange={e => onFormatChange({ fontFamily: e.target.value })}
-              className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[9px]"
+              className="bg-white border border-gray-200 rounded px-1 py-0.5 text-gray-900 text-[9px] focus:outline-none focus:border-blue-500"
             >
               <option value="">Default</option>
               <option value="Inter">Inter</option>
@@ -197,7 +197,7 @@ export function EditableText({
               max="72"
               value={fontSize || 14}
               onChange={e => onFormatChange({ fontSize: parseInt(e.target.value) || 14 })}
-              className="bg-slate-800 border border-slate-700 rounded w-10 px-1 py-0.5 text-white text-[9px]"
+              className="bg-white border border-gray-200 rounded w-10 px-1 py-0.5 text-gray-900 text-[9px] focus:outline-none focus:border-blue-500"
             />
           </div>
           <span className="text-white/20">|</span>
