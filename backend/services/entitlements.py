@@ -25,12 +25,12 @@ from routes.deps import get_current_user
 # Pre-paywall default. Set to "false" once real billing populates user_entitlements.
 _GRANT_ALL_BY_DEFAULT = os.getenv("DEFAULT_ENTITLEMENTS_GRANT_ALL", "true").lower() == "true"
 
-Entitlements = dict  # {"portfolio": bool, "sheet": bool, "library": bool}
+Entitlements = dict  # {"portfolio": bool, "sheet": bool, "library": bool, "is_pro": bool}
 
 
-def _default_entitlements() -> Entitlements:
+def _default_entitlements(is_pro: bool = False) -> Entitlements:
     g = _GRANT_ALL_BY_DEFAULT
-    return {"portfolio": g, "sheet": g, "library": g}
+    return {"portfolio": g, "sheet": g, "library": g, "is_pro": is_pro}
 
 
 def get_user_entitlements(user_id: str) -> Entitlements:
@@ -41,6 +41,15 @@ def get_user_entitlements(user_id: str) -> Entitlements:
     if not user_id:
         return _default_entitlements()
 
+    # Check is_pro from users table — drives export bypass
+    is_pro = False
+    try:
+        user_resp = supabase.table("users").select("is_pro").eq("id", user_id).execute()
+        if user_resp.data:
+            is_pro = bool(user_resp.data[0].get("is_pro"))
+    except Exception:
+        pass
+
     try:
         resp = (
             supabase.table("user_entitlements")
@@ -50,10 +59,10 @@ def get_user_entitlements(user_id: str) -> Entitlements:
         )
     except Exception:
         # table may not exist yet in some environments, or transient error
-        return _default_entitlements()
+        return _default_entitlements(is_pro)
 
     if not resp.data:
-        return _default_entitlements()
+        return _default_entitlements(is_pro)
 
     row = resp.data[0]
     has_library = bool(row.get("has_library"))
@@ -62,6 +71,7 @@ def get_user_entitlements(user_id: str) -> Entitlements:
         "portfolio": bool(row.get("has_portfolio")) or has_library,
         "sheet": bool(row.get("has_sheet")) or has_library,
         "library": has_library,
+        "is_pro": is_pro,
     }
 
 

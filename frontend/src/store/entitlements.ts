@@ -15,6 +15,7 @@ export interface Entitlements {
   portfolio: boolean
   sheet: boolean
   library: boolean
+  is_pro: boolean
 }
 
 interface EntitlementStore {
@@ -38,7 +39,7 @@ export const useEntitlements = create<EntitlementStore>((set, get) => ({
       set({ entitlements: res.data, loaded: true, loading: false })
     } catch {
       // Fail-open to match backend default-grant (pre-paywall). Never hard-block.
-      set({ entitlements: { portfolio: true, sheet: true, library: true }, loaded: true, loading: false })
+      set({ entitlements: { portfolio: true, sheet: true, library: true, is_pro: false }, loaded: true, loading: false })
     }
   },
 
