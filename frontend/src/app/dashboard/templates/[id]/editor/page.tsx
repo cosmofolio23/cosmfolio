@@ -1965,7 +1965,8 @@ export default function TemplateEditor() {
               const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
               const rightIdx = leftIdx + 1
               return (
-                <div className="flex gap-0 items-stretch justify-center mx-auto relative overflow-visible max-w-[1520px] select-none py-2" style={{ zoom: canvasZoom } as React.CSSProperties}>
+                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom }}>
+                <div className="flex gap-0 items-stretch justify-center relative overflow-visible py-2 origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                   {/* Left Page */}
                   <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
                     <PageComposer
@@ -2035,32 +2036,36 @@ export default function TemplateEditor() {
                     <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
                   </div>
                 </div>
+                </div>
               )
             })()
           ) : (
             /* Single Page Canvas (Covers, or when Spread Mode is disabled) */
-            <div className="max-w-[760px] mx-auto relative select-none" style={{ zoom: canvasZoom } as React.CSSProperties}>
-              <PageComposer
-                page={currentPage}
-                tokens={tokens}
-                onChange={updatePage}
-                onUploadImage={uploadImage}
-                backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
-                masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
-                pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
-                grid={publishingPortfolio.grid}
-                editableFree
-                onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
-                onApplyScope={applyElementScopeFromPage}
-                onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
-                pages={pages}
-                onUpdateGlobalPages={(updater) => {
-                  markDirty()
-                  setPages(updater(pages))
-                }}
-                onUpdateMasterElement={updateMasterElement}
-                pageSize={publishingPortfolio.pageSize}
-              />
+            /* transform:scale keeps layout at natural size (no text reflow), zoom was causing text to rewrap */
+            <div className="mx-auto select-none" style={{ width: 760 * canvasZoom }}>
+              <div className="origin-top-left" style={{ width: 760, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
+                <PageComposer
+                  page={currentPage}
+                  tokens={tokens}
+                  onChange={updatePage}
+                  onUploadImage={uploadImage}
+                  backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
+                  masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                  pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
+                  grid={publishingPortfolio.grid}
+                  editableFree
+                  onFreeChange={els => updatePage({ ...currentPage, freeElements: els })}
+                  onApplyScope={applyElementScopeFromPage}
+                  onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
+                  pages={pages}
+                  onUpdateGlobalPages={(updater) => {
+                    markDirty()
+                    setPages(updater(pages))
+                  }}
+                  onUpdateMasterElement={updateMasterElement}
+                  pageSize={publishingPortfolio.pageSize}
+                />
+              </div>
             </div>
           )}
           <div className={`max-w-[760px] mx-auto ${isMobile ? 'mt-2 text-[9px]' : 'mt-3 text-[11px]'} text-center text-gray-400 font-medium`}>
