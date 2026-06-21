@@ -80,6 +80,7 @@ export default function TermsOfService() {
         <div className="mt-12 pt-6 border-t border-gray-200 text-sm text-gray-500">
           <Link href="/privacy" className="text-blue-600 underline">Privacy Policy</Link>
         </div>
+      </main>
       <Footer />
     </div>
   )

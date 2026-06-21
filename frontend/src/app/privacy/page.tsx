@@ -75,6 +75,7 @@ export default function PrivacyPolicy() {
         <div className="mt-12 pt-6 border-t border-gray-200 text-sm text-gray-500">
           <Link href="/terms" className="text-blue-600 underline">Terms of Service</Link>
         </div>
+      </main>
       <Footer />
     </div>
   )
