@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/auth'
 
 const FREE_FEATURES = [
   'Unlimited portfolios',
-  '5 pages per portfolio',
+  '6 pages per portfolio',
   '2 PDF exports',
   'Standard templates',
   'Full design tools',

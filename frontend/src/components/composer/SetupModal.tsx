@@ -228,7 +228,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 pt-1">
-                    {isPro ? "Pro plan unlocked: Up to 30 pages per portfolio." : "Free plan includes up to 5 pages. More pages unlock in Pro."}
+                    {isPro ? "Pro plan unlocked: Up to 30 pages per portfolio." : "Free plan includes up to 6 pages. More pages unlock in Pro."}
                   </p>
                 </div>
                 {/* Projects */}
