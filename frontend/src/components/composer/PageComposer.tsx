@@ -219,7 +219,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
                 }}
               >
                 {Array.from({ length: 6 }).map((_, c) => (
-                  <span key={c}>CosmoFolio&nbsp;·&nbsp;Free</span>
+                  <span key={c}>Thecosmofolio.com&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 ))}
               </div>
             ))}

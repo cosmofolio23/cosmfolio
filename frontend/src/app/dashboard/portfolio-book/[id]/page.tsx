@@ -204,7 +204,7 @@ export default function PortfolioBookPage() {
               overflowVisible={true}
               onUpdateMasterElement={() => {}}
               pageSize={pageSize}
-              showWatermark={!isBypass}
+              showWatermark={false}
             />
           </div>
         )}
@@ -230,7 +230,7 @@ export default function PortfolioBookPage() {
                 overflowVisible={false}
                 onUpdateMasterElement={() => {}}
                 pageSize={pageSize}
-                showWatermark={!isBypass}
+                showWatermark={false}
               />
             </div>
           ))}
