@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Logo from '@/components/Logo'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 const FREE_FEATURES = [
   'Unlimited portfolios',
@@ -53,25 +54,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation (matches homepage) */}
-      <nav className="sticky top-0 z-40 bg-charcoal border-b border-white/10 shadow-elevation-1 text-white">
-        <div className="container-centered py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 text-white hover:text-white/90">
-            <Logo size="md" variant="gold" />
-            <span className="text-2xl font-bold">Cosmo<span className="text-gold-gradient">Folio</span></span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center gap-4 text-sm font-medium">
-              <Link href="/about" className="text-gray-300 hover:text-white transition">About</Link>
-              <Link href="/pricing" className="text-white transition">Pricing</Link>
-              <Link href="/contact" className="text-gray-300 hover:text-white transition">Contact</Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/signin" className="btn-secondary btn-small">Sign In</Link>
-              <Link href="/signup" className="btn-primary btn-small hidden sm:inline-flex">Sign Up</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Header */}
       <section className="bg-bg-subtle border-b border-gray-100 dark:border-white/5">
@@ -199,26 +182,7 @@ export default function PricingPage() {
       </section>
 
       {/* Footer (matches homepage) */}
-      <footer className="bg-charcoal text-white py-12 md:py-16">
-        <div className="container-centered">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-8 mb-8 border-b border-slate">
-            <Link href="/" className="font-bold text-lg flex items-center gap-2">
-              <Logo size="md" variant="gold" />
-              CosmoFolio
-            </Link>
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-gray-300">
-              <Link href="/about" className="hover:text-white transition">About Us</Link>
-              <Link href="/pricing" className="hover:text-white transition">Pricing</Link>
-              <Link href="/contact" className="hover:text-white transition">Contact</Link>
-              <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
-              <Link href="/terms" className="hover:text-white transition">Terms</Link>
-            </div>
-          </div>
-          <div className="text-center text-stone-light text-sm">
-            <p>&copy; 2026 CosmoFolio. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

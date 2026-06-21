@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Privacy Policy — CosmoFolio',
@@ -8,12 +10,8 @@ export const metadata = {
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-white text-gray-800">
-      <header className="border-b border-gray-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-bold text-lg">CosmoFolio</Link>
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">← Back to home</Link>
-        </div>
-      </header>
+      {/* Navigation */}
+      <Navbar />
 
       <main className="max-w-3xl mx-auto px-6 py-12 prose prose-gray">
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
@@ -77,7 +75,7 @@ export default function PrivacyPolicy() {
         <div className="mt-12 pt-6 border-t border-gray-200 text-sm text-gray-500">
           <Link href="/terms" className="text-blue-600 underline">Terms of Service</Link>
         </div>
-      </main>
+      <Footer />
     </div>
   )
 }
