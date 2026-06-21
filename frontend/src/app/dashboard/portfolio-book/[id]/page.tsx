@@ -32,6 +32,7 @@ export default function PortfolioBookPage() {
   const [currentPageIdx, setCurrentPageIdx] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isBypass, setIsBypass] = useState(false)
 
   const authToken = () => token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
 
@@ -41,7 +42,20 @@ export default function PortfolioBookPage() {
       return
     }
     loadPortfolio()
+    fetchBypass()
   }, [isAuthenticated])
+
+  const fetchBypass = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-count`, {
+        headers: { Authorization: `Bearer ${authToken()}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setIsBypass(!!data.is_bypass)
+      }
+    } catch { /* non-fatal */ }
+  }
 
   const loadPortfolio = async () => {
     try {
@@ -190,6 +204,7 @@ export default function PortfolioBookPage() {
               overflowVisible={true}
               onUpdateMasterElement={() => {}}
               pageSize={pageSize}
+              showWatermark={!isBypass}
             />
           </div>
         )}
@@ -215,6 +230,7 @@ export default function PortfolioBookPage() {
                 overflowVisible={false}
                 onUpdateMasterElement={() => {}}
                 pageSize={pageSize}
+                showWatermark={!isBypass}
               />
             </div>
           ))}

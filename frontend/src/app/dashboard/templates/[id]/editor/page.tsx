@@ -1991,7 +1991,6 @@ export default function TemplateEditor() {
                       overflowVisible
                       onUpdateMasterElement={updateMasterElement}
                       pageSize={publishingPortfolio.pageSize}
-                      showWatermark={!exportBypass}
                     />
                     <div className="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Left Page · Page {leftIdx + 1}</div>
                   </div>
@@ -2028,7 +2027,6 @@ export default function TemplateEditor() {
                       overflowVisible
                       onUpdateMasterElement={updateMasterElement}
                       pageSize={publishingPortfolio.pageSize}
-                      showWatermark={!exportBypass}
                     />
                     <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
                   </div>
@@ -2058,7 +2056,6 @@ export default function TemplateEditor() {
                 }}
                 onUpdateMasterElement={updateMasterElement}
                 pageSize={publishingPortfolio.pageSize}
-                showWatermark={!exportBypass}
               />
             </div>
           )}
