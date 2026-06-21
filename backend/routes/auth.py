@@ -407,6 +407,29 @@ async def verify_token(token: str, display_name: str = None):
             detail=str(e)
         )
 
+class UpdateDemographicsRequest(BaseModel):
+    college_name: str | None = None
+    state: str | None = None
+    year_of_passing: str | None = None
+    stream: str | None = None
+
+@router.patch("/update-demographics")
+async def update_demographics(
+    body: UpdateDemographicsRequest,
+    current_user: dict = Depends(get_current_user_from_deps)
+):
+    """Save college/state/stream demographics after Google sign-in."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    user_id = current_user.get("user_id") or current_user.get("id")
+    update_data = {"updated_at": datetime.utcnow().isoformat()}
+    if body.college_name is not None: update_data["college_name"] = body.college_name
+    if body.state is not None:        update_data["state"] = body.state
+    if body.year_of_passing is not None: update_data["year_of_passing"] = body.year_of_passing
+    if body.stream is not None:       update_data["stream"] = body.stream
+    supabase.table("users").update(update_data).eq("id", user_id).execute()
+    return {"success": True}
+
 @router.get("/me")
 async def get_current_user(authorization: str = Header(None)):
     """Get current user info from Firebase token"""
