@@ -98,8 +98,14 @@ export default function PortfolioBookPage() {
       const { jsPDF } = await import('jspdf')
       const html2canvas = (await import('html2canvas')).default
       
-      // Wait for all images to load properly
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const printContainer = window.document.getElementById('pf-print-container')
+      if (printContainer) {
+        printContainer.classList.remove('hidden')
+        printContainer.classList.remove('print:block')
+      }
+
+      // Wait for all images to load properly and layout to settle
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
       const elements = window.document.querySelectorAll('.pf-print-page')
       if (elements.length === 0) throw new Error('No pages found')
@@ -135,6 +141,11 @@ export default function PortfolioBookPage() {
       alert('Failed to generate PDF directly. Falling back to print dialog.')
       window.print()
     } finally {
+      const printContainer = window.document.getElementById('pf-print-container')
+      if (printContainer) {
+        printContainer.classList.add('hidden')
+        printContainer.classList.add('print:block')
+      }
       setIsDownloading(false)
     }
   }
@@ -275,7 +286,7 @@ export default function PortfolioBookPage() {
         )}
 
         {/* Print View (All Pages) — each wrapper is exactly one printed sheet */}
-        <div className="hidden print:block w-full m-0 p-0">
+        <div id="pf-print-container" className="hidden print:block w-full m-0 p-0">
           {pages.map((p, idx) => (
             <div key={p.id} className="pf-print-page w-full relative">
               <PageComposer
