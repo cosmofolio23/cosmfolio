@@ -1559,17 +1559,24 @@ export default function TemplateEditor() {
         return
       }
 
-      // Increment client-side counter immediately
-      const newCount = exportUsed + 1
-      setExportUsed(newCount)
-      localStorage.setItem('cosmofolio_export_count_v2', String(newCount))
+      // Increment client-side counter (skip for pro/bypass users)
+      if (!exportBypass) {
+        const newCount = exportUsed + 1
+        setExportUsed(newCount)
+        localStorage.setItem('cosmofolio_export_count_v2', String(newCount))
+      }
 
-      // Wait for server-side increment to prevent background tab cancellation
+      // Sync export with server (pro users: skips increment server-side)
       try {
-        await fetch(`${API_URL}/api/projects/${pid}/document/track-export`, {
+        const trackRes = await fetch(`${API_URL}/api/projects/${pid}/document/track-export`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${authToken()}` },
         })
+        if (trackRes.ok) {
+          const trackData = await trackRes.json()
+          // Sync bypass state in case admin just upgraded this user
+          if (trackData.is_bypass !== undefined) setExportBypass(!!trackData.is_bypass)
+        }
       } catch { /* silent */ }
 
       // Open print window after increment is registered
@@ -1579,8 +1586,12 @@ export default function TemplateEditor() {
         return
       }
 
-      const remaining = exportLimit - newCount
-      flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
+      if (!exportBypass) {
+        const remaining = exportLimit - (exportUsed + 1)
+        flashUpload('ok', `✓ Opening print view — choose "Save as PDF" in the dialog. ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
+      } else {
+        flashUpload('ok', '✓ Opening print view — choose "Save as PDF" in the dialog.', 6000)
+      }
     } catch (e: any) {
       flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
     } finally {
