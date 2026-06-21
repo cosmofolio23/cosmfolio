@@ -47,7 +47,7 @@ async def export_portfolio_as_pdf(
         is_free = user_data.get("subscription_tier", "free") == "free"
         export_count = user_data.get("export_count", 0)
         
-        is_admin = current_user.get("email", "").lower() in ['boseraj001@gmail.com', 'boseraj008@gmail.com']
+        is_admin = current_user.get("email", "").lower() == 'boseraj001@gmail.com'
         
         portfolio_data = portfolio.data[0]
         page_structure = portfolio_data.get("page_structure", {})

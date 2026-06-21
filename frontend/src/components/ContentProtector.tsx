@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 
-const ADMIN_EMAILS = ['boseraj001@gmail.com', 'boseraj008@gmail.com']
+const ADMIN_EMAILS = ['boseraj001@gmail.com']
 
 export default function ContentProtector() {
   const pathname = usePathname()

@@ -21,7 +21,7 @@ class CouponApply(BaseModel):
 @router.get("/admin/coupons")
 async def get_all_coupons(current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: List all coupons"""
-    if not current_user or current_user.get("email") not in ["boseraj001@gmail.com", "boseraj008@gmail.com"]:
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         result = supabase.table("coupons").select("*").order("created_at", desc=True).execute()
@@ -32,7 +32,7 @@ async def get_all_coupons(current_user: dict = Depends(get_current_user_from_dep
 @router.post("/admin/coupons")
 async def create_coupon(coupon: CouponCreate, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Create a new coupon"""
-    if not current_user or current_user.get("email") not in ["boseraj001@gmail.com", "boseraj008@gmail.com"]:
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         data = {
@@ -51,7 +51,7 @@ async def create_coupon(coupon: CouponCreate, current_user: dict = Depends(get_c
 @router.delete("/admin/coupons/{coupon_id}")
 async def delete_coupon(coupon_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Delete a coupon"""
-    if not current_user or current_user.get("email") not in ["boseraj001@gmail.com", "boseraj008@gmail.com"]:
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         supabase.table("coupons").delete().eq("id", coupon_id).execute()

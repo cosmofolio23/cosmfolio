@@ -925,7 +925,7 @@ async def save_customization(
             user_res = supabase.table("users").select("*").eq("id", current_user["user_id"]).execute()
             user_data = user_res.data[0] if user_res.data else {}
             is_free = user_data.get("subscription_tier", "free") == "free"
-            is_admin = current_user.get("email", "").lower() in ['boseraj001@gmail.com', 'boseraj008@gmail.com']
+            is_admin = current_user.get("email", "").lower() == 'boseraj001@gmail.com'
             
             if not is_admin:
                 if is_free and len(pages) > 5:
