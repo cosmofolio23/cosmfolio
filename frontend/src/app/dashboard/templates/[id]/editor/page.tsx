@@ -26,6 +26,22 @@ import type { FreeElement } from '@/components/composer/types'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
+import { driver } from 'driver.js'
+import 'driver.js/dist/driver.css'
+
+const startTour = () => {
+  const driverObj = driver({
+    showProgress: true,
+    steps: [
+      { element: '#tour-top-bar', popover: { title: 'Welcome to CosmoFolio', description: 'This is where you build your portfolio. Let\'s take a quick tour!', side: 'bottom', align: 'start' }},
+      { element: '#tour-pages-panel', popover: { title: 'Pages & Layouts', description: 'Here you can add new pages, reorder them, and select different layout templates for each page.', side: 'right', align: 'start' }},
+      { element: '#tour-style-panel', popover: { title: 'Design & Tools', description: 'Use this panel to change colors, fonts, apply design packs, or use the AI Assistant.', side: 'left', align: 'start' }},
+      { element: '#tour-canvas', popover: { title: 'The Canvas', description: 'This is your workspace. Click any text to edit it, use the floating toolbar for formatting, and drag-and-drop images directly into the placeholders.', side: 'top', align: 'center' }},
+      { element: '#tour-publishing-tools', popover: { title: 'Export & Publish', description: 'When you are finished, click Web to publish an interactive site, or use the Spreads tab to export a print-ready PDF.', side: 'bottom', align: 'end' }}
+    ]
+  });
+  driverObj.drive();
+}
 
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
@@ -237,6 +253,19 @@ const reflowFreeElements = (els: FreeElement[], toLandscape: boolean): FreeEleme
 }
 
 export default function TemplateEditor() {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasSeenTour = localStorage.getItem('hasSeenEditorTour');
+      if (!hasSeenTour) {
+        // slight delay to let canvas mount
+        setTimeout(() => {
+          startTour();
+          localStorage.setItem('hasSeenEditorTour', 'true');
+        }, 500);
+      }
+    }
+  }, []);
+
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -1836,7 +1865,7 @@ export default function TemplateEditor() {
   return (
     <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+      <header className="sticky top-0 z-40 bg-white border-b shadow-sm" id="tour-top-bar">
         <div className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard/my-portfolios" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
@@ -1845,7 +1874,7 @@ export default function TemplateEditor() {
               <p className="text-[11px] text-gray-400 px-2">Template: {template.name} · {template.category}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" id="tour-publishing-tools">
             <span className={`text-[11px] min-w-[64px] text-right font-medium ${
               saveStatus === 'saving' ? 'text-gray-400' :
               saveStatus === 'saved' ? 'text-green-600' :
@@ -1863,6 +1892,7 @@ export default function TemplateEditor() {
               </>
             )}
             <button onClick={() => setShowSpreadManager(true)} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700" title="Visual Spread Manager">⏹️ Spreads</button>
+            <button onClick={() => startTour()} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 shadow-sm" title="Help / Tour">❔ Help</button>
             <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
               <button onClick={() => setEditSpreadMode(false)} className={`px-2.5 py-1.5 font-medium ${!editSpreadMode ? 'bg-blue-650 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`} title="Single page canvas edit">📄 Single</button>
               <button onClick={() => setEditSpreadMode(true)} className={`px-2.5 py-1.5 font-medium ${editSpreadMode ? 'bg-blue-650 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`} title="Dual page spread composer">📖 Spread</button>
@@ -1909,7 +1939,7 @@ export default function TemplateEditor() {
 
       <div className={`flex flex-1 min-h-0 ${isMobile ? 'flex-col' : ''}`}>
         {/* Left: pages */}
-        <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
+        <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`} id="tour-pages-panel">
           <div className="p-3">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
             <div className="space-y-1.5">
@@ -1954,7 +1984,7 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main ref={canvasRef} className={`relative group/canvas ${isMobile ? 'flex-1' : 'flex-1'} overflow-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`}>
+        <main ref={canvasRef} className={`relative group/canvas ${isMobile ? 'flex-1' : 'flex-1'} overflow-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`} id="tour-canvas">
           <style>{`
             .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
             .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
@@ -2106,7 +2136,7 @@ export default function TemplateEditor() {
             {inspectorOpen ? '✕ Close' : '⚙️ Settings'}
           </button>
         )}
-        <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`}>
+        <aside className={`${isMobile ? (inspectorOpen ? 'fixed inset-0 z-30 w-full max-w-md ml-auto' : 'hidden') : 'w-80'} bg-white ${isMobile ? '' : 'border-l'} overflow-y-auto flex-shrink-0`} id="tour-style-panel">
           {/* Tabs */}
           <div className="flex border-b sticky top-0 bg-white z-10">
             {([
