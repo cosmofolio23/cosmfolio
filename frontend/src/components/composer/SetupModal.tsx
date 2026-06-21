@@ -161,7 +161,7 @@ export default function SetupModal({ isOpen, isPro = false, onClose, onComplete 
                   </div>
                   <div className="flex items-center gap-3">
                     <input
-                      type="range" min="1" max={isPro ? "30" : "5"} step="1"
+                      type="range" min="1" max={isPro ? "30" : "6"} step="1"
                       value={pages}
                       onChange={e => setPages(parseInt(e.target.value))}
                       className="flex-1 h-1 accent-blue-500 bg-slate-800 rounded-lg appearance-none cursor-pointer"
