@@ -151,7 +151,7 @@ export function EditableText({
           }
         }}
         className={`outline-none rounded px-1 -mx-1 transition ${
-          isEditing ? 'cursor-text bg-white border border-blue-400 shadow-sm text-black' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : 'hover:bg-yellow-50/30'
+          isEditing ? 'cursor-text outline outline-1 outline-blue-400' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : 'hover:bg-yellow-50/30'
         } ${multiline ? 'whitespace-pre-line' : ''} ${className || ''}`}
         style={style}
       >
@@ -164,7 +164,13 @@ export function EditableText({
         <div
           className="fixed z-[9999] flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
           style={{ top: Math.max(8, tbPos.top - 8), left: tbPos.left, transform: 'translate(-50%, -100%)' }}
-          onMouseDown={e => { e.preventDefault(); e.stopPropagation() }} // keep editor focus + don't trigger click-outside deselect
+          onMouseDown={e => { 
+            const target = e.target as HTMLElement
+            if (target.tagName !== 'INPUT' && target.tagName !== 'SELECT') {
+              e.preventDefault() 
+            }
+            e.stopPropagation() 
+          }} // keep editor focus + don't trigger click-outside deselect
           onClick={e => e.stopPropagation()}
         >
           <div className="flex items-center gap-1">

@@ -200,7 +200,7 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
                 onChange={e => patch(el.id, { text: e.target.value })}
                 onBlur={() => setEditId(null)}
                 onPointerDown={e => e.stopPropagation()}
-                className="w-full h-full resize-none bg-white/90 outline outline-1 outline-blue-400 p-1 rounded text-[11px]"
+                className="w-full h-full resize-none bg-transparent outline outline-1 outline-blue-400 p-1 rounded text-[11px]"
                 style={{ 
                   color: el.color || tokens.text, 
                   fontFamily: el.fontFamily || tokens.bodyFont, 

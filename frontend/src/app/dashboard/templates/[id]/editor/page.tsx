@@ -250,7 +250,7 @@ export default function TemplateEditor() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [portfolioTitle, setPortfolioTitle] = useState('')
-  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide' | 'publishing' | 'canvas'>('guide')
+  const [rightTab, setRightTab] = useState<'layout' | 'blocks' | 'style' | 'guide' | 'publishing' | 'canvas' | 'filters'>('guide')
   const [selectedFreeEl, setSelectedFreeEl] = useState<FreeElement | null>(null)
   const [libraryModalView, setLibraryModalView] = useState<LibraryView | null>(null)
   const [publishingPortfolio, setPublishingPortfolio] = useState<PublishingPortfolio>({
@@ -519,6 +519,25 @@ export default function TemplateEditor() {
     setHistory(newHist)
     setHistoryIdx(newHist.length - 1)
   }
+
+  // Auto-push history for all edits after 600ms of inactivity
+  useEffect(() => {
+    if (history.length === 0) return
+    const top = history[historyIdx]
+    if (!top) return
+    
+    // Fast comparison using JSON
+    const currentStr = JSON.stringify({ pages, tokens, title: portfolioTitle })
+    const topStr = JSON.stringify({ pages: top.pages, tokens: top.tokens, title: top.title })
+    
+    if (currentStr !== topStr) {
+      const t = setTimeout(() => {
+        pushHistory()
+      }, 600)
+      return () => clearTimeout(t)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages, tokens, portfolioTitle, history, historyIdx])
 
   const undo = () => {
     if (historyIdx > 0) {
@@ -2092,11 +2111,12 @@ export default function TemplateEditor() {
           <div className="flex border-b sticky top-0 bg-white z-10">
             {([
               ['guide',      '📋', 'Guide'],
-              ['publishing', '📐', 'Publishing'],
               ['layout',     '▦',  'Layout'],
               ['blocks',     '▤',  'Blocks'],
               ['canvas',     '✦',  'Canvas'],
               ['style',      '🎨', 'Style'],
+              ['filters',    '📸', 'Filters'],
+              ['publishing', '📐', 'Publishing'],
             ] as const).map(([t, icon, label]) => (
               <button key={t} onClick={() => setRightTab(t)} title={label}
                 className={`flex-1 py-3 text-base transition ${rightTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
@@ -2695,7 +2715,10 @@ export default function TemplateEditor() {
                     className="w-full"
                   />
                 </div>
-                <div className="border-t pt-3">
+            )}
+
+            {rightTab === 'filters' && (
+                <div className="pt-3">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase">Image Filters</h4>
                   </div>
@@ -2741,7 +2764,10 @@ export default function TemplateEditor() {
                     <button onClick={() => applyCustomFilter('project')} className="flex-1 px-2 py-1.5 bg-blue-600 text-white rounded text-[10px] font-bold hover:bg-blue-700">Apply to Project</button>
                   </div>
                 </div>
-                <div className="border-t pt-3">
+            )}
+
+            {rightTab === 'style' && (
+                <div className="border-t pt-3 mt-3">
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Design Packs</h4>
                   <div className="flex gap-1.5 mb-2">
                     <button onClick={() => setShowSavePackModal(true)} className="flex-1 px-3 py-2 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">💾 Save</button>
