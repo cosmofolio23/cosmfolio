@@ -380,7 +380,7 @@ export default function Dashboard() {
                         .map((project) => (
                           <div 
                             key={project.id} 
-                            onClick={() => router.push(`/dashboard/project/${project.id}`)}
+                            onClick={() => router.push(`/dashboard/templates/saved/editor?project=${project.id}`)}
                             className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10"
                           >
                             <div className="h-48 bg-gradient-to-br from-blue-100/50 to-blue-200/50 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center overflow-hidden relative">
