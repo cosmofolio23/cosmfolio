@@ -177,12 +177,12 @@ export async function firebaseGoogleSignIn() {
   const user = userCredential.user
   const token = await user.getIdToken()
 
-  // Save user in Supabase DB via backend
+  // Sync user to Supabase, passing displayName so it gets saved
   const apiUrl = apiBase()
   try {
-    await fetch(`${apiUrl}/api/auth/verify-token?token=${token}`, {
-      method: 'POST',
-    })
+    const params = new URLSearchParams({ token })
+    if (user.displayName) params.set('display_name', user.displayName)
+    await fetch(`${apiUrl}/api/auth/verify-token?${params}`, { method: 'POST' })
   } catch (e) {
     console.log('Backend sync error (non-critical):', e)
   }

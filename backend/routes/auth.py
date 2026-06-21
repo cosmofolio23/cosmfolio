@@ -349,36 +349,45 @@ async def signin(body: SignInRequest):
 
 
 @router.post("/verify-token")
-async def verify_token(token: str):
+async def verify_token(token: str, display_name: str = None):
     """
-    Verify Firebase token and return user info
-    Frontend calls this after Firebase authentication
+    Verify Firebase token and upsert user.
+    Accepts optional display_name (from Google profile) so Google sign-in
+    users get their real name saved, not NULL.
     """
     try:
         decoded_token = verify_firebase_token(token)
         user_id = decoded_token.get("uid")
         email = decoded_token.get("email")
+        # Google tokens carry the profile name in 'name' claim
+        token_name = decoded_token.get("name") or display_name
 
-        # Get user from database
         if supabase:
             user_data = supabase.table("users").select("*").eq("id", user_id).execute()
             if user_data.data:
-                user = user_data.data[0]
+                existing = user_data.data[0]
+                # Backfill name if it was previously NULL
+                if token_name and not existing.get("name"):
+                    supabase.table("users").update({
+                        "name": token_name,
+                        "updated_at": datetime.utcnow().isoformat()
+                    }).eq("id", user_id).execute()
+                    existing["name"] = token_name
                 return {
                     "success": True,
                     "user": {
-                        "id": user["id"],
-                        "email": user["email"],
-                        "name": user.get("name"),
-                        "created_at": user.get("created_at")
+                        "id": existing["id"],
+                        "email": existing["email"],
+                        "name": existing.get("name"),
+                        "created_at": existing.get("created_at")
                     }
                 }
 
-        # If not in database, create entry
-        if supabase:
+            # New user — insert with name from Google profile
             supabase.table("users").insert({
                 "id": user_id,
                 "email": email,
+                "name": token_name,
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat()
             }).execute()
@@ -388,7 +397,7 @@ async def verify_token(token: str):
             "user": {
                 "id": user_id,
                 "email": email,
-                "name": None,
+                "name": token_name,
                 "created_at": datetime.utcnow().isoformat()
             }
         }
