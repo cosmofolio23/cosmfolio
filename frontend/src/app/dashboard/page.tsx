@@ -125,7 +125,7 @@ export default function Dashboard() {
                 {loaded && (
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
                     has('is_pro') 
-                      ? 'bg-gold-gradient text-white' 
+                      ? 'bg-gold-gradient text-white border-transparent' 
                       : 'bg-surface-secondary dark:bg-dark-surface-secondary text-text-secondary dark:text-dark-text-secondary border border-divider dark:border-dark-divider'
                   }`}>
                     {has('is_pro') ? 'PRO' : 'FREEMIUM'}
