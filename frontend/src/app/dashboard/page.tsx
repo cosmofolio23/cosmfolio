@@ -378,47 +378,49 @@ export default function Dashboard() {
                       {projects
                         .filter((p) => p.project_type === 'portfolio')
                         .map((project) => (
-                          <Link key={project.id} href={`/dashboard/project/${project.id}`}>
-                            <div className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10">
-                              <div className="h-48 bg-gradient-to-br from-blue-100/50 to-blue-200/50 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center overflow-hidden relative">
-                                <div className="text-5xl opacity-40">📐</div>
-                                <div className="absolute inset-0 bg-white/20 dark:bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                          <div 
+                            key={project.id} 
+                            onClick={() => router.push(`/dashboard/project/${project.id}`)}
+                            className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10"
+                          >
+                            <div className="h-48 bg-gradient-to-br from-blue-100/50 to-blue-200/50 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center overflow-hidden relative">
+                              <div className="text-5xl opacity-40">📐</div>
+                              <div className="absolute inset-0 bg-white/20 dark:bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                            </div>
+                            <div className="p-6">
+                              <div className="flex items-start justify-between mb-2 gap-3">
+                                <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary flex-1 group-hover:text-accent-gold transition-colors">
+                                  {project.title}
+                                </h3>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleDeleteProject(project.id)
+                                  }}
+                                  className="flex-shrink-0 text-stone-light hover:text-error transition-colors p-1 hover:bg-red-50 rounded"
+                                  title="Delete project"
+                                >
+                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                  </svg>
+                                </button>
                               </div>
-                              <div className="p-6">
-                                <div className="flex items-start justify-between mb-2 gap-3">
-                                  <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary flex-1 group-hover:text-accent-gold transition-colors">
-                                    {project.title}
-                                  </h3>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      handleDeleteProject(project.id)
-                                    }}
-                                    className="flex-shrink-0 text-stone-light hover:text-error transition-colors p-1 hover:bg-red-50 rounded"
-                                    title="Delete project"
-                                  >
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                                    </svg>
-                                  </button>
-                                </div>
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="badge badge-info">Portfolio</span>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      router.push(`/dashboard/templates/saved/editor?project=${project.id}`)
-                                    }}
-                                    className="px-2.5 py-1 rounded-md bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition"
-                                  >
-                                    ✏️ Edit
-                                  </button>
-                                </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="badge badge-info">Portfolio</span>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    router.push(`/dashboard/templates/saved/editor?project=${project.id}`)
+                                  }}
+                                  className="px-2.5 py-1 rounded-md bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition relative z-20"
+                                >
+                                  ✏️ Edit
+                                </button>
                               </div>
                             </div>
-                          </Link>
+                          </div>
                         ))}
                     </div>
                   </div>

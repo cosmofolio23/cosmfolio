@@ -1807,7 +1807,7 @@ export default function TemplateEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="px-4 py-2.5 flex items-center justify-between">
