@@ -378,7 +378,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
         <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>Education</span>
         <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
       </div>
-      <div className="flex flex-col gap-1.5 overflow-auto flex-1">
+      <div className="flex flex-col gap-1.5 overflow-hidden flex-1">
         {entries.map((e, i) => (
           <div key={i} className="group flex gap-1">
             <div className="flex-1 min-w-0">
@@ -410,7 +410,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
         <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>{label}</span>
         <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
       </div>
-      <div className="flex flex-col gap-1 overflow-auto flex-1">
+      <div className="flex flex-col gap-1 overflow-hidden flex-1">
         {items.map((s, i) => (
           <div key={i} className="group flex items-center gap-1">
             {label === 'Software' && (
@@ -444,7 +444,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
         <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>{icon} {label}</span>
         <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
       </div>
-      <div className="flex flex-col gap-1.5 overflow-auto flex-1">
+      <div className="flex flex-col gap-1.5 overflow-hidden flex-1">
         {entries.map((e, i) => (
           <div key={i} className="group flex gap-1 items-start">
             <span className="text-[8px] opacity-30 mt-[1px]">▸</span>

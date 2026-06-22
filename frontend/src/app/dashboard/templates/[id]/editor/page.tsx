@@ -1071,7 +1071,8 @@ export default function TemplateEditor() {
   // triggers React error #310 ("Rendered more hooks than during the previous
   // render"). currentPage may be undefined here, so guard with optional chaining.
   const filteredLayouts = useMemo(() => {
-    let list = LAYOUT_CATALOG
+    // Single Grid tab only shows single-page layouts — exclude spread/resume spread categories
+    let list = LAYOUT_CATALOG.filter(s => s.category !== 'Spread' && s.category !== 'Resume')
     if (layoutCat !== 'All') list = list.filter(s => s.category === layoutCat)
     if (layoutSearch.trim()) {
       const q = layoutSearch.toLowerCase()
@@ -1082,6 +1083,15 @@ export default function TemplateEditor() {
     return [...list].sort((a, b) =>
       (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
   }, [layoutCat, layoutSearch, currentPage?.type])
+
+  // Catalog layouts for Spread Layout tab (both Spread and Resume categories)
+  const [spreadLayoutFilter, setSpreadLayoutFilter] = useState<'All' | 'Spread' | 'Resume'>('All')
+  const filteredSpreadLayouts = useMemo(() => {
+    const list = LAYOUT_CATALOG.filter(s => s.category === 'Spread' || s.category === 'Resume')
+    if (spreadLayoutFilter === 'Spread') return list.filter(s => s.category === 'Spread')
+    if (spreadLayoutFilter === 'Resume') return list.filter(s => s.category === 'Resume')
+    return list
+  }, [spreadLayoutFilter])
 
   // Auto-switch layout panel to Resume or Spread category when on a spread page
   useEffect(() => {
@@ -2424,7 +2434,7 @@ export default function TemplateEditor() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="flex flex-wrap gap-1">
-                      {(['All', ...LAYOUT_CATEGORIES] as const).map(cat => (
+                      {(['All', ...LAYOUT_CATEGORIES.filter(c => c !== 'Spread' && c !== 'Resume')] as const).map(cat => (
                         <button
                           key={cat}
                           onClick={() => setLayoutCat(cat as any)}
@@ -2474,62 +2484,34 @@ export default function TemplateEditor() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="text-[11px] text-gray-500 font-medium">Cosmo Spread Layout Packs (150+ templates)</div>
-                    <button
-                      onClick={() => setLibraryModalView(spreadCategory === 'about' ? 'about' : 'project')}
-                      className="w-full py-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 border border-blue-200 transition flex items-center justify-center gap-1.5 shadow-sm"
-                    >
-                      ✨ Browse Realistic Spread Library
-                    </button>
-                    {/* Category Filter */}
-                    <div className="flex flex-wrap gap-1">
-                      {(['all', 'about', 'content', 'project'] as const).map(cat => (
+                    {/* Spread / Resume filter pills */}
+                    <div className="flex gap-1.5">
+                      {(['All', 'Spread', 'Resume'] as const).map(f => (
                         <button
-                          key={cat}
-                          onClick={() => setSpreadCategory(cat)}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition capitalize ${spreadCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                          key={f}
+                          onClick={() => setSpreadLayoutFilter(f)}
+                          className={`px-3 py-1 rounded text-[10px] font-semibold transition ${spreadLayoutFilter === f ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
-                          {cat === 'all' ? 'All Pages' : cat === 'content' ? 'Contents' : cat}
+                          {f === 'Resume' ? '🎓 Resume' : f === 'Spread' ? '📖 Spread' : 'All'}
                         </button>
                       ))}
                     </div>
-                    {/* Style Filter */}
-                    <div className="flex flex-wrap gap-1">
-                      {(['all', 'minimal', 'luxury', 'competition', 'academic', 'experimental', 'parametric'] as const).map(st => (
-                        <button
-                          key={st}
-                          onClick={() => setSpreadStyle(st)}
-                          className={`px-2 py-0.5 rounded text-[9px] font-medium transition capitalize ${spreadStyle === st ? 'bg-slate-700 text-white' : 'bg-gray-50 border text-gray-500 hover:bg-gray-100'}`}
-                        >
-                          {st}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Spread List */}
-                    <div className="grid grid-cols-1 gap-2.5 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 365px)' }}>
-                      {SPREAD_TEMPLATES.filter(st => {
-                        if (spreadCategory !== 'all' && st.category !== spreadCategory) return false
-                        if (spreadStyle !== 'all' && st.style !== spreadStyle) return false
-                        return true
-                      }).map(st => {
+                    <div className="text-[11px] text-gray-400">{filteredSpreadLayouts.length} layouts · click to apply</div>
+                    {/* Spread catalog layout grid — same interaction as Single Grid */}
+                    <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 320px)' }}>
+                      {filteredSpreadLayouts.map(spec => {
+                        const active = currentPage.layoutId === spec.id
                         return (
                           <button
-                            key={st.id}
-                            onClick={() => applySpreadTemplate(st)}
-                            className="group text-left rounded-lg p-2.5 border border-gray-200 hover:border-blue-500 hover:bg-blue-50/20 transition flex flex-col gap-1.5"
+                            key={spec.id}
+                            onClick={() => setLayout(spec.id)}
+                            className={`group text-left rounded-lg p-1.5 border-2 transition relative ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}
                           >
-                            <div className="text-[10px] font-bold text-gray-700 leading-tight truncate">{st.name}</div>
-                            <div className="text-[8px] text-gray-400 uppercase font-semibold">{st.style} · {st.category}</div>
-                            {/* Double mini layout previews side-by-side */}
-                            <div className="flex gap-1.5 bg-gray-150 p-1 rounded-md mt-0.5 w-full">
-                              <div className="flex-1 scale-[0.9] border border-gray-200 rounded overflow-hidden" style={{ aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}` }}>
-                                <LayoutThumb spec={getSpec(st.leftLayoutId)} tokens={tokens} active={false} />
-                              </div>
-                              <div className="flex-1 scale-[0.9] border border-gray-200 rounded overflow-hidden" style={{ aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}` }}>
-                                <LayoutThumb spec={getSpec(st.rightLayoutId)} tokens={tokens} active={false} />
-                              </div>
+                            <LayoutThumb spec={spec} tokens={tokens} active={active} />
+                            <div className="mt-1 px-0.5">
+                              <div className="text-[10px] font-semibold text-gray-700 truncate leading-tight">{spec.name}</div>
+                              <div className="text-[9px] text-gray-400">{spec.category}{spec.imageCount > 0 ? ` · ${spec.imageCount} img` : ''}</div>
                             </div>
-                            <div className="text-[9px] text-gray-550 leading-normal mt-0.5 italic">{st.description}</div>
                           </button>
                         )
                       })}
