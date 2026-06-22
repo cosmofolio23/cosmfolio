@@ -1072,7 +1072,7 @@ export default function TemplateEditor() {
   // render"). currentPage may be undefined here, so guard with optional chaining.
   const filteredLayouts = useMemo(() => {
     // Single Grid tab only shows single-page layouts — exclude spread/resume spread categories
-    let list = LAYOUT_CATALOG.filter(s => s.category !== 'Spread' && s.category !== 'Resume')
+    let list = LAYOUT_CATALOG.filter(s => s.category !== 'Spread' && s.category !== 'Resume' && s.category !== 'Project Spread' && s.category !== 'Content Spread' && s.category !== 'About Spread')
     if (layoutCat !== 'All') list = list.filter(s => s.category === layoutCat)
     if (layoutSearch.trim()) {
       const q = layoutSearch.toLowerCase()
@@ -1084,11 +1084,19 @@ export default function TemplateEditor() {
       (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
   }, [layoutCat, layoutSearch, currentPage?.type])
 
-  // Catalog layouts for Spread Layout tab (both Spread and Resume categories)
-  const [spreadLayoutFilter, setSpreadLayoutFilter] = useState<'All' | 'Spread' | 'Resume'>('All')
+  // Catalog layouts for Spread Layout tab
+  const [spreadLayoutFilter, setSpreadLayoutFilter] = useState<'All' | 'Spread' | 'Project' | 'Content' | 'Resume'>('All')
   const filteredSpreadLayouts = useMemo(() => {
-    const list = LAYOUT_CATALOG.filter(s => s.category === 'Spread' || s.category === 'Resume')
-    if (spreadLayoutFilter === 'Spread') return list.filter(s => s.category === 'Spread')
+    const list = LAYOUT_CATALOG.filter(s => 
+      s.category === 'Spread' || 
+      s.category === 'About Spread' || 
+      s.category === 'Resume' || 
+      s.category === 'Project Spread' || 
+      s.category === 'Content Spread'
+    )
+    if (spreadLayoutFilter === 'Spread') return list.filter(s => s.category === 'Spread' || s.category === 'About Spread')
+    if (spreadLayoutFilter === 'Project') return list.filter(s => s.category === 'Project Spread')
+    if (spreadLayoutFilter === 'Content') return list.filter(s => s.category === 'Content Spread')
     if (spreadLayoutFilter === 'Resume') return list.filter(s => s.category === 'Resume')
     return list
   }, [spreadLayoutFilter])
@@ -1513,7 +1521,7 @@ export default function TemplateEditor() {
 
   const addPage = (type: Page['type']) => {
     if (pages.length >= maxPages) {
-      flashUpload('err', `You have reached your limit of ${maxPages} pages. Upgrade your plan to add more.`, 8000)
+      router.push('/pricing')
       return
     }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
@@ -2454,7 +2462,7 @@ export default function TemplateEditor() {
                             key={spec.id}
                             onClick={() => {
                               if (spec.pro && !isPro) {
-                                flashUpload('err', 'This layout is restricted to Pro Mode. Upgrade to unlock!', 4000)
+                                router.push('/pricing')
                               } else {
                                 setLayout(spec.id)
                               }
@@ -2486,13 +2494,13 @@ export default function TemplateEditor() {
                   <div className="space-y-3">
                     {/* Spread / Resume filter pills */}
                     <div className="flex gap-1.5">
-                      {(['All', 'Spread', 'Resume'] as const).map(f => (
+                      {(['All', 'Spread', 'Project', 'Content', 'Resume'] as const).map(f => (
                         <button
                           key={f}
                           onClick={() => setSpreadLayoutFilter(f)}
                           className={`px-3 py-1 rounded text-[10px] font-semibold transition ${spreadLayoutFilter === f ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
-                          {f === 'Resume' ? '🎓 Resume' : f === 'Spread' ? '📖 Spread' : 'All'}
+                          {f === 'Resume' ? '🎓 Resume' : f === 'Spread' ? '📖 Spread' : f === 'Project' ? '🏗️ Project' : f === 'Content' ? '📑 Content' : 'All'}
                         </button>
                       ))}
                     </div>

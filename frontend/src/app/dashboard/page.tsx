@@ -123,13 +123,23 @@ export default function Dashboard() {
               <div className="flex items-center gap-3 mt-2">
                 <p className="text-text-secondary dark:text-dark-text-secondary">Welcome back, <span className="font-semibold text-text-primary dark:text-dark-text-primary">{user?.name || user?.email}</span></p>
                 {loaded && (
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
-                    has('is_pro') 
-                      ? 'bg-gold-gradient text-white border-transparent' 
-                      : 'bg-surface-secondary dark:bg-dark-surface-secondary text-text-secondary dark:text-dark-text-secondary border border-divider dark:border-dark-divider'
-                  }`}>
-                    {has('is_pro') ? 'PRO' : 'FREEMIUM'}
-                  </span>
+                  <>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
+                      has('is_pro')
+                        ? 'bg-gold-gradient text-white border-transparent'
+                        : 'bg-surface-secondary dark:bg-dark-surface-secondary text-text-secondary dark:text-dark-text-secondary border border-divider dark:border-dark-divider'
+                    }`}>
+                      {has('is_pro') ? 'PRO' : 'FREEMIUM'}
+                    </span>
+                    {!has('is_pro') && (
+                      <button
+                        onClick={() => router.push('/pricing')}
+                        className="px-3 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-amber-500 hover:bg-amber-600 text-white transition-colors shadow-sm"
+                      >
+                        ⚡ Upgrade to Pro
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

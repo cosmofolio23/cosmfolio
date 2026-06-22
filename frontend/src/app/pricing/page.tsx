@@ -1,12 +1,12 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useAuthStore } from '@/store/auth'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-razorpay requires browser globals — must not run during SSG
@@ -57,10 +57,11 @@ function Check() {
   )
 }
 
-export default function PricingPage() {
+function PricingPageInner() {
   const [currency, setCurrency] = useState<'INR' | 'USD'>('INR')
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { Razorpay } = useRazorpay()
   
   const [promoCode, setPromoCode] = useState('')
@@ -90,6 +91,15 @@ export default function PricingPage() {
       fetchPlan()
     }
   }, [isAuthenticated])
+
+  // Auto-trigger checkout after returning from signup
+  useEffect(() => {
+    const checkout = searchParams.get('checkout') as 'pro_upgrade' | 'boost_pack' | null
+    if (checkout && isAuthenticated) {
+      handleCheckout(checkout)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, searchParams])
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return
@@ -127,7 +137,7 @@ export default function PricingPage() {
 
   const handleCheckout = async (productType: 'pro_upgrade' | 'boost_pack') => {
     if (!isAuthenticated) {
-      router.push('/signup?redirect=/pricing')
+      router.push(`/signup?redirect=${encodeURIComponent(`/pricing?checkout=${productType}`)}`)
       return
     }
 
@@ -422,5 +432,13 @@ export default function PricingPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense>
+      <PricingPageInner />
+    </Suspense>
   )
 }

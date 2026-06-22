@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
@@ -11,7 +11,7 @@ const API_URL = process.env.NODE_ENV === 'production'
   ? 'https://cosmfolio-backend.onrender.com'
   : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
-export default function SignUp() {
+function SignUpInner() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,6 +35,8 @@ export default function SignUp() {
 
   const { signup, loginWithGoogle, token } = useAuthStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
 
   const handleGoogleSignIn = async () => {
     setError('')
@@ -64,7 +66,7 @@ export default function SignUp() {
       })
     } catch { /* non-fatal */ } finally {
       setIsSavingProfile(false)
-      router.push('/dashboard')
+      router.push(redirectTo)
     }
   }
 
@@ -91,7 +93,7 @@ export default function SignUp() {
         year_of_passing: yearOfPassing,
         stream
       })
-      router.push('/dashboard')
+      router.push(redirectTo)
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.')
     } finally {
@@ -148,7 +150,7 @@ export default function SignUp() {
                 className="btn-primary w-full py-3 mt-2 disabled:opacity-50">
                 {isSavingProfile ? 'Saving…' : 'Continue to Dashboard →'}
               </button>
-              <button type="button" onClick={() => router.push('/dashboard')}
+              <button type="button" onClick={() => router.push(redirectTo)}
                 className="w-full text-center text-stone-500 text-xs hover:text-stone-300 transition">
                 Skip for now
               </button>
@@ -362,5 +364,13 @@ export default function SignUp() {
       </div>
       </div>
     </div>
+  )
+}
+
+export default function SignUp() {
+  return (
+    <Suspense>
+      <SignUpInner />
+    </Suspense>
   )
 }
