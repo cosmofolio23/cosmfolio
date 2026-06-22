@@ -10,7 +10,7 @@ UPDATE public.users SET plan_type = 'pro' WHERE is_pro = true;
 -- Create transactions table
 CREATE TABLE IF NOT EXISTS public.transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    user_id TEXT REFERENCES public.users(id) ON DELETE CASCADE,
     product_type VARCHAR(50) NOT NULL, -- 'pro_upgrade', 'boost_pack'
     amount INTEGER NOT NULL,
     currency VARCHAR(10) NOT NULL,
