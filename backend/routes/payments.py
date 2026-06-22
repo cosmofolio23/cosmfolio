@@ -135,7 +135,7 @@ async def razorpay_webhook(request: Request):
         
         # Update user entitlements
         if product_type == "pro_upgrade":
-            supabase.table("users").update({"plan_type": "pro"}).eq("id", user_id).execute()
+            supabase.table("users").update({"plan_type": "pro", "is_pro": True}).eq("id", user_id).execute()
         elif product_type == "boost_pack":
             # Fetch current count to increment safely
             u_res = supabase.table("users").select("boost_pack_count").eq("id", user_id).execute()

@@ -295,10 +295,11 @@ export default function TemplateEditor() {
         })
         if (res.ok) {
           const data = await res.json()
-          setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass)
+          const userIsPro = !!data.is_pro || data.plan_type === 'pro'
+          setIsPro(isAdmin || userIsPro || !!data.is_bypass)
           if (isAdmin) {
              setMaxPages(999)
-          } else if (data.is_pro) {
+          } else if (userIsPro) {
              setMaxPages(data.limit ? (data.limit === 2 ? 30 : 30 + ((data.limit - 2) * 10)) : 30) // Assuming limit scales with boost packs, 1 boost pack = +20 pages
           } else {
              setMaxPages(6)

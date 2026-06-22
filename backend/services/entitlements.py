@@ -42,11 +42,13 @@ def get_user_entitlements(user_id: str) -> Entitlements:
         return _default_entitlements()
 
     # Check is_pro from users table — drives export bypass
+    # Accept either is_pro flag OR plan_type = 'pro' (set by payment flow)
     is_pro = False
     try:
-        user_resp = supabase.table("users").select("is_pro").eq("id", user_id).execute()
+        user_resp = supabase.table("users").select("is_pro, plan_type").eq("id", user_id).execute()
         if user_resp.data:
-            is_pro = bool(user_resp.data[0].get("is_pro"))
+            row = user_resp.data[0]
+            is_pro = bool(row.get("is_pro")) or row.get("plan_type") == "pro"
     except Exception:
         pass
 
