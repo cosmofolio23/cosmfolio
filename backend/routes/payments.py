@@ -68,8 +68,11 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
     
     try:
         order = razorpay_client.order.create(data=data)
-        
-        # Log to transactions table as 'created'
+    except Exception as e:
+        print(f"Razorpay order creation failed: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Razorpay error: {str(e)}")
+
+    try:
         supabase.table("transactions").insert({
             "user_id": user_id,
             "product_type": req.product_type,
@@ -78,16 +81,15 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
             "gateway_order_id": order["id"],
             "status": "created"
         }).execute()
-        
-        return {
-            "order_id": order["id"],
-            "amount": amount,
-            "currency": req.currency,
-            "key": RAZORPAY_KEY_ID
-        }
     except Exception as e:
-        print(f"Error creating Razorpay order: {e}")
-        raise HTTPException(status_code=500, detail="Could not create payment session")
+        print(f"Transaction log failed (non-fatal): {e}")
+
+    return {
+        "order_id": order["id"],
+        "amount": amount,
+        "currency": req.currency,
+        "key": RAZORPAY_KEY_ID
+    }
 
 @router.post("/webhook")
 async def razorpay_webhook(request: Request):
