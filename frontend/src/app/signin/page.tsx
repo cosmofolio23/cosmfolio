@@ -18,6 +18,10 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
+  if (typeof window !== 'undefined') {
+    console.log('SignIn component initializing...')
+  }
+
   // Google sign-in profile completion step
   const [showProfileStep, setShowProfileStep] = useState(false)
   const [gCollegeName, setGCollegeName] = useState('')
