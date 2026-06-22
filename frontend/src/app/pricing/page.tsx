@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-razorpay requires browser globals — must not run during SSG
 const useRazorpay: () => [any] = typeof window !== 'undefined'
-  ? (require('react-razorpay') as any)
+  ? (require('react-razorpay').useRazorpay as any)
   : () => [null]
 
 const FREE_FEATURES = [

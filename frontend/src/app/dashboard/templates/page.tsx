@@ -133,12 +133,12 @@ export default function TemplateMarketplace() {
       try {
         const savedToken = token || localStorage.getItem('auth_token')
         if (!savedToken) return
-        const res = await fetch(`${API_URL}/api/documents/export-count`, {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
           headers: { 'Authorization': `Bearer ${savedToken}` }
         })
         if (res.ok) {
           const data = await res.json()
-          setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass)
+          setIsPro(isAdmin || !!data.user?.is_pro || !!data.user?.is_bypass || data.user?.plan_type === 'pro')
         }
       } catch (e) {
         console.error(e)
