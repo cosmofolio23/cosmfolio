@@ -38,7 +38,7 @@ export interface LayoutSpec {
   pro?: boolean      // Requires Pro subscription
 }
 
-export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'Contact', 'Resume', 'Contents', 'Spread']
+export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'About', 'Contact', 'Resume', 'Contents', 'Spread']
 
 /* ------------------------------- geometry -------------------------------- */
 
@@ -518,38 +518,38 @@ const RESUME_SPECS: LayoutSpec[] = [
  *  image=portrait. suits 'about' + 'resume' so they appear in the About &
  *  Resume library and apply to either page type. */
 const ABOUT_SPREAD_SPECS: LayoutSpec[] = [
-  { id: 'about.portraitLeft', name: 'About · Portrait Left', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.portraitLeft', name: 'About · Portrait Left', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 1, 4, 1, 7), { role: 'meta', c0: 1, cs: 4, r0: 8, rs: 5 },
       { role: 'title', c0: 6, cs: 7, r0: 1, rs: 2 }, { role: 'subtitle', c0: 6, cs: 7, r0: 3, rs: 1 }, { role: 'text', c0: 6, cs: 7, r0: 4, rs: 5 }, { role: 'legend', c0: 6, cs: 7, r0: 9, rs: 4 }] },
-  { id: 'about.portraitRight', name: 'About · Portrait Right', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.portraitRight', name: 'About · Portrait Right', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 9, 4, 1, 7), { role: 'legend', c0: 9, cs: 4, r0: 8, rs: 5 },
       { role: 'title', c0: 1, cs: 7, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 7, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 7, r0: 4, rs: 5 }, { role: 'meta', c0: 1, cs: 7, r0: 9, rs: 4 }] },
-  { id: 'about.portraitBanner', name: 'About · Portrait Banner', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.portraitBanner', name: 'About · Portrait Banner', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 1, 12, 1, 4), { role: 'title', c0: 1, cs: 8, r0: 5, rs: 2 }, { role: 'subtitle', c0: 1, cs: 8, r0: 7, rs: 1 },
       { role: 'text', c0: 1, cs: 7, r0: 8, rs: 5 }, { role: 'meta', c0: 9, cs: 4, r0: 5, rs: 4 }, { role: 'legend', c0: 9, cs: 4, r0: 9, rs: 4 }] },
-  { id: 'about.twoColumnBio', name: 'About · Two-Column Bio', category: 'Resume', suits: ['about', 'resume'], imageCount: 0,
+  { id: 'about.twoColumnBio', name: 'About · Two-Column Bio', category: 'About', suits: ['about'], imageCount: 0,
     regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 },
       { role: 'text', c0: 1, cs: 6, r0: 5, rs: 8 }, { role: 'meta', c0: 7, cs: 6, r0: 5, rs: 4 }, { role: 'legend', c0: 7, cs: 6, r0: 9, rs: 4 }] },
-  { id: 'about.sidebarSkills', name: 'About · Skills Sidebar', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.sidebarSkills', name: 'About · Skills Sidebar', category: 'About', suits: ['about'], imageCount: 1,
     regions: [{ role: 'title', c0: 1, cs: 8, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 8, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 8, r0: 5, rs: 8 },
       img(0, 9, 4, 1, 4), { role: 'legend', c0: 9, cs: 4, r0: 5, rs: 4 }, { role: 'meta', c0: 9, cs: 4, r0: 9, rs: 4 }] },
-  { id: 'about.timeline', name: 'About · Experience Timeline', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.timeline', name: 'About · Experience Timeline', category: 'About', suits: ['about'], imageCount: 1,
     regions: [{ role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 3, rs: 1 }, img(0, 1, 5, 5, 4), { role: 'legend', c0: 1, cs: 5, r0: 9, rs: 4 },
       { role: 'text', c0: 7, cs: 6, r0: 1, rs: 12 }] },
-  { id: 'about.magazine', name: 'About · Magazine', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.magazine', name: 'About · Magazine', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 1, 6, 1, 12), { role: 'title', c0: 8, cs: 5, r0: 1, rs: 2 }, { role: 'subtitle', c0: 8, cs: 5, r0: 3, rs: 1 },
       { role: 'text', c0: 8, cs: 5, r0: 5, rs: 5 }, { role: 'legend', c0: 8, cs: 5, r0: 10, rs: 3 }] },
-  { id: 'about.statementHero', name: 'About · Statement', category: 'Resume', suits: ['about', 'resume'], imageCount: 0,
+  { id: 'about.statementHero', name: 'About · Statement', category: 'About', suits: ['about'], imageCount: 0,
     regions: [{ role: 'title', c0: 1, cs: 11, r0: 2, rs: 3 }, { role: 'text', c0: 1, cs: 9, r0: 5, rs: 5 }, { role: 'meta', c0: 1, cs: 11, r0: 11, rs: 2 }] },
-  { id: 'about.centeredMinimal', name: 'About · Centered', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.centeredMinimal', name: 'About · Centered', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 5, 4, 1, 4), { role: 'title', c0: 2, cs: 10, r0: 5, rs: 2 }, { role: 'subtitle', c0: 2, cs: 10, r0: 7, rs: 1 }, { role: 'text', c0: 3, cs: 8, r0: 8, rs: 5 }] },
-  { id: 'about.dossier', name: 'About · Dossier', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.dossier', name: 'About · Dossier', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 1, 3, 1, 4), { role: 'title', c0: 4, cs: 9, r0: 1, rs: 2 }, { role: 'subtitle', c0: 4, cs: 9, r0: 3, rs: 1 },
       { role: 'text', c0: 1, cs: 12, r0: 6, rs: 4 }, { role: 'meta', c0: 1, cs: 6, r0: 10, rs: 3 }, { role: 'legend', c0: 7, cs: 6, r0: 10, rs: 3 }] },
-  { id: 'about.cardStack', name: 'About · Card Stack', category: 'Resume', suits: ['about', 'resume'], imageCount: 0,
+  { id: 'about.cardStack', name: 'About · Card Stack', category: 'About', suits: ['about'], imageCount: 0,
     regions: [{ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 12, r0: 3, rs: 1 },
       { role: 'text', c0: 1, cs: 4, r0: 5, rs: 8 }, { role: 'meta', c0: 5, cs: 4, r0: 5, rs: 8 }, { role: 'legend', c0: 9, cs: 4, r0: 5, rs: 8 }] },
-  { id: 'about.portraitFull', name: 'About · Full Portrait', category: 'Resume', suits: ['about', 'resume'], imageCount: 1,
+  { id: 'about.portraitFull', name: 'About · Full Portrait', category: 'About', suits: ['about'], imageCount: 1,
     regions: [img(0, 7, 6, 1, 12), { role: 'title', c0: 1, cs: 5, r0: 2, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 4, rs: 1 }, { role: 'text', c0: 1, cs: 5, r0: 6, rs: 4 }, { role: 'meta', c0: 1, cs: 5, r0: 10, rs: 3 }] },
 ]
 
@@ -1071,16 +1071,14 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-classic',
     name: 'Classic CV Spread',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 1,
     regions: [
-      // LEFT PAGE — headshot + identity
       img(0, 1, 5, 1, 5),                          // headshot top-left
-      rv('title',       1, 5, 6, 2),               // name
-      rv('bio',         1, 5, 8, 4),               // about / bio paragraph
-      rv('meta',        1, 5, 12, 1),              // contact row
-      // RIGHT PAGE — content
+      rv('title',       1, 5, 6, 2),
+      rv('bio',         1, 5, 8, 4),
+      rv('meta',        1, 5, 12, 1),
       rv('education',   7, 6, 1, 4),
       rv('skills',      7, 3, 5, 4),
       rv('software',    10, 3, 5, 4),
@@ -1091,17 +1089,15 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-editorial',
     name: 'Editorial CV Spread',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 1,
     regions: [
-      // LEFT PAGE — dark sidebar + headshot
       img(0, 1, 4, 1, 12),                         // full-height headshot
       rv('title',       5, 2, 2, 2),
       rv('bio',         5, 2, 4, 4),
       rv('meta',        5, 2, 8, 4),
       rv('interest',    5, 2, 12, 1),
-      // RIGHT PAGE
       rv('education',   7, 6, 1, 3),
       rv('skills',      7, 3, 4, 4),
       rv('software',    10, 3, 4, 4),
@@ -1111,16 +1107,14 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-minimal',
     name: 'Minimal CV Spread',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
-    imageCount: 1,
+    imageCount: 0,
     regions: [
-      // LEFT PAGE — pure typography
       rv('title',       1, 6, 1, 3),
       rv('subtitle',    1, 6, 4, 1),
       rv('bio',         1, 6, 5, 5),
       rv('meta',        1, 6, 10, 3),
-      // RIGHT PAGE
       rv('education',   7, 6, 1, 4),
       rv('skills',      7, 3, 5, 3),
       rv('software',    10, 3, 5, 3),
@@ -1131,15 +1125,13 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-portrait',
     name: 'Portrait CV Spread',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 1,
     regions: [
-      // LEFT — headshot dominant
       img(0, 1, 6, 1, 8),
       rv('title',       1, 6, 9, 2),
       rv('meta',        1, 6, 11, 2),
-      // RIGHT — all content
       rv('bio',         7, 6, 1, 2),
       rv('education',   7, 6, 3, 3),
       rv('skills',      7, 3, 6, 3),
@@ -1151,7 +1143,7 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-grid',
     name: 'Grid CV Spread',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 1,
     regions: [
@@ -1160,22 +1152,19 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
       rv('subtitle',    4, 3, 3, 1),
       rv('meta',        4, 3, 4, 1),
       rv('bio',         1, 6, 5, 3),
-      rv('interest',    1, 6, 8, 2),
-      rv('skills',      1, 6, 10, 3),
+      rv('skills',      1, 6, 8, 2),
+      rv('interest',    1, 6, 10, 3),
       rv('education',   7, 6, 1, 5),
       rv('software',    7, 3, 6, 4),
       rv('achievement', 10, 3, 6, 4),
-      rv('interest',    7, 6, 10, 3),
     ],
   },
 
-  // ── 3-PAGE RESUME SPREADS (uses isSpread on two consecutive pages) ────────
-  // These are single-canvas 3-page spreads at 2280px wide (3× 760px)
-  // Implemented as a 2-page spread (left+right) — the 3rd page is a separate spread page
+  // ── 3-PAGE (2-spread) RESUME LAYOUTS ─────────────────────────────────────
   {
     id: 'resume.spread-3page-intro',
-    name: '3-Page CV · Intro', // page 1 of 3: cover-style intro
-    category: 'Spread',
+    name: '3-Page CV · Intro',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 1,
     regions: [
@@ -1187,7 +1176,7 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-3page-skills',
     name: '3-Page CV · Skills',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 1,
     regions: [
@@ -1204,7 +1193,7 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   {
     id: 'resume.spread-3page-projects',
     name: '3-Page CV · Projects',
-    category: 'Spread',
+    category: 'Resume',
     suits: ['resume'],
     imageCount: 3,
     regions: [
@@ -1214,6 +1203,54 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
       img(2, 9, 4, 2, 9),
       rv('achievement', 1, 6, 11, 2),
       rv('interest',    7, 6, 11, 2),
+    ],
+  },
+
+  // ── 2 BIG COMPREHENSIVE RESUME SPREADS ───────────────────────────────────
+  {
+    id: 'resume.spread-architect-full',
+    name: 'Architect Full CV',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 3,
+    regions: [
+      // LEFT PAGE — headshot strip + identity block + 2 project thumbnails
+      img(0, 1, 3, 1, 9),                           // tall headshot left column
+      rv('title',       4, 3, 1, 2),                // name
+      rv('subtitle',    4, 3, 3, 1),                // role / tagline
+      rv('meta',        4, 3, 4, 3),                // contact details
+      rv('bio',         4, 3, 7, 3),                // about paragraph
+      img(1, 1, 3, 10, 3),                          // project thumb 1
+      img(2, 4, 3, 10, 3),                          // project thumb 2
+      rv('interest',    7, 1, 10, 3),               // interest narrow strip
+      // RIGHT PAGE — all skills + education + achievements
+      rv('education',   8, 5, 1, 5),               // education top-right
+      rv('skills',      8, 5, 6, 4),               // skills mid-right
+      rv('software',    8, 5, 10, 3),              // software bottom-right
+      rv('achievement', 7, 1, 1, 12),              // achievements narrow left strip of right page
+    ],
+  },
+  {
+    id: 'resume.spread-thesis-cv',
+    name: 'Thesis / Research CV',
+    category: 'Resume',
+    suits: ['resume'],
+    imageCount: 2,
+    regions: [
+      // LEFT PAGE — large headshot + name + contact + bio in elegant academic style
+      img(0, 1, 6, 1, 6),                           // square headshot top-left
+      rv('title',       1, 6, 7, 2),                // name — large
+      rv('subtitle',    1, 6, 9, 1),                // thesis title / specialisation
+      rv('bio',         1, 6, 10, 3),               // research statement
+      // RIGHT PAGE top — education + awards prominent
+      rv('education',   7, 6, 1, 5),                // education block full width right
+      rv('achievement', 7, 6, 6, 4),                // awards / publications
+      // RIGHT PAGE bottom — skills, software, interests in 3 equal columns
+      rv('skills',      7, 2, 10, 3),
+      rv('software',    9, 2, 10, 3),
+      rv('interest',    11, 2, 10, 3),
+      // Visual accent — a project photo bottom-left of left page
+      img(1, 1, 6, 7, 6),                           // project render / thesis image
     ],
   },
 ]

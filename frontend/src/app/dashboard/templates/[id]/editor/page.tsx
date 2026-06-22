@@ -1083,10 +1083,10 @@ export default function TemplateEditor() {
       (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
   }, [layoutCat, layoutSearch, currentPage?.type])
 
-  // Auto-switch layout panel to Spread category when on a spread page
+  // Auto-switch layout panel to Resume or Spread category when on a spread page
   useEffect(() => {
-    if (currentPage?.isSpread) setLayoutCat('Spread')
-  }, [currentPage?.id, currentPage?.isSpread])
+    if (currentPage?.isSpread) setLayoutCat(currentPage.type === 'resume' ? 'Resume' : 'Spread')
+  }, [currentPage?.id, currentPage?.isSpread, currentPage?.type])
 
   // ── Template Intelligence: smart auto-fill from the asset library ──
   const typeFromName = (name: string): string => {
