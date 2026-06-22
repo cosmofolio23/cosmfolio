@@ -1,10 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import dynamic from 'next/dynamic'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useAuthStore } from '@/store/auth'
+import { useRouter } from 'next/navigation'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// react-razorpay requires browser globals — must not run during SSG
+const useRazorpay: () => [any] = typeof window !== 'undefined'
+  ? (require('react-razorpay') as any)
+  : () => [null]
 
 const FREE_FEATURES = [
   'Unlimited portfolios',
@@ -51,11 +59,37 @@ function Check() {
 
 export default function PricingPage() {
   const [currency, setCurrency] = useState<'INR' | 'USD'>('INR')
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
+  const router = useRouter()
+  const [Razorpay] = useRazorpay()
   
   const [promoCode, setPromoCode] = useState('')
   const [isApplying, setIsApplying] = useState(false)
   const [promoMessage, setPromoMessage] = useState('')
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [userPlan, setUserPlan] = useState('free')
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Fetch current plan type
+      const fetchPlan = async () => {
+        try {
+          const API_URL = process.env.NODE_ENV === 'production'
+            ? 'https://cosmfolio-backend.onrender.com'
+            : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+          const token = localStorage.getItem('auth_token')
+          const res = await fetch(`${API_URL}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          const data = await res.json()
+          if (data && data.user) {
+            setUserPlan(data.user.plan_type || (data.user.is_pro ? 'pro' : 'free'))
+          }
+        } catch(e) {}
+      }
+      fetchPlan()
+    }
+  }, [isAuthenticated])
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return
@@ -83,6 +117,7 @@ export default function PricingPage() {
       
       setPromoMessage(data.message || 'Coupon applied successfully! You are now a Pro user.')
       setPromoCode('')
+      setUserPlan('pro')
     } catch (err: any) {
       setPromoMessage(err.message || 'Failed to apply promo code')
     } finally {
@@ -90,12 +125,100 @@ export default function PricingPage() {
     }
   }
 
+  const handleCheckout = async (productType: 'pro_upgrade' | 'boost_pack') => {
+    if (!isAuthenticated) {
+      router.push('/signup?redirect=/pricing')
+      return
+    }
+
+    if (productType === 'boost_pack' && userPlan !== 'pro') {
+      alert("Boost Packs are only available for Pro members. Upgrade to Pro first.")
+      return
+    }
+
+    setIsCheckingOut(true)
+    try {
+      const API_URL = process.env.NODE_ENV === 'production'
+        ? 'https://cosmfolio-backend.onrender.com'
+        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const token = localStorage.getItem('auth_token')
+
+      const res = await fetch(`${API_URL}/api/payments/checkout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ product_type: productType, currency })
+      })
+      
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.detail || 'Checkout failed')
+      }
+
+      const orderData = await res.json()
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "CosmoFolio",
+        description: productType === 'pro_upgrade' ? "Pro Upgrade" : "Boost Pack",
+        order_id: orderData.order_id,
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await fetch(`${API_URL}/api/payments/verify-payment`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            })
+
+            if (!verifyRes.ok) {
+              const error = await verifyRes.json()
+              throw new Error(error.detail || "Payment verification failed")
+            }
+            
+            alert("Payment successful! Your account has been upgraded.")
+            if (productType === 'pro_upgrade') {
+              setUserPlan('pro')
+            }
+            window.location.href = "/dashboard/my-portfolios"
+          } catch(e: any) {
+            alert(e.message || "Payment verification failed. Please contact support.")
+          }
+        },
+        prefill: {
+          email: user?.email || ""
+        },
+        theme: {
+          color: "#c8a97e" // accent-gold
+        }
+      }
+
+      const rzp = new Razorpay(options)
+      rzp.on("payment.failed", function (response: any) {
+        alert("Payment failed. Please try again.")
+      })
+      rzp.open()
+    } catch (e: any) {
+      alert(e.message)
+    } finally {
+      setIsCheckingOut(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation (matches homepage) */}
       <Navbar />
 
-      {/* Header */}
       <section className="bg-bg-subtle border-b border-gray-100 dark:border-white/5">
         <div className="container-centered py-16 md:py-24 text-center">
           <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">
@@ -121,7 +244,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Pricing comparison */}
       <section className="py-16 md:py-20 bg-white dark:bg-dark-bg-secondary">
         <div className="container-centered">
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
@@ -160,7 +282,7 @@ export default function PricingPage() {
               <h2 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Pro</h2>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
-                  {currency === 'INR' ? '₹299' : '$12'}
+                  {currency === 'INR' ? '₹299' : '$9.99'}
                 </span>
                 <span className="text-sm text-text-secondary dark:text-dark-text-secondary">one-time</span>
               </div>
@@ -176,19 +298,23 @@ export default function PricingPage() {
                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4">
                   <span className="font-semibold text-text-primary dark:text-dark-text-primary">Best for:</span> Final submissions, applications, thesis
                 </p>
-                {/* Pro checkout isn't built yet — be honest: coming soon + join the beta. */}
+                
                 <div className="w-full flex flex-col gap-3">
-                  {!isAuthenticated ? (
-                    <>
-                      <div className="w-full flex items-center justify-center gap-2 rounded-lg border border-accent-gold/40 bg-accent-gold/10 text-text-primary dark:text-dark-text-primary font-semibold py-3 px-4 cursor-default select-none">
-                        <svg className="w-4 h-4 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                        Coming Soon
-                      </div>
-                      <p className="text-xs text-center text-text-secondary dark:text-dark-text-secondary mt-1">
-                        Sign up for free to be notified when Pro launches, or apply a promo code if you have one.
-                      </p>
-                    </>
+                  {userPlan === 'pro' ? (
+                    <div className="w-full text-center py-3 px-4 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-200 font-semibold text-sm">
+                      ✓ You are a Pro Member
+                    </div>
                   ) : (
+                    <button 
+                      onClick={() => handleCheckout('pro_upgrade')}
+                      disabled={isCheckingOut}
+                      className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm bg-accent-gold hover:bg-yellow-500 text-charcoal shadow-lg"
+                    >
+                      {isCheckingOut ? 'Loading...' : 'Upgrade to Pro'}
+                    </button>
+                  )}
+
+                  {isAuthenticated && userPlan !== 'pro' && (
                     <div className="mt-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-4">
                       <p className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary mb-3">HAVE A PROMO CODE?</p>
                       <div className="flex gap-2">
@@ -218,10 +344,57 @@ export default function PricingPage() {
               </div>
             </div>
           </div>
+          
+          {/* Boost Pack Add-on */}
+          <div className="max-w-2xl mx-auto mt-16">
+            <div className={`rounded-3xl p-8 border flex flex-col md:flex-row items-center gap-8 shadow-sm transition-all ${userPlan === 'pro' ? 'border-accent-gold/40 bg-white dark:bg-dark-bg-secondary' : 'border-gray-200 bg-gray-50 opacity-70 cursor-not-allowed'}`}>
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent-gold mb-2">
+                  <span>🚀</span> CosmoFolio Boost Pack
+                </div>
+                <h3 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary mb-2">
+                  For bigger thesis & professional portfolios
+                </h3>
+                <p className="text-text-secondary dark:text-dark-text-secondary mb-4 text-sm">
+                  Running out of space? Stack Boost Packs on top of your Pro account to permanently increase your portfolio size.
+                </p>
+                <ul className="space-y-2 mb-0">
+                  <li className="flex gap-2 items-center text-sm font-semibold text-text-primary">
+                    <Check /> <span>+20 pages for every portfolio</span>
+                  </li>
+                  <li className="flex gap-2 items-center text-sm font-semibold text-text-primary">
+                    <Check /> <span>+2 PDF downloads</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex flex-col items-center justify-center min-w-[200px] border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 pl-0 md:pl-8">
+                <div className="text-3xl font-bold text-text-primary mb-1">
+                  {currency === 'INR' ? '₹99' : '$2.99'}
+                </div>
+                <div className="text-xs text-text-secondary mb-4">per stack</div>
+                
+                {userPlan === 'pro' ? (
+                  <button 
+                    onClick={() => handleCheckout('boost_pack')}
+                    disabled={isCheckingOut}
+                    className="btn-primary py-3 px-6 w-full text-center shadow-md bg-accent-primary"
+                  >
+                    {isCheckingOut ? 'Loading...' : 'Boost Account'}
+                  </button>
+                ) : (
+                  <div className="text-center w-full">
+                    <button disabled className="btn-secondary py-3 px-6 w-full text-center opacity-50 cursor-not-allowed mb-2">
+                      Locked
+                    </button>
+                    <p className="text-[10px] text-text-tertiary">Requires Pro Membership</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="py-20 bg-gray-50 dark:bg-dark-bg-primary">
         <div className="container-centered max-w-3xl">
           <div className="text-center mb-12">
@@ -247,7 +420,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Footer (matches homepage) */}
       <Footer />
     </div>
   )

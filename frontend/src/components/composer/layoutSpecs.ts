@@ -14,6 +14,7 @@ import {
 } from './types'
 
 export type RegionRole = 'image' | 'title' | 'subtitle' | 'text' | 'legend' | 'meta' | 'contents'
+  | 'headshot' | 'bio' | 'education' | 'skills' | 'software' | 'achievement' | 'interest'
 
 export interface Region {
   role: RegionRole
@@ -747,7 +748,479 @@ function buildProceduralMasterSpreads(): LayoutSpec[] {
   return specs
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TRUE SPREAD LAYOUTS  (isSpread:true pages — 12-col grid spans 1520px wide)
+// Left page  = columns 1-6   Right page = columns 7-12
+// Cross-gutter elements freely span col 1-12
+// ─────────────────────────────────────────────────────────────────────────────
+export const SPREAD_SPECS: LayoutSpec[] = [
+  // ── PANORAMA / FULL-BLEED (1–8) ─────────────────────────────────────────
+  { id: 'spread.full-bleed', name: 'Full Bleed Panorama', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 12) ] },
+
+  { id: 'spread.panorama-strip', name: 'Panorama + Caption Strip', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 9), { role: 'title', c0: 1, cs: 5, r0: 10, rs: 2 }, { role: 'text', c0: 6, cs: 7, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.panorama-top-strip', name: 'Header Strip + Panorama', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 6, r0: 1, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 1, rs: 2 }, img(0, 1, 12, 3, 10) ] },
+
+  { id: 'spread.panorama-mid-caption', name: 'Panorama + Mid Caption', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 7), { role: 'title', c0: 3, cs: 4, r0: 8, rs: 2 }, { role: 'text', c0: 2, cs: 8, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.two-panoramas', name: 'Two Panoramas Stacked', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 12, 1, 6), img(1, 1, 12, 7, 6) ] },
+
+  { id: 'spread.panorama-bleed-text', name: 'Bleed Image + Text Overlay', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 12), { role: 'title', c0: 2, cs: 5, r0: 9, rs: 2 }, { role: 'text', c0: 7, cs: 4, r0: 9, rs: 3 } ] },
+
+  { id: 'spread.panorama-thirds', name: 'Image Two-Thirds + Text', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 8), { role: 'title', c0: 1, cs: 4, r0: 9, rs: 2 }, { role: 'subtitle', c0: 1, cs: 4, r0: 11, rs: 1 }, { role: 'text', c0: 5, cs: 8, r0: 9, rs: 4 } ] },
+
+  { id: 'spread.horizon', name: 'Horizon Band', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, img(0, 1, 12, 3, 7), { role: 'text', c0: 1, cs: 6, r0: 10, rs: 3 }, { role: 'meta', c0: 7, cs: 6, r0: 10, rs: 3 } ] },
+
+  // ── HALF + HALF (9–20) ────────────────────────────────────────────────────
+  { id: 'spread.left-image-right-text', name: 'Image + Narrative', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 6, 1, 12), { role: 'title', c0: 7, cs: 5, r0: 2, rs: 2 }, { role: 'subtitle', c0: 7, cs: 5, r0: 4, rs: 1 }, { role: 'text', c0: 7, cs: 5, r0: 5, rs: 5 }, { role: 'meta', c0: 7, cs: 5, r0: 10, rs: 2 } ] },
+
+  { id: 'spread.right-image-left-text', name: 'Narrative + Image', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 2, cs: 5, r0: 2, rs: 2 }, { role: 'subtitle', c0: 2, cs: 5, r0: 4, rs: 1 }, { role: 'text', c0: 2, cs: 5, r0: 5, rs: 5 }, { role: 'meta', c0: 2, cs: 5, r0: 10, rs: 2 }, img(0, 7, 6, 1, 12) ] },
+
+  { id: 'spread.two-renders', name: 'Two Renders', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 12), img(1, 7, 6, 1, 12) ] },
+
+  { id: 'spread.image-text-centered', name: 'Image + Centered Text', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 6, 1, 12), { role: 'title', c0: 8, cs: 3, r0: 3, rs: 2 }, { role: 'text', c0: 8, cs: 3, r0: 5, rs: 6 } ] },
+
+  { id: 'spread.left-image-right-two', name: 'Image + Stacked Pair', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 6, 1, 12), img(1, 7, 6, 1, 6), img(2, 7, 6, 7, 6) ] },
+
+  { id: 'spread.left-two-right-image', name: 'Stacked Pair + Image', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 6, 1, 6), img(1, 1, 6, 7, 6), img(2, 7, 6, 1, 12) ] },
+
+  { id: 'spread.left-text-right-two', name: 'Text + Stacked Pair', category: 'Spread', suits: ['project', 'about'], imageCount: 2,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 2, rs: 2 }, { role: 'text', c0: 1, cs: 5, r0: 4, rs: 6 }, { role: 'meta', c0: 1, cs: 5, r0: 10, rs: 2 }, img(0, 7, 6, 1, 6), img(1, 7, 6, 7, 6) ] },
+
+  { id: 'spread.image-inset-caption', name: 'Image + Inset Caption Block', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 6, 1, 12), { role: 'title', c0: 7, cs: 6, r0: 1, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 3, rs: 5 }, { role: 'legend', c0: 7, cs: 6, r0: 8, rs: 4 } ] },
+
+  { id: 'spread.half-image-half-plan', name: 'Render + Plan', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 12), img(1, 7, 6, 1, 10), { role: 'meta', c0: 7, cs: 6, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.symmetrical-mirrors', name: 'Symmetrical Mirrors', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 10), { role: 'title', c0: 1, cs: 6, r0: 11, rs: 2 }, img(1, 7, 6, 1, 10), { role: 'meta', c0: 7, cs: 6, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.image-text-meta-row', name: 'Image + Text + Meta Row', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 6, 1, 12), { role: 'title', c0: 7, cs: 6, r0: 1, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 3, rs: 7 }, { role: 'meta', c0: 7, cs: 6, r0: 10, rs: 3 } ] },
+
+  // ── ASYMMETRIC (21–32) ───────────────────────────────────────────────────
+  { id: 'spread.asymmetric-75', name: '1.5 Page Image + Half Text', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 9, 1, 12), { role: 'title', c0: 10, cs: 3, r0: 2, rs: 2 }, { role: 'text', c0: 10, cs: 3, r0: 4, rs: 7 }, { role: 'meta', c0: 10, cs: 3, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.asymmetric-25', name: 'Half Text + 1.5 Page Image', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 3, r0: 2, rs: 2 }, { role: 'text', c0: 1, cs: 3, r0: 4, rs: 7 }, { role: 'meta', c0: 1, cs: 3, r0: 11, rs: 2 }, img(0, 4, 9, 1, 12) ] },
+
+  { id: 'spread.asymmetric-image-wide', name: 'Wide Image + Slim Column', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 8, 1, 12), { role: 'title', c0: 9, cs: 4, r0: 3, rs: 2 }, { role: 'text', c0: 9, cs: 4, r0: 5, rs: 5 }, { role: 'meta', c0: 9, cs: 4, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.asymmetric-slim-wide', name: 'Slim Column + Wide Image', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 4, r0: 3, rs: 2 }, { role: 'text', c0: 1, cs: 4, r0: 5, rs: 5 }, { role: 'meta', c0: 1, cs: 4, r0: 10, rs: 3 }, img(0, 5, 8, 1, 12) ] },
+
+  { id: 'spread.asymmetric-image-third', name: 'Two-Thirds Image + Third Text', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 8, 1, 12), { role: 'title', c0: 9, cs: 4, r0: 1, rs: 2 }, { role: 'subtitle', c0: 9, cs: 4, r0: 3, rs: 1 }, { role: 'text', c0: 9, cs: 4, r0: 4, rs: 6 }, { role: 'legend', c0: 9, cs: 4, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.offset-left', name: 'Offset Image Left', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 7, 1, 10), { role: 'title', c0: 8, cs: 5, r0: 1, rs: 2 }, { role: 'text', c0: 8, cs: 5, r0: 3, rs: 5 }, img(1, 8, 5, 8, 5) ] },
+
+  { id: 'spread.offset-right', name: 'Offset Image Right', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, { role: 'text', c0: 1, cs: 5, r0: 3, rs: 5 }, img(0, 1, 5, 8, 5), img(1, 6, 7, 1, 10) ] },
+
+  { id: 'spread.golden-ratio', name: 'Golden Ratio Split', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 7, 1, 12), { role: 'title', c0: 9, cs: 4, r0: 2, rs: 2 }, { role: 'text', c0: 9, cs: 4, r0: 4, rs: 6 }, { role: 'meta', c0: 8, cs: 5, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.golden-ratio-flip', name: 'Golden Ratio Flip', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 4, r0: 2, rs: 2 }, { role: 'text', c0: 1, cs: 4, r0: 4, rs: 6 }, { role: 'meta', c0: 1, cs: 5, r0: 10, rs: 3 }, img(0, 6, 7, 1, 12) ] },
+
+  { id: 'spread.bleed-plus-quarter', name: 'Bleed + Quarter Column', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 9, 1, 12), { role: 'title', c0: 10, cs: 3, r0: 1, rs: 2 }, { role: 'subtitle', c0: 10, cs: 3, r0: 3, rs: 1 }, { role: 'text', c0: 10, cs: 3, r0: 4, rs: 5 }, { role: 'legend', c0: 10, cs: 3, r0: 9, rs: 4 } ] },
+
+  { id: 'spread.quarter-plus-bleed', name: 'Quarter Column + Bleed', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 3, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 3, r0: 3, rs: 1 }, { role: 'text', c0: 1, cs: 3, r0: 4, rs: 5 }, { role: 'legend', c0: 1, cs: 3, r0: 9, rs: 4 }, img(0, 4, 9, 1, 12) ] },
+
+  { id: 'spread.asymmetric-mid-divide', name: 'Asymmetric Mid-Divide', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 5, 1, 12), { role: 'title', c0: 6, cs: 4, r0: 2, rs: 2 }, { role: 'text', c0: 6, cs: 4, r0: 4, rs: 5 }, img(1, 10, 3, 1, 8), { role: 'meta', c0: 6, cs: 7, r0: 10, rs: 3 } ] },
+
+  // ── GRIDS (33–44) ────────────────────────────────────────────────────────
+  { id: 'spread.four-grid', name: '2×2 Grid', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 6, 1, 6), img(1, 7, 6, 1, 6), img(2, 1, 6, 7, 6), img(3, 7, 6, 7, 6) ] },
+
+  { id: 'spread.six-grid', name: '3×2 Grid', category: 'Spread', suits: ['project'], imageCount: 6,
+    regions: [ img(0, 1, 4, 1, 6), img(1, 5, 4, 1, 6), img(2, 9, 4, 1, 6), img(3, 1, 4, 7, 6), img(4, 5, 4, 7, 6), img(5, 9, 4, 7, 6) ] },
+
+  { id: 'spread.eight-grid', name: '4×2 Grid', category: 'Spread', suits: ['project'], imageCount: 8,
+    regions: [ img(0, 1, 3, 1, 6), img(1, 4, 3, 1, 6), img(2, 7, 3, 1, 6), img(3, 10, 3, 1, 6), img(4, 1, 3, 7, 6), img(5, 4, 3, 7, 6), img(6, 7, 3, 7, 6), img(7, 10, 3, 7, 6) ] },
+
+  { id: 'spread.three-row', name: '3-Row Strip', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 12, 1, 4), img(1, 1, 12, 5, 4), img(2, 1, 12, 9, 4) ] },
+
+  { id: 'spread.grid-title', name: '2×2 Grid + Title Block', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 6, 1, 5), img(1, 7, 6, 1, 5), img(2, 1, 6, 6, 5), img(3, 7, 6, 6, 5), { role: 'title', c0: 1, cs: 6, r0: 11, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.mosaic-five', name: 'Mosaic Five', category: 'Spread', suits: ['project'], imageCount: 5,
+    regions: [ img(0, 1, 7, 1, 7), img(1, 8, 5, 1, 4), img(2, 8, 5, 5, 3), img(3, 1, 4, 8, 5), img(4, 5, 8, 8, 5) ] },
+
+  { id: 'spread.mosaic-seven', name: 'Mosaic Seven', category: 'Spread', suits: ['project'], imageCount: 7,
+    regions: [ img(0, 1, 5, 1, 6), img(1, 6, 4, 1, 4), img(2, 10, 3, 1, 3), img(3, 6, 4, 5, 3), img(4, 10, 3, 4, 3), img(5, 1, 6, 7, 6), img(6, 7, 6, 7, 6) ] },
+
+  { id: 'spread.contact-sheet', name: 'Contact Sheet 9', category: 'Spread', suits: ['project'], imageCount: 9,
+    regions: [ img(0, 1, 4, 1, 4), img(1, 5, 4, 1, 4), img(2, 9, 4, 1, 4), img(3, 1, 4, 5, 4), img(4, 5, 4, 5, 4), img(5, 9, 4, 5, 4), img(6, 1, 4, 9, 4), img(7, 5, 4, 9, 4), img(8, 9, 4, 9, 4) ] },
+
+  { id: 'spread.grid-caption-row', name: 'Grid + Caption Row', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 6, 1, 5), img(1, 7, 6, 1, 5), img(2, 1, 6, 6, 5), img(3, 7, 6, 6, 5), { role: 'legend', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.two-col-with-text', name: '2-Col Images + Text Column', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 4, 1, 12), img(1, 5, 4, 1, 12), { role: 'title', c0: 9, cs: 4, r0: 1, rs: 2 }, { role: 'text', c0: 9, cs: 4, r0: 3, rs: 7 }, { role: 'meta', c0: 9, cs: 4, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.three-col-equal', name: 'Three Equal Columns', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 4, 1, 12), img(1, 5, 4, 1, 12), img(2, 9, 4, 1, 12) ] },
+
+  { id: 'spread.four-col-equal', name: 'Four Equal Columns', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 3, 1, 12), img(1, 4, 3, 1, 12), img(2, 7, 3, 1, 12), img(3, 10, 3, 1, 12) ] },
+
+  // ── TRIPTYCH / TRIO (45–52) ───────────────────────────────────────────────
+  { id: 'spread.triptych', name: 'Triptych', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 4, 1, 12), img(1, 5, 4, 1, 12), img(2, 9, 4, 1, 12) ] },
+
+  { id: 'spread.triptych-caption', name: 'Triptych + Captions', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 4, 1, 10), img(1, 5, 4, 1, 10), img(2, 9, 4, 1, 10), { role: 'title', c0: 1, cs: 4, r0: 11, rs: 2 }, { role: 'text', c0: 5, cs: 4, r0: 11, rs: 2 }, { role: 'meta', c0: 9, cs: 4, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.triptych-top-header', name: 'Header + Triptych', category: 'Spread', suits: ['project', 'about'], imageCount: 3,
+    regions: [ { role: 'title', c0: 1, cs: 6, r0: 1, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 1, rs: 2 }, img(0, 1, 4, 3, 10), img(1, 5, 4, 3, 10), img(2, 9, 4, 3, 10) ] },
+
+  { id: 'spread.triptych-unequal', name: 'Triptych Unequal', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 6, 1, 12), img(1, 7, 3, 1, 12), img(2, 10, 3, 1, 12) ] },
+
+  { id: 'spread.duo-strip-caption', name: 'Duo + Caption Strip', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 9), img(1, 7, 6, 1, 9), { role: 'title', c0: 1, cs: 4, r0: 10, rs: 3 }, { role: 'text', c0: 5, cs: 8, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.hero-duo', name: 'Hero + Duo Below', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 12, 1, 7), img(1, 1, 6, 8, 5), img(2, 7, 6, 8, 5) ] },
+
+  { id: 'spread.duo-hero-text', name: 'Duo Above + Hero Text', category: 'Spread', suits: ['project', 'about'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 5), img(1, 7, 6, 1, 5), { role: 'title', c0: 1, cs: 6, r0: 6, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 6, rs: 4 }, { role: 'meta', c0: 1, cs: 12, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.large-plus-pair', name: 'Large + Pair', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 7, 1, 12), img(1, 8, 5, 1, 6), img(2, 8, 5, 7, 6) ] },
+
+  // ── MAGAZINE / EDITORIAL (53–65) ──────────────────────────────────────────
+  { id: 'spread.magazine', name: 'Magazine Feature', category: 'Spread', suits: ['project', 'about'], imageCount: 3,
+    regions: [ img(0, 1, 7, 1, 12), img(1, 8, 5, 1, 6), img(2, 8, 5, 7, 4), { role: 'title', c0: 8, cs: 5, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.magazine-text-dominant', name: 'Magazine Text Dominant', category: 'Spread', suits: ['project', 'about'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 7), { role: 'title', c0: 1, cs: 6, r0: 8, rs: 2 }, { role: 'text', c0: 1, cs: 6, r0: 10, rs: 3 }, img(1, 7, 6, 1, 12) ] },
+
+  { id: 'spread.editorial-pull-quote', name: 'Editorial Pull Quote', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 6, 1, 12), { role: 'subtitle', c0: 7, cs: 6, r0: 2, rs: 3 }, { role: 'text', c0: 7, cs: 6, r0: 5, rs: 5 }, { role: 'meta', c0: 7, cs: 6, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.editorial-five-col', name: 'Editorial 5-Column', category: 'Spread', suits: ['about'], imageCount: 1,
+    regions: [ img(0, 1, 4, 1, 8), { role: 'title', c0: 5, cs: 3, r0: 1, rs: 2 }, { role: 'text', c0: 5, cs: 3, r0: 3, rs: 6 }, { role: 'text', c0: 8, cs: 5, r0: 1, rs: 8 }, { role: 'meta', c0: 1, cs: 12, r0: 9, rs: 4 } ] },
+
+  { id: 'spread.bold-opener', name: 'Bold Opener', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 1, rs: 3 }, img(0, 1, 12, 4, 7), { role: 'text', c0: 3, cs: 8, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.cover-spread', name: 'Cover Spread', category: 'Spread', suits: ['cover', 'project'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 9), { role: 'title', c0: 2, cs: 8, r0: 10, rs: 2 }, { role: 'subtitle', c0: 2, cs: 8, r0: 12, rs: 1 } ] },
+
+  { id: 'spread.story-arc', name: 'Story Arc', category: 'Spread', suits: ['project', 'about'], imageCount: 2,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, img(0, 1, 5, 3, 6), { role: 'text', c0: 1, cs: 5, r0: 9, rs: 4 }, img(1, 6, 7, 1, 12) ] },
+
+  { id: 'spread.double-story', name: 'Double Story', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 8), { role: 'title', c0: 1, cs: 6, r0: 9, rs: 2 }, { role: 'text', c0: 1, cs: 6, r0: 11, rs: 2 }, img(1, 7, 6, 3, 8), { role: 'subtitle', c0: 7, cs: 6, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.folio-left', name: 'Folio Left', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 3, r0: 1, rs: 3 }, { role: 'meta', c0: 1, cs: 3, r0: 4, rs: 2 }, img(0, 4, 9, 1, 12) ] },
+
+  { id: 'spread.folio-right', name: 'Folio Right', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 9, 1, 12), { role: 'title', c0: 10, cs: 3, r0: 1, rs: 3 }, { role: 'meta', c0: 10, cs: 3, r0: 4, rs: 2 } ] },
+
+  { id: 'spread.exhibition', name: 'Exhibition Style', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 1, rs: 1 }, img(0, 1, 5, 2, 9), img(1, 6, 4, 2, 9), img(2, 10, 3, 2, 9), { role: 'legend', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.editorial-band', name: 'Editorial Band', category: 'Spread', suits: ['project', 'about'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 8), { role: 'title', c0: 7, cs: 6, r0: 1, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 3, rs: 6 }, img(1, 7, 6, 9, 4) ] },
+
+  // ── ACADEMIC / TECHNICAL (66–76) ─────────────────────────────────────────
+  { id: 'spread.academic', name: 'Academic / Thesis', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 3, rs: 1 }, { role: 'text', c0: 7, cs: 6, r0: 1, rs: 4 }, img(0, 1, 12, 5, 8) ] },
+
+  { id: 'spread.plan-sections', name: 'Plan + Stacked Sections', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 7, 1, 10), img(1, 8, 5, 1, 5), img(2, 8, 5, 6, 5), { role: 'legend', c0: 1, cs: 3, r0: 11, rs: 2 }, { role: 'meta', c0: 4, cs: 4, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.plan-elevations', name: 'Plan + Three Elevations', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 7, 1, 8), { role: 'legend', c0: 1, cs: 7, r0: 9, rs: 4 }, img(1, 8, 5, 1, 4), img(2, 8, 5, 5, 4), img(3, 8, 5, 9, 4) ] },
+
+  { id: 'spread.axo-and-plans', name: 'Axonometric + Plans', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 6, 1, 8), { role: 'meta', c0: 1, cs: 6, r0: 9, rs: 4 }, img(1, 7, 6, 1, 6), img(2, 7, 6, 7, 6) ] },
+
+  { id: 'spread.section-detail', name: 'Section + Detail', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 8, 1, 12), { role: 'legend', c0: 1, cs: 8, r0: 11, rs: 2 }, img(1, 9, 4, 1, 8), { role: 'meta', c0: 9, cs: 4, r0: 9, rs: 4 } ] },
+
+  { id: 'spread.site-plan-context', name: 'Site Plan + Context', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 8, 1, 10), { role: 'title', c0: 1, cs: 8, r0: 11, rs: 2 }, img(1, 9, 4, 1, 6), { role: 'text', c0: 9, cs: 4, r0: 7, rs: 6 } ] },
+
+  { id: 'spread.diagram-grid', name: 'Diagram Grid', category: 'Spread', suits: ['project'], imageCount: 6,
+    regions: [ img(0, 1, 4, 1, 6), img(1, 5, 4, 1, 6), img(2, 9, 4, 1, 6), img(3, 1, 4, 7, 6), img(4, 5, 4, 7, 6), img(5, 9, 4, 7, 6) ] },
+
+  { id: 'spread.process-timeline', name: 'Process Timeline', category: 'Spread', suits: ['project', 'about'], imageCount: 4,
+    regions: [ img(0, 1, 3, 1, 9), img(1, 4, 3, 1, 9), img(2, 7, 3, 1, 9), img(3, 10, 3, 1, 9), { role: 'title', c0: 1, cs: 12, r0: 10, rs: 1 }, { role: 'text', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.construction-notes', name: 'Construction Notes', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 7, 1, 10), { role: 'legend', c0: 1, cs: 7, r0: 11, rs: 2 }, { role: 'title', c0: 8, cs: 5, r0: 1, rs: 2 }, { role: 'text', c0: 8, cs: 5, r0: 3, rs: 5 }, img(1, 8, 5, 8, 5) ] },
+
+  { id: 'spread.technical-drawing', name: 'Technical Drawing', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 1, rs: 1 }, img(0, 1, 12, 2, 9), { role: 'meta', c0: 1, cs: 6, r0: 11, rs: 2 }, { role: 'legend', c0: 7, cs: 6, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.model-photo', name: 'Model Photograph', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 8, 1, 12), { role: 'title', c0: 9, cs: 4, r0: 1, rs: 2 }, { role: 'text', c0: 9, cs: 4, r0: 3, rs: 5 }, img(1, 9, 4, 8, 5) ] },
+
+  // ── SPECIAL / CINEMATIC (77–100) ──────────────────────────────────────────
+  { id: 'spread.cinematic-wide', name: 'Cinematic Widescreen', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ img(0, 1, 12, 3, 7), { role: 'title', c0: 1, cs: 12, r0: 10, rs: 2 }, { role: 'text', c0: 1, cs: 12, r0: 12, rs: 1 } ] },
+
+  { id: 'spread.hero-caption-bottom', name: 'Hero + Bottom Caption', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 12, 1, 10), { role: 'title', c0: 1, cs: 4, r0: 11, rs: 2 }, { role: 'text', c0: 5, cs: 8, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.hero-caption-top', name: 'Caption + Hero', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 4, r0: 1, rs: 2 }, { role: 'text', c0: 5, cs: 8, r0: 1, rs: 2 }, img(0, 1, 12, 3, 10) ] },
+
+  { id: 'spread.diagonal-split', name: 'Diagonal Split', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 7, 1, 7), img(1, 6, 7, 6, 7), { role: 'title', c0: 1, cs: 5, r0: 8, rs: 2 }, { role: 'meta', c0: 8, cs: 5, r0: 8, rs: 2 } ] },
+
+  { id: 'spread.mondrian', name: 'Mondrian', category: 'Spread', suits: ['project'], imageCount: 5,
+    regions: [ img(0, 1, 5, 1, 7), img(1, 6, 3, 1, 4), img(2, 9, 4, 1, 4), img(3, 6, 7, 5, 5), img(4, 1, 5, 8, 5) ] },
+
+  { id: 'spread.mondrian-b', name: 'Mondrian B', category: 'Spread', suits: ['project'], imageCount: 6,
+    regions: [ img(0, 1, 4, 1, 6), img(1, 5, 4, 1, 4), img(2, 9, 4, 1, 5), img(3, 1, 6, 7, 6), img(4, 7, 3, 7, 6), img(5, 10, 3, 7, 6) ] },
+
+  { id: 'spread.spine-title', name: 'Spine Title', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 5, 1, 12), { role: 'title', c0: 6, cs: 2, r0: 1, rs: 12 }, { role: 'text', c0: 8, cs: 5, r0: 2, rs: 8 }, { role: 'meta', c0: 8, cs: 5, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.floating-image', name: 'Floating Image', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, { role: 'subtitle', c0: 1, cs: 5, r0: 3, rs: 1 }, img(0, 2, 9, 3, 8), { role: 'meta', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.diptych-text', name: 'Diptych + Text', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 5, 1, 10), img(1, 6, 5, 1, 10), { role: 'title', c0: 11, cs: 2, r0: 1, rs: 3 }, { role: 'text', c0: 11, cs: 2, r0: 4, rs: 7 }, { role: 'meta', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.night-sky', name: 'Night Sky (Dark Bleed)', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 10), { role: 'title', c0: 1, cs: 6, r0: 11, rs: 2 }, img(1, 7, 6, 3, 8), { role: 'meta', c0: 7, cs: 6, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.large-small-bottom', name: 'Large + Two Small Bottom', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 12, 1, 8), img(1, 1, 6, 9, 4), img(2, 7, 6, 9, 4) ] },
+
+  { id: 'spread.large-small-top', name: 'Two Small Top + Large', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 6, 1, 4), img(1, 7, 6, 1, 4), img(2, 1, 12, 5, 8) ] },
+
+  { id: 'spread.one-third-hero', name: 'Third + Full Hero', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 4, r0: 1, rs: 3 }, { role: 'text', c0: 1, cs: 4, r0: 4, rs: 5 }, { role: 'meta', c0: 1, cs: 4, r0: 9, rs: 4 }, img(0, 5, 8, 1, 12) ] },
+
+  { id: 'spread.diagonal-trio', name: 'Diagonal Trio', category: 'Spread', suits: ['project'], imageCount: 3,
+    regions: [ img(0, 1, 5, 1, 5), img(1, 4, 5, 4, 5), img(2, 8, 5, 7, 6), { role: 'title', c0: 1, cs: 3, r0: 6, rs: 2 }, { role: 'meta', c0: 10, cs: 3, r0: 1, rs: 3 } ] },
+
+  { id: 'spread.manifesto', name: 'Manifesto', category: 'Spread', suits: ['about'], imageCount: 0,
+    regions: [ { role: 'title', c0: 2, cs: 10, r0: 2, rs: 3 }, { role: 'subtitle', c0: 2, cs: 10, r0: 5, rs: 2 }, { role: 'text', c0: 2, cs: 5, r0: 7, rs: 5 }, { role: 'text', c0: 7, cs: 5, r0: 7, rs: 5 } ] },
+
+  { id: 'spread.portrait-landscape', name: 'Portrait + Landscape', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 4, 1, 12), img(1, 5, 8, 3, 7), { role: 'title', c0: 5, cs: 8, r0: 1, rs: 2 }, { role: 'meta', c0: 5, cs: 8, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.collage-left', name: 'Collage Left + Text', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 4, 1, 6), img(1, 1, 4, 7, 6), img(2, 5, 3, 1, 6), img(3, 5, 3, 7, 6), { role: 'title', c0: 8, cs: 5, r0: 2, rs: 2 }, { role: 'text', c0: 8, cs: 5, r0: 4, rs: 6 }, { role: 'meta', c0: 8, cs: 5, r0: 10, rs: 3 } ] },
+
+  { id: 'spread.collage-right', name: 'Text + Collage Right', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 2, rs: 2 }, { role: 'text', c0: 1, cs: 5, r0: 4, rs: 6 }, { role: 'meta', c0: 1, cs: 5, r0: 10, rs: 3 }, img(0, 6, 4, 1, 6), img(1, 6, 4, 7, 6), img(2, 10, 3, 1, 6), img(3, 10, 3, 7, 6) ] },
+
+  { id: 'spread.caption-between', name: 'Image Caption Image', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 5, 1, 12), { role: 'title', c0: 6, cs: 2, r0: 3, rs: 2 }, { role: 'text', c0: 6, cs: 2, r0: 5, rs: 5 }, img(1, 8, 5, 1, 12) ] },
+
+  { id: 'spread.grand-plan', name: 'Grand Plan', category: 'Spread', suits: ['project'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 1, rs: 1 }, img(0, 1, 12, 2, 10), { role: 'legend', c0: 1, cs: 6, r0: 12, rs: 1 }, { role: 'meta', c0: 7, cs: 6, r0: 12, rs: 1 } ] },
+
+  { id: 'spread.hero-inset', name: 'Hero + Inset Detail', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 12, 1, 10), { role: 'title', c0: 1, cs: 4, r0: 11, rs: 2 }, img(1, 5, 4, 9, 4), { role: 'meta', c0: 9, cs: 4, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.zigzag', name: 'Zigzag Alternating', category: 'Spread', suits: ['project'], imageCount: 4,
+    regions: [ img(0, 1, 7, 1, 3), img(1, 8, 5, 1, 3), img(2, 1, 5, 4, 3), img(3, 6, 7, 4, 3), { role: 'title', c0: 1, cs: 6, r0: 7, rs: 2 }, { role: 'text', c0: 7, cs: 6, r0: 7, rs: 4 }, { role: 'meta', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.data-rich', name: 'Data Rich', category: 'Spread', suits: ['project', 'about'], imageCount: 1,
+    regions: [ img(0, 1, 6, 1, 8), { role: 'legend', c0: 1, cs: 6, r0: 9, rs: 4 }, { role: 'title', c0: 7, cs: 6, r0: 1, rs: 2 }, { role: 'meta', c0: 7, cs: 6, r0: 3, rs: 3 }, { role: 'text', c0: 7, cs: 6, r0: 6, rs: 7 } ] },
+
+  { id: 'spread.concept-render', name: 'Concept + Render', category: 'Spread', suits: ['project'], imageCount: 2,
+    regions: [ img(0, 1, 6, 1, 7), { role: 'title', c0: 1, cs: 6, r0: 8, rs: 2 }, { role: 'text', c0: 1, cs: 6, r0: 10, rs: 3 }, img(1, 7, 6, 1, 12) ] },
+
+  { id: 'spread.narrative-sequence', name: 'Narrative Sequence', category: 'Spread', suits: ['project', 'about'], imageCount: 3,
+    regions: [ img(0, 1, 4, 2, 9), img(1, 5, 4, 2, 9), img(2, 9, 4, 2, 9), { role: 'title', c0: 1, cs: 12, r0: 11, rs: 2 } ] },
+
+  { id: 'spread.five-strip', name: 'Five Image Strip', category: 'Spread', suits: ['project'], imageCount: 5,
+    regions: [ img(0, 1, 12, 1, 2), img(1, 1, 12, 3, 2), img(2, 1, 12, 5, 3), img(3, 1, 12, 8, 2), img(4, 1, 12, 10, 3) ] },
+]
+
+// shorthand for resume regions
+const rv = (role: RegionRole, c0: number, cs: number, r0: number, rs: number): Region => ({ role, c0, cs, r0, rs })
+
+export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
+  // ── 2-PAGE RESUME SPREADS ────────────────────────────────────────────────
+  {
+    id: 'resume.spread-classic',
+    name: 'Classic CV Spread',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      // LEFT PAGE — headshot + identity
+      img(0, 1, 5, 1, 5),                          // headshot top-left
+      rv('title',       1, 5, 6, 2),               // name
+      rv('bio',         1, 5, 8, 4),               // about / bio paragraph
+      rv('meta',        1, 5, 12, 1),              // contact row
+      // RIGHT PAGE — content
+      rv('education',   7, 6, 1, 4),
+      rv('skills',      7, 3, 5, 4),
+      rv('software',    10, 3, 5, 4),
+      rv('achievement', 7, 6, 9, 2),
+      rv('interest',    7, 6, 11, 2),
+    ],
+  },
+  {
+    id: 'resume.spread-editorial',
+    name: 'Editorial CV Spread',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      // LEFT PAGE — dark sidebar + headshot
+      img(0, 1, 4, 1, 12),                         // full-height headshot
+      rv('title',       5, 2, 2, 2),
+      rv('bio',         5, 2, 4, 4),
+      rv('meta',        5, 2, 8, 4),
+      rv('interest',    5, 2, 12, 1),
+      // RIGHT PAGE
+      rv('education',   7, 6, 1, 3),
+      rv('skills',      7, 3, 4, 4),
+      rv('software',    10, 3, 4, 4),
+      rv('achievement', 7, 6, 8, 4),
+    ],
+  },
+  {
+    id: 'resume.spread-minimal',
+    name: 'Minimal CV Spread',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      // LEFT PAGE — pure typography
+      rv('title',       1, 6, 1, 3),
+      rv('subtitle',    1, 6, 4, 1),
+      rv('bio',         1, 6, 5, 5),
+      rv('meta',        1, 6, 10, 3),
+      // RIGHT PAGE
+      rv('education',   7, 6, 1, 4),
+      rv('skills',      7, 3, 5, 3),
+      rv('software',    10, 3, 5, 3),
+      rv('achievement', 7, 6, 8, 2),
+      rv('interest',    7, 6, 10, 3),
+    ],
+  },
+  {
+    id: 'resume.spread-portrait',
+    name: 'Portrait CV Spread',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      // LEFT — headshot dominant
+      img(0, 1, 6, 1, 8),
+      rv('title',       1, 6, 9, 2),
+      rv('meta',        1, 6, 11, 2),
+      // RIGHT — all content
+      rv('bio',         7, 6, 1, 2),
+      rv('education',   7, 6, 3, 3),
+      rv('skills',      7, 3, 6, 3),
+      rv('software',    10, 3, 6, 3),
+      rv('achievement', 7, 6, 9, 2),
+      rv('interest',    7, 6, 11, 2),
+    ],
+  },
+  {
+    id: 'resume.spread-grid',
+    name: 'Grid CV Spread',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      img(0, 1, 3, 1, 4),
+      rv('title',       4, 3, 1, 2),
+      rv('subtitle',    4, 3, 3, 1),
+      rv('meta',        4, 3, 4, 1),
+      rv('bio',         1, 6, 5, 3),
+      rv('interest',    1, 6, 8, 2),
+      rv('skills',      1, 6, 10, 3),
+      rv('education',   7, 6, 1, 5),
+      rv('software',    7, 3, 6, 4),
+      rv('achievement', 10, 3, 6, 4),
+      rv('interest',    7, 6, 10, 3),
+    ],
+  },
+
+  // ── 3-PAGE RESUME SPREADS (uses isSpread on two consecutive pages) ────────
+  // These are single-canvas 3-page spreads at 2280px wide (3× 760px)
+  // Implemented as a 2-page spread (left+right) — the 3rd page is a separate spread page
+  {
+    id: 'resume.spread-3page-intro',
+    name: '3-Page CV · Intro', // page 1 of 3: cover-style intro
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      img(0, 1, 12, 1, 9),
+      rv('title',       2, 8, 10, 2),
+      rv('subtitle',    2, 8, 12, 1),
+    ],
+  },
+  {
+    id: 'resume.spread-3page-skills',
+    name: '3-Page CV · Skills',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 1,
+    regions: [
+      img(0, 1, 4, 1, 6),
+      rv('bio',         1, 4, 7, 3),
+      rv('meta',        1, 4, 10, 3),
+      rv('education',   5, 4, 1, 6),
+      rv('skills',      5, 4, 7, 6),
+      rv('software',    9, 4, 1, 6),
+      rv('achievement', 9, 4, 7, 3),
+      rv('interest',    9, 4, 10, 3),
+    ],
+  },
+  {
+    id: 'resume.spread-3page-projects',
+    name: '3-Page CV · Projects',
+    category: 'Spread',
+    suits: ['resume'],
+    imageCount: 3,
+    regions: [
+      rv('title',       1, 12, 1, 1),
+      img(0, 1, 4, 2, 9),
+      img(1, 5, 4, 2, 9),
+      img(2, 9, 4, 2, 9),
+      rv('achievement', 1, 6, 11, 2),
+      rv('interest',    7, 6, 11, 2),
+    ],
+  },
+]
+
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
+  ...SPREAD_SPECS,
+  ...RESUME_SPREAD_SPECS,
   ...COVER_SPECS,
   ...buildImageSpecs(),
   ...TEXT_SPECS,

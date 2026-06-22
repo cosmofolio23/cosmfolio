@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import type { Page, DesignTokens } from '@/components/composer/types'
 import PageComposer from '@/components/composer/PageComposer'
+import SpreadComposer from '@/components/composer/SpreadComposer'
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
@@ -121,18 +122,20 @@ export default function PortfolioBookPage() {
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = pdf.internal.pageSize.getHeight()
 
+      let pdfPageIndex = 0
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i] as HTMLElement
+        const isSpread = el.dataset.spread === '1'
 
         // html2canvas struggles with aspect-ratio CSS, so we force explicit pixel dimensions
-        const targetWidth = el.offsetWidth > 800 ? el.offsetWidth : 1200
-        const aspectRatio = pdfWidth / pdfHeight
+        const targetWidth = isSpread ? (el.offsetWidth > 1600 ? el.offsetWidth : 2400) : (el.offsetWidth > 800 ? el.offsetWidth : 1200)
+        const aspectRatio = isSpread ? (pdfWidth * 2) / pdfHeight : pdfWidth / pdfHeight
         const targetHeight = Math.round(targetWidth / aspectRatio)
-        
+
         const oldStyleText = el.style.cssText
         el.style.width = `${targetWidth}px`
         el.style.height = `${targetHeight}px`
-        
+
         const child = el.firstElementChild as HTMLElement
         let oldChildStyle = ''
         if (child) {
@@ -143,18 +146,38 @@ export default function PortfolioBookPage() {
         }
 
         const canvas = await html2canvas(el, {
-          scale: 2, // High resolution
+          scale: 2,
           useCORS: true,
           logging: false
         })
-        
+
         // Restore styles
         el.style.cssText = oldStyleText
         if (child) child.style.cssText = oldChildStyle
-        
-        const imgData = canvas.toDataURL('image/jpeg', 0.95)
-        if (i > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+
+        if (isSpread) {
+          // Split 2× width canvas into two PDF pages at the midpoint
+          const halfW = Math.floor(canvas.width / 2)
+          const h = canvas.height
+          const orientation = sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait'
+
+          for (const half of [0, 1] as const) {
+            const halfCanvas = window.document.createElement('canvas')
+            halfCanvas.width = halfW
+            halfCanvas.height = h
+            const ctx = halfCanvas.getContext('2d')!
+            ctx.drawImage(canvas, half * halfW, 0, halfW, h, 0, 0, halfW, h)
+            const imgData = halfCanvas.toDataURL('image/jpeg', 0.95)
+            if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], orientation)
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+            pdfPageIndex++
+          }
+        } else {
+          const imgData = canvas.toDataURL('image/jpeg', 0.95)
+          if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
+          pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+          pdfPageIndex++
+        }
       }
 
       pdf.save(`${projectTitle || 'Portfolio'}.pdf`)
@@ -313,26 +336,47 @@ export default function PortfolioBookPage() {
         {/* Print View (All Pages) — each wrapper is exactly one printed sheet */}
         <div id="pf-print-container" className="hidden print:block w-full m-0 p-0">
           {pages.map((p, idx) => (
-            <div key={p.id} className="pf-print-page w-full relative">
-              <PageComposer
-                page={p}
-                tokens={tokens}
-                onChange={() => {}}
-                onUploadImage={() => Promise.resolve('')}
-                backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
-                masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
-                pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
-                grid={publishing.grid}
-                editableFree={false}
-                onFreeChange={() => {}}
-                onApplyScope={() => {}}
-                pages={pages}
-                onUpdateGlobalPages={() => {}}
-                overflowVisible={false}
-                onUpdateMasterElement={() => {}}
-                pageSize={pageSize}
-                showWatermark={false}
-              />
+            <div key={p.id} className="pf-print-page w-full relative" data-spread={p.isSpread ? '1' : undefined}>
+              {p.isSpread ? (
+                <SpreadComposer
+                  page={p}
+                  tokens={tokens}
+                  onChange={() => {}}
+                  onUploadImage={() => Promise.resolve('')}
+                  backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
+                  masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                  pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
+                  grid={publishing.grid}
+                  editableFree={false}
+                  onFreeChange={() => {}}
+                  onApplyScope={() => {}}
+                  pages={pages}
+                  onUpdateGlobalPages={() => {}}
+                  onUpdateMasterElement={() => {}}
+                  pageSize={pageSize}
+                  editMode={false}
+                />
+              ) : (
+                <PageComposer
+                  page={p}
+                  tokens={tokens}
+                  onChange={() => {}}
+                  onUploadImage={() => Promise.resolve('')}
+                  backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
+                  masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                  pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
+                  grid={publishing.grid}
+                  editableFree={false}
+                  onFreeChange={() => {}}
+                  onApplyScope={() => {}}
+                  pages={pages}
+                  onUpdateGlobalPages={() => {}}
+                  overflowVisible={false}
+                  onUpdateMasterElement={() => {}}
+                  pageSize={pageSize}
+                  showWatermark={false}
+                />
+              )}
             </div>
           ))}
         </div>

@@ -17,6 +17,14 @@ export type BlockType =
   | 'section'      // Section / elevation drawing
   | 'diagram'      // Concept / analysis diagram
   | 'contents'     // Table of contents auto-block
+  // ── Resume block types ──
+  | 'headshot'     // Portrait photo
+  | 'bio'          // About-me paragraph
+  | 'education'    // Degree / school / year entries
+  | 'skills'       // Soft/hard skills with optional rating bars
+  | 'software'     // Software proficiency (icons + bars)
+  | 'achievement'  // Awards, competitions, publications
+  | 'interest'     // Hobbies / interests
 
 export interface MetaField {
   label: string
@@ -26,6 +34,19 @@ export interface MetaField {
 export interface LegendItem {
   key: string      // "01"
   label: string    // "Living Room"
+}
+
+export interface ResumeEntry {
+  title: string     // degree name / award name / hobby
+  org?: string      // school / institution
+  year?: string     // graduation year / award year
+  detail?: string   // specialization / description
+}
+
+export interface SkillItem {
+  name: string
+  level: number     // 0–5
+  icon?: string     // emoji or short text icon
 }
 
 export interface Block {
@@ -42,6 +63,10 @@ export interface Block {
   // Metadata
   fields?: MetaField[]
   
+  // Resume-specific structured data
+  resumeEntries?: ResumeEntry[]   // education / achievement / interest rows
+  skillItems?: SkillItem[]        // skills / software items with rating
+
   // Crop / zoom / fit properties for V4
   fit?: 'cover' | 'contain' | 'fill'
   zoom?: number
@@ -98,6 +123,8 @@ export interface Page {
   titleBlockId?: string     // optional Master Title Block applied to this page's title
   freeElements?: FreeElement[]   // free-canvas overlay elements
   drawingMeta?: import('./publishingTypes').DrawingMetadata   // architectural scale + scale bar / north
+  /** True spread: this page is a single 1520px-wide canvas that exports as TWO PDF pages. */
+  isSpread?: boolean
 }
 
 export interface DesignTokens {
@@ -141,6 +168,38 @@ export function createBlock(type: BlockType): Block {
     case 'plan':        return { ...base, imageUrl: '', label: 'Ground Floor Plan', scale: '1:100' }
     case 'section':     return { ...base, imageUrl: '', label: 'Section A–A', scale: '1:100' }
     case 'diagram':     return { ...base, imageUrl: '', label: 'Concept Diagram' }
+    case 'headshot':    return { ...base, imageUrl: '', label: 'Profile Photo' }
+    case 'bio':         return { ...base, text: 'Architecture student with a passion for sustainable design and urban environments. Experienced in design studios, documentation, and model-making.' }
+    case 'education':   return { ...base, resumeEntries: [
+                          { title: 'B.Arch', org: 'School of Architecture', year: '2026', detail: 'CGPA 8.4 / 10' },
+                          { title: 'XII Science', org: 'State Board', year: '2021', detail: '92%' },
+                        ] }
+    case 'skills':      return { ...base, skillItems: [
+                          { name: 'Design Thinking', level: 5 },
+                          { name: 'Technical Drawing', level: 4 },
+                          { name: 'Model Making', level: 4 },
+                          { name: 'Site Analysis', level: 3 },
+                          { name: 'Presentation', level: 5 },
+                        ] }
+    case 'software':    return { ...base, skillItems: [
+                          { name: 'AutoCAD', level: 5, icon: '📐' },
+                          { name: 'Revit', level: 4, icon: '🏗' },
+                          { name: 'SketchUp', level: 4, icon: '📦' },
+                          { name: 'Photoshop', level: 4, icon: '🎨' },
+                          { name: 'Lumion', level: 3, icon: '✨' },
+                          { name: 'Rhino', level: 3, icon: '🦏' },
+                        ] }
+    case 'achievement': return { ...base, resumeEntries: [
+                          { title: 'NASA BAJA Design Award', org: 'National', year: '2025', detail: '1st Place, Structural Category' },
+                          { title: 'Dean\'s List', org: 'School of Architecture', year: '2024', detail: 'Academic Excellence' },
+                          { title: 'Studio Jury Best Project', org: 'Semester 6', year: '2024', detail: 'Urban Housing Studio' },
+                        ] }
+    case 'interest':    return { ...base, resumeEntries: [
+                          { title: 'Photography', detail: 'Urban & architectural' },
+                          { title: 'Sketching', detail: 'Travel journals' },
+                          { title: 'Music', detail: 'Guitar, 6 years' },
+                          { title: 'Reading', detail: 'Design theory & sci-fi' },
+                        ] }
     default:            return base
   }
 }
@@ -149,6 +208,8 @@ const BLOCK_LABELS: Record<BlockType, string> = {
   title: 'Title', subtitle: 'Subtitle', meta: 'Metadata', description: 'Description',
   legend: 'Legend', render: 'Render', plan: 'Plan', section: 'Section', diagram: 'Diagram',
   contents: 'Table of Contents',
+  headshot: 'Headshot', bio: 'Bio', education: 'Education', skills: 'Skills',
+  software: 'Software', achievement: 'Achievements', interest: 'Interests',
 }
 export function blockLabel(t: BlockType): string { return BLOCK_LABELS[t] }
 

@@ -158,30 +158,39 @@ async def track_export(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     _verify_owner(project_id, current_user["user_id"])
     try:
-        user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
+        user_resp = supabase.table("users").select("export_count, plan_type, boost_pack_count, is_pro").eq("id", current_user["user_id"]).execute()
         export_count = 0
-        is_pro = False
+        plan_type = "free"
+        boost_pack_count = 0
         email = current_user.get("email") or ""
         is_admin = email.lower() == "boseraj001@gmail.com"
+        
         if user_resp.data:
             export_count = user_resp.data[0].get("export_count") or 0
-            is_pro = user_resp.data[0].get("is_pro") or False
-            # Don't count exports for pro/admin users — keeps admin stats clean
-            if not is_pro and not is_admin:
+            plan_type = user_resp.data[0].get("plan_type") or "free"
+            boost_pack_count = user_resp.data[0].get("boost_pack_count") or 0
+            
+            # Don't count exports for admin users
+            if not is_admin:
                 supabase.table("users").update({"export_count": export_count + 1}).eq("id", current_user["user_id"]).execute()
                 export_count = export_count + 1
         else:
-            # Auto-create user if they signed up via Google and don't exist in users table
             supabase.table("users").insert({
                 "id": current_user["user_id"],
                 "email": email,
                 "export_count": 1,
-                "is_pro": False
+                "plan_type": "free",
+                "boost_pack_count": 0
             }).execute()
             export_count = 1
 
-        is_bypass = is_pro or is_admin
-        return {"export_count": export_count, "limit": 2, "is_bypass": is_bypass, "is_pro": is_pro}
+        limit = 2
+        if plan_type == "pro":
+            limit = 2 + (boost_pack_count * 2)
+            
+        is_bypass = is_admin
+        is_pro = (plan_type == "pro")
+        return {"export_count": export_count, "limit": limit, "is_bypass": is_bypass, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Track export failed: {str(e)[:100]}")
 
@@ -192,24 +201,33 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     _verify_owner(project_id, current_user["user_id"])
     try:
-        user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
+        user_resp = supabase.table("users").select("export_count, plan_type, boost_pack_count, is_pro").eq("id", current_user["user_id"]).execute()
         export_count = 0
-        is_pro = False
+        plan_type = "free"
+        boost_pack_count = 0
+        email = current_user.get("email") or ""
+        is_admin = email.lower() == "boseraj001@gmail.com"
+        
         if user_resp.data:
             export_count = user_resp.data[0].get("export_count") or 0
-            is_pro = user_resp.data[0].get("is_pro") or False
+            plan_type = user_resp.data[0].get("plan_type") or "free"
+            boost_pack_count = user_resp.data[0].get("boost_pack_count") or 0
         else:
-            # Auto-create user if they signed up via Google and don't exist in users table
             supabase.table("users").insert({
                 "id": current_user["user_id"],
-                "email": current_user.get("email", ""),
+                "email": email,
                 "export_count": 0,
-                "is_pro": False
+                "plan_type": "free",
+                "boost_pack_count": 0
             }).execute()
             
-        email = current_user.get("email") or ""
-        is_bypass = email.lower() == "boseraj001@gmail.com" or is_pro
-        return {"export_count": export_count, "limit": 2, "is_bypass": is_bypass, "is_pro": is_pro}
+        limit = 2
+        if plan_type == "pro":
+            limit = 2 + (boost_pack_count * 2)
+            
+        is_bypass = is_admin
+        is_pro = (plan_type == "pro")
+        return {"export_count": export_count, "limit": limit, "is_bypass": is_bypass, "is_pro": is_pro}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Get export count failed: {str(e)[:100]}")
 

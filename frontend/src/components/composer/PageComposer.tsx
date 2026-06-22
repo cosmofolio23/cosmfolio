@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import type { Block, Page, DesignTokens, BlockType } from './types'
+import type { Block, Page, DesignTokens, BlockType, ResumeEntry, SkillItem } from './types'
 import { allImages, createBlock } from './types'
 import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layoutSpecs'
 import {
@@ -45,7 +45,9 @@ interface Props {
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
-  title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents'
+  title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents',
+  headshot: 'headshot', bio: 'bio', education: 'education', skills: 'skills',
+  software: 'software', achievement: 'achievement', interest: 'interest',
 }
 
 export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true }: Props) {
@@ -308,6 +310,164 @@ function ImageUploadPlaceholder({
     </div>
   )
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESUME BLOCK RENDERERS
+   Each block type is a self-contained inline editor. All edits patch the
+   block in place — no separate form/modal needed.
+   ══════════════════════════════════════════════════════════════════════════*/
+
+function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onUpload?: (f: File) => Promise<string> }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const handle = async (file: File) => {
+    setUploading(true)
+    try { const url = onUpload ? await onUpload(file) : URL.createObjectURL(file); onChange({ imageUrl: url }) }
+    finally { setUploading(false) }
+  }
+  if (block.imageUrl) {
+    return (
+      <div className="relative w-full h-full group cursor-pointer" onClick={() => fileRef.current?.click()}>
+        <img src={block.imageUrl} alt="headshot" className="w-full h-full object-cover" style={{ objectPosition: `${50 + (block.xOffset || 0)}% ${50 + (block.yOffset || 0)}%` }} />
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold">Change Photo</div>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
+      </div>
+    )
+  }
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition" onClick={() => fileRef.current?.click()}>
+      {uploading ? <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" /> : <>
+        <span className="text-3xl">👤</span>
+        <span className="text-[9px] uppercase tracking-widest font-semibold text-gray-400">Add Photo</span>
+      </>}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
+    </div>
+  )
+}
+
+function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(block.text || '')
+  const save = () => { onChange({ text: draft }); setEditing(false) }
+  return (
+    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
+      <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>About</span>
+      {editing ? (
+        <div className="flex flex-col gap-1 flex-1">
+          <textarea value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[10px] bg-white/10 border border-current/20 rounded p-1 resize-none w-full" style={{ color: tokens.text }} />
+          <button onClick={save} className="text-[9px] font-semibold px-2 py-0.5 rounded self-end" style={{ background: tokens.accent, color: '#fff' }}>Save</button>
+        </div>
+      ) : (
+        <p className="text-[9px] leading-relaxed flex-1 cursor-text hover:opacity-80" style={{ color: tokens.text }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
+          {block.text || <span className="opacity-40 italic">Click to add bio…</span>}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void }) {
+  const entries: ResumeEntry[] = block.resumeEntries || []
+  const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
+  const add = () => patch([...entries, { title: 'Degree / School', org: 'Institution', year: '2026', detail: '' }])
+  const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
+  const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
+  return (
+    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>Education</span>
+        <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
+      </div>
+      <div className="flex flex-col gap-1.5 overflow-auto flex-1">
+        {entries.map((e, i) => (
+          <div key={i} className="group flex gap-1">
+            <div className="flex-1 min-w-0">
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Degree" className="block w-full text-[9px] font-semibold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight" style={{ color: tokens.text }} />
+              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Institution" className="block w-full text-[8px] opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+              <div className="flex gap-1">
+                <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-12 text-[8px] opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+                <input value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="GPA / Score" className="flex-1 text-[8px] opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+              </div>
+            </div>
+            <button onClick={() => del(i)} className="text-[8px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start leading-none">✕</button>
+          </div>
+        ))}
+        {entries.length === 0 && <button onClick={add} className="text-[9px] opacity-40 italic">Click + Add to start</button>}
+      </div>
+    </div>
+  )
+}
+
+function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; label?: string }) {
+  const items: SkillItem[] = block.skillItems || []
+  const patch = (next: SkillItem[]) => onChange({ skillItems: next })
+  const add = () => patch([...items, { name: 'New Skill', level: 3, icon: '' }])
+  const upd = (i: number, k: keyof SkillItem, v: string | number) => patch(items.map((s, idx) => idx === i ? { ...s, [k]: v } : s))
+  const del = (i: number) => patch(items.filter((_, idx) => idx !== i))
+  return (
+    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>{label}</span>
+        <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
+      </div>
+      <div className="flex flex-col gap-1 overflow-auto flex-1">
+        {items.map((s, i) => (
+          <div key={i} className="group flex items-center gap-1">
+            {label === 'Software' && (
+              <input value={s.icon || ''} onChange={ev => upd(i, 'icon', ev.target.value)} placeholder="⬡" className="w-5 text-center text-sm bg-transparent outline-none" title="Emoji icon" />
+            )}
+            <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} className="flex-1 text-[9px] bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+            <div className="flex gap-[2px] items-center">
+              {[1,2,3,4,5].map(dot => (
+                <button key={dot} onClick={() => upd(i, 'level', dot)} className="w-[7px] h-[7px] rounded-full border transition" style={{ background: dot <= s.level ? tokens.accent : 'transparent', borderColor: tokens.accent + '88' }} />
+              ))}
+            </div>
+            <button onClick={() => del(i)} className="text-[8px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 leading-none">✕</button>
+          </div>
+        ))}
+        {items.length === 0 && <button onClick={add} className="text-[9px] opacity-40 italic">Click + Add to start</button>}
+      </div>
+    </div>
+  )
+}
+
+function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; label: string; icon: string }) {
+  const entries: ResumeEntry[] = block.resumeEntries || []
+  const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
+  const add = () => patch([...entries, { title: 'New Entry', org: '', year: '', detail: '' }])
+  const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
+  const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
+  const isAchievement = label === 'Achievements'
+  return (
+    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>{icon} {label}</span>
+        <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
+      </div>
+      <div className="flex flex-col gap-1.5 overflow-auto flex-1">
+        {entries.map((e, i) => (
+          <div key={i} className="group flex gap-1 items-start">
+            <span className="text-[8px] opacity-30 mt-[1px]">▸</span>
+            <div className="flex-1 min-w-0">
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[9px] font-semibold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+              {isAchievement && (
+                <div className="flex gap-1">
+                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[8px] opacity-60 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+                  <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[8px] opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+                </div>
+              )}
+              <input value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="Detail" className="block w-full text-[8px] opacity-50 italic bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+            </div>
+            <button onClick={() => del(i)} className="text-[8px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start leading-none">✕</button>
+          </div>
+        ))}
+        {entries.length === 0 && <button onClick={add} className="text-[9px] opacity-40 italic">Click + Add to start</button>}
+      </div>
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 
 function RegionView({
   region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements,
@@ -642,6 +802,13 @@ function RegionView({
       {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
+      {region.role === 'headshot' && <ResumeHeadshot block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} onUpload={onUploadImage} />}
+      {region.role === 'bio' && <ResumeBio block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
+      {region.role === 'education' && <ResumeEducation block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
+      {region.role === 'skills' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Skills" />}
+      {region.role === 'software' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Software" />}
+      {region.role === 'achievement' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Achievements" icon="🏆" />}
+      {region.role === 'interest' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Interests" icon="✦" />}
       {region.role === 'contents' && (
         <div className="w-full h-full flex flex-col justify-between">
           <div className="flex-1 min-h-0">
@@ -695,6 +862,13 @@ export function LayoutThumb({ spec, tokens, active }: { spec: LayoutSpec; tokens
             case 'text': st.background = 'rgba(0,0,0,0.10)'; break
             case 'legend': st.background = 'rgba(0,0,0,0.18)'; break
             case 'meta': st.background = 'rgba(0,0,0,0.12)'; break
+            case 'headshot': st.background = 'rgba(0,0,0,0.22)'; st.borderRadius = 2; break
+            case 'bio': st.background = 'rgba(0,0,0,0.08)'; break
+            case 'education': st.background = `${accent}55`; break
+            case 'skills': st.background = `${accent}33`; break
+            case 'software': st.background = `${accent}44`; break
+            case 'achievement': st.background = 'rgba(234,179,8,0.35)'; break
+            case 'interest': st.background = 'rgba(34,197,94,0.25)'; break
           }
           return <div key={i} style={st} className="rounded-[1px]" />
         })}

@@ -446,7 +446,10 @@ async def get_current_user(authorization: str = Header(None)):
                     id=user["id"],
                     email=user["email"],
                     name=user.get("name"),
-                    created_at=datetime.fromisoformat(user.get("created_at"))
+                    created_at=datetime.fromisoformat(user.get("created_at")),
+                    plan_type=user.get("plan_type", "free") if not user.get("is_pro") else "pro",
+                    boost_pack_count=user.get("boost_pack_count", 0),
+                    export_count=user.get("export_count", 0)
                 )
 
         return UserResponse(

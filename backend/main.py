@@ -85,12 +85,13 @@ async def docs():
 # Try to load routes (but don't crash if they fail)
 print("[STARTUP] Loading routes...")
 try:
-    from routes import auth, projects, assets, portfolios, publication, documents, search, versioning, portfolio_pages, layout_customization, optimization, preview_export, coupons
+    from routes import auth, projects, assets, portfolios, publication, documents, search, versioning, portfolio_pages, layout_customization, optimization, preview_export, coupons, payments
     print("[OK] Core routes loaded")
 
     # Include routers - each prefix carefully chosen based on routes inside the file
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])  # routes: /signup, /me, etc.
     app.include_router(coupons.router, prefix="/api", tags=["coupons"]) # routes: /admin/coupons, /user/apply-coupon
+    app.include_router(payments.router, prefix="/api/payments", tags=["payments"]) # routes: /checkout, /webhook
     app.include_router(projects.router, prefix="/api/projects", tags=["projects"])  # routes: "", /{id}
     app.include_router(assets.router, prefix="/api/projects", tags=["assets"])  # routes: /{portfolio_id}/assets/...
     app.include_router(documents.router, prefix="/api/projects", tags=["documents"])  # routes: /{project_id}/document

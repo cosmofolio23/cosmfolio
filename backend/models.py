@@ -57,6 +57,9 @@ class UserResponse(BaseModel):
     email: str
     name: Optional[str]
     created_at: datetime
+    plan_type: Optional[str] = "free"
+    boost_pack_count: Optional[int] = 0
+    export_count: Optional[int] = 0
 
 class AuthResponse(BaseModel):
     access_token: str

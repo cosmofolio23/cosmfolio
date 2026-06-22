@@ -5,6 +5,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
+import SpreadComposer from '@/components/composer/SpreadComposer'
 import {
   type Page, type Block, type BlockType, type DesignTokens,
   createBlock, blockLabel, uid,
@@ -278,25 +279,37 @@ export default function TemplateEditor() {
   const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
   const [isPro, setIsPro] = useState(isAdmin)
 
-  // Fetch isPro status
+  const [maxPages, setMaxPages] = useState(6)
+
+  // Fetch isPro status and limits
   useEffect(() => {
     const fetchStatus = async () => {
       try {
         const savedToken = token || localStorage.getItem('auth_token')
         if (!savedToken) return
-        const res = await fetch(`${API_URL}/api/documents/export-count`, {
+        const projectId = searchParams?.get('project')
+        if (!projectId) return
+
+        const res = await fetch(`${API_URL}/api/projects/${projectId}/document/export-count`, {
           headers: { 'Authorization': `Bearer ${savedToken}` }
         })
         if (res.ok) {
           const data = await res.json()
           setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass)
+          if (isAdmin) {
+             setMaxPages(999)
+          } else if (data.is_pro) {
+             setMaxPages(data.limit ? (data.limit === 2 ? 30 : 30 + ((data.limit - 2) * 10)) : 30) // Assuming limit scales with boost packs, 1 boost pack = +20 pages
+          } else {
+             setMaxPages(6)
+          }
         }
       } catch (e) {
         console.error(e)
       }
     }
     fetchStatus()
-  }, [isAuthenticated, isAdmin])
+  }, [isAuthenticated, isAdmin, searchParams])
 
   const [template, setTemplate] = useState<Template | null>(null)
   const [pages, setPages] = useState<Page[]>([])
@@ -1070,6 +1083,11 @@ export default function TemplateEditor() {
       (pageType && b.suits.includes(pageType) ? 1 : 0) - (pageType && a.suits.includes(pageType) ? 1 : 0))
   }, [layoutCat, layoutSearch, currentPage?.type])
 
+  // Auto-switch layout panel to Spread category when on a spread page
+  useEffect(() => {
+    if (currentPage?.isSpread) setLayoutCat('Spread')
+  }, [currentPage?.id, currentPage?.isSpread])
+
   // ── Template Intelligence: smart auto-fill from the asset library ──
   const typeFromName = (name: string): string => {
     const n = (name || '').toLowerCase()
@@ -1484,8 +1502,8 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    if (!isPro && !isAdmin && pages.length >= 6) {
-      flashUpload('err', 'Free tier is limited to 6 pages. Pro Mode with unlimited pages is launching next week.', 8000)
+    if (pages.length >= maxPages) {
+      flashUpload('err', `You have reached your limit of ${maxPages} pages. Upgrade your plan to add more.`, 8000)
       return
     }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
@@ -1505,6 +1523,22 @@ export default function TemplateEditor() {
       blocks.push(createBlock('description')) 
     }
     const newPage: Page = { id: uid('p'), type, layoutId, blocks }
+    markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
+  }
+
+  const addSpreadPage = () => {
+    const blocks = [createBlock('render'), createBlock('title'), createBlock('description')]
+    const newPage: Page = { id: uid('p'), type: 'project', layoutId: 'spread.left-image-right-text', blocks, isSpread: true }
+    markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
+  }
+
+  const addResumeSpreadPage = () => {
+    const blocks = [
+      createBlock('headshot'), createBlock('title'), createBlock('subtitle'),
+      createBlock('bio'), createBlock('meta'), createBlock('education'),
+      createBlock('skills'), createBlock('software'), createBlock('achievement'), createBlock('interest'),
+    ]
+    const newPage: Page = { id: uid('p'), type: 'resume', layoutId: 'resume.spread-classic', blocks, isSpread: true }
     markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
   }
 
@@ -1985,6 +2019,18 @@ export default function TemplateEditor() {
         {/* Left: pages */}
         <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`} id="tour-pages-panel">
           <div className="p-3">
+            {/* ADD PAGE — top of panel */}
+            <div className="mb-3 pb-3 border-b">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1.5">Add page</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {(['project', 'about', 'cover', 'contact', 'resume', 'contents'] as const).map(t => (
+                  <button key={t} onClick={() => addPage(t)} className="px-2 py-1.5 text-[11px] border border-gray-300 rounded hover:bg-gray-50 capitalize">+ {t}</button>
+                ))}
+                <button onClick={addSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-blue-300 rounded hover:bg-blue-50 text-blue-700 font-medium">📖 + Spread (2-page)</button>
+                <button onClick={addResumeSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-purple-300 rounded hover:bg-purple-50 text-purple-700 font-medium">🎓 + Resume Spread</button>
+              </div>
+            </div>
+
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
             <div className="space-y-1.5">
               {pages.map((page, idx) => (
@@ -2003,7 +2049,7 @@ export default function TemplateEditor() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-gray-400 text-lg leading-none select-none cursor-grab active:cursor-grabbing">⋮</div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[10px] text-gray-400 uppercase">{idx + 1} · {page.type}</div>
+                      <div className="text-[10px] text-gray-400 uppercase">{idx + 1} · {page.isSpread ? '📖 spread' : page.type}</div>
                       <div className="text-xs font-medium truncate">{page.blocks.find(b => b.type === 'title')?.text || 'Untitled'}</div>
                       <div className="text-[10px] text-gray-400 truncate">{getSpec(page.layoutId).name}</div>
                     </div>
@@ -2015,14 +2061,6 @@ export default function TemplateEditor() {
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-3 pt-3 border-t">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1.5">Add page</p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {(['project', 'about', 'cover', 'contact', 'resume', 'contents'] as const).map(t => (
-                  <button key={t} onClick={() => addPage(t)} className="px-2 py-1.5 text-[11px] border border-gray-300 rounded hover:bg-gray-50 capitalize">+ {t}</button>
-                ))}
-              </div>
             </div>
           </div>
         </aside>
@@ -2056,7 +2094,37 @@ export default function TemplateEditor() {
             </div>
           </div>
 
-          {editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 ? (
+          {currentPage?.isSpread ? (
+            /* True Spread Canvas: single 1520px-wide page, cols 1-6 = left, 7-12 = right */
+            (() => {
+              const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
+              return (
+                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
+                  <div className="origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
+                    <SpreadComposer
+                      page={currentPage}
+                      tokens={tokens}
+                      onChange={updatePage}
+                      onUploadImage={uploadImage}
+                      backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
+                      masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                      pageContext={{ pageNumber: currentIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(currentIdx + 1).padStart(2, '0') }}
+                      grid={publishingPortfolio.grid}
+                      editableFree
+                      onFreeChange={els => { markDirty(); setPages(pages.map((x, i) => i === currentIdx ? { ...x, freeElements: els } : x)) }}
+                      onApplyScope={applyElementScopeFromPage}
+                      onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
+                      pages={pages}
+                      onUpdateGlobalPages={(updater) => { markDirty(); setPages(updater(pages)) }}
+                      onUpdateMasterElement={updateMasterElement}
+                      pageSize={publishingPortfolio.pageSize}
+                      editMode
+                    />
+                  </div>
+                </div>
+              )
+            })()
+          ) : editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 ? (
             /* Cosmo Book Design Mode: Left and Right Page side-by-side spread */
             (() => {
               const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1

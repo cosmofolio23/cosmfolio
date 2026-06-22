@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
+import AccountUsageWidget from '@/components/AccountUsageWidget'
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
@@ -177,6 +178,7 @@ export default function MyPortfoliosPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <AccountUsageWidget />
         {isLoading ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />

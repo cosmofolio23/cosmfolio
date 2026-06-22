@@ -938,16 +938,19 @@ async def save_customization(
             pages = body["composer_doc"].get("pages", [])
             
             # Check user limits
-            user_res = supabase.table("users").select("*").eq("id", current_user["user_id"]).execute()
+            user_res = supabase.table("users").select("plan_type, boost_pack_count").eq("id", current_user["user_id"]).execute()
             user_data = user_res.data[0] if user_res.data else {}
-            is_free = user_data.get("subscription_tier", "free") == "free"
+            plan_type = user_data.get("plan_type", "free")
+            boost_pack_count = user_data.get("boost_pack_count") or 0
             is_admin = current_user.get("email", "").lower() == 'boseraj001@gmail.com'
             
             if not is_admin:
-                if is_free and len(pages) > 6:
-                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Free tier is limited to 6 pages per portfolio. Please upgrade to Pro.")
-                elif not is_free and len(pages) > 30:
-                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Pro tier is limited to 30 pages per portfolio.")
+                max_pages = 6 if plan_type == "free" else 30 + (boost_pack_count * 20)
+                if len(pages) > max_pages:
+                    if plan_type == "free":
+                        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Free tier is limited to 6 pages per portfolio. Please upgrade to Pro.")
+                    else:
+                        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Pro tier is limited to {max_pages} pages per portfolio with your active Boost Packs.")
 
             ps["composer_doc"] = body["composer_doc"]
 
