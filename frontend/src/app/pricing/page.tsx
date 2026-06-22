@@ -163,8 +163,12 @@ function PricingPageInner() {
       })
       
       if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.detail || 'Checkout failed')
+        let errMsg = `Server error ${res.status}`
+        try {
+          const error = await res.json()
+          errMsg = typeof error.detail === 'string' ? error.detail : JSON.stringify(error.detail) || errMsg
+        } catch {}
+        throw new Error(errMsg)
       }
 
       const orderData = await res.json()
@@ -316,11 +320,10 @@ function PricingPageInner() {
                     </div>
                   ) : (
                     <button 
-                      onClick={() => handleCheckout('pro_upgrade')}
-                      disabled={isCheckingOut}
-                      className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm bg-accent-gold hover:bg-yellow-500 text-charcoal shadow-lg"
+                      disabled
+                      className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed shadow-none"
                     >
-                      {isCheckingOut ? 'Loading...' : 'Upgrade to Pro'}
+                      Coming Soon
                     </button>
                   )}
 
@@ -385,11 +388,10 @@ function PricingPageInner() {
                 
                 {userPlan === 'pro' ? (
                   <button 
-                    onClick={() => handleCheckout('boost_pack')}
-                    disabled={isCheckingOut}
-                    className="btn-primary py-3 px-6 w-full text-center shadow-md bg-accent-primary"
+                    disabled
+                    className="btn-primary py-3 px-6 w-full text-center shadow-none bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed"
                   >
-                    {isCheckingOut ? 'Loading...' : 'Boost Account'}
+                    Coming Soon
                   </button>
                 ) : (
                   <div className="text-center w-full">

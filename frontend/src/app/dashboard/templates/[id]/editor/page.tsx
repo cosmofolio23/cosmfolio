@@ -1522,7 +1522,7 @@ export default function TemplateEditor() {
 
   const addPage = (type: Page['type']) => {
     if (pages.length >= maxPages) {
-      router.push('/pricing')
+      alert("Pro Upgrade is Coming Soon! We are currently setting up payments.")
       return
     }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
@@ -2463,7 +2463,7 @@ export default function TemplateEditor() {
                             key={spec.id}
                             onClick={() => {
                               if (spec.pro && !isPro) {
-                                router.push('/pricing')
+                                alert("Pro Layouts are Coming Soon!")
                               } else {
                                 setLayout(spec.id)
                               }
