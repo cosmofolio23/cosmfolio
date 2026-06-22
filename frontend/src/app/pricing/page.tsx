@@ -10,9 +10,9 @@ import { useRouter } from 'next/navigation'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-razorpay requires browser globals — must not run during SSG
-const useRazorpay: () => [any] = typeof window !== 'undefined'
+const useRazorpay: () => { Razorpay: any } = typeof window !== 'undefined'
   ? (require('react-razorpay').useRazorpay as any)
-  : () => [null]
+  : () => ({ Razorpay: null })
 
 const FREE_FEATURES = [
   'Unlimited portfolios',
@@ -61,7 +61,7 @@ export default function PricingPage() {
   const [currency, setCurrency] = useState<'INR' | 'USD'>('INR')
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
-  const [Razorpay] = useRazorpay()
+  const { Razorpay } = useRazorpay()
   
   const [promoCode, setPromoCode] = useState('')
   const [isApplying, setIsApplying] = useState(false)
