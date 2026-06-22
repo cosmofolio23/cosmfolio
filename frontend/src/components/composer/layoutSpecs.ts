@@ -1306,6 +1306,17 @@ export const RESUME_SPREAD_SPECS: LayoutSpec[] = [
   },
 ]
 
+export const CONTENT_SPREAD_SPECS: LayoutSpec[] = [
+  { id: 'spread.contents-minimal', name: 'Minimal Contents Spread', category: 'Content Spread', suits: ['contents'], imageCount: 1,
+    regions: [ { role: 'title', c0: 1, cs: 5, r0: 1, rs: 2 }, { role: 'contents', c0: 1, cs: 5, r0: 4, rs: 8 }, img(0, 7, 6, 1, 12) ] },
+  { id: 'spread.contents-grid', name: 'Grid Contents Spread', category: 'Content Spread', suits: ['contents'], imageCount: 4,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 }, { role: 'contents', c0: 1, cs: 12, r0: 4, rs: 4 }, img(0, 1, 3, 9, 4), img(1, 4, 3, 9, 4), img(2, 7, 3, 9, 4), img(3, 10, 3, 9, 4) ] },
+  { id: 'spread.contents-editorial', name: 'Editorial Contents Spread', category: 'Content Spread', suits: ['contents'], imageCount: 2,
+    regions: [ img(0, 1, 4, 1, 12), { role: 'title', c0: 6, cs: 4, r0: 2, rs: 2 }, { role: 'contents', c0: 6, cs: 6, r0: 5, rs: 7 }, img(1, 10, 3, 1, 4) ] },
+  { id: 'spread.contents-timeline', name: 'Timeline Contents Spread', category: 'Content Spread', suits: ['contents'], imageCount: 0,
+    regions: [ { role: 'title', c0: 1, cs: 12, r0: 5, rs: 2 }, { role: 'contents', c0: 1, cs: 12, r0: 8, rs: 4 } ] },
+]
+
 // ═══════════════════════════════════════════════════════════════════════════
 // GENERATED LAYOUT BANKS — 100 each
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1776,6 +1787,7 @@ function generateExtraCovers100(): LayoutSpec[] {
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...SPREAD_SPECS,
   ...RESUME_SPREAD_SPECS,
+  ...CONTENT_SPREAD_SPECS,
   ...generateResumeSpreads100(),
   ...generateProjectSpreads100(),
   ...generateContentSpreads100(),
