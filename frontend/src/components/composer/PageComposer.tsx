@@ -327,17 +327,17 @@ function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; t
   }
   if (block.imageUrl) {
     return (
-      <div className="relative w-full h-full group cursor-pointer" onClick={() => fileRef.current?.click()}>
-        <img src={block.imageUrl} alt="headshot" className="w-full h-full object-cover" style={{ objectPosition: `${50 + (block.xOffset || 0)}% ${50 + (block.yOffset || 0)}%` }} />
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold">Change Photo</div>
+      <div className="relative w-full h-full group cursor-pointer overflow-hidden rounded-lg" onClick={() => fileRef.current?.click()}>
+        <img src={block.imageUrl} alt="headshot" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style={{ objectPosition: `${50 + (block.xOffset || 0)}% ${50 + (block.yOffset || 0)}%` }} />
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold backdrop-blur-sm">Change Photo</div>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
       </div>
     )
   }
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition" onClick={() => fileRef.current?.click()}>
+    <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition" onClick={() => fileRef.current?.click()}>
       {uploading ? <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" /> : <>
-        <span className="text-3xl">👤</span>
+        <span className="text-3xl opacity-50">👤</span>
         <span className="text-[9px] uppercase tracking-widest font-semibold text-gray-400">Add Photo</span>
       </>}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
@@ -350,16 +350,19 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
   const [draft, setDraft] = useState(block.text || '')
   const save = () => { onChange({ text: draft }); setEditing(false) }
   return (
-    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
-      <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>About</span>
+    <div className="w-full h-full flex flex-col gap-2 overflow-hidden relative">
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Profile</span>
+      </div>
       {editing ? (
-        <div className="flex flex-col gap-1 flex-1">
-          <textarea value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[10px] bg-white/10 border border-current/20 rounded p-1 resize-none w-full" style={{ color: tokens.text }} />
-          <button onClick={save} className="text-[9px] font-semibold px-2 py-0.5 rounded self-end" style={{ background: tokens.accent, color: '#fff' }}>Save</button>
+        <div className="flex flex-col gap-1 flex-1 pl-6">
+          <textarea value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-relaxed bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+          <button onClick={save} className="text-[9px] font-bold tracking-wider px-3 py-1 rounded self-start mt-1" style={{ background: tokens.accent, color: '#fff' }}>SAVE</button>
         </div>
       ) : (
-        <p className="text-[9px] leading-relaxed flex-1 cursor-text hover:opacity-80" style={{ color: tokens.text }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
-          {block.text || <span className="opacity-40 italic">Click to add bio…</span>}
+        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
+          {block.text || <span className="opacity-40 italic">Click to write your architectural manifesto or professional summary...</span>}
         </p>
       )}
     </div>
@@ -373,29 +376,74 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
   const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
   return (
-    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
-      <div className="flex items-center justify-between">
-        <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>Education</span>
-        <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
+      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: tokens.muted + '40' }}>
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
+        <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col gap-1.5 overflow-hidden flex-1">
+      <div className="flex flex-col gap-4 overflow-y-auto flex-1 pb-4 pr-1 scrollbar-thin">
         {entries.map((e, i) => (
-          <div key={i} className="group flex gap-1">
-            <div className="flex-1 min-w-0">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Degree" className="block w-full text-[9px] font-semibold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight" style={{ color: tokens.text }} />
-              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Institution" className="block w-full text-[8px] opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
-              <div className="flex gap-1">
-                <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-12 text-[8px] opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
-                <input value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="GPA / Score" className="flex-1 text-[8px] opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
-              </div>
+          <div key={i} className="group relative pl-4 @sm:pl-0 flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start">
+            {/* Timeline dot (Mobile) or left border */}
+            <div className="hidden @sm:block w-[1.5px] h-full absolute left-0 top-0 bottom-0" style={{ background: tokens.accent, opacity: 0.2 }} />
+            
+            <div className="w-16 @sm:w-20 shrink-0">
+              <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.accent }} />
             </div>
-            <button onClick={() => del(i)} className="text-[8px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start leading-none">✕</button>
+            
+            <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight" style={{ color: tokens.primary, fontFamily: tokens.headingFont }} />
+              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+              <textarea value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="Description / Details" rows={2} className="w-full mt-1 text-[9.5px] leading-relaxed opacity-70 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+            </div>
+            <button onClick={() => del(i)} className="absolute right-0 top-0 text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start p-1">✕</button>
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[9px] opacity-40 italic">Click + Add to start</button>}
+        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left">Click + ADD to create a timeline entry</button>}
       </div>
     </div>
   )
+}
+
+function SoftwareIcon({ name, fallbackText }: { name: string, fallbackText?: string }) {
+  const [error, setError] = useState(false);
+  const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  const aliasMap: Record<string, string> = {
+    'rhino': 'rhinoceros', 'rhinoceros3d': 'rhinoceros', 'grasshopper': 'rhinoceros',
+    'photoshop': 'adobephotoshop', 'ps': 'adobephotoshop',
+    'illustrator': 'adobeillustrator', 'ai': 'adobeillustrator',
+    'indesign': 'adobeindesign', 'id': 'adobeindesign',
+    'cad': 'autocad', 'autocad': 'autocad',
+    'revit': 'revit',
+    'sketchup': 'sketchup',
+    'vray': 'vray',
+    'blender': 'blender',
+    'unity': 'unity',
+    'unreal': 'unrealengine', 'unrealengine': 'unrealengine',
+    'figma': 'figma',
+    'enscape': 'enscape',
+    'lumion': 'lumion' // Not in simple-icons, will fallback
+  }
+
+  const finalSlug = aliasMap[slug] || slug;
+
+  if (error || !name) {
+    return (
+      <div className="w-[18px] h-[18px] flex items-center justify-center rounded-[4px] bg-black/5 dark:bg-white/10 text-current opacity-60 font-bold text-[8px] uppercase">
+        {fallbackText || name.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <img 
+      src={`https://cdn.simpleicons.org/${finalSlug}`} 
+      onError={() => setError(true)}
+      alt={name}
+      className="w-[18px] h-[18px] object-contain opacity-70 transition-opacity hover:opacity-100 dark:brightness-200 dark:contrast-0"
+    />
+  );
 }
 
 function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; label?: string }) {
@@ -404,29 +452,41 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
   const add = () => patch([...items, { name: 'New Skill', level: 3, icon: '' }])
   const upd = (i: number, k: keyof SkillItem, v: string | number) => patch(items.map((s, idx) => idx === i ? { ...s, [k]: v } : s))
   const del = (i: number) => patch(items.filter((_, idx) => idx !== i))
+  const isSoftware = label === 'Software'
+
   return (
-    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
-      <div className="flex items-center justify-between">
-        <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>{label}</span>
-        <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
+      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: tokens.muted + '40' }}>
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
+        <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col gap-1 overflow-hidden flex-1">
+      
+      <div className="flex-1 grid grid-cols-1 @xs:grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto pr-1 scrollbar-thin content-start">
         {items.map((s, i) => (
-          <div key={i} className="group flex items-center gap-1">
-            {label === 'Software' && (
-              <input value={s.icon || ''} onChange={ev => upd(i, 'icon', ev.target.value)} placeholder="⬡" className="w-5 text-center text-sm bg-transparent outline-none" title="Emoji icon" />
-            )}
-            <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} className="flex-1 text-[9px] bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
-            <div className="flex gap-[2px] items-center">
-              {[1,2,3,4,5].map(dot => (
-                <button key={dot} onClick={() => upd(i, 'level', dot)} className="w-[7px] h-[7px] rounded-full border transition" style={{ background: dot <= s.level ? tokens.accent : 'transparent', borderColor: tokens.accent + '88' }} />
+          <div key={i} className="group flex flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
+                <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: tokens.primary, fontFamily: tokens.bodyFont }} />
+              </div>
+              <button onClick={() => del(i)} className="text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 leading-none px-1">✕</button>
+            </div>
+            
+            {/* Segmented Architectural Bar Chart */}
+            <div className="flex gap-[2px] h-[3px] w-full mt-0.5">
+              {[1,2,3,4,5].map(level => (
+                <button 
+                  key={level} 
+                  onClick={() => upd(i, 'level', level)} 
+                  className="flex-1 rounded-sm transition-all duration-300 ease-out hover:brightness-110 hover:scale-y-150" 
+                  style={{ background: level <= s.level ? tokens.accent : tokens.muted, opacity: level <= s.level ? 1 : 0.2 }} 
+                />
               ))}
             </div>
-            <button onClick={() => del(i)} className="text-[8px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 leading-none">✕</button>
           </div>
         ))}
-        {items.length === 0 && <button onClick={add} className="text-[9px] opacity-40 italic">Click + Add to start</button>}
       </div>
+      {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full">Click + ADD to create a skill</button>}
     </div>
   )
 }
@@ -439,29 +499,29 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
   const isAchievement = label === 'Achievements'
   return (
-    <div className="w-full h-full flex flex-col gap-1 overflow-hidden">
-      <div className="flex items-center justify-between">
-        <span className="text-[8px] font-bold uppercase tracking-widest opacity-50" style={{ color: tokens.accent }}>{icon} {label}</span>
-        <button onClick={add} className="text-[8px] font-bold opacity-50 hover:opacity-100" style={{ color: tokens.accent }}>+ Add</button>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
+      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: tokens.muted + '40' }}>
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
+        <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col gap-1.5 overflow-hidden flex-1">
+      <div className="flex flex-col gap-2.5 overflow-y-auto flex-1 pr-1 scrollbar-thin">
         {entries.map((e, i) => (
-          <div key={i} className="group flex gap-1 items-start">
-            <span className="text-[8px] opacity-30 mt-[1px]">▸</span>
+          <div key={i} className="group flex gap-2 items-start relative pl-3">
+            <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>+</span>
             <div className="flex-1 min-w-0">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[9px] font-semibold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
-                <div className="flex gap-1">
-                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[8px] opacity-60 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
-                  <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[8px] opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+                <div className="flex gap-2 items-center mt-0.5">
+                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+                  <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: tokens.text }} />
                 </div>
               )}
-              <input value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="Detail" className="block w-full text-[8px] opacity-50 italic bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
+              <textarea value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="Detail" rows={2} className="block w-full text-[9px] mt-1 leading-relaxed opacity-60 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden" style={{ color: tokens.text }} />
             </div>
-            <button onClick={() => del(i)} className="text-[8px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start leading-none">✕</button>
+            <button onClick={() => del(i)} className="text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start px-1">✕</button>
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[9px] opacity-40 italic">Click + Add to start</button>}
+        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full">Click + ADD to create a list item</button>}
       </div>
     </div>
   )
