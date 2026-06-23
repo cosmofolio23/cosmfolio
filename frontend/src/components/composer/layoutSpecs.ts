@@ -703,6 +703,46 @@ function buildProceduralContents(): LayoutSpec[] {
   return specs
 }
 
+function generateRenderHeavyContentSpreads50(): LayoutSpec[] {
+  const specs: LayoutSpec[] = []
+  for (let i = 1; i <= 50; i++) {
+    const regions: Region[] = []
+    const type = i % 5
+    
+    // Title is usually essential for contents
+    regions.push({ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 })
+    
+    if (type === 0) { // Full bleed background render
+      regions.push(img(0, 1, 12, 1, 12)) // Huge background image
+      regions.push({ role: 'contents', c0: 2, cs: 10, r0: 4, rs: 8 })
+    } else if (type === 1) { // Split left render
+      regions.push(img(0, 1, 5, 1, 12))
+      regions.push({ role: 'contents', c0: 7, cs: 6, r0: 3, rs: 9 })
+    } else if (type === 2) { // Split right render
+      regions.push({ role: 'contents', c0: 1, cs: 6, r0: 3, rs: 9 })
+      regions.push(img(0, 8, 5, 1, 12))
+    } else if (type === 3) { // Three vertical slices (renders)
+      regions.push(img(0, 1, 3, 4, 8))
+      regions.push(img(1, 5, 3, 4, 8))
+      regions.push(img(2, 9, 3, 4, 8))
+      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 3, rs: 9 }) // Overlays or interweaves
+    } else if (type === 4) { // Central feature render
+      regions.push(img(0, 4, 6, 3, 8))
+      regions.push({ role: 'contents', c0: 1, cs: 3, r0: 3, rs: 8 }) // Left column
+    }
+
+    specs.push({
+      id: `contents.renderheavy${i}`,
+      name: `Render Focus Contents · Variation ${String(i).padStart(2, '0')}`,
+      category: 'Content Spread',
+      suits: ['contents'],
+      imageCount: type === 3 ? 3 : 1,
+      regions
+    })
+  }
+  return specs
+}
+
 function buildProceduralMasterSpreads(): LayoutSpec[] {
   const specs: LayoutSpec[] = []
   for (let i = 1; i <= 100; i++) {
@@ -1787,6 +1827,7 @@ function generateExtraCovers100(): LayoutSpec[] {
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...SPREAD_SPECS,
   ...RESUME_SPREAD_SPECS,
+  ...generateRenderHeavyContentSpreads50(),
   ...CONTENT_SPREAD_SPECS,
   ...generateResumeSpreads100(),
   ...generateProjectSpreads100(),
