@@ -1803,6 +1803,8 @@ export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...INDEX_SPREAD_SPECS,
   ...buildContentsSpecs(),
   ...buildProceduralContents(),
+  ...buildContentsSpecs().map(s => ({ ...s, id: s.id + '-spread-tab', category: 'Content Spread' as LayoutCategory, name: s.name.replace('Contents', 'Spread Contents').replace('Index', 'Spread Index') })),
+  ...buildProceduralContents().map(s => ({ ...s, id: s.id + '-spread-tab', category: 'Content Spread' as LayoutCategory, name: s.name.replace('Contents', 'Spread Contents') })),
   ...buildProceduralMasterSpreads(),
 
   {
