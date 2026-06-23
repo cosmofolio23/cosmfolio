@@ -2854,6 +2854,72 @@ export default function TemplateEditor() {
                     className="w-full"
                   />
                 </div>
+                <div className="border-t pt-3 mt-3">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Content Overlays</h4>
+                  
+                  <div className="flex items-center gap-2 mb-3">
+                    <input 
+                      type="checkbox" 
+                      id="overlayEnabled"
+                      checked={tokens.overlayEnabled !== false} 
+                      onChange={e => setTok({ overlayEnabled: e.target.checked })} 
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" 
+                    />
+                    <label htmlFor="overlayEnabled" className="text-[10px] text-gray-600 font-semibold uppercase">Enable Frosted Cards</label>
+                  </div>
+
+                  <div className={`space-y-3 ${tokens.overlayEnabled === false ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={tokens.overlayColor || '#ffffff'} 
+                        onChange={e => setTok({ overlayColor: e.target.value })} 
+                        className="w-9 h-9 rounded border border-gray-300 cursor-pointer" 
+                      />
+                      <div className="flex-1">
+                        <label className="text-[10px] text-gray-400 uppercase">Base Color</label>
+                        <input 
+                          type="text" 
+                          value={tokens.overlayColor || '#ffffff'} 
+                          onChange={e => setTok({ overlayColor: e.target.value })} 
+                          className="w-full px-2 py-1 text-xs border border-gray-200 rounded font-mono uppercase" 
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-gray-400 uppercase block mb-1 flex justify-between">
+                        Transparency (Opacity)
+                        <span>{Math.round((tokens.overlayOpacity ?? 0.85) * 100)}%</span>
+                      </label>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="1" 
+                        step="0.05" 
+                        value={tokens.overlayOpacity ?? 0.85} 
+                        onChange={e => setTok({ overlayOpacity: parseFloat(e.target.value) })} 
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-gray-400 uppercase block mb-1 flex justify-between">
+                        Card Size (Padding)
+                        <span>{tokens.overlayPadding ?? 20}px</span>
+                      </label>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="60" 
+                        step="4" 
+                        value={tokens.overlayPadding ?? 20} 
+                        onChange={e => setTok({ overlayPadding: parseInt(e.target.value) })} 
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

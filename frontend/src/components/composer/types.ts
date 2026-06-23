@@ -136,6 +136,11 @@ export interface DesignTokens {
   headingFont: string
   bodyFont: string
   fontScale?: number
+  // Content block overlay settings
+  overlayEnabled?: boolean
+  overlayColor?: string
+  overlayOpacity?: number
+  overlayPadding?: number
 }
 
 let _id = 0

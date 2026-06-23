@@ -4,6 +4,17 @@ import { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { Block, DesignTokens, LegendItem, MetaField } from './types'
 
+function hexToRgba(hex: string | undefined, opacity: number): string {
+  if (!hex) return `rgba(255, 255, 255, ${opacity})`
+  let c = hex.replace('#', '')
+  if (c.length === 3) c = c.split('').map(x => x + x).join('')
+  if (c.length !== 6) return `rgba(255, 255, 255, ${opacity})`
+  const r = parseInt(c.slice(0, 2), 16)
+  const g = parseInt(c.slice(2, 4), 16)
+  const b = parseInt(c.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`
+}
+
 /* ----------------------------- Editable Text ----------------------------- */
 
 export function EditableText({
@@ -886,11 +897,16 @@ export function ContentsBlock({
 
   const lid = (layoutId || '').toLowerCase()
 
+  const overlayEnabled = tokens.overlayEnabled !== false
+  const overlayBg = overlayEnabled ? hexToRgba(tokens.overlayColor || '#ffffff', tokens.overlayOpacity ?? 0.85) : 'transparent'
+  const overlayPad = overlayEnabled ? `${tokens.overlayPadding ?? 20}px` : '0px'
+  const baseOverlayCls = overlayEnabled ? 'backdrop-blur-md rounded-xl shadow-lg' : ''
+
   // 1. Magazine Style
   if (lid.includes('magazine')) {
     const featured = items[0]
     return (
-      <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-black/5" style={{ fontFamily: tokens.bodyFont }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Contents'}
         </h3>
@@ -929,7 +945,7 @@ export function ContentsBlock({
   // 2. Timeline Style
   if (lid.includes('timeline')) {
     return (
-      <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-black/5" style={{ fontFamily: tokens.bodyFont }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Timeline'}
         </h3>
@@ -955,7 +971,7 @@ export function ContentsBlock({
   // 3. Image Grid Style
   if (lid.includes('grid') || lid.includes('thumb')) {
     return (
-      <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-black/5" style={{ fontFamily: tokens.bodyFont }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Project Index'}
         </h3>
@@ -987,7 +1003,7 @@ export function ContentsBlock({
   // 4. Luxury Style
   if (lid.includes('luxury')) {
     return (
-      <div className="w-full flex flex-col h-full px-4 py-5 bg-white/85 dark:bg-black/85 backdrop-blur-md rounded-xl shadow-lg border border-yellow-900/10" style={{ fontFamily: 'Playfair Display, Lora, Georgia, serif' }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-yellow-900/10' : ''}`} style={{ fontFamily: 'Playfair Display, Lora, Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-2xl font-normal tracking-[0.15em] text-center mb-5 italic" style={{ color: tokens.primary }}>
           {block.label || 'Portfolio Index'}
         </h3>
@@ -1012,7 +1028,7 @@ export function ContentsBlock({
   // 5. Research Style
   if (lid.includes('research')) {
     return (
-      <div className="w-full flex flex-col h-full font-mono text-[9px] text-slate-600 bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-slate-200">
+      <div className={`w-full flex flex-col h-full font-mono text-[9px] text-slate-600 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-xs font-bold uppercase tracking-widest mb-3 border-b border-dashed pb-1.5" style={{ color: tokens.primary }}>
           // INDEX_SPEC_REF_01
         </h3>
@@ -1045,7 +1061,7 @@ export function ContentsBlock({
   // 6. Parametric Style
   if (lid.includes('parametric')) {
     return (
-      <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-slate-200" style={{ fontFamily: tokens.bodyFont }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           PROJECTS.MATRIX
         </h3>
@@ -1073,7 +1089,7 @@ export function ContentsBlock({
   // 7. Competition Style
   if (lid.includes('competition')) {
     return (
-      <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-slate-200" style={{ fontFamily: tokens.bodyFont }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-xl font-bold uppercase tracking-tight mb-4" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           INDEX / WORK_SAMPLES
         </h3>
@@ -1099,7 +1115,7 @@ export function ContentsBlock({
   // 8. Academic Thesis Style
   if (lid.includes('academic') || lid.includes('thesis')) {
     return (
-      <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-slate-200" style={{ fontFamily: 'Georgia, serif' }}>
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: 'Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-lg font-serif italic mb-4 border-b border-slate-300 pb-2 text-slate-700">
           Table of Contents
         </h3>
@@ -1122,7 +1138,7 @@ export function ContentsBlock({
 
   // 9. Minimal Default (Minimal Index)
   return (
-    <div className="w-full flex flex-col h-full bg-white/85 dark:bg-black/85 backdrop-blur-md p-5 rounded-xl shadow-lg border border-black/5" style={{ fontFamily: tokens.bodyFont }}>
+    <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
       <h3 className="text-xs font-bold uppercase tracking-[0.25em] mb-4 pb-2 border-b" style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.headingFont }}>
         {block.label || 'CONTENTS'}
       </h3>
