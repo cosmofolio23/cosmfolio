@@ -807,8 +807,11 @@ function generateUniqueContentSpreads200(): LayoutSpec[] {
        }
     }
 
+    const contentStyles = ['magazine', 'timeline', 'grid', 'luxury', 'research', 'parametric', 'competition', 'academic', 'default'];
+    const styleName = contentStyles[i % contentStyles.length];
+
     specs.push({
-      id: `contents.unique${i}`,
+      id: `contents.${styleName}.unique${i}`,
       name: `Index Variation ${String(i).padStart(3, '0')}`,
       category: 'Content Spread',
       suits: ['contents'],
