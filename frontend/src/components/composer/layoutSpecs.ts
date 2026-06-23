@@ -703,11 +703,11 @@ function buildProceduralContents(): LayoutSpec[] {
   return specs
 }
 
-function generateRenderHeavyContentSpreads50(): LayoutSpec[] {
+function generateRenderHeavyContentSpreads100(): LayoutSpec[] {
   const specs: LayoutSpec[] = []
-  for (let i = 1; i <= 50; i++) {
+  for (let i = 1; i <= 100; i++) {
     const regions: Region[] = []
-    const type = i % 5
+    const type = i % 10
     
     // Title is usually essential for contents
     regions.push({ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 })
@@ -729,14 +729,34 @@ function generateRenderHeavyContentSpreads50(): LayoutSpec[] {
     } else if (type === 4) { // Central feature render
       regions.push(img(0, 4, 6, 3, 8))
       regions.push({ role: 'contents', c0: 1, cs: 3, r0: 3, rs: 8 }) // Left column
+    } else if (type === 5) { // Bottom Heavy Render
+      regions.push(img(0, 1, 12, 7, 6))
+      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 3, rs: 3 })
+    } else if (type === 6) { // Top Heavy Render
+      regions.push(img(0, 1, 12, 1, 6))
+      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 8, rs: 4 })
+    } else if (type === 7) { // Twin Pillar Renders
+      regions.push(img(0, 1, 2, 1, 12))
+      regions.push(img(1, 11, 2, 1, 12))
+      regions.push({ role: 'contents', c0: 4, cs: 6, r0: 3, rs: 9 })
+    } else if (type === 8) { // Offset Floating Render
+      regions.push(img(0, 7, 5, 4, 6))
+      regions.push({ role: 'contents', c0: 1, cs: 5, r0: 3, rs: 9 })
+    } else if (type === 9) { // Cinematic Letterbox
+      regions.push(img(0, 1, 12, 5, 3))
+      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 9, rs: 3 })
     }
+
+    let imgCount = 1
+    if (type === 3) imgCount = 3
+    else if (type === 7) imgCount = 2
 
     specs.push({
       id: `contents.renderheavy${i}`,
       name: `Render Focus Contents · Variation ${String(i).padStart(2, '0')}`,
       category: 'Content Spread',
       suits: ['contents'],
-      imageCount: type === 3 ? 3 : 1,
+      imageCount: imgCount,
       regions
     })
   }
@@ -1827,7 +1847,7 @@ function generateExtraCovers100(): LayoutSpec[] {
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...SPREAD_SPECS,
   ...RESUME_SPREAD_SPECS,
-  ...generateRenderHeavyContentSpreads50(),
+  ...generateRenderHeavyContentSpreads100(),
   ...CONTENT_SPREAD_SPECS,
   ...generateResumeSpreads100(),
   ...generateProjectSpreads100(),
