@@ -703,60 +703,116 @@ function buildProceduralContents(): LayoutSpec[] {
   return specs
 }
 
-function generateRenderHeavyContentSpreads100(): LayoutSpec[] {
+function generateUniqueContentSpreads200(): LayoutSpec[] {
   const specs: LayoutSpec[] = []
-  for (let i = 1; i <= 100; i++) {
+  
+  for (let i = 1; i <= 200; i++) {
     const regions: Region[] = []
-    const type = i % 10
     
-    // Title is usually essential for contents
-    regions.push({ role: 'title', c0: 1, cs: 12, r0: 1, rs: 2 })
-    
-    if (type === 0) { // Full bleed background render
-      regions.push(img(0, 1, 12, 1, 12)) // Huge background image
-      regions.push({ role: 'contents', c0: 2, cs: 10, r0: 4, rs: 8 })
-    } else if (type === 1) { // Split left render
-      regions.push(img(0, 1, 5, 1, 12))
-      regions.push({ role: 'contents', c0: 7, cs: 6, r0: 3, rs: 9 })
-    } else if (type === 2) { // Split right render
-      regions.push({ role: 'contents', c0: 1, cs: 6, r0: 3, rs: 9 })
-      regions.push(img(0, 8, 5, 1, 12))
-    } else if (type === 3) { // Three vertical slices (renders)
-      regions.push(img(0, 1, 3, 4, 8))
-      regions.push(img(1, 5, 3, 4, 8))
-      regions.push(img(2, 9, 3, 4, 8))
-      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 3, rs: 9 }) // Overlays or interweaves
-    } else if (type === 4) { // Central feature render
-      regions.push(img(0, 4, 6, 3, 8))
-      regions.push({ role: 'contents', c0: 1, cs: 3, r0: 3, rs: 8 }) // Left column
-    } else if (type === 5) { // Bottom Heavy Render
-      regions.push(img(0, 1, 12, 7, 6))
-      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 3, rs: 3 })
-    } else if (type === 6) { // Top Heavy Render
-      regions.push(img(0, 1, 12, 1, 6))
-      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 8, rs: 4 })
-    } else if (type === 7) { // Twin Pillar Renders
-      regions.push(img(0, 1, 2, 1, 12))
-      regions.push(img(1, 11, 2, 1, 12))
-      regions.push({ role: 'contents', c0: 4, cs: 6, r0: 3, rs: 9 })
-    } else if (type === 8) { // Offset Floating Render
-      regions.push(img(0, 7, 5, 4, 6))
-      regions.push({ role: 'contents', c0: 1, cs: 5, r0: 3, rs: 9 })
-    } else if (type === 9) { // Cinematic Letterbox
-      regions.push(img(0, 1, 12, 5, 3))
-      regions.push({ role: 'contents', c0: 1, cs: 12, r0: 9, rs: 3 })
+    // Parametric Dimensions
+    const archBase = i % 10
+    const textColStyle = Math.floor(i / 10) % 3
+    const titlePos = Math.floor(i / 30) % 3
+    const imageCountStyle = Math.floor(i / 90) % 3
+    const accentStyle = Math.floor(i / 270) % 3 // Effectively i % 3 for additional variety
+
+    // 1. Image Placements based on ArchBase & ImageCount
+    let imgRegions: Region[] = []
+    if (archBase === 0) { // Full bleed
+      imgRegions.push(img(0, 1, 12, 1, 12))
+    } else if (archBase === 1) { // Left split
+      imgRegions.push(img(0, 1, 6, 1, 12))
+    } else if (archBase === 2) { // Right split
+      imgRegions.push(img(0, 7, 6, 1, 12))
+    } else if (archBase === 3) { // Cinematic band
+      imgRegions.push(img(0, 1, 12, 4, 5))
+    } else if (archBase === 4) { // Bottom heavy
+      imgRegions.push(img(0, 1, 12, 7, 6))
+    } else if (archBase === 5) { // Grid slices
+      imgRegions.push(img(0, 1, 3, 1, 12))
+      imgRegions.push(img(1, 5, 3, 1, 12))
+      imgRegions.push(img(2, 9, 3, 1, 12))
+    } else if (archBase === 6) { // Center float
+      imgRegions.push(img(0, 4, 6, 3, 8))
+    } else if (archBase === 7) { // Twin pillars
+      imgRegions.push(img(0, 1, 2, 1, 12))
+      imgRegions.push(img(1, 11, 2, 1, 12))
+    } else if (archBase === 8) { // Off-center right
+      imgRegions.push(img(0, 7, 5, 2, 9))
+    } else if (archBase === 9) { // Corner block
+      imgRegions.push(img(0, 1, 5, 8, 5))
     }
 
-    let imgCount = 1
-    if (type === 3) imgCount = 3
-    else if (type === 7) imgCount = 2
+    // Apply secondary images if requested by imageCountStyle (for non-fixed architectures)
+    if (imageCountStyle === 1 && [1,2,4,6,8,9].includes(archBase)) {
+       imgRegions.push(img(imgRegions.length, 10, 2, 10, 2)) // Small inset
+    } else if (imageCountStyle === 2 && archBase === 1) {
+       imgRegions.push(img(1, 7, 3, 9, 3))
+       imgRegions.push(img(2, 10, 3, 9, 3))
+    }
+    
+    // Add images to regions
+    regions.push(...imgRegions)
+
+    // 2. Title Placement
+    let tRow = 1
+    let tCol = 1
+    let tSpan = 12
+    if (titlePos === 0) { // Top aligned
+      tRow = 1; tCol = 1; tSpan = 12
+    } else if (titlePos === 1) { // Bottom aligned
+      tRow = 11; tCol = 1; tSpan = 12
+    } else if (titlePos === 2) { // Floated
+      tRow = archBase === 1 ? 2 : archBase === 2 ? 2 : 4
+      tCol = archBase === 1 ? 7 : archBase === 2 ? 1 : 4
+      tSpan = archBase === 1 ? 6 : archBase === 2 ? 6 : 6
+    }
+    regions.push({ role: 'title', c0: tCol, cs: tSpan, r0: tRow, rs: 2 })
+
+    // 3. Contents Placement
+    let cRow = 3
+    let cCol = 1
+    let cSpan = 12
+    let cRSpan = 9
+    
+    if (archBase === 0) { cRow = 4; cCol = 3; cSpan = 8; cRSpan = 7 } // On top of full bleed
+    else if (archBase === 1) { cRow = 4; cCol = 7; cSpan = 5; cRSpan = 8 } // Right of left split
+    else if (archBase === 2) { cRow = 4; cCol = 1; cSpan = 5; cRSpan = 8 } // Left of right split
+    else if (archBase === 3) { cRow = 9; cCol = 2; cSpan = 10; cRSpan = 4 } // Below cinematic band
+    else if (archBase === 4) { cRow = 2; cCol = 1; cSpan = 12; cRSpan = 4 } // Above bottom heavy
+    else if (archBase === 5) { cRow = 3; cCol = 1; cSpan = 12; cRSpan = 6 } // Over grid slices
+    else if (archBase === 6) { cRow = 3; cCol = 1; cSpan = 3; cRSpan = 8 } // Left of center float
+    else if (archBase === 7) { cRow = 3; cCol = 4; cSpan = 6; cRSpan = 8 } // Between twin pillars
+    else if (archBase === 8) { cRow = 3; cCol = 1; cSpan = 5; cRSpan = 8 } // Left of off-center
+    else if (archBase === 9) { cRow = 3; cCol = 6; cSpan = 6; cRSpan = 9 } // Right of corner block
+
+    // Apply textColStyle logic
+    if (textColStyle === 1) { // Dual columns (reduce span)
+       cSpan = Math.max(3, cSpan - 2)
+    } else if (textColStyle === 2) { // Offset narrow
+       cCol += 1; cSpan = Math.max(3, cSpan - 2)
+    }
+
+    regions.push({ role: 'contents', c0: cCol, cs: cSpan, r0: cRow, rs: cRSpan })
+
+    // 4. Accent Elements
+    if (accentStyle === 0) {
+       regions.push({ role: 'subtitle', c0: cCol, cs: cSpan, r0: cRow - 1, rs: 1 })
+    } else if (accentStyle === 1) {
+       regions.push({ role: 'meta', c0: 1, cs: 12, r0: 12, rs: 1 })
+    } else if (accentStyle === 2) {
+       // Only add legend if space permits
+       if (cCol + cSpan < 11) {
+           regions.push({ role: 'legend', c0: 11, cs: 2, r0: cRow, rs: cRSpan })
+       }
+    }
 
     specs.push({
-      id: `contents.renderheavy${i}`,
-      name: `Render Focus Contents · Variation ${String(i).padStart(2, '0')}`,
+      id: `contents.unique${i}`,
+      name: `Index Variation ${String(i).padStart(3, '0')}`,
       category: 'Content Spread',
       suits: ['contents'],
-      imageCount: imgCount,
+      imageCount: imgRegions.length,
       regions
     })
   }
@@ -1847,7 +1903,7 @@ function generateExtraCovers100(): LayoutSpec[] {
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...SPREAD_SPECS,
   ...RESUME_SPREAD_SPECS,
-  ...generateRenderHeavyContentSpreads100(),
+  ...generateUniqueContentSpreads200(),
   ...CONTENT_SPREAD_SPECS,
   ...generateResumeSpreads100(),
   ...generateProjectSpreads100(),
