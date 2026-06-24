@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth'
 import type { Page, DesignTokens } from '@/components/composer/types'
 import PageComposer from '@/components/composer/PageComposer'
 import SpreadComposer from '@/components/composer/SpreadComposer'
+import { trackEvent, trackError } from '@/lib/tracking'
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
@@ -98,6 +99,7 @@ export default function PortfolioBookPage() {
 
   const executeDownloadPdf = async (sizeSettings: any, projectTitle: string) => {
     setIsDownloading(true)
+    trackEvent('pdf_export_started', { project_id: projectId, title: projectTitle })
     try {
       const { jsPDF } = await import('jspdf')
       const html2canvas = (await import('html2canvas')).default
@@ -183,10 +185,13 @@ export default function PortfolioBookPage() {
 
       pdf.save(`${projectTitle || 'Portfolio'}.pdf`)
       
+      trackEvent('pdf_export_success', { project_id: projectId, title: projectTitle, pages: elements.length })
+
       // Optionally close the window after a short delay since it was opened specifically for downloading
       setTimeout(() => window.close(), 1000)
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to generate PDF:', e)
+      trackError('pdf_export_failed', e, { project_id: projectId, title: projectTitle })
       alert('Failed to generate PDF directly. Falling back to print dialog.')
       window.print()
     } finally {

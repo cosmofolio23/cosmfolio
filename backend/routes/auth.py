@@ -9,7 +9,9 @@ import requests
 from firebase_config import verify_firebase_token, firebase_app
 from config import settings
 from models import UserResponse
-from database import supabase
+from database import supabase, engine
+from sqlalchemy import text
+from services.notification import NotificationService
 
 router = APIRouter()
 
@@ -155,6 +157,23 @@ async def signup(
                 "updated_at": datetime.utcnow().isoformat()
             }).execute()
 
+        # [Monitoring] Track event and alert founder
+        try:
+            with engine.begin() as conn:
+                conn.execute(
+                    text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
+                    {"u": user_id, "e": "user_registered"}
+                )
+            NotificationService.sendSignupAlert({
+                "name": name,
+                "email": email,
+                "country": "Unknown",
+                "device": "Unknown",
+                "login_method": "Client SDK"
+            })
+        except Exception as e:
+            print(f"[Monitoring Error] {e}")
+
         return {
             "success": True,
             "message": "User created successfully",
@@ -246,8 +265,22 @@ async def register(body: SignUpRequest):
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat(),
             }).execute()
+            
+            # [Monitoring] Track event and alert founder
+            with engine.begin() as conn:
+                conn.execute(
+                    text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
+                    {"u": user_id, "e": "user_registered"}
+                )
+            NotificationService.sendSignupAlert({
+                "name": body.name,
+                "email": email,
+                "country": "Unknown",
+                "device": "Unknown",
+                "login_method": "Server Proxy"
+            })
         except Exception as e:
-            print(f"[WARN] register user sync failed (non-fatal): {e}")
+            print(f"[WARN] register user sync / monitoring failed (non-fatal): {e}")
 
     return {
         "success": True,

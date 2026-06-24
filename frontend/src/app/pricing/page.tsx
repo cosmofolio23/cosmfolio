@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useAuthStore } from '@/store/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { trackEvent, trackError } from '@/lib/tracking'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-razorpay requires browser globals — must not run during SSG
@@ -136,6 +137,7 @@ function PricingPageInner() {
   }
 
   const handleCheckout = async (productType: 'pro_upgrade' | 'boost_pack') => {
+    trackEvent('upgrade_clicked', { product_type: productType })
     if (!isAuthenticated) {
       router.push(`/signup?redirect=${encodeURIComponent(`/pricing?checkout=${productType}`)}`)
       return
@@ -147,6 +149,7 @@ function PricingPageInner() {
     }
 
     setIsCheckingOut(true)
+    trackEvent('payment_started', { product_type: productType, currency })
     try {
       const API_URL = process.env.NODE_ENV === 'production'
         ? 'https://cosmfolio-backend.onrender.com'
@@ -168,6 +171,7 @@ function PricingPageInner() {
           const error = await res.json()
           errMsg = typeof error.detail === 'string' ? error.detail : JSON.stringify(error.detail) || errMsg
         } catch {}
+        trackError('payment_checkout_error', new Error(errMsg), { product_type: productType })
         throw new Error(errMsg)
       }
 

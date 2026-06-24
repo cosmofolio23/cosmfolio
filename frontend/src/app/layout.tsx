@@ -5,6 +5,7 @@ import CookieConsent from '@/components/CookieConsent'
 import AuthInit from '@/components/AuthInit'
 import ContentProtector from '@/components/ContentProtector'
 import MobileWarningBanner from '@/components/MobileWarningBanner'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://thecosmofolio.com'),
@@ -67,7 +68,9 @@ export default function RootLayout({
         <ContentProtector />
         <MobileWarningBanner />
         <AuthInit />
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         <CookieConsent />
       </body>
     </html>

@@ -34,7 +34,8 @@ export default function AdminDashboard() {
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
   
-  const [activeTab, setActiveTab] = useState<'users' | 'coupons'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'coupons' | 'monitoring'>('users')
+  const [monitoringStats, setMonitoringStats] = useState<any>(null)
   
   const [users, setUsers] = useState<UserRecord[]>([])
   const [coupons, setCoupons] = useState<CouponRecord[]>([])
@@ -85,9 +86,10 @@ export default function AdminDashboard() {
 
       const headers = { 'Authorization': `Bearer ${token || ''}` }
 
-      const [usersRes, couponsRes] = await Promise.all([
+      const [usersRes, couponsRes, monitoringRes] = await Promise.all([
         fetch(`${API_URL}/api/auth/admin/users`, { headers }),
-        fetch(`${API_URL}/api/admin/coupons`, { headers })
+        fetch(`${API_URL}/api/admin/coupons`, { headers }),
+        fetch(`${API_URL}/api/monitoring/admin/dashboard-stats`, { headers })
       ])
 
       if (!usersRes.ok) {
@@ -100,6 +102,11 @@ export default function AdminDashboard() {
       if (couponsRes.ok) {
         const couponsData = await couponsRes.json()
         setCoupons(couponsData)
+      }
+      
+      if (monitoringRes.ok) {
+        const monitoringData = await monitoringRes.json()
+        setMonitoringStats(monitoringData)
       }
     } catch (err: any) {
       console.error(err)
@@ -289,6 +296,15 @@ export default function AdminDashboard() {
               <span className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-accent-primary dark:bg-accent-gold rounded-t-full"></span>
             )}
           </button>
+          <button 
+            onClick={() => setActiveTab('monitoring')}
+            className={`pb-2 text-sm font-semibold transition-colors relative ${activeTab === 'monitoring' ? 'text-accent-primary dark:text-accent-gold' : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'}`}
+          >
+            System Monitoring
+            {activeTab === 'monitoring' && (
+              <span className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-accent-primary dark:bg-accent-gold rounded-t-full"></span>
+            )}
+          </button>
         </div>
 
         {error && (
@@ -301,6 +317,50 @@ export default function AdminDashboard() {
           <div className="flex flex-col justify-center items-center py-20 gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-accent-gold border-t-transparent animate-spin"></div>
             <p className="text-sm text-text-secondary dark:text-dark-text-secondary">Retrieving platform data...</p>
+          </div>
+        ) : activeTab === 'monitoring' && monitoringStats ? (
+          <div className="space-y-8">
+            <h2 className="text-xl font-bold mb-4">Founder Monitoring Overview</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-blue-500/10">
+                <div>
+                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Signups</h3>
+                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.today_signups}</div>
+                </div>
+              </div>
+              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-emerald-500/10">
+                <div>
+                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Active Users (7 Days)</h3>
+                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.active_users}</div>
+                </div>
+              </div>
+              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-red-500/10">
+                <div>
+                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Unresolved Errors</h3>
+                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.error_count}</div>
+                </div>
+              </div>
+              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
+                <div>
+                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Portfolios</h3>
+                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.portfolios_count}</div>
+                </div>
+              </div>
+              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
+                <div>
+                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Successful Exports</h3>
+                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.exports}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
+               <h3 className="text-lg font-bold mb-2">Note to Founder</h3>
+               <p className="text-sm text-text-secondary dark:text-dark-text-secondary">
+                 Detailed activity logs and error tracking are actively captured by the system.
+                 Check your configured email ({`thecosmofolio@gmail.com`}) for instant alerts on signups, payments, failures, and critical app errors.
+               </p>
+            </div>
           </div>
         ) : activeTab === 'users' ? (
           <>

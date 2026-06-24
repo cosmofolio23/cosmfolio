@@ -5,7 +5,9 @@ import os
 import hmac
 import hashlib
 from .deps import get_current_user
-from database import supabase
+from database import supabase, engine
+from sqlalchemy import text
+from services.notification import NotificationService
 
 router = APIRouter()
 
@@ -157,6 +159,15 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             'razorpay_signature': req.razorpay_signature
         })
     except razorpay.errors.SignatureVerificationError:
+        NotificationService.sendPaymentFailedAlert({
+            "email": current_user.get("email", "Unknown"),
+            "amount": "Unknown",
+            "method": "Razorpay",
+            "reason": "Invalid signature",
+            "gateway_response": "SignatureVerificationError"
+        })
+        with engine.begin() as conn:
+            conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": current_user.get("user_id"), "e": "payment_failed"})
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     # If verification is successful, we should find the transaction, mark it as paid, and grant entitlements.
@@ -185,5 +196,31 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
         if u_res.data:
             current_count = u_res.data[0].get("boost_pack_count") or 0
         supabase.table("users").update({"boost_pack_count": current_count + 1}).eq("id", user_id).execute()
-        
+
+    user_email = current_user.get("email", "Unknown")
+    
+    with engine.begin() as conn:
+        conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": user_id, "e": "payment_success"})
+
+    if product_type == "pro_upgrade":
+        NotificationService.sendPaymentAlert({
+            "name": "User",
+            "email": user_email,
+            "country": "Unknown",
+            "plan": "Pro Upgrade",
+            "amount": tx["amount"] / 100,
+            "currency": tx["currency"],
+            "provider": "Razorpay",
+            "payment_id": req.razorpay_payment_id
+        })
+    elif product_type == "boost_pack":
+        NotificationService.sendBoostPackAlert({
+            "name": "User",
+            "email": user_email,
+            "amount": f"{tx['amount'] / 100} {tx['currency']}",
+            "total_packs": current_count + 1,
+            "new_page_limit": 10 + ((current_count + 1) * 5),
+            "new_download_limit": 3 + ((current_count + 1) * 5)
+        })
+
     return {"success": True}
