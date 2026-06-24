@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status, BackgroundTasks
 from pydantic import BaseModel, EmailStr
 from database import supabase
 from datetime import datetime
@@ -34,7 +34,7 @@ def is_rate_limited(client_ip: str) -> bool:
     return False
 
 @router.post("")
-async def create_support_request(req: SupportRequest, request: Request):
+async def create_support_request(req: SupportRequest, request: Request, background_tasks: BackgroundTasks):
     """Submit a support request from the contact form."""
     
     # Rate Limiting
@@ -64,8 +64,8 @@ async def create_support_request(req: SupportRequest, request: Request):
         res = supabase.table("support_requests").insert(data).execute()
         
         if res.data:
-            # Send email alert to founder
-            NotificationService.sendSupportEmail(data)
+            # Send email alert to founder in background so it doesn't block
+            background_tasks.add_task(NotificationService.sendSupportEmail, data)
             return {"status": "success", "message": "Support request submitted successfully"}
         else:
             raise HTTPException(status_code=500, detail="Failed to submit support request")

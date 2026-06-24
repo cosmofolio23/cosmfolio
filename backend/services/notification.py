@@ -26,10 +26,15 @@ class NotificationService:
 
             msg.attach(MIMEText(html_content, "html"))
 
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                server.starttls()
-                server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                server.send_message(msg)
+            if SMTP_PORT == 465:
+                with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=5) as server:
+                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=5) as server:
+                    server.starttls()
+                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                    server.send_message(msg)
             return True
         except Exception as e:
             print(f"[EMAIL ERROR] Failed to send email: {str(e)}")
