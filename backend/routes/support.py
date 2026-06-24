@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 from database import supabase
 from datetime import datetime
 import logging
+from services.notification import NotificationService
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,8 @@ async def create_support_request(req: SupportRequest, request: Request):
         res = supabase.table("support_requests").insert(data).execute()
         
         if res.data:
+            # Send email alert to founder
+            NotificationService.sendSupportEmail(data)
             return {"status": "success", "message": "Support request submitted successfully"}
         else:
             raise HTTPException(status_code=500, detail="Failed to submit support request")

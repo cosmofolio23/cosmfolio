@@ -58,6 +58,28 @@ class NotificationService:
         return NotificationService._send_email(subject, html)
 
     @staticmethod
+    def sendSupportEmail(support_data: dict):
+        subject = f"📬 New Support Request from {support_data.get('name', 'Unknown')}"
+        now = datetime.now().strftime("%d %B %Y - %I:%M %p")
+        
+        name = support_data.get('name', 'N/A')
+        email = support_data.get('email', 'N/A')
+        message = support_data.get('message', 'No message provided')
+
+        html = f"""
+        <h2>New Support Message 📬</h2>
+        <p><strong>Name:</strong> {name}</p>
+        <p><strong>Email:</strong> {email}</p>
+        <p><strong>Time:</strong> {now}</p>
+        <br/>
+        <h3>Message:</h3>
+        <p style="white-space: pre-wrap; background: #f4f4f4; padding: 15px; border-radius: 8px;">{message}</p>
+        <br/>
+        <p><em>Reply directly to {email} to answer this user.</em></p>
+        """
+        return NotificationService._send_email(subject, html)
+
+    @staticmethod
     def sendPaymentAlert(payment_data: dict):
         subject = "💰 CosmoFolio Pro Purchase"
         now = datetime.now().strftime("%d %B %Y - %I:%M %p")
