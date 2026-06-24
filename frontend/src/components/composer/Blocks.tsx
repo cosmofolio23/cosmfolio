@@ -614,7 +614,7 @@ export function LegendBlock({
                     className="flex-1"
                     style={{ color: tokens.text }}
                   />
-                  <button onClick={() => remove(idx)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover/leg:opacity-100 transition text-xs">✕</button>
+                  <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer">✕</button>
                 </div>
               ))}
               <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: tokens.accent }}>
@@ -747,7 +747,7 @@ export function MetaBlock({
                       className="text-[13px] font-medium"
                       style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
                     />
-                    <button onClick={() => remove(idx)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover/meta:opacity-100 text-xs">✕</button>
+                    <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 text-xs z-10 cursor-pointer">✕</button>
                   </div>
                 </div>
               ))}

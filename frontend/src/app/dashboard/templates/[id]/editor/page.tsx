@@ -2100,6 +2100,14 @@ export default function TemplateEditor() {
             .portfolio-page .text-6xl { font-size: 3.75em; line-height: 1; }
             .portfolio-page .text-7xl { font-size: 4.5em; line-height: 1; }
             .portfolio-page .text-8xl { font-size: 6em; line-height: 1; }
+            .portfolio-page .text-\\[8px\\] { font-size: ${8 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[9px\\] { font-size: ${9 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[9\\.5px\\] { font-size: ${9.5 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[10px\\] { font-size: ${10 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[11px\\] { font-size: ${11 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[12px\\] { font-size: ${12 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[13px\\] { font-size: ${13 * (tokens.fontScale || 1)}px !important; }
+            .portfolio-page .text-\\[14px\\] { font-size: ${14 * (tokens.fontScale || 1)}px !important; }
           `}</style>
 
           {/* Zoom controls — Photoshop-style; canvas scrolls when zoomed past the pane */}

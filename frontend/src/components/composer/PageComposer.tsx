@@ -400,7 +400,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
                     <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
                     <textarea value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="Description / Details" rows={2} className="w-full mt-1 text-[9.5px] leading-relaxed opacity-70 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
                   </div>
-                  <button onClick={() => del(i)} className="absolute right-0 top-0 text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start p-1">✕</button>
+                  <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer">✕</button>
                 </div>
               ))}
               {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left">Click + ADD to create a timeline entry</button>}
@@ -481,7 +481,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
                       {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
                       <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: tokens.primary, fontFamily: tokens.bodyFont }} />
                     </div>
-                    <button onClick={() => del(i)} className="text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 leading-none px-1">✕</button>
+                    <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer">✕</button>
                   </div>
                   
                   {/* Segmented Architectural Bar Chart */}
@@ -537,7 +537,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
                     )}
                     <textarea value={e.detail || ''} onChange={ev => upd(i, 'detail', ev.target.value)} placeholder="Detail" rows={2} className="block w-full text-[9px] mt-1 leading-relaxed opacity-60 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden" style={{ color: tokens.text }} />
                   </div>
-                  <button onClick={() => del(i)} className="text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 self-start px-1">✕</button>
+                  <button onClick={() => del(i)} type="button" title="Delete Item" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer">✕</button>
                 </div>
               ))}
               {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full">Click + ADD to create a list item</button>}
