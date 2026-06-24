@@ -83,36 +83,40 @@ async def docs():
 
 
 # Try to load routes (but don't crash if they fail)
-print("[STARTUP] Loading routes...")
-try:
-    from routes import auth, projects, assets, portfolios, publication, documents, search, versioning, portfolio_pages, layout_customization, optimization, preview_export, coupons, payments, monitoring
-    print("[OK] Core routes loaded")
+print("[STARTUP] Loading core routes...")
+core_modules = [
+    ("auth", "/api/auth", ["auth"]),
+    ("coupons", "/api", ["coupons"]),
+    ("payments", "/api/payments", ["payments"]),
+    ("projects", "/api/projects", ["projects"]),
+    ("assets", "/api/projects", ["assets"]),
+    ("documents", "/api/projects", ["documents"]),
+    ("publication", "", ["publication"]),  # prefix already defined in router
+    ("portfolios", "/api/portfolios", ["portfolios"]),
+    ("search", "/api/portfolios", ["search"]),
+    ("versioning", "/api/portfolios", ["versioning"]),
+    ("portfolio_pages", "/api/portfolios", ["portfolio-pages"]),
+    ("layout_customization", "/api/portfolios", ["layout-customization"]),
+    ("optimization", "/api/portfolios", ["optimization"]),
+    ("preview_export", "/api/portfolios", ["preview-export"]),
+    ("monitoring", "/api/monitoring", ["monitoring"])
+]
 
-    # Include routers - each prefix carefully chosen based on routes inside the file
-    app.include_router(auth.router, prefix="/api/auth", tags=["auth"])  # routes: /signup, /me, etc.
-    app.include_router(coupons.router, prefix="/api", tags=["coupons"]) # routes: /admin/coupons, /user/apply-coupon
-    app.include_router(payments.router, prefix="/api/payments", tags=["payments"]) # routes: /checkout, /webhook
-    app.include_router(projects.router, prefix="/api/projects", tags=["projects"])  # routes: "", /{id}
-    app.include_router(assets.router, prefix="/api/projects", tags=["assets"])  # routes: /{portfolio_id}/assets/...
-    app.include_router(documents.router, prefix="/api/projects", tags=["documents"])  # routes: /{project_id}/document
-    app.include_router(publication.router, tags=["publication"])  # prefix is already defined in router as /api/portfolios
-    app.include_router(portfolios.router, prefix="/api/portfolios", tags=["portfolios"])  # routes: /{project_id}/generate
-    app.include_router(publication.public_router, prefix="/api/portfolios", tags=["public-portfolios"])
-    app.include_router(monitoring.router, prefix="/api/monitoring", tags=["monitoring"])
-    
-    # Asset Search & Versioning routers (missing pre-launch registrations)
-    app.include_router(search.router, prefix="/api/portfolios", tags=["search"])
-    app.include_router(versioning.router, prefix="/api/portfolios", tags=["versioning"])
-
-    # Page composition, customization, optimization & export routers
-    app.include_router(portfolio_pages.router, prefix="/api/portfolios", tags=["portfolio-pages"])
-    app.include_router(layout_customization.router, prefix="/api/portfolios", tags=["layout-customization"])
-    app.include_router(optimization.router, prefix="/api/portfolios", tags=["optimization"])
-    app.include_router(preview_export.router, prefix="/api/portfolios", tags=["preview-export"])
-
-except Exception as e:
-    print(f"[WARNING] Failed to load some routes: {type(e).__name__}: {e}")
-    print("[INFO] App will run with basic endpoints only")
+import importlib
+for mod_name, prefix, tags in core_modules:
+    try:
+        mod = importlib.import_module(f"routes.{mod_name}")
+        
+        # Special case for publication which has two routers
+        if mod_name == "publication":
+            app.include_router(mod.router, tags=tags)
+            app.include_router(mod.public_router, prefix="/api/portfolios", tags=["public-portfolios"])
+        else:
+            app.include_router(mod.router, prefix=prefix, tags=tags)
+            
+        print(f"[OK] Loaded route: {mod_name}")
+    except Exception as e:
+        print(f"[WARNING] Failed to load route {mod_name}: {type(e).__name__}: {e}")
 
 # Optional: Try to load more routes
 print("[STARTUP] Loading additional routes...")

@@ -4,7 +4,19 @@ from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
-from models import UserResponse, ErrorLogCreate, ActivityLogCreate
+from models import UserResponse
+
+class ErrorLogCreate(BaseModel):
+    error_message: str
+    stack_trace: Optional[str] = None
+    component: Optional[str] = None
+    url: Optional[str] = None
+    browser_info: Optional[Dict[str, Any]] = None
+
+class ActivityLogCreate(BaseModel):
+    event_name: str
+    metadata: Optional[Dict[str, Any]] = None
+    session_id: Optional[str] = None
 from routes.deps import get_current_user_optional, get_current_user
 from services.notification import NotificationService
 
