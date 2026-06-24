@@ -140,6 +140,51 @@ class NotificationService:
         return NotificationService._send_email(subject, html)
 
     @staticmethod
+    def sendWeeklyReport(stats: dict):
+        subject = "📊 CosmoFolio Weekly Analytics Report"
+        now = datetime.now().strftime("%d %B %Y")
+        
+        freemium_users = stats.get('freemium_users', 0)
+        pro_upgrades = stats.get('pro_upgrades', 0)
+        pdf_effort = stats.get('pdf_effort', 0)
+        total_revenue = stats.get('total_revenue', 0)
+        currency = stats.get('currency', 'INR')
+        error_count = stats.get('error_count', 0)
+        active_projects = stats.get('active_projects', 0)
+
+        html = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333; text-align: center;">Weekly Analytics Report</h2>
+            <p style="text-align: center; color: #666;">{now}</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3 style="color: #444; border-bottom: 2px solid #ddd; padding-bottom: 10px;">User Metrics</h3>
+                <p><strong>Freemium Users:</strong> {freemium_users}</p>
+                <p><strong>New Pro Upgrades:</strong> {pro_upgrades}</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3 style="color: #444; border-bottom: 2px solid #ddd; padding-bottom: 10px;">Platform Usage</h3>
+                <p><strong>Active Projects Created:</strong> {active_projects}</p>
+                <p><strong>PDF Export Effort:</strong> {pdf_effort} exports</p>
+            </div>
+
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3 style="color: #2e7d32; border-bottom: 2px solid #a5d6a7; padding-bottom: 10px;">Revenue</h3>
+                <p><strong>Total Revenue This Week:</strong> {total_revenue} {currency}</p>
+            </div>
+
+            <div style="background: #ffebee; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3 style="color: #c62828; border-bottom: 2px solid #ef9a9a; padding-bottom: 10px;">System Health</h3>
+                <p><strong>Total Errors Logged:</strong> {error_count}</p>
+            </div>
+            
+            <p style="text-align: center; margin-top: 30px; font-size: 12px; color: #888;">Automated by CosmoFolio Backend</p>
+        </div>
+        """
+        return NotificationService._send_email(subject, html)
+
+    @staticmethod
     def sendBoostPackAlert(payment_data: dict):
         subject = "🚀 Boost Pack Purchased"
         

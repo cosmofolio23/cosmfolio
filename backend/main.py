@@ -157,6 +157,16 @@ except Exception as e:
 print("[STARTUP] Application ready!")
 print("[STARTUP] Server will start listening on 0.0.0.0:8000")
 
+@app.on_event("startup")
+async def startup_event():
+    import asyncio
+    try:
+        from tasks import weekly_report_loop
+        asyncio.create_task(weekly_report_loop())
+        print("[OK] Background tasks started")
+    except Exception as e:
+        print(f"[WARNING] Failed to start background tasks: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

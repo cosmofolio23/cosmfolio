@@ -5,7 +5,7 @@ import os
 import hmac
 import hashlib
 from .deps import get_current_user
-from database import supabase, engine
+import database
 from sqlalchemy import text
 from services.notification import NotificationService
 
@@ -51,7 +51,7 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
 
     # If they are trying to buy a boost pack but are not pro, block them
     if req.product_type == "boost_pack":
-        user_res = supabase.table("users").select("plan_type").eq("id", user_id).execute()
+        user_res = database.supabase.table("users").select("plan_type").eq("id", user_id).execute()
         if not user_res.data or user_res.data[0].get("plan_type") != "pro":
             raise HTTPException(status_code=403, detail="Boost Packs are only available for Pro members.")
 
@@ -75,7 +75,7 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
         raise HTTPException(status_code=500, detail=f"Razorpay error: {str(e)}")
 
     try:
-        supabase.table("transactions").insert({
+        database.supabase.table("transactions").insert({
             "user_id": user_id,
             "product_type": req.product_type,
             "amount": amount,
@@ -125,26 +125,23 @@ async def razorpay_webhook(request: Request):
             return {"status": "ok"} # Skip irrelevant payments
             
         # Check if transaction exists and is not already paid
-        tx_res = supabase.table("transactions").select("status").eq("gateway_order_id", order_id).execute()
+        tx_res = database.supabase.table("transactions").select("status").eq("gateway_order_id", order_id).execute()
         if not tx_res.data or tx_res.data[0].get("status") == "paid":
             return {"status": "ok"}
             
         # Update transaction status
-        supabase.table("transactions").update({
+        database.supabase.table("transactions").update({
             "status": "paid",
             "gateway_payment_id": payment_id
         }).eq("gateway_order_id", order_id).execute()
         
         # Update user entitlements
         if product_type == "pro_upgrade":
-            supabase.table("users").update({"plan_type": "pro", "is_pro": True}).eq("id", user_id).execute()
+            database.supabase.table("users").update({"plan_type": "pro", "is_pro": True}).eq("id", user_id).execute()
         elif product_type == "boost_pack":
-            # Fetch current count to increment safely
-            u_res = supabase.table("users").select("boost_pack_count").eq("id", user_id).execute()
-            current_count = 0
-            if u_res.data:
-                current_count = u_res.data[0].get("boost_pack_count") or 0
-            supabase.table("users").update({"boost_pack_count": current_count + 1}).eq("id", user_id).execute()
+            user_data = database.supabase.table("users").select("boost_pack_count").eq("id", user_id).execute()
+            current_boosts = user_data.data[0].get("boost_pack_count", 0) if user_data.data else 0
+            database.supabase.table("users").update({"boost_pack_count": current_boosts + 1}).eq("id", user_id).execute()
             
     return {"status": "ok"}
 

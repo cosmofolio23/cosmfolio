@@ -9,7 +9,7 @@ import requests
 from firebase_config import verify_firebase_token, firebase_app
 from config import settings
 from models import UserResponse
-from database import supabase, engine
+import database
 from sqlalchemy import text
 from services.notification import NotificationService
 
@@ -159,7 +159,7 @@ async def signup(
 
         # [Monitoring] Track event and alert founder
         try:
-            with engine.begin() as conn:
+            with database.engine.begin() as conn:
                 conn.execute(
                     text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
                     {"u": user_id, "e": "user_registered"}
@@ -267,7 +267,7 @@ async def register(body: SignUpRequest):
             }).execute()
             
             # [Monitoring] Track event and alert founder
-            with engine.begin() as conn:
+            with database.engine.begin() as conn:
                 conn.execute(
                     text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
                     {"u": user_id, "e": "user_registered"}
@@ -452,7 +452,7 @@ async def update_demographics(
     current_user: dict = Depends(get_current_user_from_deps)
 ):
     """Save college/state/stream demographics after Google sign-in."""
-    if not supabase:
+    if not database.supabase:
         raise HTTPException(status_code=503, detail="Database unavailable")
     user_id = current_user.get("user_id") or current_user.get("id")
     update_data = {"updated_at": datetime.utcnow().isoformat()}
@@ -460,7 +460,7 @@ async def update_demographics(
     if body.state is not None:        update_data["state"] = body.state
     if body.year_of_passing is not None: update_data["year_of_passing"] = body.year_of_passing
     if body.stream is not None:       update_data["stream"] = body.stream
-    supabase.table("users").update(update_data).eq("id", user_id).execute()
+    database.supabase.table("users").update(update_data).eq("id", user_id).execute()
     return {"success": True}
 
 @router.get("/me")
@@ -471,8 +471,8 @@ async def get_current_user(authorization: str = Header(None)):
         user_id = decoded_token.get("uid")
         email = decoded_token.get("email")
 
-        if supabase:
-            user_data = supabase.table("users").select("*").eq("id", user_id).execute()
+        if database.supabase:
+            user_data = database.supabase.table("users").select("*").eq("id", user_id).execute()
             if user_data.data:
                 user = user_data.data[0]
                 return UserResponse(

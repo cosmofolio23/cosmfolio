@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
 from models import UserResponse, ErrorLogCreate, ActivityLogCreate
-from middleware.auth import get_current_user_optional, get_current_user
+from routes.deps import get_current_user_optional, get_current_user
 from services.notification import NotificationService
 
 router = APIRouter()
