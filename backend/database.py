@@ -1,8 +1,9 @@
 from supabase import create_client
-from sqlalchemy import create_engine, Column, String, DateTime, Enum, Integer, JSON, Boolean
+from sqlalchemy import create_engine, Column, String, DateTime, Enum, Integer, JSON, Boolean, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import os
 import uuid
 from config import settings
 
@@ -26,6 +27,19 @@ except Exception as e:
     supabase_init_error = traceback.format_exc()
     print(f"[ERROR] Supabase initialization failed: {type(e).__name__}: {e}")
     traceback.print_exc()
+
+# SQLAlchemy engine (optional — for activity_logs / monitoring queries)
+# Set DATABASE_URL env var to a PostgreSQL connection string (e.g. from Supabase)
+engine = None
+_database_url = os.getenv("DATABASE_URL")
+if _database_url:
+    try:
+        engine = create_engine(_database_url)
+        print("[OK] SQLAlchemy engine created from DATABASE_URL")
+    except Exception as e:
+        print(f"[WARNING] Could not create SQLAlchemy engine: {e}")
+else:
+    print("[INFO] DATABASE_URL not set — SQLAlchemy engine disabled")
 
 Base = declarative_base()
 

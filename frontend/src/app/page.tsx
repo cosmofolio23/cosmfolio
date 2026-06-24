@@ -288,7 +288,7 @@ export default function Home() {
               <div 
                 key={idx} 
                 className="group cursor-pointer flex flex-col gap-3"
-                onClick={() => window.open('/placeholder.pdf', '_blank')}
+                onClick={() => window.open(style.image, '_blank')}
               >
                 <div className="aspect-[3/4] bg-white dark:bg-white/5 rounded-2xl overflow-hidden relative border border-gray-200 dark:border-white/10 shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition-all duration-300 flex items-center justify-center">
                   <Image 

@@ -1,5 +1,6 @@
 import os
 import smtplib
+import threading
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -15,6 +16,13 @@ ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "thecosmofolio@gmail.com")
 class NotificationService:
     @staticmethod
     def _send_email(subject: str, html_content: str):
+        # Run in background thread so it doesn't block the request
+        thread = threading.Thread(target=NotificationService._do_send_email, args=(subject, html_content), daemon=True)
+        thread.start()
+        return True
+
+    @staticmethod
+    def _do_send_email(subject: str, html_content: str):
         if not SMTP_SERVER or not SMTP_USERNAME or not SMTP_PASSWORD:
             print(f"[MOCK EMAIL] Subject: {subject}\n{html_content}")
             from database import supabase
