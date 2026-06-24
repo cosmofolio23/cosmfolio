@@ -45,14 +45,20 @@ class NotificationService:
 
             try:
                 if SMTP_PORT == 465:
-                    with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
+                    with smtplib.SMTP_SSL(SMTP_SERVER, 465, timeout=15) as server:
                         server.login(SMTP_USERNAME, SMTP_PASSWORD)
                         server.send_message(msg)
                 else:
-                    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
-                        server.starttls()
-                        server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                        server.send_message(msg)
+                    try:
+                        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=15) as server:
+                            server.starttls()
+                            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                            server.send_message(msg)
+                    except (TimeoutError, socket.timeout):
+                        # Fallback to SSL on 465 if 587 times out
+                        with smtplib.SMTP_SSL(SMTP_SERVER, 465, timeout=15) as server:
+                            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                            server.send_message(msg)
             finally:
                 socket.getaddrinfo = orig_getaddrinfo
 
