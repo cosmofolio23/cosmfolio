@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { getApiUrl } from '@/lib/tracking'
 
 export default function ContactPage() {
   const [name, setName] = useState('')
@@ -16,13 +17,16 @@ export default function ContactPage() {
     setStatus('submitting')
     
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/support', {
+      const res = await fetch(`${getApiUrl()}/api/support`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, message })
       })
       
-      if (!res.ok) throw new Error('Submission failed')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.detail || 'Submission failed')
+      }
       
       setStatus('success')
       setName('')
@@ -31,10 +35,10 @@ export default function ContactPage() {
       
       // Reset success status after a delay
       setTimeout(() => setStatus('idle'), 5000)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
       setStatus('idle')
-      alert('Failed to send message. Please try emailing us directly.')
+      alert(err.message || 'Failed to send message. Please try emailing us directly.')
     }
   }
 
