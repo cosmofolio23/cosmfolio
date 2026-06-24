@@ -594,7 +594,7 @@ export function LegendBlock({
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
       />
-      <div className="space-y-1">
+      <div className="flex flex-col" style={{ gap: Math.max(2, 12 - items.length * 1.5) + 'px' }}>
         {items.map((it, idx) => (
           <div key={idx} className="group/leg flex items-center gap-2 text-[11px]" style={{ fontFamily: tokens.bodyFont }}>
             <span
@@ -711,7 +711,7 @@ export function MetaBlock({
   }
 
   return (
-    <div className={layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'space-y-2'}>
+    <div className={layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
       <EditableText
         value={label}
         onChange={v => onChange({ label: v })}
