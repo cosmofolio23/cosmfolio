@@ -144,8 +144,8 @@ async def signup(
         user_id = decoded_token["uid"]
 
         # Store user info in Supabase database
-        if supabase:
-            supabase.table("users").insert({
+        if database.supabase:
+            database.supabase.table("users").insert({
                 "id": user_id,
                 "email": email,
                 "name": name,
@@ -252,9 +252,9 @@ async def register(body: SignUpRequest):
     token = data.get("idToken")
 
     # Best-effort: create the users row (non-fatal).
-    if supabase:
+    if database.supabase:
         try:
-            supabase.table("users").insert({
+            database.supabase.table("users").insert({
                 "id": user_id,
                 "email": email,
                 "name": body.name,
@@ -356,13 +356,13 @@ async def signin(body: SignInRequest):
 
     # Best-effort: ensure a users row exists (non-fatal).
     name = None
-    if supabase:
+    if database.supabase:
         try:
-            existing = supabase.table("users").select("*").eq("id", user_id).execute()
+            existing = database.supabase.table("users").select("*").eq("id", user_id).execute()
             if existing.data:
                 name = existing.data[0].get("name")
             else:
-                supabase.table("users").insert({
+                database.supabase.table("users").insert({
                     "id": user_id,
                     "email": email,
                     "created_at": datetime.utcnow().isoformat(),
@@ -395,13 +395,13 @@ async def verify_token(token: str, display_name: str = None):
         # Google tokens carry the profile name in 'name' claim
         token_name = decoded_token.get("name") or display_name
 
-        if supabase:
-            user_data = supabase.table("users").select("*").eq("id", user_id).execute()
+        if database.supabase:
+            user_data = database.supabase.table("users").select("*").eq("id", user_id).execute()
             if user_data.data:
                 existing = user_data.data[0]
                 # Backfill name if it was previously NULL
                 if token_name and not existing.get("name"):
-                    supabase.table("users").update({
+                    database.supabase.table("users").update({
                         "name": token_name,
                         "updated_at": datetime.utcnow().isoformat()
                     }).eq("id", user_id).execute()
@@ -417,7 +417,7 @@ async def verify_token(token: str, display_name: str = None):
                 }
 
             # New user — insert with name from Google profile
-            supabase.table("users").insert({
+            database.supabase.table("users").insert({
                 "id": user_id,
                 "email": email,
                 "name": token_name,
@@ -517,11 +517,11 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
         )
     
     try:
-        if not supabase:
+        if not database.supabase:
             raise Exception("Database connection not available")
             
         # Get users sorted by creation date (newest first)
-        result = supabase.table("users").select("*").order("created_at", desc=True).execute()
+        result = database.supabase.table("users").select("*").order("created_at", desc=True).execute()
         return result.data
         
     except Exception as e:
@@ -537,7 +537,7 @@ async def reset_user_exports(user_id: str, current_user: dict = Depends(get_curr
     if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
-        supabase.table("users").update({"export_count": 0}).eq("id", user_id).execute()
+        database.supabase.table("users").update({"export_count": 0}).eq("id", user_id).execute()
         return {"success": True, "message": "Export count reset successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -548,7 +548,7 @@ async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_curren
     if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
-        supabase.table("users").update({"is_pro": True}).eq("id", user_id).execute()
+        database.supabase.table("users").update({"is_pro": True}).eq("id", user_id).execute()
         return {"success": True, "message": "User upgraded to Pro successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -559,7 +559,7 @@ async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_curr
     if not current_user or current_user.get("email") != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
-        supabase.table("users").update({"is_pro": False}).eq("id", user_id).execute()
+        database.supabase.table("users").update({"is_pro": False}).eq("id", user_id).execute()
         return {"success": True, "message": "User downgraded successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -585,46 +585,46 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
 
         # library_assets and library_tags cascade from library_projects
         try:
-            supabase.table("library_projects").delete().eq("user_id", user_id).execute()
+            database.supabase.table("library_projects").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"library_projects: {e}")
 
         # portfolio_pages cascade from portfolios; project_text/assets cascade from projects
         try:
-            supabase.table("portfolios").delete().eq("user_id", user_id).execute()
+            database.supabase.table("portfolios").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"portfolios: {e}")
 
         try:
-            supabase.table("projects").delete().eq("user_id", user_id).execute()
+            database.supabase.table("projects").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"projects: {e}")
 
         # Sheet sets
         try:
-            supabase.table("sheet_sets").delete().eq("user_id", user_id).execute()
+            database.supabase.table("sheet_sets").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"sheet_sets: {e}")
 
         # AI tables
         try:
-            supabase.table("ai_usage_logs").delete().eq("user_id", user_id).execute()
+            database.supabase.table("ai_usage_logs").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"ai_usage_logs: {e}")
 
         try:
-            supabase.table("user_ai_settings").delete().eq("user_id", user_id).execute()
+            database.supabase.table("user_ai_settings").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"user_ai_settings: {e}")
 
         # Entitlements
         try:
-            supabase.table("user_entitlements").delete().eq("user_id", user_id).execute()
+            database.supabase.table("user_entitlements").delete().eq("user_id", user_id).execute()
         except Exception as e:
             errors.append(f"user_entitlements: {e}")
 
         # ── 3. Finally delete from public.users ────────────────────────────────
-        supabase.table("users").delete().eq("id", user_id).execute()
+        database.supabase.table("users").delete().eq("id", user_id).execute()
 
         msg = "User deleted successfully"
         if errors:
