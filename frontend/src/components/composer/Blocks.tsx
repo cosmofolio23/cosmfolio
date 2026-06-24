@@ -594,36 +594,28 @@ export function LegendBlock({
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
       />
-      {(() => {
-        const rows = items.length;
-        const safeScale = Math.max(0.4, rows > 4 ? 4 / rows : 1);
-        return (
-          <div className="relative flex-1 overflow-hidden mt-1 w-full h-full">
-            <div className="absolute top-0 left-0 flex flex-col" style={{ width: `${100 / safeScale}%`, transform: `scale(${safeScale})`, transformOrigin: 'top left', gap: Math.max(2, 12 - items.length * 1.5) + 'px' }}>
-              {items.map((it, idx) => (
-                <div key={idx} className="group/leg flex items-center gap-2 text-[11px]" style={{ fontFamily: tokens.bodyFont }}>
-                  <span
-                    className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-sm text-[9px] font-bold"
-                    style={{ background: tokens.accent, color: pickContrast(tokens.accent) }}
-                  >
-                    <EditableText value={it.key} onChange={v => update(idx, { key: v })} />
-                  </span>
-                  <EditableText
-                    value={it.label}
-                    onChange={v => update(idx, { label: v })}
-                    className="flex-1"
-                    style={{ color: tokens.text }}
-                  />
-                  <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer">✕</button>
-                </div>
-              ))}
-              <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: tokens.accent }}>
-                {getButtonText()}
-              </button>
-            </div>
+      <div className="flex flex-col flex-1 overflow-hidden mt-1" style={{ gap: Math.max(2, 12 - items.length * 1.5) + 'px' }}>
+        {items.map((it, idx) => (
+          <div key={idx} className="group/leg flex items-center gap-2 text-[11px]" style={{ fontFamily: tokens.bodyFont }}>
+            <span
+              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-sm text-[9px] font-bold"
+              style={{ background: tokens.accent, color: pickContrast(tokens.accent) }}
+            >
+              <EditableText value={it.key} onChange={v => update(idx, { key: v })} />
+            </span>
+            <EditableText
+              value={it.label}
+              onChange={v => update(idx, { label: v })}
+              className="flex-1"
+              style={{ color: tokens.text }}
+            />
+            <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer">✕</button>
           </div>
-        );
-      })()}
+        ))}
+        <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: tokens.accent }}>
+          {getButtonText()}
+        </button>
+      </div>
     </div>
   )
 }
@@ -726,35 +718,27 @@ export function MetaBlock({
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b block w-full"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
       />
-      <div className="w-full h-full relative flex-1 overflow-hidden">
-        {(() => {
-          const rows = layout === 'inline' ? Math.ceil(fields.length / 3) : fields.length;
-          const safeScale = Math.max(0.4, layout !== 'inline' ? (rows > 3 ? 3 / rows : 1) : 1);
-          return (
-            <div className={`absolute top-0 left-0 ${layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'}`} style={{ width: `${100 / safeScale}%`, transform: `scale(${safeScale})`, transformOrigin: 'top left', ...(layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : {}) }}>
-              {fields.map((f, idx) => (
-                <div key={idx} className="group/meta">
-                  <EditableText
-                    value={f.label}
-                    onChange={v => update(idx, { label: v })}
-                    className="text-[9px] font-bold uppercase tracking-[0.15em]"
-                    style={{ color: tokens.muted, fontFamily: tokens.bodyFont }}
-                  />
-                  <div className="flex items-center gap-1">
-                    <EditableText
-                      value={f.value}
-                      onChange={v => update(idx, { value: v })}
-                      className="text-[13px] font-medium"
-                      style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
-                    />
-                    <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 text-xs z-10 cursor-pointer">✕</button>
-                  </div>
-                </div>
-              ))}
-              <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider block w-full text-left mt-1" style={{ color: tokens.accent }}>{getButtonText()}</button>
+      <div className={`flex-1 overflow-hidden ${layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'}`} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
+        {fields.map((f, idx) => (
+          <div key={idx} className="group/meta">
+            <EditableText
+              value={f.label}
+              onChange={v => update(idx, { label: v })}
+              className="text-[9px] font-bold uppercase tracking-[0.15em]"
+              style={{ color: tokens.muted, fontFamily: tokens.bodyFont }}
+            />
+            <div className="flex items-center gap-1">
+              <EditableText
+                value={f.value}
+                onChange={v => update(idx, { value: v })}
+                className="text-[13px] font-medium"
+                style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
+              />
+              <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 text-xs z-10 cursor-pointer">✕</button>
             </div>
-          );
-        })()}
+          </div>
+        ))}
+        <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider block w-full text-left mt-1" style={{ color: tokens.accent }}>{getButtonText()}</button>
       </div>
     </div>
   )
