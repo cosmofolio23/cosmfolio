@@ -293,12 +293,16 @@ function PricingPageInner() {
               <div className="absolute top-0 right-0 bg-accent-gold text-charcoal text-xs font-bold px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">
                 Best Value
               </div>
-              <h2 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Pro</h2>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
-                  {currency === 'INR' ? '₹299' : '$9.99'}
-                </span>
-                <span className="text-sm text-text-secondary dark:text-dark-text-secondary">one-time</span>
+              <h2 className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Founder Access</h2>
+              <div className="mt-4 flex flex-col">
+                <div className="flex items-center gap-3">
+                  <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
+                    {currency === 'INR' ? '₹299' : '$9.99'}
+                  </span>
+                  <span className="bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-red-200 dark:border-red-500/30">Limited Beta Offer</span>
+                </div>
+                <span className="text-sm font-semibold text-text-secondary dark:text-dark-text-secondary mt-3">Lifetime access during beta</span>
+                <span className="text-xs text-text-tertiary dark:text-dark-text-tertiary mt-0.5 italic opacity-80">Price increases soon</span>
               </div>
               <ul className="mt-8 space-y-3 flex-1">
                 {PRO_FEATURES.map((f) => (

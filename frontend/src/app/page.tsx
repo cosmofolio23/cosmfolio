@@ -91,7 +91,7 @@ export default function Home() {
               ✨ Architecture Portfolio Tool — Now Live
             </div>
             <h1 className="text-white text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Professional Architecture Portfolios, Generated in Seconds
+              Build Your Architecture Portfolio in Minutes, Not Nights.
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
               Create professional architecture portfolios with intelligent templates, sophisticated design systems, and custom layouts. Built specifically for architects.
@@ -269,6 +269,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Explore Portfolio Styles Section */}
+      <section className="py-20 md:py-28 bg-gray-50 dark:bg-dark-bg-secondary relative overflow-hidden border-t border-gray-100 dark:border-white/5">
+        <div className="container-centered relative z-10">
+          <div className="text-center mb-16">
+            <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Gallery</span>
+            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">Explore Portfolio Styles</h2>
+            <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto">See what your portfolio could look like</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[
+              "Minimal White",
+              "Competition Board",
+              "Luxury Black",
+              "Thesis Portfolio",
+              "Swiss Grid",
+              "Magazine Style",
+              "Parametric"
+            ].map((style, idx) => (
+              <div 
+                key={idx} 
+                className="group cursor-pointer flex flex-col gap-3"
+                onClick={() => window.open('/placeholder.pdf', '_blank')}
+              >
+                <div className="aspect-[3/4] bg-white dark:bg-white/5 rounded-2xl overflow-hidden relative border border-gray-200 dark:border-white/10 shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition-all duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+                  {/* Placeholder for actual style previews */}
+                  <div className="text-gray-400 dark:text-gray-500 font-medium">Preview</div>
+                  <div className="absolute bottom-4 left-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between text-white text-sm font-semibold">
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      View PDF
+                    </span>
+                  </div>
+                </div>
+                <h3 className="font-semibold text-text-primary dark:text-dark-text-primary px-1">{style}</h3>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Before / After Cosmo Section */}
       <section className="py-20 md:py-28 bg-gray-50 dark:bg-dark-bg-primary relative overflow-hidden">
         <div className="container-centered relative z-10">
@@ -291,7 +333,8 @@ export default function Home() {
                   { title: "Photoshop layers chaos", desc: "Manually adjusting 50+ hidden smart objects and layer masks." },
                   { title: "Random Pinterest references", desc: "Copying snippets from multiple portfolios, resulting in messy visual layouts." },
                   { title: "Hours arranging sheets", desc: "Losing sleep over standard grid alignments, margin sizing, and font sizes." },
-                  { title: "Huge, heavy files", desc: "Crashing tools, slow export times, and blurry compressed drawings." }
+                  { title: "Huge, heavy files", desc: "Crashing tools, slow export times, and blurry compressed drawings." },
+                  { title: "Version History Chaos", desc: "portfolio_final.pdf, portfolio_final2.pdf, final_REAL.pdf... sound familiar?" }
                 ].map((item, i) => (
                   <li key={i} className="flex gap-3 items-start">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 flex-shrink-0"></div>
