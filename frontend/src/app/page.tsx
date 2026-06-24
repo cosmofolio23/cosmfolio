@@ -280,13 +280,10 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[
-              "Minimal White",
-              "Competition Board",
-              "Luxury Black",
-              "Thesis Portfolio",
-              "Swiss Grid",
-              "Magazine Style",
-              "Parametric"
+              { name: "Minimal White", image: "/styles/minimal_white.png" },
+              { name: "Competition Board", image: "/styles/competition_board.png" },
+              { name: "Luxury Black", image: "/styles/luxury_black.png" },
+              { name: "Thesis Portfolio", image: "/styles/thesis_portfolio.png" }
             ].map((style, idx) => (
               <div 
                 key={idx} 
@@ -294,17 +291,22 @@ export default function Home() {
                 onClick={() => window.open('/placeholder.pdf', '_blank')}
               >
                 <div className="aspect-[3/4] bg-white dark:bg-white/5 rounded-2xl overflow-hidden relative border border-gray-200 dark:border-white/10 shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition-all duration-300 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
-                  {/* Placeholder for actual style previews */}
-                  <div className="text-gray-400 dark:text-gray-500 font-medium">Preview</div>
+                  <Image 
+                    src={style.image} 
+                    alt={style.name} 
+                    fill 
+                    className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                  
                   <div className="absolute bottom-4 left-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between text-white text-sm font-semibold">
                     <span className="flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                      View PDF
+                      View Template
                     </span>
                   </div>
                 </div>
-                <h3 className="font-semibold text-text-primary dark:text-dark-text-primary px-1">{style}</h3>
+                <h3 className="font-semibold text-text-primary dark:text-dark-text-primary px-1">{style.name}</h3>
               </div>
             ))}
           </div>
