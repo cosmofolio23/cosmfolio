@@ -381,7 +381,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col gap-4 overflow-y-auto flex-1 pb-4 pr-1 scrollbar-thin">
+      <div className="flex flex-col gap-4 overflow-hidden flex-1 pb-4 pr-1">
         {entries.map((e, i) => (
           <div key={i} className="group relative pl-4 @sm:pl-0 flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start">
             {/* Timeline dot (Mobile) or left border */}
@@ -461,7 +461,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
         <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
       
-      <div className="flex-1 grid grid-cols-1 @xs:grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto pr-1 scrollbar-thin content-start">
+      <div className="flex-1 grid grid-cols-1 @xs:grid-cols-2 gap-x-6 gap-y-3 overflow-hidden pr-1 content-start">
         {items.map((s, i) => (
           <div key={i} className="group flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2">
@@ -504,7 +504,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col gap-2.5 overflow-y-auto flex-1 pr-1 scrollbar-thin">
+      <div className="flex flex-col gap-2.5 overflow-hidden flex-1 pr-1">
         {entries.map((e, i) => (
           <div key={i} className="group flex gap-2 items-start relative pl-3">
             <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>+</span>
