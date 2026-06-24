@@ -46,6 +46,7 @@ class NotificationService:
             req = urllib.request.Request(url, data=data, method="POST")
             req.add_header("Authorization", f"Bearer {RESEND_API_KEY}")
             req.add_header("Content-Type", "application/json")
+            req.add_header("User-Agent", "CosmoFolio/1.0 (Python)")
             
             with urllib.request.urlopen(req, timeout=15) as response:
                 if response.status >= 400:
