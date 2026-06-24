@@ -3,6 +3,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+import socket
 
 # Configure in .env
 SMTP_SERVER = os.getenv("SMTP_SERVER", "")
@@ -34,15 +35,27 @@ class NotificationService:
 
             msg.attach(MIMEText(html_content, "html"))
 
-            if SMTP_PORT == 465:
-                with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=5, source_address=('0.0.0.0', 0)) as server:
-                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                    server.send_message(msg)
-            else:
-                with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=5, source_address=('0.0.0.0', 0)) as server:
-                    server.starttls()
-                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                    server.send_message(msg)
+            # Force IPv4 by patching getaddrinfo
+            orig_getaddrinfo = socket.getaddrinfo
+            def getaddrinfo_v4(*args, **kwargs):
+                res = orig_getaddrinfo(*args, **kwargs)
+                return [r for r in res if r[0] == socket.AF_INET]
+            
+            socket.getaddrinfo = getaddrinfo_v4
+
+            try:
+                if SMTP_PORT == 465:
+                    with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
+                        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                        server.send_message(msg)
+                else:
+                    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
+                        server.starttls()
+                        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                        server.send_message(msg)
+            finally:
+                socket.getaddrinfo = orig_getaddrinfo
+
             return True
         except Exception as e:
             error_msg = str(e)
