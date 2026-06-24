@@ -1,17 +1,12 @@
 import os
-import smtplib
 import threading
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import json
+import urllib.request
 from datetime import datetime
-import socket
 
 # Configure in .env
-SMTP_SERVER = os.getenv("SMTP_SERVER", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "thecosmofolio@gmail.com")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 
 class NotificationService:
     @staticmethod
@@ -23,53 +18,39 @@ class NotificationService:
 
     @staticmethod
     def _do_send_email(subject: str, html_content: str):
-        if not SMTP_SERVER or not SMTP_USERNAME or not SMTP_PASSWORD:
+        if not RESEND_API_KEY:
             print(f"[MOCK EMAIL] Subject: {subject}\n{html_content}")
-            from database import supabase
-            supabase.table("error_logs").insert({
-                "user_id": "system",
-                "error_type": "SMTP_CONFIG_MISSING",
-                "error_message": "Missing SMTP_SERVER, SMTP_USERNAME, or SMTP_PASSWORD",
-                "stack_trace": "NotificationService._send_email",
-                "page_url": "backend"
-            }).execute()
+            try:
+                from database import supabase
+                supabase.table("error_logs").insert({
+                    "user_id": "system",
+                    "error_type": "EMAIL_CONFIG_MISSING",
+                    "error_message": "Missing RESEND_API_KEY",
+                    "stack_trace": "NotificationService._send_email",
+                    "page_url": "backend"
+                }).execute()
+            except Exception:
+                pass
             return False
 
         try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = f"CosmoFolio Alerts <{SMTP_USERNAME}>"
-            msg["To"] = ADMIN_EMAIL
-
-            msg.attach(MIMEText(html_content, "html"))
-
-            # Force IPv4 by patching getaddrinfo
-            orig_getaddrinfo = socket.getaddrinfo
-            def getaddrinfo_v4(*args, **kwargs):
-                res = orig_getaddrinfo(*args, **kwargs)
-                return [r for r in res if r[0] == socket.AF_INET]
+            url = "https://api.resend.com/emails"
+            payload = {
+                "from": "CosmoFolio Alerts <onboarding@resend.dev>",
+                "to": ADMIN_EMAIL,
+                "subject": subject,
+                "html": html_content
+            }
+            data = json.dumps(payload).encode("utf-8")
             
-            socket.getaddrinfo = getaddrinfo_v4
-
-            try:
-                if SMTP_PORT == 465:
-                    with smtplib.SMTP_SSL(SMTP_SERVER, 465, timeout=15) as server:
-                        server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                        server.send_message(msg)
-                else:
-                    try:
-                        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=15) as server:
-                            server.starttls()
-                            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                            server.send_message(msg)
-                    except (TimeoutError, socket.timeout):
-                        # Fallback to SSL on 465 if 587 times out
-                        with smtplib.SMTP_SSL(SMTP_SERVER, 465, timeout=15) as server:
-                            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                            server.send_message(msg)
-            finally:
-                socket.getaddrinfo = orig_getaddrinfo
-
+            req = urllib.request.Request(url, data=data, method="POST")
+            req.add_header("Authorization", f"Bearer {RESEND_API_KEY}")
+            req.add_header("Content-Type", "application/json")
+            
+            with urllib.request.urlopen(req, timeout=15) as response:
+                if response.status >= 400:
+                    raise Exception(f"Resend API Error: {response.read().decode('utf-8')}")
+            
             return True
         except Exception as e:
             error_msg = str(e)
