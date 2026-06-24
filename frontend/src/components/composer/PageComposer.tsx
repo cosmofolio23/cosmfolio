@@ -203,29 +203,10 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
         />
       )}
 
-      {/* Free-tier watermark — tiled diagonally across the whole page; a neutral
-          grey + light/dark text-shadow keeps it legible on light, dark and busy
-          photo backgrounds. Hidden for Pro/admin via showWatermark. */}
+      {/* Free-tier badge — placed at the bottom center. Hidden for Pro/admin. */}
       {showWatermark && (
-        <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none" aria-hidden="true">
-          <div className="absolute inset-[-25%] flex flex-col justify-around -rotate-[30deg]">
-            {Array.from({ length: 9 }).map((_, r) => (
-              <div
-                key={r}
-                className="flex justify-around whitespace-nowrap font-black uppercase tracking-[0.35em]"
-                style={{
-                  fontFamily: 'Montserrat, sans-serif',
-                  fontSize: '1.5rem',
-                  color: 'rgba(140,140,140,0.32)',
-                  textShadow: '0 1px 1px rgba(255,255,255,0.18), 0 -1px 1px rgba(0,0,0,0.18)',
-                }}
-              >
-                {Array.from({ length: 6 }).map((_, c) => (
-                  <span key={c}>Thecosmofolio.com&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                ))}
-              </div>
-            ))}
-          </div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none z-50 select-none flex items-center gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-gray-200 dark:border-white/10" aria-hidden="true">
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-gray-500 dark:text-gray-400">Created with CosmoFolio</span>
         </div>
       )}
     </div>

@@ -26,8 +26,9 @@ interface PortfolioData {
 export default function PortfolioBookPage() {
   const router = useRouter()
   const params = useParams()
-  const { isAuthenticated, token } = useAuthStore()
+  const { isAuthenticated, token, user } = useAuthStore()
   const projectId = params.id as string
+  const isFreeTier = (user as any)?.plan_type !== 'pro' && !user?.is_pro
 
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null)
   const [currentPageIdx, setCurrentPageIdx] = useState(0)
@@ -328,7 +329,7 @@ export default function PortfolioBookPage() {
               overflowVisible={true}
               onUpdateMasterElement={() => {}}
               pageSize={pageSize}
-              showWatermark={false}
+              showWatermark={isFreeTier}
             />
           </div>
         )}
@@ -355,6 +356,7 @@ export default function PortfolioBookPage() {
                   onUpdateMasterElement={() => {}}
                   pageSize={pageSize}
                   editMode={false}
+                  showWatermark={isFreeTier}
                 />
               ) : (
                 <PageComposer
@@ -374,7 +376,7 @@ export default function PortfolioBookPage() {
                   overflowVisible={false}
                   onUpdateMasterElement={() => {}}
                   pageSize={pageSize}
-                  showWatermark={false}
+                  showWatermark={isFreeTier}
                 />
               )}
             </div>
