@@ -25,7 +25,7 @@ export default function ContactPage() {
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => null)
-        throw new Error(errorData?.detail || 'Submission failed')
+        throw new Error(errorData?.error?.message || errorData?.detail || 'Submission failed')
       }
       
       setStatus('success')
