@@ -16,6 +16,14 @@ class NotificationService:
     def _send_email(subject: str, html_content: str):
         if not SMTP_SERVER or not SMTP_USERNAME or not SMTP_PASSWORD:
             print(f"[MOCK EMAIL] Subject: {subject}\n{html_content}")
+            from database import supabase
+            supabase.table("error_logs").insert({
+                "user_id": "system",
+                "error_type": "SMTP_CONFIG_MISSING",
+                "error_message": "Missing SMTP_SERVER, SMTP_USERNAME, or SMTP_PASSWORD",
+                "stack_trace": "NotificationService._send_email",
+                "page_url": "backend"
+            }).execute()
             return False
 
         try:
@@ -37,7 +45,19 @@ class NotificationService:
                     server.send_message(msg)
             return True
         except Exception as e:
-            print(f"[EMAIL ERROR] Failed to send email: {str(e)}")
+            error_msg = str(e)
+            print(f"[EMAIL ERROR] Failed to send email: {error_msg}")
+            try:
+                from database import supabase
+                supabase.table("error_logs").insert({
+                    "user_id": "system",
+                    "error_type": "SMTP_SEND_FAILED",
+                    "error_message": error_msg,
+                    "stack_trace": "NotificationService._send_email",
+                    "page_url": "backend"
+                }).execute()
+            except:
+                pass
             return False
 
     @staticmethod
