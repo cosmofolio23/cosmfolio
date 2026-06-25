@@ -10,7 +10,6 @@ import LibraryBrowser, { type LibraryView } from '@/components/templates/Library
 import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
 import SetupModal from '@/components/composer/SetupModal'
 import { auth } from '@/lib/firebase'
-import { SetupWizardModal } from '@/components/modals/SetupWizardModal'
 import UpgradeModal from '@/components/modals/UpgradeModal'
 import { apiClient } from '@/lib/api'
 

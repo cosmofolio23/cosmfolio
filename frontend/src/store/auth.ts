@@ -7,6 +7,8 @@ interface User {
   email: string
   name?: string
   created_at?: string
+  is_pro?: boolean
+  plan_type?: string
 }
 
 interface AuthStore {
