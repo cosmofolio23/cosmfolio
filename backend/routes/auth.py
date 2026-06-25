@@ -164,6 +164,10 @@ async def signup(
                     text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
                     {"u": user_id, "e": "user_registered"}
                 )
+        except Exception as e:
+            print(f"[Monitoring Error] {e}")
+
+        try:
             NotificationService.sendSignupAlert({
                 "name": name,
                 "email": email,
@@ -172,7 +176,7 @@ async def signup(
                 "login_method": "Client SDK"
             })
         except Exception as e:
-            print(f"[Monitoring Error] {e}")
+            print(f"[EMAIL ERROR] {e}")
 
         return {
             "success": True,
@@ -265,13 +269,20 @@ async def register(body: SignUpRequest):
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat(),
             }).execute()
-            
-            # [Monitoring] Track event and alert founder
+        except Exception as e:
+            print(f"[WARN] register user sync failed (non-fatal): {e}")
+
+        # [Monitoring] Track event and alert founder
+        try:
             with database.engine.begin() as conn:
                 conn.execute(
                     text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
                     {"u": user_id, "e": "user_registered"}
                 )
+        except Exception as e:
+            print(f"[MONITORING ERROR] {e}")
+
+        try:
             NotificationService.sendSignupAlert({
                 "name": body.name,
                 "email": email,
@@ -280,7 +291,7 @@ async def register(body: SignUpRequest):
                 "login_method": "Server Proxy"
             })
         except Exception as e:
-            print(f"[WARN] register user sync / monitoring failed (non-fatal): {e}")
+            print(f"[EMAIL ERROR] {e}")
 
     return {
         "success": True,
