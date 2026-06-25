@@ -15,6 +15,7 @@ export default function AmbassadorPage() {
   
   // Join form state
   const [referralCode, setReferralCode] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
   const [joinLoading, setJoinLoading] = useState(false)
   const [joinError, setJoinError] = useState('')
   
@@ -78,7 +79,10 @@ export default function AmbassadorPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ referral_code: referralCode.trim().toUpperCase() })
+        body: JSON.stringify({ 
+          referral_code: referralCode.trim().toUpperCase(),
+          invite_code: inviteCode.trim() 
+        })
       })
       
       const data = await res.json()
@@ -193,6 +197,17 @@ export default function AmbassadorPage() {
               </p>
               
               <form onSubmit={handleJoin} className="flex flex-col gap-4 max-w-sm mx-auto">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-left">Secret Invite Code</label>
+                  <input 
+                    type="password" 
+                    placeholder="Enter code"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/30 focus:outline-none focus:border-accent-gold"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-left">Choose your Referral Code</label>
                   <input 

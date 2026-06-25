@@ -11,6 +11,7 @@ router = APIRouter()
 
 class JoinRequest(BaseModel):
     referral_code: str
+    invite_code: str
 
 class WithdrawRequest(BaseModel):
     amount: float
@@ -72,6 +73,11 @@ async def get_my_ambassador_profile(current_user: dict = Depends(get_current_use
 
 @router.post("/join")
 async def join_ambassador_program(req: JoinRequest, current_user: dict = Depends(get_current_user)):
+    # Validate Invite Code
+    secret = os.getenv("AMBASSADOR_INVITE_CODE", "COSMOFOLIO_PARTNER_2026")
+    if req.invite_code.strip() != secret:
+        raise HTTPException(status_code=403, detail="Invalid invitation code.")
+
     user_id = current_user.get("user_id")
     
     # Check if already joined
