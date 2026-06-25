@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth'
 import { apiClient } from '@/lib/api'
 import { SheetSetEditor } from '@/components/sheetSet/SheetSetEditor'
 import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
+import DesktopOnlyLock from '@/components/DesktopOnlyLock'
 
 /**
  * Sheet Set Editor Page
@@ -133,12 +134,15 @@ export default function SheetSetEditorPage() {
   }
 
   return (
-    <SheetSetEditor
-      initialSheetSet={sheetSet!}
-      onSave={handleSave}
-      onExport={handleExport}
-      onAICommand={handleAICommand}
-      onClose={() => router.push(`/dashboard/project/${projectId}/sheet-set`)}
-    />
+    <>
+      <DesktopOnlyLock />
+      <SheetSetEditor
+        initialSheetSet={sheetSet!}
+        onSave={handleSave}
+        onExport={handleExport}
+        onAICommand={handleAICommand}
+        onClose={() => router.push(`/dashboard/project/${projectId}/sheet-set`)}
+      />
+    </>
   )
 }

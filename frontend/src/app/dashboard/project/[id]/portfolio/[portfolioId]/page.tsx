@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
+import DesktopOnlyLock from '@/components/DesktopOnlyLock'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
 import {
   seedPagesFromTemplate, LAYOUT_CATALOG, LAYOUT_CATEGORIES, getSpec,
@@ -408,6 +409,7 @@ export default function PortfolioEditorPage() {
   if (mode === 'view') {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
+        <DesktopOnlyLock />
         <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
           <div className="px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -443,6 +445,7 @@ export default function PortfolioEditorPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
+      <DesktopOnlyLock />
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="px-4 py-2.5 flex items-center justify-between">
