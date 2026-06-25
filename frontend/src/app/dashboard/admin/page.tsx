@@ -34,11 +34,13 @@ export default function AdminDashboard() {
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
   
-  const [activeTab, setActiveTab] = useState<'users' | 'coupons' | 'monitoring'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'coupons' | 'monitoring' | 'ambassadors'>('users')
   const [monitoringStats, setMonitoringStats] = useState<any>(null)
   
   const [users, setUsers] = useState<UserRecord[]>([])
   const [coupons, setCoupons] = useState<CouponRecord[]>([])
+  const [ambassadors, setAmbassadors] = useState<any[]>([])
+  const [inviteCode, setInviteCode] = useState('')
   
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -86,10 +88,11 @@ export default function AdminDashboard() {
 
       const headers = { 'Authorization': `Bearer ${token || ''}` }
 
-      const [usersRes, couponsRes, monitoringRes] = await Promise.all([
+      const [usersRes, couponsRes, monitoringRes, ambassadorsRes] = await Promise.all([
         fetch(`${API_URL}/api/auth/admin/users`, { headers }),
         fetch(`${API_URL}/api/admin/coupons`, { headers }),
-        fetch(`${API_URL}/api/monitoring/admin/dashboard-stats`, { headers })
+        fetch(`${API_URL}/api/monitoring/admin/dashboard-stats`, { headers }),
+        fetch(`${API_URL}/api/ambassadors/admin/list`, { headers })
       ])
 
       if (!usersRes.ok) {
@@ -100,13 +103,17 @@ export default function AdminDashboard() {
       setUsers(usersData)
       
       if (couponsRes.ok) {
-        const couponsData = await couponsRes.json()
-        setCoupons(couponsData)
+        setCoupons(await couponsRes.json())
       }
       
       if (monitoringRes.ok) {
-        const monitoringData = await monitoringRes.json()
-        setMonitoringStats(monitoringData)
+        setMonitoringStats(await monitoringRes.json())
+      }
+
+      if (ambassadorsRes.ok) {
+        const ambData = await ambassadorsRes.json()
+        setAmbassadors(ambData.ambassadors || [])
+        setInviteCode(ambData.invite_code || '')
       }
     } catch (err: any) {
       console.error(err)
@@ -278,33 +285,22 @@ export default function AdminDashboard() {
         
         {/* Tabs */}
         <div className="flex items-center gap-6 mb-8 border-b border-gray-200 dark:border-white/10 pb-1">
-          <button 
-            onClick={() => setActiveTab('users')}
-            className={`pb-2 text-sm font-semibold transition-colors relative ${activeTab === 'users' ? 'text-accent-primary dark:text-accent-gold' : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'}`}
-          >
-            Users Analytics
-            {activeTab === 'users' && (
-              <span className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-accent-primary dark:bg-accent-gold rounded-t-full"></span>
-            )}
-          </button>
-          <button 
-            onClick={() => setActiveTab('coupons')}
-            className={`pb-2 text-sm font-semibold transition-colors relative ${activeTab === 'coupons' ? 'text-accent-primary dark:text-accent-gold' : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'}`}
-          >
-            Coupon Codes
-            {activeTab === 'coupons' && (
-              <span className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-accent-primary dark:bg-accent-gold rounded-t-full"></span>
-            )}
-          </button>
-          <button 
-            onClick={() => setActiveTab('monitoring')}
-            className={`pb-2 text-sm font-semibold transition-colors relative ${activeTab === 'monitoring' ? 'text-accent-primary dark:text-accent-gold' : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary'}`}
-          >
-            System Monitoring
-            {activeTab === 'monitoring' && (
-              <span className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-accent-primary dark:bg-accent-gold rounded-t-full"></span>
-            )}
-          </button>
+          <nav className="flex space-x-1" aria-label="Tabs">
+            {['users', 'coupons', 'monitoring', 'ambassadors'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`
+                  px-4 py-2.5 text-sm font-semibold rounded-lg capitalize transition-colors
+                  ${activeTab === tab 
+                    ? 'bg-accent-gold text-charcoal' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'}
+                `}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
         </div>
 
         {error && (
@@ -364,7 +360,6 @@ export default function AdminDashboard() {
           </div>
         ) : activeTab === 'users' ? (
           <>
-            {/* Stats Cards Grid */}
             <div className="grid md:grid-cols-4 gap-6 mb-10">
               {[
                 {
@@ -413,7 +408,6 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* User Management Section */}
             <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
@@ -421,7 +415,6 @@ export default function AdminDashboard() {
                   <p className="text-xs text-text-secondary dark:text-dark-text-secondary">View demographic data and platform usage metrics</p>
                 </div>
                 
-                {/* Search Input */}
                 <div className="relative w-full md:w-80">
                   <input
                     type="text"
@@ -524,12 +517,10 @@ export default function AdminDashboard() {
               )}
             </div>
           </>
-        ) : (
-          /* Coupons Tab Content */
+        ) : activeTab === 'coupons' ? (
           <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl max-w-4xl mx-auto">
             <h2 className="text-xl font-bold mb-6">Manage Promo Codes</h2>
             
-            {/* Create Coupon Form */}
             <form onSubmit={handleCreateCoupon} className="flex flex-col md:flex-row gap-4 mb-10 bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-white/10">
               <div className="flex-1">
                 <label className="block text-xs font-semibold text-text-secondary dark:text-dark-text-secondary mb-1 uppercase tracking-wider">Coupon Code</label>
@@ -564,7 +555,6 @@ export default function AdminDashboard() {
               </div>
             </form>
 
-            {/* Coupons Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
@@ -614,6 +604,54 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-[#0B0B10] border border-white/10 rounded-xl overflow-hidden mt-6">
+            <div className="p-6 border-b border-white/10">
+              <h3 className="text-xl font-bold text-white mb-2">Ambassadors</h3>
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 inline-block">
+                <p className="text-sm text-emerald-400 font-semibold mb-1">Secret Invite Code</p>
+                <code className="text-lg text-emerald-300 tracking-wider font-mono">{inviteCode}</code>
+                <p className="text-xs text-gray-400 mt-2">Give this code to users so they can join the program.</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-[#12121A] text-xs uppercase font-semibold text-gray-400">
+                  <tr>
+                    <th className="px-6 py-4">Ambassador</th>
+                    <th className="px-6 py-4">Referral Code</th>
+                    <th className="px-6 py-4">Tier</th>
+                    <th className="px-6 py-4">Sales</th>
+                    <th className="px-6 py-4">Earnings / Paid</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {ambassadors.map(a => (
+                    <tr key={a.user_id} className="hover:bg-white/5">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-white">{a.name || 'Anonymous'}</div>
+                        <div className="text-xs text-gray-500">{a.email || 'No email'}</div>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-accent-gold">{a.referral_code}</td>
+                      <td className="px-6 py-4 capitalize">{a.tier}</td>
+                      <td className="px-6 py-4">{a.successful_sales}</td>
+                      <td className="px-6 py-4">
+                        <div className="text-emerald-400">Earned: ₹{a.total_earnings.toFixed(2)}</div>
+                        <div className="text-gray-400 text-xs">Paid: ₹{a.withdrawn_amount.toFixed(2)}</div>
+                      </td>
+                    </tr>
+                  ))}
+                  {ambassadors.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                        No ambassadors found. Give out the invite code!
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

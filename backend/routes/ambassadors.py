@@ -186,3 +186,27 @@ async def apply_code(req: JoinRequest):
         "discount_percentage": res.data[0]["discount_percentage"],
         "ambassador_id": res.data[0]["user_id"]
     }
+
+@router.get("/admin/list")
+async def admin_list_ambassadors(current_user: dict = Depends(get_current_user)):
+    # Check admin
+    if current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=403, detail="Admin only")
+        
+    res = supabase.table("ambassadors").select("*").order("successful_sales", desc=True).execute()
+    ambassadors = res.data or []
+    
+    # Get user details
+    user_ids = [a["user_id"] for a in ambassadors]
+    users_res = supabase.table("users").select("id, name, email").in_("id", user_ids).execute()
+    users_map = {u["id"]: {"name": u.get("name"), "email": u.get("email")} for u in (users_res.data or [])}
+    
+    for a in ambassadors:
+        u_info = users_map.get(a["user_id"], {})
+        a["name"] = u_info.get("name")
+        a["email"] = u_info.get("email")
+        
+    return {
+        "ambassadors": ambassadors,
+        "invite_code": os.getenv("AMBASSADOR_INVITE_CODE", "COSMOFOLIO_PARTNER_2026")
+    }
