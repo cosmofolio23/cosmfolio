@@ -643,3 +643,249 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
         return {"success": True, "message": msg}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+class ProfileUpdateRequest(BaseModel):
+    name: str | None = None
+    college_name: str | None = None
+    state: str | None = None
+    year_of_passing: str | None = None
+    stream: str | None = None
+
+@router.put("/profile")
+async def update_profile(req: ProfileUpdateRequest, current_user: dict = Depends(get_current_user_from_deps)):
+    """Update user profile in public.users"""
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        
+    user_id = current_user.get("user_id")
+    if not database.supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    user_id = current_user.get("user_id") or current_user.get("id")
+    update_data = {"updated_at": datetime.utcnow().isoformat()}
+    if body.college_name is not None: update_data["college_name"] = body.college_name
+    if body.state is not None:        update_data["state"] = body.state
+    if body.year_of_passing is not None: update_data["year_of_passing"] = body.year_of_passing
+    if body.stream is not None:       update_data["stream"] = body.stream
+    database.supabase.table("users").update(update_data).eq("id", user_id).execute()
+    return {"success": True}
+
+@router.get("/me")
+async def get_current_user(authorization: str = Header(None)):
+    """Get current user info from Firebase token"""
+    try:
+        decoded_token = get_current_user_from_token(authorization)
+        user_id = decoded_token.get("uid")
+        email = decoded_token.get("email")
+
+        if database.supabase:
+            user_data = database.supabase.table("users").select("*").eq("id", user_id).execute()
+            if user_data.data:
+                user = user_data.data[0]
+                return UserResponse(
+                    id=user["id"],
+                    email=user["email"],
+                    name=user.get("name"),
+                    created_at=datetime.fromisoformat(user.get("created_at")),
+                    plan_type=user.get("plan_type", "free") if not user.get("is_pro") else "pro",
+                    boost_pack_count=user.get("boost_pack_count", 0),
+                    export_count=user.get("export_count", 0)
+                )
+
+        return UserResponse(
+            id=user_id,
+            email=email,
+            name=None,
+            created_at=datetime.utcnow()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+@router.post("/logout")
+async def logout(authorization: str = Header(None)):
+    """Logout (frontend handles token removal)"""
+    try:
+        get_current_user_from_token(authorization)
+        return {"message": "Logged out successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/admin/users")
+async def get_admin_users(current_user: dict = Depends(get_current_user_from_deps)):
+    """
+    Get all registered users for admin dashboard.
+    Gated strictly for boseraj001@gmail.com
+    """
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Admin access only"
+        )
+    
+    try:
+        if not database.supabase:
+            raise Exception("Database connection not available")
+            
+        # Get users sorted by creation date (newest first)
+        result = database.supabase.table("users").select("*").order("created_at", desc=True).execute()
+        return result.data
+        
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch users: {str(e)}"
+        )
+
+@router.post("/admin/users/{user_id}/reset-exports")
+async def reset_user_exports(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Reset a user's export count to 0"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        database.supabase.table("users").update({"export_count": 0}).eq("id", user_id).execute()
+        return {"success": True, "message": "Export count reset successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post("/admin/users/{user_id}/upgrade")
+async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Upgrade user to Pro (unlimited exports)"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        database.supabase.table("users").update({"is_pro": True}).eq("id", user_id).execute()
+        return {"success": True, "message": "User upgraded to Pro successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post("/admin/users/{user_id}/downgrade")
+async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Downgrade user to Free"""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    try:
+        database.supabase.table("users").update({"is_pro": False}).eq("id", user_id).execute()
+        return {"success": True, "message": "User downgraded successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
+    """Admin only: Delete a user from Firebase + all Supabase tables."""
+    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
+    errors = []
+    try:
+        # ── 1. Firebase ────────────────────────────────────────────────────────
+        if firebase_app:
+            try:
+                from firebase_admin import auth as firebase_auth
+                firebase_auth.delete_user(user_id)
+            except Exception as fe:
+                # user may already be gone from Firebase
+                errors.append(f"Firebase: {fe}")
+
+        # ── 2. Supabase — explicit cascade (FKs point to auth.users, not
+        #       public.users, so we must delete child rows manually first) ──────
+
+        # library_assets and library_tags cascade from library_projects
+        try:
+            database.supabase.table("library_projects").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"library_projects: {e}")
+
+        # portfolio_pages cascade from portfolios; project_text/assets cascade from projects
+        try:
+            database.supabase.table("portfolios").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"portfolios: {e}")
+
+        try:
+            database.supabase.table("projects").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"projects: {e}")
+
+        # Sheet sets
+        try:
+            database.supabase.table("sheet_sets").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"sheet_sets: {e}")
+
+        # AI tables
+        try:
+            database.supabase.table("ai_usage_logs").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"ai_usage_logs: {e}")
+
+        try:
+            database.supabase.table("user_ai_settings").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"user_ai_settings: {e}")
+
+        # Entitlements
+        try:
+            database.supabase.table("user_entitlements").delete().eq("user_id", user_id).execute()
+        except Exception as e:
+            errors.append(f"user_entitlements: {e}")
+
+        # ── 3. Finally delete from public.users ────────────────────────────────
+        database.supabase.table("users").delete().eq("id", user_id).execute()
+
+        msg = "User deleted successfully"
+        if errors:
+            msg += f" (non-fatal warnings: {'; '.join(errors)})"
+        return {"success": True, "message": msg}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+class ProfileUpdateRequest(BaseModel):
+    name: str | None = None
+    college_name: str | None = None
+    state: str | None = None
+    year_of_passing: str | None = None
+    stream: str | None = None
+
+@router.put("/profile")
+async def update_profile(req: ProfileUpdateRequest, current_user: dict = Depends(get_current_user_from_deps)):
+    """Update user profile in public.users"""
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        
+    user_id = current_user.get("user_id")
+    update_data = {k: v for k, v in req.dict().items() if v is not None}
+    
+    if not update_data:
+        return {"success": True, "message": "No changes requested"}
+        
+    try:
+        database.supabase.table("users").update(update_data).eq("id", user_id).execute()
+        return {"success": True, "message": "Profile updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+from fastapi import UploadFile, File
+
+@router.post("/avatar")
+async def upload_avatar(file: UploadFile = File(...), current_user: dict = Depends(get_current_user_from_deps)):
+    """Upload an avatar to Supabase storage and return the public URL."""
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        
+    user_id = current_user.get("user_id")
+    file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    file_path = f"{user_id}/avatar_{int(datetime.utcnow().timestamp())}.{file_ext}"
+    
+    try:
+        file_bytes = await file.read()
+        database.supabase.storage.from_("avatars").upload(
+            path=file_path,
+            file=file_bytes,
+            file_options={"content-type": file.content_type or "image/jpeg"}
+        )
+        
+        public_url = database.supabase.storage.from_("avatars").get_public_url(file_path)
+        
+        return {"success": True, "url": public_url}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to upload to Supabase: {str(e)}")

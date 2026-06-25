@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth'
 import { useEntitlements } from '@/store/entitlements'
 import { apiClient } from '@/lib/api'
 import Logo from '@/components/Logo'
+import DashboardHeader from '@/components/DashboardHeader'
 
 interface Project {
   id: string
@@ -114,47 +115,7 @@ export default function Dashboard() {
       <div className="fixed bottom-20 -right-20 w-80 h-80 bg-accent-gold/10 dark:bg-accent-primary/10 rounded-full blur-[80px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
 
       {/* Header */}
-      <header className="glass-nav shadow-elevation-1 sticky top-0 z-40">
-        <div className="container-centered py-6 md:py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <Logo size="lg" variant="gold" />
-            <div>
-              <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary">Cosmo<span className="text-gold-gradient">Folio</span></h1>
-              <div className="flex items-center gap-3 mt-2">
-                <p className="text-text-secondary dark:text-dark-text-secondary">Welcome back, <span className="font-semibold text-text-primary dark:text-dark-text-primary">{user?.name || user?.email}</span></p>
-                {loaded && (
-                  <>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
-                      has('is_pro')
-                        ? 'bg-gold-gradient text-white border-transparent'
-                        : 'bg-surface-secondary dark:bg-dark-surface-secondary text-text-secondary dark:text-dark-text-secondary border border-divider dark:border-dark-divider'
-                    }`}>
-                      {has('is_pro') ? 'PRO' : 'FREEMIUM'}
-                    </span>
-                    {!has('is_pro') && (
-                      <button
-                        onClick={() => router.push('/pricing')}
-                        className="px-3 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-accent-gold/20 text-accent-gold hover:bg-accent-gold/30 transition-colors shadow-sm"
-                      >
-                        ⚡ Upgrade to Pro
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              useAuthStore.getState().logout()
-              router.push('/signin')
-            }}
-            className="btn-tertiary text-sm"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
+      <DashboardHeader />
 
       {/* Main Content */}
       <main className="container-centered py-12 md:py-16">
@@ -171,12 +132,6 @@ export default function Dashboard() {
             className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
           >
             📚 My Portfolios →
-          </Link>
-          <Link
-            href="/dashboard/ambassador"
-            className="inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-6 py-4 text-emerald-600 dark:text-emerald-400 hover:shadow-lg hover:bg-emerald-500/20 transition font-semibold text-sm"
-          >
-            💸 Earn Money →
           </Link>
           {isAdmin ? (
             <Link
