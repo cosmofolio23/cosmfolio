@@ -86,6 +86,7 @@ async def docs():
 print("[STARTUP] Loading core routes...")
 core_modules = [
     ("auth", "/api/auth", ["auth"]),
+    ("ambassadors", "/api/ambassadors", ["ambassadors"]),
     ("coupons", "/api", ["coupons"]),
     ("payments", "/api/payments", ["payments"]),
     ("projects", "/api/projects", ["projects"]),

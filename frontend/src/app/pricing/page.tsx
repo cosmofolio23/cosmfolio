@@ -71,6 +71,8 @@ function PricingPageInner() {
   const [promoMessage, setPromoMessage] = useState('')
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [userPlan, setUserPlan] = useState('free')
+  const [appliedReferralCode, setAppliedReferralCode] = useState('')
+  const [discountPercentage, setDiscountPercentage] = useState(0)
   const [paymentStatus, setPaymentStatus] = useState<{isOpen: boolean, status: 'success'|'error'|null, message: string}>({isOpen: false, status: null, message: ''})
 
   useEffect(() => {
@@ -114,6 +116,7 @@ function PricingPageInner() {
         : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
       
+      // Try as 100% free coupon first
       const res = await fetch(`${API_URL}/api/user/apply-coupon`, {
         method: 'POST',
         headers: {
@@ -124,15 +127,33 @@ function PricingPageInner() {
       })
       
       const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.detail || 'Invalid coupon code')
+      if (res.ok) {
+        setPromoMessage(data.message || 'Coupon applied successfully! You are now a Pro user.')
+        setPromoCode('')
+        setUserPlan('pro')
+        return
       }
       
-      setPromoMessage(data.message || 'Coupon applied successfully! You are now a Pro user.')
-      setPromoCode('')
-      setUserPlan('pro')
+      // Try as Referral Code
+      const refRes = await fetch(`${API_URL}/api/ambassadors/apply-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referral_code: promoCode.trim() })
+      })
+      
+      if (!refRes.ok) {
+         throw new Error('Invalid promo or referral code')
+      }
+      
+      const refData = await refRes.json()
+      setAppliedReferralCode(promoCode.trim().toUpperCase())
+      setDiscountPercentage(refData.discount_percentage)
+      setPromoMessage(`${refData.discount_percentage}% Discount Applied! Checkout now.`)
+      
     } catch (err: any) {
       setPromoMessage(err.message || 'Failed to apply promo code')
+      setAppliedReferralCode('')
+      setDiscountPercentage(0)
     } finally {
       setIsApplying(false)
     }
@@ -164,7 +185,11 @@ function PricingPageInner() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ product_type: productType, currency })
+        body: JSON.stringify({ 
+          product_type: productType, 
+          currency,
+          referral_code: appliedReferralCode || undefined
+        })
       })
       
       if (!res.ok) {
@@ -319,7 +344,14 @@ function PricingPageInner() {
               <div className="mt-4 flex flex-col">
                 <div className="flex items-center gap-3">
                   <span className="text-5xl font-bold text-text-primary dark:text-dark-text-primary">
-                    {currency === 'INR' ? '₹299' : '$9.99'}
+                    {discountPercentage > 0 ? (
+                      <div className="flex flex-col">
+                        <span className="line-through text-2xl text-gray-400">{currency === 'INR' ? '₹299' : '$9.99'}</span>
+                        <span>{currency === 'INR' ? `₹${Math.round(299 * (1 - discountPercentage/100))}` : `$${(9.99 * (1 - discountPercentage/100)).toFixed(2)}`}</span>
+                      </div>
+                    ) : (
+                      currency === 'INR' ? '₹299' : '$9.99'
+                    )}
                   </span>
                   <span className="bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-red-200 dark:border-red-500/30">Limited Beta Offer</span>
                 </div>

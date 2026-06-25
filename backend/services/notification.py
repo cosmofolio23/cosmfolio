@@ -292,3 +292,69 @@ class NotificationService:
         <ul>{templates_html}</ul>
         """
         return NotificationService._send_email(subject, html)
+
+    @staticmethod
+    def sendAmbassadorJoined(data: dict):
+        subject = f"🤝 New Ambassador Joined: {data.get('name', 'User')}"
+        html = f"""
+        <h2>New Ambassador Joined 🤝</h2>
+        <p><strong>Name:</strong> {data.get('name', 'N/A')}</p>
+        <p><strong>Email:</strong> {data.get('email', 'N/A')}</p>
+        <p><strong>Referral Code:</strong> {data.get('code', 'N/A')}</p>
+        """
+        return NotificationService._send_email(subject, html)
+        
+    @staticmethod
+    def sendAmbassadorSale(ambassador_id: str, commission: float):
+        # Fire and forget query to get ambassador details
+        try:
+            from database import supabase
+            res = supabase.table("users").select("name, email").eq("id", ambassador_id).execute()
+            if res.data:
+                name = res.data[0].get("name", "Ambassador")
+                email = res.data[0].get("email", "N/A")
+                subject = f"💸 Ambassador Sale: {name} earned commission!"
+                html = f"""
+                <h2>Ambassador Sale Generated 💸</h2>
+                <p><strong>Name:</strong> {name}</p>
+                <p><strong>Email:</strong> {email}</p>
+                <p><strong>Commission Earned:</strong> ₹{commission:.2f}</p>
+                <p>This amount is now in their pending balance.</p>
+                """
+                return NotificationService._send_email(subject, html)
+        except:
+            pass
+            
+    @staticmethod
+    def sendAmbassadorUpgraded(ambassador_id: str, new_tier: str):
+        try:
+            from database import supabase
+            res = supabase.table("users").select("name, email").eq("id", ambassador_id).execute()
+            if res.data:
+                name = res.data[0].get("name", "Ambassador")
+                email = res.data[0].get("email", "N/A")
+                subject = f"🚀 Ambassador Leveled Up! {name} -> {new_tier.upper()}"
+                html = f"""
+                <h2>Ambassador Auto-Upgrade 🚀</h2>
+                <p><strong>Name:</strong> {name}</p>
+                <p><strong>Email:</strong> {email}</p>
+                <p><strong>New Tier:</strong> {new_tier.upper()}</p>
+                """
+                return NotificationService._send_email(subject, html)
+        except:
+            pass
+            
+    @staticmethod
+    def sendWithdrawalRequested(data: dict):
+        subject = f"💰 Withdrawal Request: {data.get('name', 'User')} ({data.get('amount')})"
+        html = f"""
+        <h2>New Withdrawal Request 💰</h2>
+        <p><strong>Name:</strong> {data.get('name', 'N/A')}</p>
+        <p><strong>Email:</strong> {data.get('email', 'N/A')}</p>
+        <p><strong>Amount:</strong> {data.get('amount', 'N/A')}</p>
+        <p><strong>Method:</strong> {data.get('method', 'N/A')}</p>
+        <p><strong>Details (UPI/Email):</strong> {data.get('details', 'N/A')}</p>
+        <br/>
+        <p><i>Please process this manually via your bank or PayPal and update the user if needed.</i></p>
+        """
+        return NotificationService._send_email(subject, html)

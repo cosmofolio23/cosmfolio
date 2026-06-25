@@ -172,6 +172,12 @@ export default function Dashboard() {
           >
             📚 My Portfolios →
           </Link>
+          <Link
+            href="/dashboard/ambassador"
+            className="inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-6 py-4 text-emerald-600 dark:text-emerald-400 hover:shadow-lg hover:bg-emerald-500/20 transition font-semibold text-sm"
+          >
+            💸 Earn Money →
+          </Link>
           {isAdmin ? (
             <Link
               href="/dashboard/sheets"

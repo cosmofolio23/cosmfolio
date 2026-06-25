@@ -20,6 +20,7 @@ razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 class CheckoutRequest(BaseModel):
     product_type: str  # "pro_upgrade" or "boost_pack"
     currency: str      # "INR" or "USD"
+    referral_code: str = None
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
@@ -56,6 +57,16 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
             raise HTTPException(status_code=403, detail="Boost Packs are only available for Pro members.")
 
     amount = PRICING[req.product_type][req.currency]
+    
+    ambassador_id = None
+    if req.referral_code and req.product_type == "pro_upgrade":
+        res = database.supabase.table("ambassadors").select("*").eq("referral_code", req.referral_code.upper()).execute()
+        if res.data:
+            ambassador = res.data[0]
+            if ambassador["user_id"] != user_id:
+                ambassador_id = ambassador["user_id"]
+                discount_amount = int(amount * (ambassador["discount_percentage"] / 100))
+                amount = amount - discount_amount
 
     # Create order in Razorpay
     data = {
@@ -64,7 +75,8 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
         "receipt": f"receipt_{user_id[:8]}_{req.product_type}",
         "notes": {
             "user_id": user_id,
-            "product_type": req.product_type
+            "product_type": req.product_type,
+            "referral_code": req.referral_code.upper() if ambassador_id else ""
         }
     }
     
@@ -143,7 +155,80 @@ async def razorpay_webhook(request: Request):
             current_boosts = user_data.data[0].get("boost_pack_count", 0) if user_data.data else 0
             database.supabase.table("users").update({"boost_pack_count": current_boosts + 1}).eq("id", user_id).execute()
             
+        process_ambassador_reward(user_id, product_type, payment.get("amount", 0), order_id, payment_id)
+            
     return {"status": "ok"}
+
+def process_ambassador_reward(user_id: str, product_type: str, amount_paid: float, gateway_order_id: str, payment_id: str):
+    if product_type != "pro_upgrade":
+        return
+        
+    try:
+        # Check if transaction has referral code in notes
+        order = razorpay_client.order.fetch(gateway_order_id)
+        referral_code = order.get("notes", {}).get("referral_code")
+        if not referral_code:
+            return
+            
+        res = database.supabase.table("ambassadors").select("*").eq("referral_code", referral_code).execute()
+        if not res.data:
+            return
+            
+        ambassador = res.data[0]
+        ambassador_id = ambassador["user_id"]
+        
+        # Don't reward if it's the same user
+        if ambassador_id == user_id:
+            return
+            
+        commission_pct = ambassador["commission_percentage"]
+        commission_amount = (amount_paid / 100) * (commission_pct / 100.0) # Razorpay amount is in paise
+        discount_given = (PRICING["pro_upgrade"]["INR"] / 100) - (amount_paid / 100)
+        
+        # Insert referral transaction
+        database.supabase.table("referral_transactions").insert({
+            "ambassador_id": ambassador_id,
+            "customer_id": user_id,
+            "payment_id": payment_id,
+            "sale_amount": amount_paid / 100,
+            "discount_given": discount_given,
+            "commission_amount": commission_amount,
+            "status": "pending"
+        }).execute()
+        
+        # Update successful sales and pending balance
+        new_sales = ambassador["successful_sales"] + 1
+        new_pending = ambassador["pending_balance"] + commission_amount
+        
+        # Check tier upgrade
+        new_tier = ambassador["tier"]
+        new_discount = ambassador["discount_percentage"]
+        new_commission = ambassador["commission_percentage"]
+        
+        if new_sales >= 101 and new_tier != "creator":
+            new_tier = "creator"
+            new_discount = 25
+            new_commission = 30
+            NotificationService.sendAmbassadorUpgraded(ambassador_id, new_tier)
+        elif new_sales >= 21 and new_tier == "starter":
+            new_tier = "campus"
+            new_discount = 20
+            new_commission = 20
+            NotificationService.sendAmbassadorUpgraded(ambassador_id, new_tier)
+            
+        database.supabase.table("ambassadors").update({
+            "successful_sales": new_sales,
+            "pending_balance": new_pending,
+            "tier": new_tier,
+            "discount_percentage": new_discount,
+            "commission_percentage": new_commission
+        }).eq("user_id", ambassador_id).execute()
+        
+        # Notify
+        NotificationService.sendAmbassadorSale(ambassador_id, commission_amount)
+        
+    except Exception as e:
+        print(f"Ambassador reward failed: {e}")
 
 @router.post("/verify-payment")
 async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends(get_current_user)):
@@ -163,12 +248,15 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "reason": "Invalid signature",
             "gateway_response": "SignatureVerificationError"
         })
-        with engine.begin() as conn:
-            conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": current_user.get("user_id"), "e": "payment_failed"})
+        try:
+            with engine.begin() as conn:
+                conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": current_user.get("user_id"), "e": "payment_failed"})
+        except:
+            pass
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     # If verification is successful, we should find the transaction, mark it as paid, and grant entitlements.
-    tx_res = supabase.table("transactions").select("*").eq("gateway_order_id", req.razorpay_order_id).execute()
+    tx_res = database.supabase.table("transactions").select("*").eq("gateway_order_id", req.razorpay_order_id).execute()
     if not tx_res.data:
         raise HTTPException(status_code=400, detail="Transaction not found")
         
@@ -177,7 +265,7 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
         return {"success": True, "message": "Already verified"}
 
     # Update transaction
-    supabase.table("transactions").update({
+    database.supabase.table("transactions").update({
         "status": "paid",
         "gateway_payment_id": req.razorpay_payment_id
     }).eq("gateway_order_id", req.razorpay_order_id).execute()
@@ -187,7 +275,7 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
 
     if product_type == "pro_upgrade":
         from datetime import datetime
-        supabase.table("users").update({
+        database.supabase.table("users").update({
             "plan_type": "pro",
             "is_pro": True,
             "payment_status": "paid",
@@ -197,16 +285,19 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "currency": tx.get("currency", "INR")
         }).eq("id", user_id).execute()
     elif product_type == "boost_pack":
-        u_res = supabase.table("users").select("boost_pack_count").eq("id", user_id).execute()
+        u_res = database.supabase.table("users").select("boost_pack_count").eq("id", user_id).execute()
         current_count = 0
         if u_res.data:
             current_count = u_res.data[0].get("boost_pack_count") or 0
-        supabase.table("users").update({"boost_pack_count": current_count + 1}).eq("id", user_id).execute()
+        database.supabase.table("users").update({"boost_pack_count": current_count + 1}).eq("id", user_id).execute()
 
     user_email = current_user.get("email", "Unknown")
     
-    with engine.begin() as conn:
-        conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": user_id, "e": "payment_success"})
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": user_id, "e": "payment_success"})
+    except:
+        pass
 
     if product_type == "pro_upgrade":
         NotificationService.sendPaymentAlert({
@@ -219,6 +310,12 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "provider": "Razorpay",
             "payment_id": req.razorpay_payment_id
         })
+        
+    # Process Ambassador Reward
+    process_ambassador_reward(user_id, product_type, tx["amount"], req.razorpay_order_id, req.razorpay_payment_id)
+
+    return {"success": True, "message": "Payment verified and entitlements granted"}
+
     elif product_type == "boost_pack":
         NotificationService.sendBoostPackAlert({
             "name": "User",
