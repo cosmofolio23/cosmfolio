@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
-import DesktopOnlyLock from '@/components/DesktopOnlyLock'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
 import {
   seedPagesFromTemplate, LAYOUT_CATALOG, LAYOUT_CATEGORIES, getSpec,
@@ -83,6 +82,7 @@ export default function PortfolioEditorPage() {
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
   const [layoutSearch, setLayoutSearch] = useState('')
   const [savedNote, setSavedNote] = useState('')
+  const [mobileTab, setMobileTab] = useState<'pages' | 'canvas' | 'design'>('canvas')
   const [mode, setMode] = useState<'view' | 'edit'>('view')   // spec: show output first, edit on click
   const [analyzing, setAnalyzing] = useState('')              // on-device AI vision status
   const [publishingTab, setPublishingTab] = useState<'style' | 'publishing'>('style')
@@ -409,7 +409,6 @@ export default function PortfolioEditorPage() {
   if (mode === 'view') {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
-        <DesktopOnlyLock />
         <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
           <div className="px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -429,7 +428,7 @@ export default function PortfolioEditorPage() {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-300/40">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-300/40">
           <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
             {pages.map((page) => (
               <div key={page.id}>
@@ -444,8 +443,7 @@ export default function PortfolioEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <DesktopOnlyLock />
+    <div className="min-h-screen bg-gray-100 flex flex-col pb-16 md:pb-0">
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="px-4 py-2.5 flex items-center justify-between">
@@ -466,9 +464,9 @@ export default function PortfolioEditorPage() {
         </div>
       </header>
 
-      <div className={`flex flex-1 min-h-0 ${isMobile ? 'flex-col' : ''}`}>
+      <div className="flex flex-1 min-h-0 relative">
         {/* Left: page list */}
-        <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-52 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
+        <aside className={`${isMobile ? (mobileTab === 'pages' ? 'absolute inset-0 z-20 w-full bg-white pb-16' : 'hidden') : 'w-52 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
           <div className="p-3">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
             <div className={`${isMobile ? 'flex gap-2' : 'space-y-1.5'}`}>
@@ -479,29 +477,25 @@ export default function PortfolioEditorPage() {
                     <div className="text-[10px] text-gray-400 uppercase">{page.type}</div>
                     <div className="text-xs font-medium truncate">{idx + 1}. {getSpec(page.layoutId).name}</div>
                   </button>
-                  {!isMobile && (
-                    <div className="flex gap-0.5 px-1.5 pb-1.5 opacity-0 group-hover:opacity-100 transition">
-                      <button onClick={() => movePage(idx, -1)} disabled={idx === 0} title="Move up" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▲</button>
-                      <button onClick={() => movePage(idx, 1)} disabled={idx === pages.length - 1} title="Move down" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▼</button>
-                      <button onClick={() => deletePage(idx)} disabled={pages.length <= 1} title="Delete" className="text-[11px] px-1.5 py-0.5 bg-white rounded border text-red-500 disabled:opacity-30 hover:bg-red-50 ml-auto">✕</button>
-                    </div>
-                  )}
+                  <div className={`flex gap-0.5 px-1.5 pb-1.5 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition`}>
+                    <button onClick={() => movePage(idx, -1)} disabled={idx === 0} title="Move up" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▲</button>
+                    <button onClick={() => movePage(idx, 1)} disabled={idx === pages.length - 1} title="Move down" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▼</button>
+                    <button onClick={() => deletePage(idx)} disabled={pages.length <= 1} title="Delete" className="text-[11px] px-1.5 py-0.5 bg-white rounded border text-red-500 disabled:opacity-30 hover:bg-red-50 ml-auto">✕</button>
+                  </div>
                 </div>
               ))}
             </div>
-            {!isMobile && (
-              <div className="mt-2 flex gap-1.5">
-                <button onClick={addPage} className="flex-1 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Page</button>
-                <button onClick={addResumePage} className="flex-1 py-2 text-xs font-medium text-[#9C7416] border-2 border-dashed border-[#D4AF37]/40 rounded-lg hover:bg-[#FBE7A1]/30">+ Resume</button>
-              </div>
-            )}
+            <div className="mt-2 flex gap-1.5">
+              <button onClick={addPage} className="flex-1 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Page</button>
+              <button onClick={addResumePage} className="flex-1 py-2 text-xs font-medium text-[#9C7416] border-2 border-dashed border-[#D4AF37]/40 rounded-lg hover:bg-[#FBE7A1]/30">+ Resume</button>
+            </div>
           </div>
         </aside>
 
         {/* Center: parametric canvas */}
-        <main className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-8'} bg-gray-300/40`}>
+        <main className={`${isMobile ? (mobileTab === 'canvas' ? 'block absolute inset-0 z-10 w-full' : 'hidden') : 'flex-1'} overflow-y-auto bg-gray-300/40 p-2 md:p-8 flex justify-center`}>
           {currentPage && (
-            <div className="max-w-[680px] mx-auto">
+            <div className="w-full max-w-[680px]">
               <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
               <div className="mt-3 text-center text-[11px] text-gray-400">
                 {currentPage.type} · {getSpec(currentPage.layoutId).name}
@@ -511,7 +505,7 @@ export default function PortfolioEditorPage() {
         </main>
 
         {/* Right: layout catalog picker */}
-        <aside className={`${isMobile ? 'w-full border-t' : 'w-80 border-l'} bg-white overflow-y-auto flex-shrink-0`}>
+        <aside className={`${isMobile ? (mobileTab === 'design' ? 'absolute inset-0 z-20 w-full bg-white pb-16' : 'hidden') : 'w-80 border-l'} bg-white overflow-y-auto flex-shrink-0`}>
           {/* Style DNA presets */}
           <div className="p-3 border-b">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Style</h3>
@@ -610,6 +604,33 @@ export default function PortfolioEditorPage() {
           </div>
         </aside>
       </div>
+
+      {/* Mobile Bottom Tab Bar */}
+      {isMobile && (
+        <div className="fixed bottom-0 inset-x-0 h-16 bg-white border-t flex z-50 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
+          <button 
+            onClick={() => setMobileTab('pages')} 
+            className={`flex-1 flex flex-col items-center justify-center gap-1 ${mobileTab === 'pages' ? 'text-blue-600 font-bold' : 'text-gray-500'}`}
+          >
+            <span className="text-xl leading-none">📄</span>
+            <span className="text-[10px]">Pages</span>
+          </button>
+          <button 
+            onClick={() => setMobileTab('canvas')} 
+            className={`flex-1 flex flex-col items-center justify-center gap-1 ${mobileTab === 'canvas' ? 'text-blue-600 font-bold' : 'text-gray-500'}`}
+          >
+            <span className="text-xl leading-none">🏗️</span>
+            <span className="text-[10px]">Canvas</span>
+          </button>
+          <button 
+            onClick={() => setMobileTab('design')} 
+            className={`flex-1 flex flex-col items-center justify-center gap-1 ${mobileTab === 'design' ? 'text-blue-600 font-bold' : 'text-gray-500'}`}
+          >
+            <span className="text-xl leading-none">🎨</span>
+            <span className="text-[10px]">Design</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }
