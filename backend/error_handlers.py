@@ -246,6 +246,20 @@ def setup_error_handlers(app: FastAPI):
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
         logger.error(f"Unhandled exception: {str(exc)}", exc_info=exc)
+        
+        # Send Admin Alert
+        try:
+            import traceback
+            from services.notification import NotificationService
+            NotificationService.sendErrorAlert({
+                "page": str(request.url),
+                "action": request.method,
+                "message": str(exc),
+                "stack_trace": traceback.format_exc(),
+            })
+        except Exception as e:
+            logger.error(f"Failed to send error alert: {e}")
+
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=APIError(

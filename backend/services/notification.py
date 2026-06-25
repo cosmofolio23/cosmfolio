@@ -4,9 +4,17 @@ import json
 import urllib.request
 from datetime import datetime
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 # Configure in .env
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "thecosmofolio@gmail.com")
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "thecosmofolio@gmail.com")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "thecosmofolio@gmail.com")
 
 class NotificationService:
     @staticmethod
@@ -18,14 +26,14 @@ class NotificationService:
 
     @staticmethod
     def _do_send_email(subject: str, html_content: str):
-        if not RESEND_API_KEY:
+        if not SMTP_PASSWORD:
             print(f"[MOCK EMAIL] Subject: {subject}\n{html_content}")
             try:
                 from database import supabase
                 supabase.table("error_logs").insert({
                     "user_id": "system",
                     "error_type": "EMAIL_CONFIG_MISSING",
-                    "error_message": "Missing RESEND_API_KEY",
+                    "error_message": "Missing SMTP_PASSWORD",
                     "stack_trace": "NotificationService._send_email",
                     "page_url": "backend"
                 }).execute()
@@ -34,23 +42,20 @@ class NotificationService:
             return False
 
         try:
-            url = "https://api.resend.com/emails"
-            payload = {
-                "from": "CosmoFolio Alerts <onboarding@resend.dev>",
-                "to": ADMIN_EMAIL,
-                "subject": subject,
-                "html": html_content
-            }
-            data = json.dumps(payload).encode("utf-8")
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = f"CosmoFolio Alerts <{SMTP_FROM_EMAIL}>"
+            msg["To"] = ADMIN_EMAIL
             
-            req = urllib.request.Request(url, data=data, method="POST")
-            req.add_header("Authorization", f"Bearer {RESEND_API_KEY}")
-            req.add_header("Content-Type", "application/json")
-            req.add_header("User-Agent", "CosmoFolio/1.0 (Python)")
+            # Attach HTML content
+            part = MIMEText(html_content, "html")
+            msg.attach(part)
             
-            with urllib.request.urlopen(req, timeout=15) as response:
-                if response.status >= 400:
-                    raise Exception(f"Resend API Error: {response.read().decode('utf-8')}")
+            # Connect to SMTP server and send
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.send_message(msg)
             
             return True
         except Exception as e:
