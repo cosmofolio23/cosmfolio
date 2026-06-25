@@ -314,10 +314,11 @@ export default function AdminDashboard() {
             <div className="w-8 h-8 rounded-full border-2 border-accent-gold border-t-transparent animate-spin"></div>
             <p className="text-sm text-text-secondary dark:text-dark-text-secondary">Retrieving platform data...</p>
           </div>
-        ) : activeTab === 'monitoring' && monitoringStats ? (
+        ) : activeTab === 'monitoring' ? (
           <div className="space-y-8">
             <h2 className="text-xl font-bold mb-4">Founder Monitoring Overview</h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            {monitoringStats ? (
+              <div className="grid md:grid-cols-3 gap-6">
               <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-blue-500/10">
                 <div>
                   <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Signups</h3>
@@ -350,13 +351,16 @@ export default function AdminDashboard() {
               </div>
             </div>
             
-            <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
+             <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
                <h3 className="text-lg font-bold mb-2">Note to Founder</h3>
                <p className="text-sm text-text-secondary dark:text-dark-text-secondary">
                  Detailed activity logs and error tracking are actively captured by the system.
                  Check your configured email ({`thecosmofolio@gmail.com`}) for instant alerts on signups, payments, failures, and critical app errors.
                </p>
             </div>
+            ) : (
+              <div className="text-gray-400 py-10 text-center">No monitoring stats available at this time.</div>
+            )}
           </div>
         ) : activeTab === 'users' ? (
           <>
