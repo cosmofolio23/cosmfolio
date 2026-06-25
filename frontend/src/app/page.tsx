@@ -85,15 +85,15 @@ export default function Home() {
         <div className="absolute top-40 -left-20 w-80 h-80 bg-accent-gold/20 dark:bg-accent-primary/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
         <div className="absolute -bottom-40 right-20 w-96 h-96 bg-color-info/10 dark:bg-color-info/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '4s' }}></div>
 
-        <div className="container-centered relative z-10 pt-32 pb-24">
+        <div className="container-centered relative z-10 pt-20 sm:pt-24 md:pt-32 pb-16 md:pb-24">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-gold/20 text-accent-gold text-xs font-bold mb-6 uppercase tracking-wider backdrop-blur-sm border border-accent-gold/30 animate-pulse">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-gold/20 text-accent-gold text-[10px] sm:text-xs font-bold mb-6 uppercase tracking-wider backdrop-blur-sm border border-accent-gold/30 animate-pulse">
               ✨ Architecture Portfolio Tool — Now Live
             </div>
-            <h1 className="text-white text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
               Build Your Architecture Portfolio in Minutes, Not Nights.
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-blue-100 mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed px-2">
               Create professional architecture portfolios with intelligent templates, sophisticated design systems, and custom layouts. Built specifically for architects.
             </p>
             {/* CTA Buttons */}
@@ -131,14 +131,14 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 md:py-28 bg-bg-subtle">
+      <section className="py-16 md:py-28 bg-bg-subtle">
         <div className="container-centered">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-slate">Why Architects Choose CosmoFolio</h2>
-            <p className="text-lg text-stone-light max-w-2xl mx-auto">Everything you need to create stunning architecture portfolios that showcase your best work</p>
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-slate px-2">Why Architects Choose CosmoFolio</h2>
+            <p className="text-base md:text-lg text-stone-light max-w-2xl mx-auto px-4">Everything you need to create stunning architecture portfolios that showcase your best work</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 icon: 'layouts',
@@ -314,15 +314,15 @@ export default function Home() {
       </section>
 
       {/* Before / After Cosmo Section */}
-      <section className="py-20 md:py-28 bg-gray-50 dark:bg-dark-bg-primary relative overflow-hidden">
+      <section className="py-16 md:py-28 bg-gray-50 dark:bg-dark-bg-primary relative overflow-hidden">
         <div className="container-centered relative z-10">
-          <div className="text-center mb-16">
-            <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Comparison</span>
-            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">Ditch the Layout Struggle</h2>
-            <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto">Why spend late nights fighting with Photoshop or InDesign when you can design with structure?</p>
+          <div className="text-center mb-12 md:mb-16">
+            <span className="text-[10px] md:text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Comparison</span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary px-2">Ditch the Layout Struggle</h2>
+            <p className="text-base md:text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto px-4">Why spend late nights fighting with Photoshop or InDesign when you can design with structure?</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto text-left">
             {/* Before Column */}
             <div className="glass-card rounded-3xl p-8 border border-red-500/10 shadow-lg relative overflow-hidden bg-red-500/5">
               <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">Before Cosmo</div>
