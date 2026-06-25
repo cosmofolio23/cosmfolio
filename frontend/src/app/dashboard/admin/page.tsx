@@ -318,46 +318,48 @@ export default function AdminDashboard() {
           <div className="space-y-8">
             <h2 className="text-xl font-bold mb-4">Founder Monitoring Overview</h2>
             {monitoringStats ? (
-              <div className="grid md:grid-cols-3 gap-6">
-              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-blue-500/10">
-                <div>
-                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Signups</h3>
-                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.today_signups}</div>
+              <>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-blue-500/10">
+                    <div>
+                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Signups</h3>
+                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.today_signups}</div>
+                    </div>
+                  </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-emerald-500/10">
+                    <div>
+                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Active Users (7 Days)</h3>
+                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.active_users}</div>
+                    </div>
+                  </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-red-500/10">
+                    <div>
+                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Unresolved Errors</h3>
+                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.error_count}</div>
+                    </div>
+                  </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
+                    <div>
+                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Portfolios</h3>
+                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.portfolios_count}</div>
+                    </div>
+                  </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
+                    <div>
+                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Successful Exports</h3>
+                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.exports}</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-emerald-500/10">
-                <div>
-                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Active Users (7 Days)</h3>
-                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.active_users}</div>
+                
+                <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
+                  <h3 className="text-lg font-bold mb-2">Note to Founder</h3>
+                  <p className="text-sm text-text-secondary dark:text-dark-text-secondary">
+                    Detailed activity logs and error tracking are actively captured by the system.
+                    Check your configured email ({`thecosmofolio@gmail.com`}) for instant alerts on signups, payments, failures, and critical app errors.
+                  </p>
                 </div>
-              </div>
-              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-red-500/10">
-                <div>
-                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Unresolved Errors</h3>
-                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.error_count}</div>
-                </div>
-              </div>
-              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
-                <div>
-                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Portfolios</h3>
-                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.portfolios_count}</div>
-                </div>
-              </div>
-              <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
-                <div>
-                  <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Successful Exports</h3>
-                  <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.exports}</div>
-                </div>
-              </div>
-            </div>
-            
-             <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
-               <h3 className="text-lg font-bold mb-2">Note to Founder</h3>
-               <p className="text-sm text-text-secondary dark:text-dark-text-secondary">
-                 Detailed activity logs and error tracking are actively captured by the system.
-                 Check your configured email ({`thecosmofolio@gmail.com`}) for instant alerts on signups, payments, failures, and critical app errors.
-               </p>
-            </div>
+              </>
             ) : (
               <div className="text-gray-400 py-10 text-center">No monitoring stats available at this time.</div>
             )}
