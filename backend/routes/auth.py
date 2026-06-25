@@ -644,30 +644,7 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-class ProfileUpdateRequest(BaseModel):
-    name: str | None = None
-    college_name: str | None = None
-    state: str | None = None
-    year_of_passing: str | None = None
-    stream: str | None = None
 
-@router.put("/profile")
-async def update_profile(req: ProfileUpdateRequest, current_user: dict = Depends(get_current_user_from_deps)):
-    """Update user profile in public.users"""
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        
-    user_id = current_user.get("user_id")
-    if not database.supabase:
-        raise HTTPException(status_code=503, detail="Database unavailable")
-    user_id = current_user.get("user_id") or current_user.get("id")
-    update_data = {"updated_at": datetime.utcnow().isoformat()}
-    if body.college_name is not None: update_data["college_name"] = body.college_name
-    if body.state is not None:        update_data["state"] = body.state
-    if body.year_of_passing is not None: update_data["year_of_passing"] = body.year_of_passing
-    if body.stream is not None:       update_data["stream"] = body.stream
-    database.supabase.table("users").update(update_data).eq("id", user_id).execute()
-    return {"success": True}
 
 @router.get("/me")
 async def get_current_user(authorization: str = Header(None)):
