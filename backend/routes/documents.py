@@ -104,8 +104,9 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
         if user_resp.data and not is_bypass:
             user_data = user_resp.data[0]
             export_count = user_data.get("export_count") or 0
-            if export_count >= 2:
-                raise HTTPException(status_code=403, detail="FREE_TIER_LIMIT_REACHED")
+            is_pro = user_data.get("is_pro") or user_data.get("plan_type") == "pro"
+            if not is_pro and export_count >= 2:
+                raise HTTPException(status_code=403, detail="UPGRADE_REQUIRED_EXPORTS")
 
         # Simple HTML-to-PDF rendering (basic)
         # In production, use WeasyPrint or similar

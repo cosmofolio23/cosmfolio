@@ -10,6 +10,8 @@ import LibraryBrowser, { type LibraryView } from '@/components/templates/Library
 import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
 import SetupModal from '@/components/composer/SetupModal'
 import { auth } from '@/lib/firebase'
+import { SetupWizardModal } from '@/components/modals/SetupWizardModal'
+import UpgradeModal from '@/components/modals/UpgradeModal'
 import { apiClient } from '@/lib/api'
 
 type LibTab = 'portfolios' | LibraryView | 'mytemplates'
@@ -28,9 +30,9 @@ const DEMO_TEMPLATES: Template[] = [
   { id: 'demo-editorial-1', name: 'Architectural Journal', description: 'Editorial serif layout inspired by architectural publications. Ideal for thesis and research-heavy portfolios.', category: 'editorial', colors: { primary: '#1F2937', secondary: '#6B7280', accent: '#A16207', background: '#FAF8F3' }, fonts: { heading: 'Playfair Display', body: 'Source Sans Pro' }, page_count_range: '24-40', style_notes: 'Editorial serif typography, warm paper background, structured grid.', source: 'downloaded' },
   { id: 'demo-competition-1', name: 'Competition Board', description: 'Bold, high-contrast graphics for competition submissions and urban-scale projects. Maximum visual impact.', category: 'competition', colors: { primary: '#1A1A1A', secondary: '#111111', accent: '#E11D48', background: '#FFFFFF' }, fonts: { heading: 'Oswald', body: 'Roboto' }, page_count_range: '16-24', style_notes: 'High contrast, bold typography, architectural red accent.', source: 'downloaded' },
   { id: 'demo-technical-1', name: 'Technical Drawing Set', description: 'Grid-based precision layout for technical projects, infrastructure, and engineering-focused portfolios.', category: 'technical', colors: { primary: '#1E3A8A', secondary: '#3B82F6', accent: '#2563EB', background: '#FFFFFF' }, fonts: { heading: 'Montserrat', body: 'Roboto' }, page_count_range: '24-40', style_notes: 'Blueprint-inspired palette, clean technical grids, engineering precision.', source: 'downloaded' },
-  { id: 'demo-luxury-1', name: 'Dark Studio', description: 'Moody dark background with gold accents. Designed for luxury residential, hospitality, and high-end commercial work.', category: 'luxury', colors: { primary: '#FFFFFF', secondary: '#D4AF37', accent: '#D4AF37', background: '#0E0E10' }, fonts: { heading: 'Oswald', body: 'Inter' }, page_count_range: '20-30', style_notes: 'Premium dark mode with gold accents, sophisticated and moody.', source: 'downloaded' },
+  { id: 'demo-luxury-1', name: 'Dark Studio', description: 'Moody dark background with gold accents. Designed for luxury residential, hospitality, and high-end commercial work.', category: 'luxury', colors: { primary: '#FFFFFF', secondary: '#D4AF37', accent: '#D4AF37', background: '#0E0E10' }, fonts: { heading: 'Oswald', body: 'Inter' }, page_count_range: '20-30', style_notes: 'Premium dark mode with gold accents, sophisticated and moody.', source: 'downloaded', is_premium: true },
   { id: 'demo-student-1', name: 'Graduate Portfolio', description: 'Fresh, dynamic layout for undergraduate and graduate applications. Balanced mix of drawings and photography.', category: 'student', colors: { primary: '#111827', secondary: '#6B7280', accent: '#7C3AED', background: '#FFFFFF' }, fonts: { heading: 'Poppins', body: 'Inter' }, page_count_range: '16-24', style_notes: 'Contemporary purple accent, clear hierarchy, application-ready format.', source: 'downloaded' },
-  { id: 'demo-parametric-1', name: 'Parametric Vision', description: 'Tech-forward dark layout for computational, parametric, and digital fabrication portfolios.', category: 'competition', colors: { primary: '#7DD3FC', secondary: '#38BDF8', accent: '#38BDF8', background: '#0B1020' }, fonts: { heading: 'Montserrat', body: 'Inter' }, page_count_range: '20-30', style_notes: 'Dark parametric palette, luminous cyan accents, tech-forward geometry.', source: 'downloaded' },
+  { id: 'demo-parametric-1', name: 'Parametric Vision', description: 'Tech-forward dark layout for computational, parametric, and digital fabrication portfolios.', category: 'competition', colors: { primary: '#7DD3FC', secondary: '#38BDF8', accent: '#38BDF8', background: '#0B1020' }, fonts: { heading: 'Montserrat', body: 'Inter' }, page_count_range: '20-30', style_notes: 'Dark parametric palette, luminous cyan accents, tech-forward geometry.', source: 'downloaded', is_premium: true },
   { id: 'demo-thesis-1', name: 'Thesis Edition', description: 'Academic, sequential, serif-forward layout for thesis and dissertation portfolios with extended text.', category: 'student', colors: { primary: '#3F3F46', secondary: '#71717A', accent: '#7C2D12', background: '#FCFCFA' }, fonts: { heading: 'Cormorant Garamond', body: 'Georgia' }, page_count_range: '32-48', style_notes: 'Serif typeset, academic red accent, structured for long-form writing.', source: 'downloaded' },
 ]
 
@@ -47,6 +49,7 @@ interface Template {
   source?: string
   layouts?: any
   placeholders?: any
+  is_premium?: boolean
 }
 
 interface TemplateListResponse {
@@ -107,6 +110,7 @@ export default function TemplateMarketplace() {
   // Setup Flow wizard states
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(true)
   const [setupSettings, setSetupSettings] = useState<any>(null)
+  const [upgradeModal, setUpgradeModal] = useState<{isOpen: boolean, title?: string, subtitle?: string}>({ isOpen: false })
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -220,6 +224,15 @@ export default function TemplateMarketplace() {
   }, [searchQuery, selectedCategories, pageCountRange, sourceFilter, templates, isAdmin])
 
   const handleUseTemplate = async (template: Template) => {
+    if (template.is_premium && !isPro) {
+      setUpgradeModal({
+        isOpen: true,
+        title: "Premium portfolio style",
+        subtitle: "Used by professional designers. Unlock this and more with CosmoFolio Pro."
+      })
+      return
+    }
+    
     try {
       // Get a guaranteed-fresh token. On a freshly loaded page the Firebase SDK may
       // not have rehydrated the session yet (auth.currentUser null) while the stored
@@ -614,8 +627,13 @@ export default function TemplateMarketplace() {
               {/* Content */}
               <div className="p-6 flex-1 flex flex-col">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-h4 text-text-primary dark:text-dark-text-primary font-semibold flex-1">
+                  <h3 className="text-h4 text-text-primary dark:text-dark-text-primary font-semibold flex-1 flex items-center gap-2">
                     {template.name}
+                    {template.is_premium && (
+                      <span className="bg-accent-gold/10 text-accent-gold text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
+                        ⭐ Pro
+                      </span>
+                    )}
                   </h3>
                   <button
                     onClick={() => toggleFavorite(template.id)}
@@ -986,6 +1004,13 @@ export default function TemplateMarketplace() {
           setSetupSettings(settings)
           setIsSetupModalOpen(false)
         }}
+      />
+      
+      <UpgradeModal 
+        isOpen={upgradeModal.isOpen} 
+        onClose={() => setUpgradeModal({ isOpen: false })}
+        title={upgradeModal.title}
+        subtitle={upgradeModal.subtitle}
       />
     </div>
   )

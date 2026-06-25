@@ -23,7 +23,7 @@ interface Project {
 
 export default function MyPortfoliosPage() {
   const router = useRouter()
-  const { isAuthenticated, token } = useAuthStore()
+  const { isAuthenticated, token, user } = useAuthStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showNewModal, setShowNewModal] = useState(false)
@@ -162,7 +162,14 @@ export default function MyPortfoliosPage() {
               <div className="h-8 w-px bg-gray-200" />
               <Logo size="md" variant="gold" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Portfolios</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl font-bold text-gray-900">My Portfolios</h1>
+                  {(user?.is_pro || user?.plan_type === 'pro') && (
+                    <span className="bg-accent-gold/20 text-accent-gold text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider border border-accent-gold/30">
+                      ⭐ PRO MEMBER
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-600 mt-1">Create, edit, and share your portfolios</p>
               </div>
             </div>

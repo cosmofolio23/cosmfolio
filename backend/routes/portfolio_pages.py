@@ -43,6 +43,22 @@ async def create_portfolio_page(
                 detail="Access denied"
             )
 
+        # CHECK LIMITS
+        user_res = supabase.table("users").select("plan_type", "is_pro").eq("id", current_user["user_id"]).execute()
+        plan_type = "free"
+        if user_res.data:
+            plan_type = user_res.data[0].get("plan_type", "free")
+            if user_res.data[0].get("is_pro"):
+                plan_type = "pro"
+
+        if plan_type != "pro":
+            pages_res = supabase.table("portfolio_pages").select("id").eq("portfolio_id", portfolio_id).execute()
+            if len(pages_res.data) >= 6:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="UPGRADE_REQUIRED_PAGES"
+                )
+
         # Verify layout exists
         layout = supabase.table("layout_templates").select("*").eq("id", req.layout_id).execute()
 

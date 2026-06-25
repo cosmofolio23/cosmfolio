@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
+import UpgradeModal from '@/components/modals/UpgradeModal'
 import Logo from '@/components/Logo'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
 import {
@@ -70,7 +71,8 @@ function fillImages(pages: Page[], assetsByCat: Record<string, any[]>): Page[] {
 export default function PortfolioEditorPage() {
   const params = useParams()
   const router = useRouter()
-  const { token, isAuthenticated } = useAuthStore()
+  const { token, isAuthenticated, user } = useAuthStore()
+  const isPro = user?.is_pro || user?.plan_type === 'pro'
 
   const [portfolio, setPortfolio] = useState<any>(null)
   const [pages, setPages] = useState<Page[]>([])
@@ -78,6 +80,7 @@ export default function PortfolioEditorPage() {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [upgradeModal, setUpgradeModal] = useState<{isOpen: boolean, title?: string, subtitle?: string}>({ isOpen: false })
   const [isMobile, setIsMobile] = useState(false)
   const [layoutCat, setLayoutCat] = useState<'All' | LayoutCategory>('All')
   const [layoutSearch, setLayoutSearch] = useState('')
@@ -319,6 +322,14 @@ export default function PortfolioEditorPage() {
 
   // ---- page management ----
   const addPage = () => {
+    if (!isPro && pages.length >= 6) {
+      setUpgradeModal({
+        isOpen: true,
+        title: "You've built a complete portfolio 🎉",
+        subtitle: "Need more space? Upgrade to Pro to create up to 30 pages!"
+      })
+      return
+    }
     const newPage: Page = {
       id: `project-${Date.now()}`, type: 'project', layoutId: 'duoV.titleTopText',
       blocks: [{ ...createBlock('title'), text: 'New Project' }, createBlock('meta'), createBlock('description'), { ...createBlock('render'), label: 'Render' }],
@@ -327,6 +338,14 @@ export default function PortfolioEditorPage() {
     setPages(next); setCurrentIdx(next.length - 1); queueSave(next, tokens)
   }
   const addResumePage = () => {
+    if (!isPro && pages.length >= 6) {
+      setUpgradeModal({
+        isOpen: true,
+        title: "You've built a complete portfolio 🎉",
+        subtitle: "Need more space? Upgrade to Pro to create up to 30 pages!"
+      })
+      return
+    }
     const newPage: Page = {
       id: `resume-${Date.now()}`, type: 'resume', layoutId: 'resume.classic',
       blocks: [
@@ -362,7 +381,22 @@ export default function PortfolioEditorPage() {
     setSavedNote('Exporting…')
     try {
       const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/export/pdf`, { headers: { Authorization: `Bearer ${authToken()}` } })
-      if (!res.ok) { setSavedNote(''); alert('Export failed'); return }
+      if (!res.ok) { 
+        setSavedNote('')
+        try {
+          const errData = await res.json()
+          if (errData?.detail === 'UPGRADE_REQUIRED_EXPORTS' || res.status === 403) {
+            setUpgradeModal({
+              isOpen: true,
+              title: "Your portfolio is ready 🚀",
+              subtitle: "You've used your free exports. Upgrade to Pro for unlimited exports and premium layouts."
+            })
+            return
+          }
+        } catch(e){}
+        alert('Export failed')
+        return 
+      }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href = url; a.download = `${(portfolio?.name || 'portfolio').replace(/\s+/g, '_')}.pdf`; a.click()
@@ -631,6 +665,13 @@ export default function PortfolioEditorPage() {
           </button>
         </div>
       )}
+
+      <UpgradeModal 
+        isOpen={upgradeModal.isOpen} 
+        onClose={() => setUpgradeModal({ isOpen: false })}
+        title={upgradeModal.title}
+        subtitle={upgradeModal.subtitle}
+      />
     </div>
   )
 }

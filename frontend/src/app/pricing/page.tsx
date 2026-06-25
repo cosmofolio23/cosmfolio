@@ -8,6 +8,7 @@ import Footer from '@/components/Footer'
 import { useAuthStore } from '@/store/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trackEvent, trackError } from '@/lib/tracking'
+import PaymentStatusModal from '@/components/modals/PaymentStatusModal'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-razorpay requires browser globals — must not run during SSG
@@ -70,6 +71,7 @@ function PricingPageInner() {
   const [promoMessage, setPromoMessage] = useState('')
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [userPlan, setUserPlan] = useState('free')
+  const [paymentStatus, setPaymentStatus] = useState<{isOpen: boolean, status: 'success'|'error'|null, message: string}>({isOpen: false, status: null, message: ''})
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -204,13 +206,21 @@ function PricingPageInner() {
               throw new Error(error.detail || "Payment verification failed")
             }
             
-            alert("Payment successful! Your account has been upgraded.")
+            setPaymentStatus({
+              isOpen: true,
+              status: 'success',
+              message: 'Your account has been upgraded! You now have access to all Pro features.'
+            })
+            
             if (productType === 'pro_upgrade') {
               setUserPlan('pro')
             }
-            window.location.href = "/dashboard/my-portfolios"
           } catch(e: any) {
-            alert(e.message || "Payment verification failed. Please contact support.")
+            setPaymentStatus({
+              isOpen: true,
+              status: 'error',
+              message: e.message || "Payment verification failed. Please contact support."
+            })
           }
         },
         prefill: {
@@ -223,11 +233,19 @@ function PricingPageInner() {
 
       const rzp = new Razorpay(options)
       rzp.on("payment.failed", function (response: any) {
-        alert("Payment failed. Please try again.")
+        setPaymentStatus({
+          isOpen: true,
+          status: 'error',
+          message: 'Payment failed or was cancelled. Please try again.'
+        })
       })
       rzp.open()
     } catch (e: any) {
-      alert(e.message)
+      setPaymentStatus({
+        isOpen: true,
+        status: 'error',
+        message: e.message
+      })
     } finally {
       setIsCheckingOut(false)
     }
@@ -305,8 +323,8 @@ function PricingPageInner() {
                   </span>
                   <span className="bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-red-200 dark:border-red-500/30">Limited Beta Offer</span>
                 </div>
-                <span className="text-sm font-semibold text-text-secondary dark:text-dark-text-secondary mt-3">Lifetime access during beta</span>
-                <span className="text-xs text-text-tertiary dark:text-dark-text-tertiary mt-0.5 italic opacity-80">Price increases soon</span>
+                <span className="text-sm font-bold text-accent-gold mt-3">Lifetime Access • One-time payment</span>
+                <span className="text-xs text-text-tertiary dark:text-dark-text-tertiary mt-0.5 italic opacity-80">Pay once, use forever. Price increases soon.</span>
               </div>
               <ul className="mt-8 space-y-3 flex-1">
                 {PRO_FEATURES.map((f) => (
@@ -328,10 +346,11 @@ function PricingPageInner() {
                     </div>
                   ) : (
                     <button 
-                      disabled
-                      className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed shadow-none"
+                      onClick={() => handleCheckout('pro_upgrade')}
+                      disabled={isCheckingOut}
+                      className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm shadow-xl shadow-accent-gold/20"
                     >
-                      Coming Soon
+                      {isCheckingOut ? 'Processing...' : 'Upgrade Now'}
                     </button>
                   )}
 
@@ -439,6 +458,18 @@ function PricingPageInner() {
           </div>
         </div>
       </section>
+
+      <PaymentStatusModal 
+        isOpen={paymentStatus.isOpen}
+        status={paymentStatus.status}
+        message={paymentStatus.message}
+        onClose={() => {
+          setPaymentStatus(prev => ({ ...prev, isOpen: false }))
+          if (paymentStatus.status === 'success') {
+            window.location.href = "/dashboard/my-portfolios"
+          }
+        }}
+      />
 
       <Footer />
     </div>

@@ -186,7 +186,16 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
     product_type = tx["product_type"]
 
     if product_type == "pro_upgrade":
-        supabase.table("users").update({"plan_type": "pro"}).eq("id", user_id).execute()
+        from datetime import datetime
+        supabase.table("users").update({
+            "plan_type": "pro",
+            "is_pro": True,
+            "payment_status": "paid",
+            "pro_purchase_date": datetime.utcnow().isoformat(),
+            "payment_gateway": "razorpay",
+            "payment_id": req.razorpay_payment_id,
+            "currency": tx.get("currency", "INR")
+        }).eq("id", user_id).execute()
     elif product_type == "boost_pack":
         u_res = supabase.table("users").select("boost_pack_count").eq("id", user_id).execute()
         current_count = 0
