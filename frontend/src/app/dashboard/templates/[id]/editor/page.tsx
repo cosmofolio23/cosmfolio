@@ -27,6 +27,7 @@ import type { FreeElement } from '@/components/composer/types'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
+import UpgradeModal from '@/components/modals/UpgradeModal'
 import { driver } from 'driver.js'
 import 'driver.js/dist/driver.css'
 
@@ -280,6 +281,7 @@ export default function TemplateEditor() {
   const [isPro, setIsPro] = useState(isAdmin)
 
   const [maxPages, setMaxPages] = useState(6)
+  const [upgradeModal, setUpgradeModal] = useState<{isOpen: boolean, title?: string, subtitle?: string}>({ isOpen: false })
 
   // Fetch isPro status and limits
   useEffect(() => {
@@ -1521,8 +1523,12 @@ export default function TemplateEditor() {
   }
 
   const addPage = (type: Page['type']) => {
-    if (pages.length >= maxPages) {
-      alert("Pro Upgrade is Coming Soon! We are currently setting up payments.")
+    if (!isPro && pages.length >= maxPages) {
+      setUpgradeModal({
+        isOpen: true,
+        title: "You've built a complete portfolio 🎉",
+        subtitle: `Need more space? Upgrade to Pro to create up to 30 pages!`
+      })
       return
     }
     const layoutId: string = type === 'cover' ? 'cover.minimal' : type === 'about' ? 'text.statement' : type === 'contact' ? 'contact.center' : type === 'resume' ? 'resume.swissGrid' : type === 'contents' ? 'index.magazine' : 'twoThirdsStack.titleMetaInline'
@@ -1630,7 +1636,11 @@ export default function TemplateEditor() {
 
       // Free-tier export limit — use server-synced count
       if (exportUsed >= exportLimit && !exportBypass) {
-        flashUpload('err', `You have used all ${exportLimit} PDF exports! Pro version with unlimited pages coming soon.`, 8000)
+        setUpgradeModal({
+          isOpen: true,
+          title: "Your portfolio is ready 🚀",
+          subtitle: `You've used your free exports. Upgrade to Pro for unlimited exports and premium layouts.`
+        })
         return
       }
 
@@ -2471,7 +2481,12 @@ export default function TemplateEditor() {
                             key={spec.id}
                             onClick={() => {
                               if (spec.pro && !isPro) {
-                                alert("Pro Layouts are Coming Soon!")
+                                setUpgradeModal({
+                                  isOpen: true,
+                                  title: "Premium portfolio style",
+                                  subtitle: "Used by professional designers. Unlock this and more with CosmoFolio Pro."
+                                })
+                                return
                               } else {
                                 setLayout(spec.id)
                               }
@@ -3116,6 +3131,13 @@ export default function TemplateEditor() {
           onDelete={(idx) => deletePage(idx)}
         />
       )}
+      
+      <UpgradeModal 
+        isOpen={upgradeModal.isOpen} 
+        onClose={() => setUpgradeModal({ isOpen: false })}
+        title={upgradeModal.title}
+        subtitle={upgradeModal.subtitle}
+      />
     </div>
   )
 }

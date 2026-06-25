@@ -133,10 +133,10 @@ export default function Dashboard() {
                     </span>
                     {!has('is_pro') && (
                       <button
-                        onClick={() => alert("Pro features are coming soon!")}
-                        className="px-3 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed transition-colors shadow-sm"
+                        onClick={() => router.push('/pricing')}
+                        className="px-3 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-accent-gold/20 text-accent-gold hover:bg-accent-gold/30 transition-colors shadow-sm"
                       >
-                        ⚡ Pro (Coming Soon)
+                        ⚡ Upgrade to Pro
                       </button>
                     )}
                   </>
