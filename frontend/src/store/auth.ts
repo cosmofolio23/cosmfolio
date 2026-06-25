@@ -6,6 +6,7 @@ interface User {
   id: string
   email: string
   name?: string
+  photoURL?: string
   created_at?: string
   is_pro?: boolean
   plan_type?: string
@@ -22,6 +23,7 @@ interface AuthStore {
   loginWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   setToken: (token: string) => void
+  setUser: (user: User) => void
   fetchCurrentUser: () => Promise<void>
 }
 
@@ -30,6 +32,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   token: typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
   isLoading: false,
   isAuthenticated: typeof window !== 'undefined' ? !!localStorage.getItem('auth_token') : false,
+
+  setUser: (user) => set({ user }),
 
   signup: async (email: string, password: string, name?: string, demographics?: { college_name?: string, state?: string, year_of_passing?: string, stream?: string }) => {
     set({ isLoading: true })
