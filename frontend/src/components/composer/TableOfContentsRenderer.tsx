@@ -726,7 +726,6 @@ export function TableOfContentsRenderer({
           </div>
         </div>
 
-        <p className="text-[8px] leading-tight text-gray-400 italic mt-3 text-center border-t border-black/5 pt-2">Tip: To resize the card itself, drag the blue corners of the block on your canvas.</p>
       </div>
     </div>
   )
