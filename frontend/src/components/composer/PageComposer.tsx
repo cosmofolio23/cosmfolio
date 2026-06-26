@@ -55,8 +55,13 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
 
-  const patchBlock = (id: string, patch: Partial<Block>) =>
+  const patchBlock = (id: string, patch: Partial<Block> & { isDeleted?: boolean }) => {
+    if (patch.isDeleted) {
+      onChange({ ...page, blocks: page.blocks.filter(b => b.id !== id) })
+      return
+    }
     onChange({ ...page, blocks: page.blocks.map(b => b.id === id ? { ...b, ...patch } : b) })
+  }
 
   const addBlock = (type: BlockType): Block => {
     const block = createBlock(type)
@@ -352,7 +357,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
   )
 }
 
-function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void, showTypography?: boolean }) {
+function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean }) => void, showTypography?: boolean }) {
   return (
     <div className="absolute top-1 right-1 flex items-center gap-2 opacity-0 group-hover/block-container:opacity-100 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto">
       {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
@@ -363,6 +368,9 @@ function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: {
       )}
       <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
         {block.freeform ? '↩ Grid' : '🔓 Unlock'}
+      </button>
+      <button onClick={(e) => { e.stopPropagation(); onChange({ isDeleted: true }) }} className="text-[9px] font-bold text-red-500 hover:text-red-700 uppercase ml-1" title="Delete Block">
+        ✕
       </button>
     </div>
   )

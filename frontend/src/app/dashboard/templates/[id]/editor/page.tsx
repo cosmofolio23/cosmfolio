@@ -69,6 +69,8 @@ const ADD_BLOCKS: { type: BlockType; icon: string }[] = [
   { type: 'title', icon: 'T' }, { type: 'subtitle', icon: 't' }, { type: 'meta', icon: '#' },
   { type: 'description', icon: '¶' }, { type: 'legend', icon: '①' },
   { type: 'render', icon: '🖼️' }, { type: 'plan', icon: '📐' }, { type: 'section', icon: '📏' }, { type: 'diagram', icon: '◑' },
+  { type: 'contents', icon: '☰' }, { type: 'headshot', icon: '👤' }, { type: 'bio', icon: '✍️' }, { type: 'education', icon: '🎓' },
+  { type: 'skills', icon: '⭐' }, { type: 'software', icon: '💻' }, { type: 'achievement', icon: '🏆' }, { type: 'interest', icon: '❤️' },
 ]
 
 const HEADING_FONTS = ['Montserrat', 'Playfair Display', 'Roboto', 'Inter', 'Poppins', 'Georgia', 'Lora', 'Bebas Neue', 'Oswald', 'Arial']
@@ -1492,6 +1494,15 @@ export default function TemplateEditor() {
     setTimeout(() => recordHistorySnapshot(), 10)
   }
 
+  const addFreeBlock = (type: BlockType) => {
+    if (!currentPage) return
+    const block = createBlock(type)
+    block.freeform = { x: 10, y: 10, w: 40, h: 40, pinned: false }
+    const next = { ...currentPage, blocks: [...currentPage.blocks, block] }
+    updatePage(next)
+    setTimeout(() => recordHistorySnapshot(), 10)
+  }
+
   const removeBlock = (blockId: string) => {
     if (!currentPage) return
     const next = { ...currentPage, blocks: currentPage.blocks.filter(b => b.id !== blockId) }
@@ -2657,6 +2668,19 @@ export default function TemplateEditor() {
                     <span className="text-sm">✨</span> Magic Layout Shuffle
                   </button>
                   <p className="text-[10px] text-gray-400 mt-1.5 leading-tight">Instantly snap images into perfect architectural grids, or detach the layout to freely edit it.</p>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Smart Blocks</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {ADD_BLOCKS.map(b => (
+                      <button key={b.type} onClick={() => addFreeBlock(b.type)}
+                        className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
+                        <span className="text-lg leading-none">{b.icon}</span>
+                        <span className="text-[10px] font-medium capitalize text-center leading-tight">{blockLabel(b.type)}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Selected element properties */}
