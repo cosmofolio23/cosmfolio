@@ -570,14 +570,14 @@ export function TableOfContentsRenderer({
 
   const renderAcademic = () => {
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: 'Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
-        <h3 className="text-lg font-serif italic mb-4 border-b border-slate-300 pb-2 text-slate-700">
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: 'Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-lg font-serif italic mb-4 border-b border-slate-300 pb-2 text-slate-700 shrink-0">
           Table of Contents
         </h3>
-        <div className="space-y-3 text-xs">
+        <div className="flex flex-col flex-1 overflow-hidden shrink min-h-0 text-xs" style={{ gap: Math.max(0, 12 - items.length * 0.5) + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className="flex justify-between items-baseline gap-4">
-              <div className="flex items-baseline gap-2 flex-1 min-w-0">
+            <div key={idx} className="flex justify-between items-baseline gap-4 shrink min-h-0">
+              <div className="flex items-baseline gap-2 flex-1 min-w-0 shrink min-h-0">
                 <span className="font-sans font-semibold text-[10px] text-slate-400">{it.num}</span>
                 <span className="font-semibold text-slate-800 truncate">{it.title}</span>
                 <span className="flex-1 border-b border-dotted border-slate-300 mx-1 min-w-[20px] self-end h-[3px]" />
@@ -593,13 +593,13 @@ export function TableOfContentsRenderer({
 
   const renderMinimal = () => {
     return (
-    <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
-      <h3 className="text-xs font-bold uppercase tracking-[0.25em] mb-4 pb-2 border-b" style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.headingFont }}>
+    <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+      <h3 className="text-xs font-bold uppercase tracking-[0.25em] mb-4 pb-2 border-b shrink-0" style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.headingFont }}>
         {block.label || 'CONTENTS'}
       </h3>
-      <div className="space-y-2.5">
+      <div className="flex flex-col flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(0, 10 - items.length * 0.5) + 'px' }}>
         {items.map((it, idx) => (
-          <div key={idx} className="flex items-center justify-between text-xs pb-1.5 border-b border-black/[0.04]">
+          <div key={idx} className="flex items-center justify-between text-xs pb-1.5 border-b border-black/[0.04] shrink min-h-0">
             <div className="flex items-center gap-3">
               <span className="font-mono text-[10px] text-gray-400">{it.num}</span>
               <div>
