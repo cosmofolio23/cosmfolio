@@ -88,7 +88,7 @@ export default function PortfolioEditorPage() {
   const [mobileTab, setMobileTab] = useState<'pages' | 'canvas' | 'design'>('canvas')
   const [mode, setMode] = useState<'view' | 'edit'>('view')   // spec: show output first, edit on click
   const [analyzing, setAnalyzing] = useState('')              // on-device AI vision status
-  const [publishingTab, setPublishingTab] = useState<'style' | 'publishing'>('style')
+  const [publishingTab, setPublishingTab] = useState<'style' | 'templates' | 'publishing'>('templates')
   const [publishingPortfolio, setPublishingPortfolio] = useState<PublishingPortfolio>({
     id: 'portfolio-' + params.portfolioId,
     name: portfolio?.name || 'Portfolio',
@@ -439,204 +439,279 @@ export default function PortfolioEditorPage() {
     </div>
   )
 
-  // ── VIEW-ONLY MODE (default): show the finished portfolio first ──
-  if (mode === 'view') {
-    return (
-      <div className="min-h-screen bg-gray-100 flex flex-col">
-        <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
-          <div className="px-4 py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href={`/dashboard/project/${params.id}/generate`} className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
-              <Logo size="sm" variant="gold" />
-              <div>
-                <h1 className="text-base font-semibold">{portfolio?.name || 'Portfolio'}</h1>
-                <p className="text-[11px] text-gray-400">{analyzing || `Your portfolio is ready · ${pages.length} pages`}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
-              <button onClick={aiAnalyze} disabled={!!analyzing} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30 disabled:opacity-50" title="Detect each image's type with free on-device AI, then recompose">{analyzing ? '🧠 Analyzing…' : '🔍 AI Analyze'}</button>
-              <button onClick={regenerate} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50" title="Recompose from your assets">🔄 Regenerate</button>
-              <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
-              <button onClick={() => setMode('edit')} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">✏️ Edit</button>
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-300/40">
-          <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
-            {pages.map((page) => (
-              <div key={page.id}>
-                <PageComposer page={page} tokens={tokens} onChange={() => {}} />
-                <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
-              </div>
-            ))}
-          </div>
-        </main>
-      </div>
-    )
-  }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col pb-16 md:pb-0">
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
-        <div className="px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href={`/dashboard/project/${params.id}/generate`} className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
-            <Logo size="sm" variant="gold" />
-            <div>
-              <h1 className="text-base font-semibold">{portfolio?.name || 'Portfolio'}</h1>
-              <p className="text-[11px] text-gray-400">Parametric editor · {LAYOUT_CATALOG.length} layouts available</p>
-            </div>
+    <div className="h-screen bg-[#F5F5F3] dark:bg-dark-bg-primary flex flex-col overflow-hidden font-inter">
+      {/* Sleek Top Toolbar */}
+      <header className="h-14 bg-white dark:bg-[#1A1A1A] border-b border-stone-light/10 flex items-center justify-between px-4 z-40 flex-shrink-0">
+        {/* Left: Back & Title */}
+        <div className="flex items-center gap-4 flex-1">
+          <Link href={`/dashboard/project/${params.id}/generate`} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-stone-light/10 text-text-secondary transition-colors" title="Back to Project">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </Link>
+          <div className="h-4 w-px bg-stone-light/20 mx-1"></div>
+          <div>
+            <h1 className="text-sm font-semibold font-montserrat text-text-primary dark:text-dark-text-primary flex items-center gap-2">
+              {portfolio?.name || 'Portfolio'}
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#D4AF37]/10 text-[#D4AF37] uppercase tracking-wider">Pro</span>
+            </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-green-600 min-w-[60px] text-right">{savedNote}</span>
-            <span className="text-[11px] text-gray-400">Page {currentIdx + 1}/{pages.length}</span>
-            <button onClick={() => setMode('view')} className="px-3 py-1.5 border rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50">👁 Preview</button>
-            <button onClick={exportPDF} className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900">📄 Export PDF</button>
+        </div>
+
+        {/* Center: Mode Switcher (Figma style) */}
+        <div className="flex-1 flex justify-center">
+          <div className="flex items-center p-1 bg-stone-light/10 dark:bg-black/20 rounded-lg">
+            <button 
+              className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${mode === 'edit' ? 'bg-white dark:bg-[#2A2A2A] shadow-sm text-text-primary dark:text-dark-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
+              onClick={() => setMode('edit')}
+            >
+              Design
+            </button>
+            <button 
+              className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${mode === 'view' ? 'bg-white dark:bg-[#2A2A2A] shadow-sm text-text-primary dark:text-dark-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
+              onClick={() => setMode('view')}
+            >
+              Preview
+            </button>
+          </div>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center justify-end gap-3 flex-1">
+          <span className="text-[10px] font-medium text-green-600 dark:text-green-400 opacity-80">{savedNote}</span>
+          <div className="flex items-center gap-2">
+            <button className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-stone-light/10 text-text-secondary transition-colors" title="Settings">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+            <button className="px-4 py-1.5 bg-text-primary dark:bg-white text-white dark:text-black rounded-md text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm" onClick={exportPDF}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 min-h-0 relative">
-        {/* Left: page list */}
-        <aside className={`${isMobile ? (mobileTab === 'pages' ? 'absolute inset-0 z-20 w-full bg-white pb-16' : 'hidden') : 'w-52 border-r'} bg-white overflow-y-auto flex-shrink-0`}>
-          <div className="p-3">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
-            <div className={`${isMobile ? 'flex gap-2' : 'space-y-1.5'}`}>
+        {/* Left: Premium Pages List */}
+        {mode === 'edit' && (
+          <aside className={`${isMobile ? (mobileTab === 'pages' ? 'absolute inset-0 z-20 w-full bg-white pb-16' : 'hidden') : 'w-64 border-r border-stone-light/10'} bg-white dark:bg-[#1A1A1A] overflow-y-auto flex-shrink-0 flex flex-col`}>
+            <div className="p-4 border-b border-stone-light/10 flex items-center justify-between">
+              <h3 className="text-xs font-bold text-text-primary dark:text-dark-text-primary uppercase tracking-wider font-montserrat">Pages <span className="text-stone-light ml-1 font-normal">({pages.length})</span></h3>
+              <div className="flex gap-1">
+                <button onClick={addPage} className="w-6 h-6 flex items-center justify-center rounded bg-stone-light/10 hover:bg-stone-light/20 text-text-primary transition-colors" title="Add Page">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            </div>
+            <div className={`flex-1 p-3 ${isMobile ? 'flex gap-3' : 'space-y-1'}`}>
               {pages.map((page, idx) => (
                 <div key={page.id}
-                  className={`group rounded-lg border-2 transition ${currentIdx === idx ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}>
-                  <button onClick={() => setCurrentIdx(idx)} className="w-full text-left p-2.5">
-                    <div className="text-[10px] text-gray-400 uppercase">{page.type}</div>
-                    <div className="text-xs font-medium truncate">{idx + 1}. {getSpec(page.layoutId).name}</div>
+                  className={`group rounded-xl border transition-all duration-200 flex flex-col ${currentIdx === idx ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-500/30 shadow-sm' : 'bg-transparent border-transparent hover:bg-stone-light/5'}`}>
+                  <div className="flex items-center">
+                     <button onClick={() => setCurrentIdx(idx)} className="flex-1 text-left p-3 flex items-center gap-3">
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold ${currentIdx === idx ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-stone-light/10 text-text-secondary'}`}>
+                         {idx + 1}
+                       </div>
+                       <div className="flex-1 overflow-hidden">
+                         <div className="text-[10px] text-text-secondary font-semibold uppercase tracking-wider mb-0.5">{page.type}</div>
+                         <div className={`text-xs font-medium truncate ${currentIdx === idx ? 'text-blue-700 dark:text-blue-400' : 'text-text-primary dark:text-dark-text-primary'}`}>
+                           {getSpec(page.layoutId).name}
+                         </div>
+                       </div>
+                     </button>
+                     <div className={`flex flex-col gap-0.5 pr-2 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+                       <button onClick={() => movePage(idx, -1)} disabled={idx === 0} title="Move up" className="text-[9px] w-5 h-5 flex items-center justify-center bg-stone-light/10 rounded hover:bg-stone-light/20 disabled:opacity-30">▲</button>
+                       <button onClick={() => movePage(idx, 1)} disabled={idx === pages.length - 1} title="Move down" className="text-[9px] w-5 h-5 flex items-center justify-center bg-stone-light/10 rounded hover:bg-stone-light/20 disabled:opacity-30">▼</button>
+                     </div>
+                  </div>
+                  {/* Delete button inline on hover for cleaner UI */}
+                  {currentIdx === idx && (
+                     <div className="px-3 pb-2 flex justify-end">
+                       <button onClick={() => deletePage(idx)} disabled={pages.length <= 1} className="text-[10px] font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition">Delete Page</button>
+                     </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {/* Cosmo Assistant Prompt */}
+            <div className="p-4 mt-auto">
+               <div className="bg-gradient-to-br from-[#D4AF37]/10 to-[#9C7416]/5 border border-[#D4AF37]/20 rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-[#D4AF37]/10 rounded-full blur-xl"></div>
+                  <h4 className="text-xs font-bold text-[#D4AF37] mb-1 font-montserrat flex items-center gap-1.5">✨ Cosmo Assistant</h4>
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mb-3 leading-relaxed">Let AI detect image types and build the perfect layout.</p>
+                  <button onClick={aiAnalyze} disabled={!!analyzing} className="w-full py-1.5 bg-gradient-to-r from-[#D4AF37] to-[#9C7416] text-white rounded text-[11px] font-semibold hover:brightness-110 transition disabled:opacity-50">
+                    {analyzing ? 'Analyzing...' : 'Auto-Layout Magic'}
                   </button>
-                  <div className={`flex gap-0.5 px-1.5 pb-1.5 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition`}>
-                    <button onClick={() => movePage(idx, -1)} disabled={idx === 0} title="Move up" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▲</button>
-                    <button onClick={() => movePage(idx, 1)} disabled={idx === pages.length - 1} title="Move down" className="text-[11px] px-1.5 py-0.5 bg-white rounded border disabled:opacity-30 hover:bg-gray-50">▼</button>
-                    <button onClick={() => deletePage(idx)} disabled={pages.length <= 1} title="Delete" className="text-[11px] px-1.5 py-0.5 bg-white rounded border text-red-500 disabled:opacity-30 hover:bg-red-50 ml-auto">✕</button>
+               </div>
+            </div>
+          </aside>
+        )}
+
+        {/* Center: Floating parametric canvas */}
+        <main className={`${isMobile ? (mobileTab === 'canvas' ? 'block absolute inset-0 z-10 w-full' : 'hidden') : 'flex-1'} overflow-y-auto bg-[#F5F5F3] dark:bg-[#111111] p-6 md:p-16 lg:p-24 flex justify-center items-start`}>
+          {mode === 'view' ? (
+            <div className="w-full max-w-[680px] space-y-12" style={{ pointerEvents: 'none' }}>
+              {pages.map((page, idx) => (
+                <div key={page.id} className="relative group">
+                  <div className="absolute -left-12 top-0 bottom-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-bold text-stone-300">{idx + 1}</span>
+                  </div>
+                  <div className="shadow-[0_20px_50px_rgb(0,0,0,0.1)] rounded-sm overflow-hidden bg-white">
+                    <PageComposer page={page} tokens={tokens} onChange={() => {}} showWatermark={!isPro} />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex gap-1.5">
-              <button onClick={addPage} className="flex-1 py-2 text-xs font-medium text-blue-600 border-2 border-dashed border-blue-200 rounded-lg hover:bg-blue-50">+ Page</button>
-              <button onClick={addResumePage} className="flex-1 py-2 text-xs font-medium text-[#9C7416] border-2 border-dashed border-[#D4AF37]/40 rounded-lg hover:bg-[#FBE7A1]/30">+ Resume</button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Center: parametric canvas */}
-        <main className={`${isMobile ? (mobileTab === 'canvas' ? 'block absolute inset-0 z-10 w-full' : 'hidden') : 'flex-1'} overflow-y-auto bg-gray-300/40 p-2 md:p-8 flex justify-center`}>
-          {currentPage && (
-            <div className="w-full max-w-[680px]">
-              <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
-              <div className="mt-3 text-center text-[11px] text-gray-400">
-                {currentPage.type} · {getSpec(currentPage.layoutId).name}
+          ) : (
+            currentPage && (
+              <div className="w-full max-w-[680px] relative group">
+                <div className="absolute -left-12 top-0 bottom-0 flex items-center justify-center opacity-30">
+                   <span className="text-xs font-bold text-stone-500">{currentIdx + 1}</span>
+                </div>
+                {/* Canvas Box */}
+                <div className="shadow-[0_20px_50px_rgb(0,0,0,0.1)] rounded-sm overflow-hidden bg-white ring-1 ring-stone-light/20 transition-all">
+                  <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} showWatermark={!isPro} />
+                </div>
+                <div className="mt-4 flex justify-between items-center text-[11px] text-stone-400 font-medium">
+                  <span>{currentPage.type.toUpperCase()}</span>
+                  <span>{getSpec(currentPage.layoutId).name}</span>
+                </div>
               </div>
-            </div>
+            )
           )}
         </main>
 
-        {/* Right: layout catalog picker */}
-        <aside className={`${isMobile ? (mobileTab === 'design' ? 'absolute inset-0 z-20 w-full bg-white pb-16' : 'hidden') : 'w-80 border-l'} bg-white overflow-y-auto flex-shrink-0`}>
-          {/* Style DNA presets */}
-          <div className="p-3 border-b">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Style</h3>
-            <div className="grid grid-cols-2 gap-1.5">
-              {STYLE_DNA.map(s => (
-                <button key={s.id} onClick={() => setToken(s.tokens)} title={s.description}
-                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border text-left hover:border-blue-400 transition">
-                  <span className="flex gap-0.5 flex-shrink-0">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.tokens.background, border: '1px solid #ddd' }} />
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.tokens.primary }} />
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.tokens.accent }} />
-                  </span>
-                  <span className="text-[9px] font-medium text-gray-700 truncate">{s.name}</span>
-                </button>
-              ))}
+        {/* Right: Modern Tabbed Properties */}
+        {mode === 'edit' && (
+          <aside className={`${isMobile ? (mobileTab === 'design' ? 'absolute inset-0 z-20 w-full bg-white pb-16' : 'hidden') : 'w-80 border-l border-stone-light/10'} bg-white dark:bg-[#1A1A1A] overflow-y-auto flex-shrink-0 flex flex-col`}>
+            {/* Tabbed Navigation */}
+            <div className="flex border-b border-stone-light/10 bg-stone-light/5 p-2 gap-1 sticky top-0 z-10 backdrop-blur-md">
+              <button onClick={() => setPublishingTab('style')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${publishingTab === 'style' ? 'bg-white dark:bg-[#2A2A2A] text-text-primary dark:text-dark-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}>
+                Style
+              </button>
+              <button onClick={() => setPublishingTab('templates')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${publishingTab === 'templates' ? 'bg-white dark:bg-[#2A2A2A] text-text-primary dark:text-dark-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}>
+                Layouts
+              </button>
+              <button onClick={() => setPublishingTab('publishing')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${publishingTab === 'publishing' ? 'bg-white dark:bg-[#2A2A2A] text-text-primary dark:text-dark-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}>
+                Publish
+              </button>
             </div>
-          </div>
 
-          {/* Publishing vs Style tabs */}
-          <div className="flex border-b bg-gray-50">
-            <button onClick={() => setPublishingTab('style')} className={`flex-1 px-3 py-2 text-xs font-semibold transition ${publishingTab === 'style' ? 'bg-white border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>
-              🎨 Style
-            </button>
-            <button onClick={() => setPublishingTab('publishing')} className={`flex-1 px-3 py-2 text-xs font-semibold transition ${publishingTab === 'publishing' ? 'bg-white border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>
-              📄 Publishing
-            </button>
-          </div>
+            <div className="flex-1 overflow-y-auto">
+              {/* STYLE TAB */}
+              {publishingTab === 'style' && (
+                <div className="p-5 space-y-8">
+                  {/* Style Presets */}
+                  <div>
+                    <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-3">Brand Presets</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {STYLE_DNA.map(s => (
+                        <button key={s.id} onClick={() => setToken(s.tokens)} title={s.description}
+                          className="flex items-center gap-2 p-2.5 rounded-xl border border-stone-light/20 bg-stone-light/5 hover:border-blue-400/50 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition group">
+                          <span className="flex -space-x-1 flex-shrink-0">
+                            <span className="w-4 h-4 rounded-full shadow-sm ring-2 ring-white dark:ring-black relative z-30" style={{ background: s.tokens.primary }} />
+                            <span className="w-4 h-4 rounded-full shadow-sm ring-2 ring-white dark:ring-black relative z-20" style={{ background: s.tokens.accent }} />
+                            <span className="w-4 h-4 rounded-full shadow-sm ring-2 ring-white dark:ring-black relative z-10" style={{ background: s.tokens.background }} />
+                          </span>
+                          <span className="text-[10px] font-semibold text-text-primary dark:text-dark-text-primary truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">{s.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-          {/* Publishing mode */}
-          {publishingTab === 'publishing' && (
-            <div className="p-3 border-b space-y-3 max-h-96 overflow-y-auto">
-              <ProfessionalPublishingSettings
-                portfolio={publishingPortfolio}
-                onUpdate={setPublishingPortfolio}
-              />
-              <AIDesignAssistant
-                onCommand={cmd => {
-                  console.log('AI command:', cmd)
-                  // Hook for future AI implementation
-                }}
-              />
-            </div>
-          )}
+                  {/* Colors */}
+                  <div>
+                    <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-3">Custom Colors</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {([['background', 'Canvas'], ['text', 'Ink'], ['primary', 'Brand'], ['accent', 'Accent']] as const).map(([k, label]) => (
+                        <div key={k} className="bg-stone-light/5 border border-stone-light/10 rounded-lg p-2.5 flex items-center justify-between">
+                           <span className="text-[11px] font-medium text-text-primary dark:text-dark-text-primary">{label}</span>
+                           <label className="cursor-pointer relative overflow-hidden rounded shadow-sm">
+                             <input type="color" value={(tokens as any)[k] || '#000000'} onChange={e => setToken({ [k]: e.target.value } as any)}
+                               className="w-6 h-6 absolute -top-2 -left-2 w-10 h-10 opacity-0 cursor-pointer" />
+                             <div className="w-5 h-5 rounded" style={{ backgroundColor: (tokens as any)[k] || '#000000' }}></div>
+                           </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-          {/* Design tokens */}
-          {publishingTab === 'style' && (
-            <div className="p-3 border-b">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Colors &amp; Fonts</h3>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              {([['background', 'Background'], ['text', 'Text'], ['primary', 'Primary'], ['accent', 'Accent']] as const).map(([k, label]) => (
-                <label key={k} className="flex items-center gap-1.5 text-[10px] text-gray-600">
-                  <input type="color" value={(tokens as any)[k] || '#000000'} onChange={e => setToken({ [k]: e.target.value } as any)}
-                    className="w-6 h-6 rounded border cursor-pointer p-0" />
-                  {label}
-                </label>
-              ))}
-            </div>
-            <select value={tokens.headingFont} onChange={e => setToken({ headingFont: e.target.value })}
-              className="w-full mb-1.5 px-2 py-1 text-[11px] border rounded">
-              {HEADING_FONTS.map(f => <option key={f} value={f}>Heading: {f.split(',')[0]}</option>)}
-            </select>
-            <select value={tokens.bodyFont} onChange={e => setToken({ bodyFont: e.target.value })}
-              className="w-full px-2 py-1 text-[11px] border rounded">
-              {BODY_FONTS.map(f => <option key={f} value={f}>Body: {f.split(',')[0]}</option>)}
-            </select>
-            </div>
-          )}
+                  {/* Typography */}
+                  <div>
+                    <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-3">Typography</h3>
+                    <div className="space-y-3">
+                      <div>
+                         <label className="block text-[10px] font-medium text-text-secondary mb-1">Headings</label>
+                         <select value={tokens.headingFont} onChange={e => setToken({ headingFont: e.target.value })}
+                           className="w-full px-3 py-2 text-[11px] font-medium border border-stone-light/20 rounded-lg bg-stone-light/5 focus:ring-2 focus:ring-blue-500 outline-none">
+                           {HEADING_FONTS.map(f => <option key={f} value={f}>{f.split(',')[0]}</option>)}
+                         </select>
+                      </div>
+                      <div>
+                         <label className="block text-[10px] font-medium text-text-secondary mb-1">Body Text</label>
+                         <select value={tokens.bodyFont} onChange={e => setToken({ bodyFont: e.target.value })}
+                           className="w-full px-3 py-2 text-[11px] font-medium border border-stone-light/20 rounded-lg bg-stone-light/5 focus:ring-2 focus:ring-blue-500 outline-none">
+                           {BODY_FONTS.map(f => <option key={f} value={f}>{f.split(',')[0]}</option>)}
+                         </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          <div className="p-3 border-b sticky top-0 bg-white z-10">
-            <input value={layoutSearch} onChange={e => setLayoutSearch(e.target.value)}
-              placeholder="Search layouts…"
-              className="w-full px-3 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <div className="flex flex-wrap gap-1 mt-2">
-              {(['All', ...LAYOUT_CATEGORIES] as const).map(cat => (
-                <button key={cat} onClick={() => setLayoutCat(cat)}
-                  className={`px-2 py-1 rounded text-[10px] font-semibold transition ${layoutCat === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                  {cat}
-                </button>
-              ))}
+              {/* TEMPLATES TAB */}
+              {publishingTab === 'templates' && (
+                <div className="flex flex-col h-full">
+                  <div className="p-4 border-b border-stone-light/10 sticky top-0 bg-white dark:bg-[#1A1A1A] z-10">
+                    <div className="relative">
+                      <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                      <input value={layoutSearch} onChange={e => setLayoutSearch(e.target.value)}
+                        placeholder="Find layout..."
+                        className="w-full pl-9 pr-3 py-2 text-xs font-medium border border-stone-light/20 rounded-lg bg-stone-light/5 focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                    </div>
+                    <div className="flex gap-1.5 mt-3 overflow-x-auto hide-scrollbar pb-1">
+                      {(['All', ...LAYOUT_CATEGORIES] as const).map(cat => (
+                        <button key={cat} onClick={() => setLayoutCat(cat)}
+                          className={`px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${layoutCat === cat ? 'bg-text-primary text-white dark:bg-white dark:text-black' : 'bg-stone-light/10 text-text-secondary hover:bg-stone-light/20'}`}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 flex-1">
+                    <div className="grid grid-cols-2 gap-3">
+                      {filteredLayouts.map(spec => {
+                        const active = currentPage?.layoutId === spec.id
+                        return (
+                          <button key={spec.id} onClick={() => switchLayout(spec.id)} title={spec.name}
+                            className={`group rounded-xl p-1.5 border-2 transition-all duration-200 ${active ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 shadow-sm' : 'border-transparent bg-stone-light/5 hover:border-stone-light/30 hover:bg-stone-light/10'}`}>
+                            <div className="bg-white rounded-lg overflow-hidden border border-stone-light/10">
+                               <LayoutThumb spec={spec} tokens={tokens} active={active} />
+                            </div>
+                            <div className={`text-[9px] font-semibold mt-2 truncate text-center ${active ? 'text-blue-700 dark:text-blue-400' : 'text-text-secondary group-hover:text-text-primary'}`}>{spec.name}</div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PUBLISHING TAB */}
+              {publishingTab === 'publishing' && (
+                <div className="p-5">
+                  <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-4">Print Settings</h3>
+                  <ProfessionalPublishingSettings
+                    portfolio={publishingPortfolio}
+                    onUpdate={setPublishingPortfolio}
+                  />
+                </div>
+              )}
             </div>
-          </div>
-          <div className="p-3">
-            <p className="text-[11px] text-gray-400 mb-2">{filteredLayouts.length} layouts · click to apply</p>
-            <div className="grid grid-cols-3 gap-2">
-              {filteredLayouts.map(spec => {
-                const active = currentPage?.layoutId === spec.id
-                return (
-                  <button key={spec.id} onClick={() => switchLayout(spec.id)} title={spec.name}
-                    className={`rounded-lg p-1 border-2 transition ${active ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300 hover:bg-gray-50'}`}>
-                    <LayoutThumb spec={spec} tokens={tokens} active={active} />
-                    <div className="text-[8px] text-gray-500 mt-1 truncate">{spec.name}</div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </aside>
+          </aside>
+        )}
       </div>
 
       {/* Mobile Bottom Tab Bar */}

@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [creatingType, setCreatingType] = useState<'portfolio' | 'sheet' | null>(null)
   const router = useRouter()
 
-  // MVP Launch Admin Check
+  const isPro = user?.is_pro || user?.plan_type === 'pro'
   const isAdmin = user?.email === 'boseraj001@gmail.com'
 
   useEffect(() => {
@@ -119,58 +119,99 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="container-centered py-12 md:py-16">
-        {/* Quick Access */}
-        <div className="mb-12 flex gap-3 flex-wrap">
-          <Link
-            href="/dashboard/templates"
-            className="inline-block bg-gradient-to-br from-[#D4AF37] to-[#9C7416] rounded-xl px-6 py-4 text-white hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
-          >
-            🎨 Portfolio Using Preset Templates →
+        
+        {/* Premium Hero Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-stone-light/20 pb-8 gap-6">
+          <div>
+            <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary mb-2 font-montserrat">
+              👋 Welcome back, {user?.name?.split(' ')[0] || 'Designer'}
+            </h1>
+            <p className="text-text-secondary dark:text-dark-text-secondary text-lg">
+              Portfolio Workspace
+            </p>
+            <div className="flex flex-wrap gap-4 mt-6 text-sm text-text-secondary dark:text-dark-text-secondary font-medium font-inter">
+              <span className="flex items-center gap-1.5 bg-stone-light/5 px-3 py-1 rounded-full">
+                <strong className="text-text-primary dark:text-dark-text-primary text-base">{projects.length}</strong> Portfolios
+              </span>
+              <span className="flex items-center gap-1.5 bg-stone-light/5 px-3 py-1 rounded-full">
+                <strong className="text-text-primary dark:text-dark-text-primary text-base">3</strong> Published
+              </span>
+              <span className="flex items-center gap-1.5 bg-stone-light/5 px-3 py-1 rounded-full">
+                <strong className="text-text-primary dark:text-dark-text-primary text-base">{projects.length > 3 ? projects.length - 3 : projects.length}</strong> Drafts
+              </span>
+              <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">
+                Last Edited Today
+              </span>
+            </div>
+          </div>
+          
+          {/* Upgrade Card */}
+          {!isPro && (
+             <div className="p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F3E5AB] to-[#9C7416] rounded-2xl w-full md:w-72 shadow-lg hover:shadow-xl hover:-translate-y-1 transition duration-300 group cursor-pointer" onClick={() => window.location.href='/pricing'}>
+                <div className="bg-bg-primary dark:bg-dark-bg-primary rounded-[15px] p-5 h-full flex flex-col justify-between relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-accent-gold/10 rounded-full blur-2xl group-hover:bg-accent-gold/20 transition duration-500"></div>
+                   <div>
+                     <h3 className="text-[#D4AF37] font-bold text-lg flex items-center gap-2 mb-3 font-montserrat">✨ Upgrade to Pro</h3>
+                     <ul className="text-xs text-text-secondary dark:text-dark-text-secondary space-y-2 mb-5 font-inter">
+                       <li className="flex items-center gap-2"><span className="text-[#D4AF37]">✓</span> Premium Templates</li>
+                       <li className="flex items-center gap-2"><span className="text-[#D4AF37]">✓</span> 30 Pages per Portfolio</li>
+                       <li className="flex items-center gap-2"><span className="text-[#D4AF37]">✓</span> Priority Exports</li>
+                     </ul>
+                   </div>
+                   <button className="w-full py-2 bg-gradient-to-r from-[#D4AF37] to-[#9C7416] text-white rounded-lg text-sm font-semibold transition hover:brightness-110 flex items-center justify-center gap-2">
+                      Upgrade Now <span>→</span>
+                   </button>
+                </div>
+             </div>
+          )}
+        </div>
+
+        {/* Feature Navigation Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
+          <Link href="/dashboard/templates" className="p-[1px] bg-gradient-to-br from-[#D4AF37]/40 to-[#9C7416]/20 rounded-2xl group hover:shadow-xl hover:-translate-y-1 transition duration-300 block">
+            <div className="bg-white dark:bg-[#1A1A1A] rounded-[15px] p-6 h-full border border-stone-light/5 relative overflow-hidden">
+               <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">📚</div>
+               <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg">Portfolio Builder</h3>
+               <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed">Create professional portfolios with smart layouts.</p>
+               <div className="text-[#D4AF37] font-bold text-sm group-hover:translate-x-1 transition-transform inline-block">Create new →</div>
+            </div>
           </Link>
-          <Link
-            href="/dashboard/my-portfolios"
-            className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
-          >
-            📚 My Portfolios →
+          
+          <Link href="/dashboard/my-portfolios" className="p-[1px] bg-gradient-to-br from-blue-400/40 to-blue-600/20 rounded-2xl group hover:shadow-xl hover:-translate-y-1 transition duration-300 block">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-[15px] p-6 h-full border border-blue-500/10 relative overflow-hidden">
+               <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">✨</div>
+               <h3 className="font-montserrat font-bold text-blue-700 dark:text-blue-400 mb-1.5 text-lg">My Portfolios</h3>
+               <p className="text-xs text-blue-600/70 dark:text-blue-300/70 mb-4 font-inter leading-relaxed">Continue editing your recent projects.</p>
+               <div className="text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 rounded-md inline-block">Last opened 15m ago</div>
+            </div>
           </Link>
-          {isAdmin ? (
-            <Link
-              href="/dashboard/sheets"
-              className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
-            >
-              📄 Sheet Composer →
+
+          <Link href="/dashboard/sheets" className="p-[1px] bg-stone-light/20 rounded-2xl group hover:shadow-lg hover:-translate-y-1 transition duration-300 block">
+            <div className="bg-white dark:bg-[#1A1A1A] rounded-[15px] p-6 h-full border border-stone-light/10 relative overflow-hidden">
+               <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300 opacity-70">📄</div>
+               <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg opacity-70">Sheet Composer</h3>
+               <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed opacity-70">Generate presentation sheets for juries.</p>
+               <div className="absolute top-5 right-5 text-[9px] font-bold tracking-wider uppercase px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full">Coming Soon</div>
+            </div>
+          </Link>
+
+          {loaded && has('library') ? (
+            <Link href="/dashboard/library" className="p-[1px] bg-stone-light/20 rounded-2xl group hover:shadow-lg hover:-translate-y-1 transition duration-300 block">
+              <div className="bg-white dark:bg-[#1A1A1A] rounded-[15px] p-6 h-full border border-stone-light/10 relative overflow-hidden">
+                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">🗂️</div>
+                 <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg">Project Library</h3>
+                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed">Store and manage your reusable assets.</p>
+                 <div className="text-text-primary dark:text-dark-text-primary font-bold text-sm opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all inline-block">Browse library →</div>
+              </div>
             </Link>
           ) : (
-            <button
-              onClick={() => alert("Sheet Composer is launching very soon! Stay tuned.")}
-              className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary opacity-80 hover:opacity-100 transition font-semibold text-sm cursor-pointer"
-            >
-              📄 Sheet Composer <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#FBE7A1]/50 text-[#9C7416] font-medium">Coming Soon</span>
-            </button>
-          )}
-          {loaded && has('library') && (
-            <Link
-              href="/dashboard/library"
-              className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
-            >
-              🗂️ Project Library →
-            </Link>
-          )}
-          {isAdmin && (
-            <Link
-              href="/dashboard/analytics"
-              className="inline-block glass-gold px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:brightness-105 transition font-semibold text-sm"
-            >
-              📊 Analytics →
-            </Link>
-          )}
-          {isAdmin && (
-            <Link
-              href="/dashboard/admin"
-              className="inline-block bg-accent-gold/20 border border-accent-gold/50 rounded-xl px-6 py-4 text-text-primary dark:text-dark-text-primary hover:shadow-lg hover:bg-accent-gold/30 transition font-semibold text-sm"
-            >
-              🔑 Admin Dashboard →
-            </Link>
+            <div className="p-[1px] bg-stone-light/10 rounded-2xl block opacity-50">
+              <div className="bg-stone-50 dark:bg-[#151515] rounded-[15px] p-6 h-full border border-stone-light/5 relative overflow-hidden">
+                 <div className="text-4xl mb-4 grayscale">🗂️</div>
+                 <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg">Project Library</h3>
+                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed">Store and manage your reusable assets.</p>
+              </div>
+            </div>
           )}
         </div>
 
@@ -345,126 +386,114 @@ export default function Dashboard() {
               </div>
             ) : (
               <div>
-                <h2 className="text-2xl font-semibold text-slate mb-8">
-                  Your Projects
-                  <span className="text-sm font-normal text-stone-light ml-2">({projects.length})</span>
-                </h2>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                  <h2 className="text-2xl font-bold font-montserrat text-text-primary dark:text-dark-text-primary">
+                    Continue Working
+                    <span className="text-sm font-normal text-stone-light ml-3 font-inter">({projects.length})</span>
+                  </h2>
+                  <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar w-full md:w-auto">
+                     <button className="px-4 py-1.5 bg-stone-light/10 hover:bg-stone-light/20 text-text-primary dark:text-dark-text-primary text-sm font-semibold rounded-full transition whitespace-nowrap">All</button>
+                     <button className="px-4 py-1.5 bg-transparent border border-stone-light/20 hover:bg-stone-light/10 text-text-secondary dark:text-dark-text-secondary text-sm font-medium rounded-full transition whitespace-nowrap">Recent</button>
+                     <button className="px-4 py-1.5 bg-transparent border border-stone-light/20 hover:bg-stone-light/10 text-text-secondary dark:text-dark-text-secondary text-sm font-medium rounded-full transition whitespace-nowrap">Published</button>
+                     <button className="px-4 py-1.5 bg-transparent border border-stone-light/20 hover:bg-stone-light/10 text-text-secondary dark:text-dark-text-secondary text-sm font-medium rounded-full transition whitespace-nowrap">Drafts</button>
+                  </div>
+                </div>
 
-                {/* Portfolio Projects */}
-                {projects.filter((p) => p.project_type === 'portfolio').length > 0 && (
-                  <div className="mb-12">
-                    <h3 className="text-lg font-semibold text-charcoal mb-6 flex items-center gap-2">
-                      <span>📐</span> Portfolios
-                    </h3>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {projects
-                        .filter((p) => p.project_type === 'portfolio')
-                        .map((project) => (
-                          <div 
-                            key={project.id} 
-                            onClick={() => router.push(`/dashboard/templates/saved/editor?project=${project.id}`)}
-                            className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10"
-                          >
-                            <div className="h-48 bg-gradient-to-br from-blue-100/50 to-blue-200/50 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center overflow-hidden relative">
-                              <div className="text-5xl opacity-40">📐</div>
-                              <div className="absolute inset-0 bg-white/20 dark:bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                            </div>
-                            <div className="p-6">
-                              <div className="flex items-start justify-between mb-2 gap-3">
-                                <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary flex-1 group-hover:text-accent-gold transition-colors">
-                                  {project.title}
-                                </h3>
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleDeleteProject(project.id)
-                                  }}
-                                  className="flex-shrink-0 text-stone-light hover:text-error transition-colors p-1 hover:bg-red-50 rounded"
-                                  title="Delete project"
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {projects.map((project) => {
+                    const isPortfolio = project.project_type === 'portfolio'
+                    return (
+                      <div 
+                        key={project.id} 
+                        className="bg-white dark:bg-[#1A1A1A] rounded-[16px] group overflow-hidden cursor-pointer relative shadow-sm border border-stone-light/10 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                        onClick={() => router.push(isPortfolio ? `/dashboard/project/${project.id}/portfolio/default` : `/dashboard/project/${project.id}/sheet`)}
+                      >
+                        {/* Thumbnail Placeholder (To be replaced with auto-thumbnails) */}
+                        <div className="h-56 bg-[#f8f9fa] dark:bg-[#111111] overflow-hidden relative border-b border-stone-light/10">
+                          <div className="absolute inset-0 flex items-center justify-center text-8xl opacity-5 font-bold text-slate-800 dark:text-white group-hover:scale-110 transition-transform duration-700 font-montserrat">
+                            {project.title.substring(0, 2).toUpperCase()}
+                          </div>
+                          
+                          {/* Status Badge */}
+                          <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-full text-[10px] font-bold font-inter text-stone-500 shadow-sm border border-stone-light/20 flex items-center gap-1.5">
+                             <div className={`w-1.5 h-1.5 rounded-full ${isPortfolio ? 'bg-yellow-400' : 'bg-blue-400'}`}></div> {isPortfolio ? 'Draft' : 'Editing'}
+                          </div>
+                          
+                          {/* Hover Action Menu */}
+                          <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 duration-300 flex justify-end gap-2">
+                            <button className="px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                              onClick={(e) => { e.stopPropagation(); router.push(isPortfolio ? `/dashboard/project/${project.id}/portfolio/default` : `/dashboard/project/${project.id}/sheet`) }}>
+                              ✏️ Edit
+                            </button>
+                            <div className="relative group/menu">
+                              <button className="p-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-lg text-white transition"
+                                onClick={(e) => e.stopPropagation()}>
+                                ⋮
+                              </button>
+                              <div className="absolute bottom-full right-0 mb-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-stone-light/10 overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all origin-bottom-right">
+                                <button className="w-full text-left px-4 py-2 text-xs font-medium text-text-primary dark:text-dark-text-primary hover:bg-stone-light/10 transition">🌍 Share</button>
+                                <button className="w-full text-left px-4 py-2 text-xs font-medium text-text-primary dark:text-dark-text-primary hover:bg-stone-light/10 transition">📄 Export PDF</button>
+                                <div className="h-px bg-stone-light/10 w-full"></div>
+                                <button 
+                                  className="w-full text-left px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id) }}
                                 >
-                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                                  </svg>
-                                </button>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="badge badge-info">Portfolio</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    router.push(`/dashboard/templates/saved/editor?project=${project.id}`)
-                                  }}
-                                  className="px-2.5 py-1 rounded-md bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition relative z-20"
-                                >
-                                  ✏️ Edit
+                                  Delete
                                 </button>
                               </div>
                             </div>
                           </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Sheet Projects */}
-                {projects.filter((p) => p.project_type === 'sheet').length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-charcoal mb-6 flex items-center gap-2">
-                      <span>🎨</span> Presentation Sheets
-                    </h3>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {projects
-                        .filter((p) => p.project_type === 'sheet')
-                        .map((project) => (
-                          <Link key={project.id} href={`/dashboard/project/${project.id}/sheet`}>
-                            <div className="glass-card rounded-2xl group overflow-hidden h-full cursor-pointer relative z-10">
-                              <div className="h-48 bg-gradient-to-br from-amber-100/50 to-amber-200/50 dark:from-amber-900/30 dark:to-amber-800/30 flex items-center justify-center overflow-hidden relative">
-                                <div className="text-5xl opacity-40">🎨</div>
-                                <div className="absolute inset-0 bg-white/20 dark:bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                              </div>
-                              <div className="p-6">
-                                <div className="flex items-start justify-between mb-2 gap-3">
-                                  <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary flex-1 group-hover:text-accent-gold transition-colors">
-                                    {project.title}
-                                  </h3>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      handleDeleteProject(project.id)
-                                    }}
-                                    className="flex-shrink-0 text-stone-light hover:text-error transition-colors p-1 hover:bg-red-50 rounded"
-                                    title="Delete project"
-                                  >
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                                    </svg>
-                                  </button>
-                                </div>
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="badge badge-success">Sheet</span>
-                                  <span className="text-stone-light">
-                                    {new Date(project.created_at).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric'
-                                    })}
-                                  </span>
-                                </div>
+                        </div>
+                        
+                        {/* Card Body */}
+                        <div className="p-5 flex-1 flex flex-col justify-between">
+                            <div>
+                              <h3 className="text-base font-bold font-montserrat text-text-primary dark:text-dark-text-primary mb-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                {project.title}
+                              </h3>
+                              <div className="text-[11px] font-inter text-text-secondary dark:text-dark-text-secondary mb-4 flex items-center justify-between">
+                                <span>{isPortfolio ? 'Minimal White Template' : 'Presentation Sheet'}</span>
+                                <span>Edited {new Date(project.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</span>
                               </div>
                             </div>
-                          </Link>
-                        ))}
-                    </div>
-                  </div>
-                )}
+                            
+                            {/* Progress Bar (Only for portfolios) */}
+                            {isPortfolio && (
+                              <div className="mt-auto pt-2 border-t border-stone-light/10">
+                                 <div className="flex justify-between items-center text-[10px] font-bold text-stone-light mb-2 font-inter">
+                                    <span>Portfolio Complete</span>
+                                    <span className="text-blue-600 dark:text-blue-400">78%</span>
+                                 </div>
+                                 <div className="w-full h-1.5 bg-stone-light/20 rounded-full overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 w-[78%] rounded-full relative">
+                                      <div className="absolute top-0 right-0 bottom-0 w-8 bg-white/30 skew-x-12 animate-progress-shimmer"></div>
+                                    </div>
+                                 </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </>
         )}
       </main>
+
+      {/* Floating Action Button */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <button 
+          onClick={() => {
+            setCreatingType('portfolio')
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-montserrat font-bold py-3.5 px-6 rounded-full shadow-[0_8px_30px_rgb(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgb(37,99,235,0.6)] hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+        >
+          <span className="text-xl leading-none">＋</span> Create Portfolio
+        </button>
+      </div>
     </div>
   )
 }

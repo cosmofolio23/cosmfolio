@@ -68,6 +68,7 @@ async def generate_pdf_from_html(
             },
             'printBackground': True,
             'preferCSSPageSize': True,
+            'scale': 2,
         }
         if options:
             pdf_options.update(options)
