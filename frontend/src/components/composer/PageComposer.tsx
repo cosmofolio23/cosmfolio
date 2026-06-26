@@ -380,13 +380,13 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
 }
 
 function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isActive, pos }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => void, showTypography?: boolean, isActive?: boolean, pos?: { x: number, y: number } }) {
-  const style: React.CSSProperties = isActive && pos ? { top: Math.max(0, pos.y - 45), left: pos.x } : {}
-  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
-  const placementClasses = isActive && pos ? "" : "top-1 left-1"
-  const visibilityClasses = isActive ? "opacity-100" : "opacity-0 group-hover/block-container:opacity-100"
+  if (!isActive) return null
 
+  const style: React.CSSProperties = pos ? { top: Math.max(0, pos.y - 45), left: pos.x } : {}
+  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
+  
   return (
-    <div className={`${baseClasses} ${placementClasses} ${visibilityClasses}`} style={style} onPointerDown={e => e.stopPropagation()}>
+    <div className={`${baseClasses} opacity-100`} style={style} onPointerDown={e => e.stopPropagation()}>
       {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
       {block.freeform && (
         <>
@@ -978,7 +978,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} group/block-container ${z}`}
+      className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30'} group/block-container ${z}`}
       onPointerDown={e => {
         const rect = e.currentTarget.getBoundingClientRect()
         setActiveBlock?.({ id: block.id, x: e.clientX - rect.left, y: e.clientY - rect.top })
