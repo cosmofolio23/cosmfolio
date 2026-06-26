@@ -170,15 +170,15 @@ export default function PortfolioBookPage() {
             halfCanvas.height = h
             const ctx = halfCanvas.getContext('2d')!
             ctx.drawImage(canvas, half * halfW, 0, halfW, h, 0, 0, halfW, h)
-            const imgData = halfCanvas.toDataURL('image/jpeg', 1.0)
+            const imgData = halfCanvas.toDataURL('image/png')
             if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], orientation)
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
             pdfPageIndex++
           }
         } else {
-          const imgData = canvas.toDataURL('image/jpeg', 1.0)
+          const imgData = canvas.toDataURL('image/png')
           if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
-          pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
           pdfPageIndex++
         }
       }
