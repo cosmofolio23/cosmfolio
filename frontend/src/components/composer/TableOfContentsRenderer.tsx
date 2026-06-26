@@ -3,8 +3,17 @@
 import React from 'react'
 import type { Block, DesignTokens } from './types'
 
+export function hexToRgba(hex: string, opacity: number) {
+  const h = hex.replace('#', '')
+  if (h.length !== 6) return hex
+  const r = parseInt(h.substring(0, 2), 16)
+  const g = parseInt(h.substring(2, 4), 16)
+  const b = parseInt(h.substring(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`
+}
+
 export interface TocStyleParams {
-  variant: 'vertical-stripes' | 'minimal-accent' | 'modern-cutout' | 'handdrawn-timeline' | 'generative'
+  variant: 'vertical-stripes' | 'minimal-accent' | 'modern-cutout' | 'handdrawn-timeline' | 'generative' | 'magazine' | 'timeline' | 'grid' | 'luxury' | 'research' | 'parametric' | 'competition' | 'academic' | 'minimal'
   // Generative properties (to enable 50+ iterations)
   structure?: 'list' | 'grid' | 'zigzag' | 'masonry' | 'scroll'
   imageShape?: 'pill' | 'square' | 'tall' | 'circle' | 'none'
@@ -65,6 +74,12 @@ export function TableOfContentsRenderer({
   }
 
   // Fallback for fresh templates
+  
+  const overlayEnabled = tokens.overlayEnabled !== false
+  const overlayBg = overlayEnabled ? hexToRgba(tokens.overlayColor || '#ffffff', tokens.overlayOpacity ?? 0.85) : 'transparent'
+  const overlayPad = overlayEnabled ? `${tokens.overlayPadding ?? 20}px` : '0px'
+  const baseOverlayCls = overlayEnabled ? 'backdrop-blur-md rounded-xl shadow-lg' : ''
+
   const items = projectItems.length > 0 ? projectItems : [
     { num: '01', title: 'Cultural Center', year: '2025', typology: 'Cultural', location: 'Tokyo, JP', thumbnail: '', pageNumber: '06' },
     { num: '02', title: 'Urban Housing', year: '2026', typology: 'Residential', location: 'London, UK', thumbnail: '', pageNumber: '18' },
@@ -78,7 +93,18 @@ export function TableOfContentsRenderer({
     const l = lid.toLowerCase()
     if (l.includes('magazine')) return { variant: 'vertical-stripes' }
     if (l.includes('timeline')) return { variant: 'handdrawn-timeline' }
-    if (l.includes('grid') || l.includes('thumb')) return { variant: 'minimal-accent' }
+    if (l.includes('grid') || l.includes('thumb')) 
+    if (l.includes('magazine')) return { variant: 'magazine' }
+    if (l.includes('timeline')) return { variant: 'timeline' }
+    if (l.includes('grid') || l.includes('thumb')) return { variant: 'grid' }
+    if (l.includes('luxury') || l.includes('editorial')) return { variant: 'luxury' }
+    if (l.includes('research')) return { variant: 'research' }
+    if (l.includes('parametric')) return { variant: 'parametric' }
+    if (l.includes('competition')) return { variant: 'competition' }
+    if (l.includes('academic') || l.includes('thesis')) return { variant: 'academic' }
+    if (l.includes('minimal')) return { variant: 'minimal' }
+    return { variant: 'minimal' }
+
     if (l.includes('luxury') || l.includes('editorial')) return { variant: 'modern-cutout' }
     
     // Default generative
@@ -96,7 +122,7 @@ export function TableOfContentsRenderer({
 
   // Generate a random style
   const handleRandomize = () => {
-    const variants = ['vertical-stripes', 'minimal-accent', 'modern-cutout', 'handdrawn-timeline', 'generative'] as const
+    const variants = ['vertical-stripes', 'minimal-accent', 'modern-cutout', 'handdrawn-timeline', 'generative', 'magazine', 'timeline', 'grid', 'luxury', 'research', 'parametric', 'competition', 'academic', 'minimal'] as const
     const structures = ['list', 'grid', 'zigzag', 'masonry'] as const
     const shapes = ['pill', 'square', 'tall', 'circle', 'none'] as const
     const numberings = ['outline', 'asterisk', 'serif', 'minimal', 'circled'] as const
@@ -317,11 +343,270 @@ export function TableOfContentsRenderer({
     </div>
   )
 
+  const renderMagazine = () => {
+    const featured = items[0]
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          {block.label || 'Contents'}
+        </h3>
+        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+          <div className="col-span-5 bg-black/5 rounded overflow-hidden relative flex flex-col justify-end p-3 min-h-[160px]">
+            {featured.thumbnail ? (
+              <div className="absolute inset-0 w-full h-full opacity-80" style={{ backgroundImage: `url(${featured.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            ) : (
+              <div className="absolute inset-0 bg-gray-200" />
+            )}
+            <div className="relative z-10 bg-black/60 text-white p-2 rounded">
+              <span className="text-[9px] uppercase tracking-wider block opacity-75">Featured Project</span>
+              <span className="text-xs font-bold block">{featured.title}</span>
+              <span className="text-[9px] block">Page {featured.pageNumber}</span>
+            </div>
+          </div>
+          <div className="col-span-7 space-y-2">
+            {items.map((it, idx) => (
+              <div key={idx} className="flex items-center justify-between border-b pb-1.5 border-black/5 text-xs">
+                <div className="flex gap-2">
+                  <span className="font-bold opacity-60">{it.num}</span>
+                  <div>
+                    <span className="font-semibold" style={{ color: tokens.text }}>{it.title}</span>
+                    <span className="text-[9px] text-gray-400 block">{it.typology} · {it.location}</span>
+                  </div>
+                </div>
+                <span className="font-semibold text-gray-500">p. {it.pageNumber}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderTimeline = () => {
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          {block.label || 'Timeline'}
+        </h3>
+        <div className="relative border-l border-slate-350 pl-4 ml-2 space-y-4 flex-1">
+          {items.map((it, idx) => (
+            <div key={idx} className="relative text-xs">
+              <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 border border-white" />
+              <div className="flex justify-between items-baseline">
+                <div>
+                  <span className="font-mono text-[9px] text-blue-600 font-bold mr-2">{it.year}</span>
+                  <span className="font-semibold" style={{ color: tokens.text }}>{it.title}</span>
+                </div>
+                <span className="font-semibold text-gray-400">Page {it.pageNumber}</span>
+              </div>
+              <span className="text-[9px] text-gray-400 block mt-0.5">{it.typology} | {it.location}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderGrid = () => {
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          {block.label || 'Project Index'}
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          {items.map((it, idx) => (
+            <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2">
+              <div className="w-12 h-12 bg-black/5 rounded overflow-hidden flex-shrink-0">
+                {it.thumbnail ? (
+                  <div className="w-full h-full" style={{ backgroundImage: `url(${it.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-400">{it.num}</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold opacity-60 mr-1">{it.num}</span>
+                  <span className="font-bold text-gray-400">p.{it.pageNumber}</span>
+                </div>
+                <div className="font-semibold text-[10px] truncate" style={{ color: tokens.text }}>{it.title}</div>
+                <div className="text-[8px] text-gray-400 truncate">{it.typology} · {it.location}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderLuxury = () => {
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-yellow-900/10' : ''}`} style={{ fontFamily: 'Playfair Display, Lora, Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-2xl font-normal tracking-[0.15em] text-center mb-5 italic" style={{ color: tokens.primary }}>
+          {block.label || 'Portfolio Index'}
+        </h3>
+        <div className="space-y-3">
+          {items.map((it, idx) => (
+            <div key={idx} className="flex justify-between items-baseline border-b border-yellow-800/10 pb-1.5 text-xs">
+              <div className="flex items-baseline gap-3">
+                <span className="text-[10px] tracking-wider text-yellow-700/80 font-serif italic">{it.num}</span>
+                <div>
+                  <span className="font-medium text-slate-800 tracking-wide text-xs">{it.title}</span>
+                  <span className="text-[9px] text-slate-400 block tracking-wider font-sans uppercase mt-0.5">{it.typology} / {it.location} ({it.year})</span>
+                </div>
+              </div>
+              <span className="font-serif italic text-slate-500 text-xs">p. {it.pageNumber}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderResearch = () => {
+    return (
+      <div className={`w-full flex flex-col h-full font-mono text-[9px] text-slate-600 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-xs font-bold uppercase tracking-widest mb-3 border-b border-dashed pb-1.5" style={{ color: tokens.primary }}>
+          // INDEX_SPEC_REF_01
+        </h3>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-slate-350 text-left opacity-75">
+              <th className="py-1">ID</th>
+              <th className="py-1">PROJECT DESCRIPTION</th>
+              <th className="py-1">TYPOLOGY</th>
+              <th className="py-1">LOC</th>
+              <th className="py-1 text-right">PAGE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((it, idx) => (
+              <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
+                <td className="py-1.5 font-bold text-slate-900">{it.num}</td>
+                <td className="py-1.5 font-semibold text-slate-800 uppercase">{it.title} ({it.year})</td>
+                <td className="py-1.5">{it.typology}</td>
+                <td className="py-1.5">{it.location}</td>
+                <td className="py-1.5 text-right font-bold text-slate-900">P.{it.pageNumber}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  const renderParametric = () => {
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          PROJECTS.MATRIX
+        </h3>
+        <div className="space-y-2.5">
+          {items.map((it, idx) => (
+            <div key={idx} className="group flex items-stretch border-l-4 border-slate-900 bg-slate-50 p-2 text-xs transition hover:bg-slate-100">
+              <div className="flex-1 min-w-0 pr-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[9px] bg-slate-900 text-white px-1 font-bold">{it.num}</span>
+                  <span className="font-bold uppercase tracking-tight truncate" style={{ color: tokens.text }}>{it.title}</span>
+                </div>
+                <div className="text-[9px] text-slate-500 mt-1 uppercase truncate">{it.typology} // {it.location}</div>
+              </div>
+              <div className="flex flex-col justify-center items-end border-l border-slate-200 pl-3">
+                <span className="text-[8px] text-slate-400 font-bold uppercase">PAGE</span>
+                <span className="text-sm font-black text-slate-800">{it.pageNumber}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderCompetition = () => {
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-xl font-bold uppercase tracking-tight mb-4" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+          INDEX / WORK_SAMPLES
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {items.map((it, idx) => (
+            <div key={idx} className="border-t-2 border-slate-900 pt-2 flex flex-col justify-between text-xs min-h-[90px]">
+              <div>
+                <div className="flex justify-between font-bold text-[10px]">
+                  <span>{it.num}</span>
+                  <span>{it.year}</span>
+                </div>
+                <h4 className="font-bold uppercase tracking-tight text-sm mt-1 leading-tight" style={{ color: tokens.text }}>{it.title}</h4>
+                <p className="text-[9px] text-gray-500 mt-1">{it.typology} · {it.location}</p>
+              </div>
+              <div className="text-right font-bold text-lg mt-2">p.{it.pageNumber}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderAcademic = () => {
+    return (
+      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: 'Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-lg font-serif italic mb-4 border-b border-slate-300 pb-2 text-slate-700">
+          Table of Contents
+        </h3>
+        <div className="space-y-3 text-xs">
+          {items.map((it, idx) => (
+            <div key={idx} className="flex justify-between items-baseline gap-4">
+              <div className="flex items-baseline gap-2 flex-1 min-w-0">
+                <span className="font-sans font-semibold text-[10px] text-slate-400">{it.num}</span>
+                <span className="font-semibold text-slate-800 truncate">{it.title}</span>
+                <span className="flex-1 border-b border-dotted border-slate-300 mx-1 min-w-[20px] self-end h-[3px]" />
+              </div>
+              <span className="font-sans text-[10px] text-slate-500">{it.typology}</span>
+              <span className="font-sans font-bold text-slate-700">Page {it.pageNumber}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderMinimal = () => {
+    return (
+    <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+      <h3 className="text-xs font-bold uppercase tracking-[0.25em] mb-4 pb-2 border-b" style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.headingFont }}>
+        {block.label || 'CONTENTS'}
+      </h3>
+      <div className="space-y-2.5">
+        {items.map((it, idx) => (
+          <div key={idx} className="flex items-center justify-between text-xs pb-1.5 border-b border-black/[0.04]">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[10px] text-gray-400">{it.num}</span>
+              <div>
+                <span className="font-medium" style={{ color: tokens.text }}>{it.title}</span>
+                <span className="text-[9px] text-gray-400 ml-2">({it.year}) · {it.typology}</span>
+              </div>
+            </div>
+            <span className="font-mono font-bold text-gray-600">{it.pageNumber}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+  }
+
   switch (variant) {
     case 'vertical-stripes': return renderVerticalStripes()
     case 'minimal-accent': return renderMinimalAccent()
     case 'modern-cutout': return renderModernCutout()
     case 'handdrawn-timeline': return renderHanddrawnTimeline()
+    case 'magazine': return renderMagazine()
+    case 'timeline': return renderTimeline()
+    case 'grid': return renderGrid()
+    case 'luxury': return renderLuxury()
+    case 'research': return renderResearch()
+    case 'parametric': return renderParametric()
+    case 'competition': return renderCompetition()
+    case 'academic': return renderAcademic()
+    case 'minimal': return renderMinimal()
     case 'generative':
     default:
       return renderGenerative()
