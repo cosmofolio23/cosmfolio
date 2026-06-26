@@ -315,6 +315,44 @@ function ImageUploadPlaceholder({
    block in place — no separate form/modal needed.
    ══════════════════════════════════════════════════════════════════════════*/
 
+function BlockTypographySettings({ block, tokens, onChange }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void }) {
+  const [open, setOpen] = useState(false)
+  const [isEditorOpen, setIsEditorOpen] = useState(false)
+
+  return (
+    <div 
+      className="relative flex items-center print:hidden" 
+      onMouseEnter={() => setIsEditorOpen(true)}
+      onMouseLeave={() => { setIsEditorOpen(false); setOpen(false); }}
+    >
+      <button onClick={() => setOpen(!open)} className="text-[12px] p-1 rounded transition-colors font-bold opacity-40 hover:opacity-100 hover:bg-black/5" style={{ color: tokens.text }} title="Typography">
+        A
+      </button>
+      
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left z-50 print:hidden cursor-default">
+          <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round((block.fontSize || 1)*100)}%</span></div>
+              <input type="range" min="0.5" max="2" step="0.1" value={block.fontSize || 1} onChange={e => onChange({ fontSize: parseFloat(e.target.value) })} className="w-full accent-black" />
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] uppercase text-gray-500 font-semibold">Text Color</span>
+              <input type="color" value={block.color || tokens.text} onChange={e => onChange({ color: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] uppercase text-gray-500 font-semibold">Title Color</span>
+              <input type="color" value={block.tocStyle?.titleColor || tokens.primary} onChange={e => onChange({ tocStyle: { ...(block.tocStyle || {}), titleColor: e.target.value } })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+
 function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onUpload?: (f: File) => Promise<string> }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -347,19 +385,37 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(block.text || '')
   const save = () => { onChange({ text: draft }); setEditing(false) }
+  
+  const finalPrimary = block.tocStyle?.titleColor || tokens.primary
+  const finalText = block.color || tokens.text
+  const finalFontSize = block.fontSize || 1
+
   return (
-    <div className="w-full h-full flex flex-col gap-2 overflow-hidden relative">
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
-        <span className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Profile</span>
+    <div className="w-full h-full flex flex-col gap-2 overflow-hidden relative" style={{ zoom: finalFontSize } as React.CSSProperties}>
+      <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Profile</span>
+        </div>
+        <div className="flex items-center gap-3 print:hidden">
+          <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
+          {block.freeform && (
+            <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+              {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+            </button>
+          )}
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
+          </button>
+        </div>
       </div>
       {editing ? (
         <div className="flex flex-col gap-1 flex-1 pl-6">
-          <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-relaxed bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+          <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-relaxed bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
           <button onClick={save} className="text-[9px] font-bold tracking-wider px-3 py-1 rounded self-start mt-1" style={{ background: tokens.accent, color: '#fff' }}>SAVE</button>
         </div>
       ) : (
-        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
+        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors" style={{ color: finalText, fontFamily: tokens.bodyFont }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
           {block.text || <span className="opacity-40 italic">Click to write your architectural manifesto or professional summary...</span>}
         </p>
       )}
@@ -373,11 +429,17 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
   const add = () => patch([...entries, { title: 'Degree / School', org: 'Institution', year: '2026', detail: '' }])
   const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
+  
+  const finalPrimary = block.tocStyle?.titleColor || tokens.primary
+  const finalText = block.color || tokens.text
+  const finalFontSize = block.fontSize || 1
+  
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <div className="flex items-center gap-3 print:hidden">
+          <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -400,8 +462,8 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
             </div>
             
             <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-hidden min-h-0 shrink">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: tokens.primary, fontFamily: tokens.headingFont }} />
-              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalPrimary, fontFamily: tokens.headingFont }} />
+              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               <textarea 
                 value={e.detail || ''} 
                 onChange={ev => upd(i, 'detail', ev.target.value)} 
@@ -412,7 +474,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
                 placeholder="Description / Details" 
                 rows={1} 
                 className="w-full mt-1 text-[9.5px] leading-relaxed opacity-70 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0" 
-                style={{ color: tokens.text, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
+                style={{ color: finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
             <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
@@ -473,11 +535,16 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
   const del = (i: number) => patch(items.filter((_, idx) => idx !== i))
   const isSoftware = label === 'Software'
 
+  const finalPrimary = block.tocStyle?.titleColor || tokens.primary
+  const finalText = block.color || tokens.text
+  const finalFontSize = block.fontSize || 1
+
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3 print:hidden">
+          <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -496,7 +563,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
-                <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: tokens.primary, fontFamily: tokens.bodyFont }} />
+                <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               </div>
               <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
             </div>
@@ -527,11 +594,17 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
   const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
   const isAchievement = label === 'Achievements'
+  
+  const finalPrimary = block.tocStyle?.titleColor || tokens.primary
+  const finalText = block.color || tokens.text
+  const finalFontSize = block.fontSize || 1
+
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3 print:hidden">
+          <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -548,11 +621,11 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
           <div key={i} className="group flex gap-2 items-start relative pl-3 shrink min-h-0 overflow-hidden">
             <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>{icon}</span>
             <div className="flex-1 min-w-0 flex flex-col min-h-0 shrink">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
                 <div className="flex gap-2 items-center mt-0.5 shrink-0">
-                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
-                  <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: tokens.text }} />
+                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
+                  <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: finalText }} />
                 </div>
               )}
               <textarea 
@@ -565,7 +638,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
                 placeholder="Detail" 
                 rows={1} 
                 className="w-full mt-1 text-[9px] leading-relaxed opacity-60 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0" 
-                style={{ color: tokens.text, minHeight: '14px' }} 
+                style={{ color: finalText, minHeight: '14px' }} 
               />
             </div>
             <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
