@@ -32,6 +32,9 @@ export const metadata: Metadata = {
     description: 'Build a professional architecture portfolio in minutes from preset templates.',
     images: ['/og-image.png'],
   },
+  verification: {
+    google: 'JJ_fe3hMtaz8RQriwpGJ1b5oWPkTDYsBXhIWbhApmus',
+  }
 }
 
 export default function RootLayout({
