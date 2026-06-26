@@ -379,7 +379,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
-          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title="Unlock from Grid">
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Lock to Grid" : "Unlock from Grid"}>
             {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
           </button>
         </div>
@@ -474,7 +474,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
-          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title="Unlock from Grid">
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Lock to Grid" : "Unlock from Grid"}>
             {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
           </button>
         </div>
@@ -523,7 +523,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
-          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title="Unlock from Grid">
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Lock to Grid" : "Unlock from Grid"}>
             {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
           </button>
         </div>
@@ -531,7 +531,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
       <div className="flex flex-col flex-1 overflow-hidden pr-1 mt-1" style={{ gap: Math.max(0, 14 - entries.length * 3) + 'px' }}>
         {entries.map((e, i) => (
           <div key={i} className="group flex gap-2 items-start relative pl-3 shrink min-h-0 overflow-hidden">
-            <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>+</span>
+            <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>{icon}</span>
             <div className="flex-1 min-w-0 flex flex-col min-h-0 shrink">
               <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
@@ -562,7 +562,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
   )
 }
 
-function FreeformWrapper({ block, patchBlock, children, zClass }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string }) {
+function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string, tokens: DesignTokens }) {
   const dragRef = useRef<{ mode: 'move'|'resize', sx: number, sy: number, startFree: any } | null>(null)
 
   const isFree = !!block?.freeform
@@ -601,13 +601,14 @@ function FreeformWrapper({ block, patchBlock, children, zClass }: { block?: Bloc
 
   return (
     <div 
-      className={`absolute shadow-2xl ring-1 ring-blue-500/50 hover:ring-blue-500 group/free ${zClass}`}
+      className={`absolute shadow-2xl ring-1 ring-blue-500/50 hover:ring-blue-500 group/free rounded ${zClass}`}
       style={{
         left: `${block.freeform!.x}%`,
         top: `${block.freeform!.y}%`,
         width: `${block.freeform!.w}%`,
         height: `${block.freeform!.h}%`,
-        zIndex: 50
+        zIndex: 50,
+        backgroundColor: tokens.background || '#ffffff',
       }}
       onPointerDown={e => onPointerDown(e, 'move')}
       onPointerMove={onPointerMove}
@@ -821,8 +822,8 @@ function RegionView({
   const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
 
   return (
-    <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z}>
-    <div style={finalStyle} className={`min-h-0 overflow-hidden ${z}`}>
+    <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
+    <div style={finalStyle} className={`min-h-0 overflow-hidden p-3 ${z}`}>
       {region.role === 'title' && (
         titleBlock
           ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
