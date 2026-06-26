@@ -80,6 +80,9 @@ export interface Block {
   bold?: boolean
   align?: 'left' | 'center' | 'right'
   color?: string
+
+  // TOC Generative Engine styling
+  tocStyle?: any
 }
 
 export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume' | 'contents'
