@@ -980,8 +980,16 @@ function RegionView({
       style={finalStyle} 
       className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30'} group/block-container ${z}`}
       onPointerDown={e => {
+        e.stopPropagation()
         const rect = e.currentTarget.getBoundingClientRect()
-        setActiveBlock?.({ id: block.id, x: e.clientX - rect.left, y: e.clientY - rect.top })
+        // Account for CSS transform scale (e.g. from canvas zoom)
+        const scaleX = rect.width / (e.currentTarget.offsetWidth || 1)
+        const scaleY = rect.height / (e.currentTarget.offsetHeight || 1)
+        setActiveBlock?.({ 
+          id: block.id, 
+          x: (e.clientX - rect.left) / scaleX, 
+          y: (e.clientY - rect.top) / scaleY 
+        })
       }}
     >
       {!['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (

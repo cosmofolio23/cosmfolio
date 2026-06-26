@@ -561,8 +561,36 @@ export default function TemplateEditor() {
   const canvasRef = useRef<HTMLElement>(null)
   const [canvasZoom, setCanvasZoom] = useState(1)
   const clampZoom = (z: number) => Math.max(0.15, Math.min(3, z))
-  const zoomIn = () => setCanvasZoom(z => clampZoom(+(z + 0.1).toFixed(2)))
-  const zoomOut = () => setCanvasZoom(z => clampZoom(+(z - 0.1).toFixed(2)))
+  
+  const applyZoomCentered = (targetZoom: number) => {
+    const newZoom = clampZoom(targetZoom)
+    if (canvasZoom === newZoom) return
+    
+    const container = document.getElementById('canvas-scroll-container')
+    if (container) {
+      const scaleRatio = newZoom / canvasZoom
+      const clientX = container.clientWidth / 2
+      const clientY = container.clientHeight / 2
+      const scrollX = container.scrollLeft + clientX
+      const scrollY = container.scrollTop + clientY
+      
+      const newScrollX = scrollX * scaleRatio - clientX
+      const newScrollY = scrollY * scaleRatio - clientY
+      
+      setCanvasZoom(newZoom)
+      
+      // Apply scroll after React updates the DOM size
+      setTimeout(() => {
+        container.scrollLeft = newScrollX
+        container.scrollTop = newScrollY
+      }, 0)
+    } else {
+      setCanvasZoom(newZoom)
+    }
+  }
+
+  const zoomIn = () => applyZoomCentered(+(canvasZoom + 0.1).toFixed(2))
+  const zoomOut = () => applyZoomCentered(+(canvasZoom - 0.1).toFixed(2))
   const fitToScreen = () => {
     const m = canvasRef.current
     if (!m) return
@@ -2135,7 +2163,7 @@ export default function TemplateEditor() {
           <div className="sticky top-0 z-30 flex justify-center pointer-events-none mt-2 mb-3 shrink-0">
             <div id="tour-canvas-zoom" className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">
               <button onClick={zoomOut} title="Zoom out" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">−</button>
-              <button onClick={() => setCanvasZoom(1)} title="Reset to 100%" className="px-2 text-xs font-medium text-gray-700 tabular-nums min-w-[44px]">{Math.round(canvasZoom * 100)}%</button>
+              <button onClick={() => applyZoomCentered(1)} title="Reset to 100%" className="px-2 text-xs font-medium text-gray-700 tabular-nums min-w-[44px]">{Math.round(canvasZoom * 100)}%</button>
               <button onClick={zoomIn} title="Zoom in" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">+</button>
               <div className="w-px h-4 bg-gray-200 mx-0.5" />
               <button onClick={fitToScreen} title="Fit page to screen" className="px-2.5 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-xs font-medium">Fit</button>
