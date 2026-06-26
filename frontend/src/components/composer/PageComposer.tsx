@@ -379,6 +379,11 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+          {block.freeform && (
+            <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+              {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+            </button>
+          )}
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
@@ -474,6 +479,11 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+          {block.freeform && (
+            <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+              {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+            </button>
+          )}
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
@@ -523,6 +533,11 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+          {block.freeform && (
+            <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+              {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+            </button>
+          )}
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
@@ -599,9 +614,11 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
     dragRef.current = null
   }
 
+  const isPinned = !!block.freeform!.pinned
+
   return (
     <div 
-      className={`absolute shadow-2xl ring-1 ring-blue-500/50 hover:ring-blue-500 group/free rounded transition-all focus-within:z-[110] focus:z-[110] hover:z-[110] outline-none ${zClass}`}
+      className={`absolute shadow-2xl ${isPinned ? '' : 'ring-1 ring-blue-500/50 hover:ring-blue-500'} group/free rounded transition-all focus-within:z-[110] focus:z-[110] hover:z-[110] outline-none ${zClass}`}
       tabIndex={-1}
       style={{
         left: `${block.freeform!.x}%`,
@@ -611,21 +628,23 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
         zIndex: 50,
         backgroundColor: tokens.background || '#ffffff',
       }}
-      onPointerDown={e => onPointerDown(e, 'move')}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onPointerDown={isPinned ? undefined : e => onPointerDown(e, 'move')}
+      onPointerMove={isPinned ? undefined : onPointerMove}
+      onPointerUp={isPinned ? undefined : onPointerUp}
+      onPointerCancel={isPinned ? undefined : onPointerUp}
     >
-      <div className="w-full h-full cursor-move pointer-events-auto">
+      <div className={`w-full h-full ${isPinned ? '' : 'cursor-move'} pointer-events-auto`}>
         {children}
       </div>
       
       {/* SE Resize Handle */}
-      <div 
-        onPointerDown={e => onPointerDown(e, 'resize')}
-        className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity" 
-        style={{ cursor: 'nwse-resize', zIndex: 60 }} 
-      />
+      {!isPinned && (
+        <div 
+          onPointerDown={e => onPointerDown(e, 'resize')}
+          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity" 
+          style={{ cursor: 'nwse-resize', zIndex: 60 }} 
+        />
+      )}
     </div>
   )
 }

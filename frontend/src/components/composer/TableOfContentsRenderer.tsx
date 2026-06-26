@@ -727,6 +727,14 @@ export function TableOfContentsRenderer({
         </div>
 
         <div className="w-full h-px bg-black/10 my-2" />
+        {block.freeform && (
+          <button 
+            onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })}
+            className={`w-full py-2 mb-1 rounded text-[10px] font-bold uppercase tracking-wider transition ${block.freeform.pinned ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+          >
+            {block.freeform.pinned ? '📍 Unpin from Screen' : '📌 Pin to Screen'}
+          </button>
+        )}
         <button 
           onClick={() => {
             if (block.freeform) {
