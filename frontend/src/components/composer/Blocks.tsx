@@ -1,5 +1,5 @@
-import { TableOfContentsRenderer } from './TableOfContentsRenderer'
 'use client'
+import { TableOfContentsRenderer } from './TableOfContentsRenderer'
 
 import { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
