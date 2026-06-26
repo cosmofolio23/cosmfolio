@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/auth'
 import DashboardHeader from '@/components/DashboardHeader'
 import { auth } from '@/lib/firebase'
 import { updateProfile, updatePassword } from 'firebase/auth'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = useAuthStore()
@@ -186,6 +188,12 @@ export default function ProfilePage() {
       <DashboardHeader />
       
       <main className="container-centered py-12 md:py-16">
+        <div className="mb-6">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-accent-gold transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+        </div>
         <h2 className="text-3xl font-bold mb-8 text-text-primary dark:text-dark-text-primary">Profile Settings</h2>
         
         <div className="grid md:grid-cols-3 gap-8">
