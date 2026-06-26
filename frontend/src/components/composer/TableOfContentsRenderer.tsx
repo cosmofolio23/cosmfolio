@@ -218,8 +218,8 @@ export function TableOfContentsRenderer({
                     : structure === 'masonry' ? 'columns-2 md:columns-3'
                     : structure === 'mosaic' ? 'grid grid-cols-4 [&>*:nth-child(3n+1)]:col-span-2 [&>*:nth-child(3n+1)]:row-span-2'
                     : structure === 'bento-box' ? 'grid grid-cols-3 auto-rows-[minmax(0,1fr)] [&>*:nth-child(4n+1)]:col-span-2'
-                    : structure === 'filmstrip' ? 'flex flex-row overflow-x-auto pb-4 snap-x w-full max-w-full'
-                    : structure === 'carousel' ? 'flex flex-row overflow-x-auto pb-8 snap-x w-full max-w-full'
+                    : structure === 'filmstrip' ? 'flex flex-row overflow-x-auto pb-4 snap-x w-full max-w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'
+                    : structure === 'carousel' ? 'flex flex-row overflow-x-auto pb-8 snap-x w-full max-w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'
                     : 'flex flex-col'
 
     const itemClass = structure === 'zigzag' ? 'flex items-center even:flex-row-reverse min-h-[32px]' 
