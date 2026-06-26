@@ -23,7 +23,7 @@ interface ProjectIndexItem {
 }
 
 export function TableOfContentsRenderer({
-  block, tokens, pages, onChange
+  block, tokens, pages, onChange, layoutId
 }: {
   block: Block
   tokens: DesignTokens
