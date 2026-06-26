@@ -51,6 +51,8 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
 }
 
 export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true }: Props) {
+  const [activeBlock, setActiveBlock] = useState<{ id: string, x: number, y: number } | null>(null)
+  
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
@@ -144,6 +146,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
       <div
         className="absolute inset-0 grid p-6"
         style={{ gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)', gridAutoColumns: '1fr', gap: 8 }}
+        onPointerDown={() => setActiveBlock(null)}
       >
         {spec.regions.map((region, i) => (
           <RegionView
@@ -162,6 +165,8 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             pageContext={pageContext}
             onUpdateGlobalPages={onUpdateGlobalPages}
             masterElements={masterElements}
+            activeBlock={activeBlock}
+            setActiveBlock={setActiveBlock}
             onInsertImage={url => {
               // Exact placeholder slot replacement logic (BUG 1)
               const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
@@ -374,9 +379,14 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
   )
 }
 
-function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => void, showTypography?: boolean }) {
+function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isActive, pos }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => void, showTypography?: boolean, isActive?: boolean, pos?: { x: number, y: number } }) {
+  const style: React.CSSProperties = isActive && pos ? { top: Math.max(0, pos.y - 45), left: pos.x } : {}
+  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
+  const placementClasses = isActive && pos ? "" : "top-1 left-1"
+  const visibilityClasses = isActive ? "opacity-100" : "opacity-0 group-hover/block-container:opacity-100"
+
   return (
-    <div className="absolute top-1 right-1 flex items-center gap-2 opacity-0 group-hover/block-container:opacity-100 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto">
+    <div className={`${baseClasses} ${placementClasses} ${visibilityClasses}`} style={style} onPointerDown={e => e.stopPropagation()}>
       {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
       {block.freeform && (
         <>
@@ -773,7 +783,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements,
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock
 }: {
   region: Region
   spec: LayoutSpec
@@ -790,6 +800,8 @@ function RegionView({
   pageContext?: PageContext
   onUpdateGlobalPages?: (updater: (pages: Page[]) => Page[]) => void
   masterElements?: MasterElement[]
+  activeBlock?: { id: string, x: number, y: number } | null
+  setActiveBlock?: (v: { id: string, x: number, y: number } | null) => void
 }) {
   const style = { ...gridStyle(region) }
 
@@ -964,9 +976,21 @@ function RegionView({
 
   return (
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
-    <div style={finalStyle} className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} group/block-container ${z}`}>
+    <div 
+      style={finalStyle} 
+      className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} group/block-container ${z}`}
+      onPointerDown={e => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        setActiveBlock?.({ id: block.id, x: e.clientX - rect.left, y: e.clientY - rect.top })
+      }}
+    >
       {!['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
-        <BlockHoverToolbar block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} showTypography={!['render', 'plan', 'section', 'diagram', 'headshot'].includes(block.type)} />
+        <BlockHoverToolbar 
+          block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} 
+          showTypography={!['render', 'plan', 'section', 'diagram', 'headshot'].includes(block.type)} 
+          isActive={activeBlock?.id === block.id}
+          pos={activeBlock?.id === block.id ? { x: activeBlock.x, y: activeBlock.y } : undefined}
+        />
       )}
       {region.role === 'title' && (
         titleBlock
