@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: 'CosmoFolio — Architecture Portfolio Generator',
   description: 'Build a professional architecture portfolio in minutes from preset templates. Free to start.',
   keywords: ['architecture portfolio', 'portfolio generator', 'architecture students', 'B.Arch portfolio', 'portfolio templates'],
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 
   openGraph: {
     title: 'CosmoFolio — Architecture Portfolio Generator',
