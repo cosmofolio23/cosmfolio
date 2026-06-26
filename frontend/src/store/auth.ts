@@ -161,7 +161,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
             id: userData.id,
             email: userData.email,
             name: userData.name || '',
-            created_at: userData.created_at
+            created_at: userData.created_at,
+            plan_type: userData.plan_type,
+            is_pro: userData.plan_type === 'pro'
           }
         })
       }

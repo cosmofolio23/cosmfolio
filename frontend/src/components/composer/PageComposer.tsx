@@ -15,6 +15,7 @@ import type { BackgroundLayer, MasterElement, GridSettings, PageSize } from './p
 import { FreeCanvas } from './FreeCanvas'
 import type { FreeElement } from './types'
 import { apiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 
 const toPalette = (t: DesignTokens): DemoPalette => ({
   primary: t.primary, accent: t.accent, bg: t.background, text: t.text, muted: t.muted,
@@ -50,7 +51,11 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   software: 'software', achievement: 'achievement', interest: 'interest',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark: _showWatermark = true }: Props) {
+  const { user } = useAuthStore()
+  const isPro = user?.is_pro || user?.plan_type === 'pro'
+  const showWatermark = isPro ? false : _showWatermark
+
   const [activeBlock, setActiveBlock] = useState<{ id: string, x: number, y: number } | null>(null)
   
   const spec = getSpec(page.layoutId)

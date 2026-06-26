@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [state, setState] = useState('')
   const [yearOfPassing, setYearOfPassing] = useState('')
   const [stream, setStream] = useState('')
+  const [isPro, setIsPro] = useState(false)
   
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [detailsSuccess, setDetailsSuccess] = useState('')
@@ -66,6 +67,7 @@ export default function ProfilePage() {
         if (data.state) setState(data.state)
         if (data.year_of_passing) setYearOfPassing(data.year_of_passing)
         if (data.stream) setStream(data.stream)
+        if (data.plan_type === 'pro') setIsPro(true)
       }
     } catch (err) {
       console.error(err)
@@ -188,7 +190,14 @@ export default function ProfilePage() {
             Back to Dashboard
           </Link>
         </div>
-        <h2 className="text-3xl font-bold mb-8 text-text-primary dark:text-dark-text-primary">Profile Settings</h2>
+        <div className="flex items-center gap-4 mb-8">
+          <h2 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">Profile Settings</h2>
+          {isPro && (
+            <span className="px-3 py-1 bg-gradient-to-r from-accent-gold to-yellow-500 text-black text-xs font-bold tracking-widest uppercase rounded-full shadow-lg">
+              Pro Member
+            </span>
+          )}
+        </div>
         
         <div className="grid md:grid-cols-3 gap-8">
           {/* Left Column: Avatar & Password */}

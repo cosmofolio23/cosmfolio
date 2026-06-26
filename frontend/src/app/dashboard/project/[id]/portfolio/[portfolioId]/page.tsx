@@ -466,7 +466,7 @@ export default function PortfolioEditorPage() {
           <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
             {pages.map((page) => (
               <div key={page.id}>
-                <PageComposer page={page} tokens={tokens} onChange={() => {}} />
+                <PageComposer page={page} tokens={tokens} onChange={() => {}} showWatermark={!isPro} />
                 <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
               </div>
             ))}
@@ -530,7 +530,7 @@ export default function PortfolioEditorPage() {
         <main className={`${isMobile ? (mobileTab === 'canvas' ? 'block absolute inset-0 z-10 w-full' : 'hidden') : 'flex-1'} overflow-y-auto bg-gray-300/40 p-2 md:p-8 flex justify-center`}>
           {currentPage && (
             <div className="w-full max-w-[680px]">
-              <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} />
+              <PageComposer page={currentPage} tokens={tokens} onChange={updatePage} onUploadImage={uploadImage} showWatermark={!isPro} />
               <div className="mt-3 text-center text-[11px] text-gray-400">
                 {currentPage.type} · {getSpec(currentPage.layoutId).name}
               </div>
