@@ -231,7 +231,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 }
 
 function gridStyle(r: Region): React.CSSProperties {
-  return { gridColumn: `${r.c0} / span ${r.cs}`, gridRow: `${r.r0} / span ${r.rs}`, minHeight: 0, minWidth: 0, position: 'relative', zIndex: 20 }
+  return { gridColumn: `${r.c0} / span ${r.cs}`, gridRow: `${r.r0} / span ${r.rs}`, minHeight: 0, minWidth: 0, position: 'relative' }
 }
 
 function ImageUploadPlaceholder({
@@ -355,7 +355,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
       </div>
       {editing ? (
         <div className="flex flex-col gap-1 flex-1 pl-6">
-          <textarea value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-relaxed bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+          <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-relaxed bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
           <button onClick={save} className="text-[9px] font-bold tracking-wider px-3 py-1 rounded self-start mt-1" style={{ background: tokens.accent, color: '#fff' }}>SAVE</button>
         </div>
       ) : (
@@ -682,7 +682,7 @@ function RegionView({
     const block = images[idx]
     if (block) {
       return (
-        <div style={style} className={overlay ? 'z-0' : ''}>
+        <div style={style} className={`transition-all duration-200 ${overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
           <ImageBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} fill showLabel={!overlay} onUpload={onUploadImage} />
         </div>
       )
@@ -710,7 +710,7 @@ function RegionView({
       <button
         style={style}
         onClick={() => addBlock(type)}
-        className={`flex items-center justify-center text-[10px] uppercase tracking-widest font-semibold text-gray-300 hover:text-blue-500 border border-dashed border-transparent hover:border-blue-300 rounded-sm transition ${z}`}
+        className={`flex items-center justify-center text-[10px] uppercase tracking-widest font-semibold text-gray-300 hover:text-blue-500 border border-dashed border-transparent hover:border-blue-300 rounded-sm transition-all duration-200 z-20 hover:z-[100] focus-within:z-[100] ${z}`}
       >
         + {region.role}
       </button>
@@ -823,7 +823,7 @@ function RegionView({
 
   return (
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
-    <div style={finalStyle} className={`min-h-0 overflow-hidden p-3 ${z}`}>
+    <div style={finalStyle} className={`min-h-0 overflow-hidden p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} ${z}`}>
       {region.role === 'title' && (
         titleBlock
           ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
