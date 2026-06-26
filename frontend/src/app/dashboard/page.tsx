@@ -84,8 +84,8 @@ export default function Dashboard() {
         setNewProjectTitle('')
         setShowNewProject(false)
         setCreatingType(null)
-        // Redirect directly to the newly created project
-        router.push(`/dashboard/project/${newProject.id}`)
+        // Redirect directly to the editor for portfolios, or sheet creator for sheets
+        router.push(creatingType === 'portfolio' ? `/dashboard/templates/default/editor?project=${newProject.id}` : `/dashboard/project/${newProject.id}/sheet`)
       } else {
         const errorData = await res.json().catch(() => ({}))
         console.error('Failed to create project:', errorData)
@@ -186,14 +186,25 @@ export default function Dashboard() {
             </div>
           </Link>
 
-          <Link href="/dashboard/sheets" className="p-[1px] bg-stone-light/20 rounded-2xl group hover:shadow-lg hover:-translate-y-1 transition duration-300 block">
-            <div className="bg-white dark:bg-[#1A1A1A] rounded-[15px] p-6 h-full border border-stone-light/10 relative overflow-hidden">
-               <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300 opacity-70">📄</div>
-               <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg opacity-70">Sheet Composer</h3>
-               <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed opacity-70">Generate presentation sheets for juries.</p>
-               <div className="absolute top-5 right-5 text-[9px] font-bold tracking-wider uppercase px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full">Coming Soon</div>
+          {loaded && isAdmin ? (
+            <Link href="/dashboard/sheets" className="p-[1px] bg-stone-light/20 rounded-2xl group hover:shadow-lg hover:-translate-y-1 transition duration-300 block">
+              <div className="bg-white dark:bg-[#1A1A1A] rounded-[15px] p-6 h-full border border-stone-light/10 relative overflow-hidden">
+                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">📄</div>
+                 <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg">Sheet Composer</h3>
+                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed">Generate presentation sheets for juries.</p>
+                 <div className="text-text-primary dark:text-dark-text-primary font-bold text-sm group-hover:translate-x-1 transition-all inline-block">Open composer →</div>
+              </div>
+            </Link>
+          ) : (
+            <div className="p-[1px] bg-stone-light/20 rounded-2xl group block opacity-80 cursor-not-allowed">
+              <div className="bg-white dark:bg-[#1A1A1A] rounded-[15px] p-6 h-full border border-stone-light/10 relative overflow-hidden">
+                 <div className="text-4xl mb-4 grayscale opacity-70">📄</div>
+                 <h3 className="font-montserrat font-bold text-text-primary dark:text-dark-text-primary mb-1.5 text-lg opacity-70">Sheet Composer</h3>
+                 <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-4 font-inter leading-relaxed opacity-70">Generate presentation sheets for juries.</p>
+                 <div className="absolute top-5 right-5 text-[9px] font-bold tracking-wider uppercase px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full">Coming Soon</div>
+              </div>
             </div>
-          </Link>
+          )}
 
           {loaded && has('library') ? (
             <Link href="/dashboard/library" className="p-[1px] bg-stone-light/20 rounded-2xl group hover:shadow-lg hover:-translate-y-1 transition duration-300 block">
@@ -214,6 +225,33 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* Admin Tools - Only visible to admin */}
+        {isAdmin && (
+          <div className="mb-12">
+            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
+              🔑 Admin Tools
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <Link href="/dashboard/admin" className="p-[1px] bg-gradient-to-br from-red-500/40 to-orange-500/20 rounded-2xl group hover:shadow-xl hover:-translate-y-1 transition duration-300 block">
+                <div className="bg-red-50/50 dark:bg-red-900/10 rounded-[15px] p-6 h-full border border-red-500/10 relative overflow-hidden">
+                   <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">🔑</div>
+                   <h3 className="font-montserrat font-bold text-red-700 dark:text-red-400 mb-1.5 text-lg">Admin Dashboard</h3>
+                   <p className="text-xs text-red-600/70 dark:text-red-300/70 mb-4 font-inter leading-relaxed">Manage users, coupons, and platform settings.</p>
+                   <div className="text-red-700 font-bold text-sm group-hover:translate-x-1 transition-transform inline-block">Enter Admin →</div>
+                </div>
+              </Link>
+              <Link href="/dashboard/analytics" className="p-[1px] bg-gradient-to-br from-purple-500/40 to-blue-500/20 rounded-2xl group hover:shadow-xl hover:-translate-y-1 transition duration-300 block">
+                <div className="bg-purple-50/50 dark:bg-purple-900/10 rounded-[15px] p-6 h-full border border-purple-500/10 relative overflow-hidden">
+                   <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">📊</div>
+                   <h3 className="font-montserrat font-bold text-purple-700 dark:text-purple-400 mb-1.5 text-lg">Analytics</h3>
+                   <p className="text-xs text-purple-600/70 dark:text-purple-300/70 mb-4 font-inter leading-relaxed">View platform usage and user metrics.</p>
+                   <div className="text-purple-700 font-bold text-sm group-hover:translate-x-1 transition-transform inline-block">View Analytics →</div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Student Tools - Hidden for MVP Launch */}
         {isAdmin && (
@@ -406,7 +444,7 @@ export default function Dashboard() {
                       <div 
                         key={project.id} 
                         className="bg-white dark:bg-[#1A1A1A] rounded-[16px] group overflow-hidden cursor-pointer relative shadow-sm border border-stone-light/10 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
-                        onClick={() => router.push(isPortfolio ? `/dashboard/project/${project.id}/portfolio/default` : `/dashboard/project/${project.id}/sheet`)}
+                        onClick={() => router.push(isPortfolio ? `/dashboard/templates/default/editor?project=${project.id}` : `/dashboard/project/${project.id}/sheet`)}
                       >
                         {/* Thumbnail Placeholder (To be replaced with auto-thumbnails) */}
                         <div className="h-56 bg-[#f8f9fa] dark:bg-[#111111] overflow-hidden relative border-b border-stone-light/10">
@@ -422,7 +460,7 @@ export default function Dashboard() {
                           {/* Hover Action Menu */}
                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 duration-300 flex justify-end gap-2">
                             <button className="px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 transition"
-                              onClick={(e) => { e.stopPropagation(); router.push(isPortfolio ? `/dashboard/project/${project.id}/portfolio/default` : `/dashboard/project/${project.id}/sheet`) }}>
+                              onClick={(e) => { e.stopPropagation(); router.push(isPortfolio ? `/dashboard/templates/default/editor?project=${project.id}` : `/dashboard/project/${project.id}/sheet`) }}>
                               ✏️ Edit
                             </button>
                             <div className="relative group/menu">
@@ -486,8 +524,7 @@ export default function Dashboard() {
       <div className="fixed bottom-8 right-8 z-50">
         <button 
           onClick={() => {
-            setCreatingType('portfolio')
-            window.scrollTo({ top: 0, behavior: 'smooth' })
+            router.push('/dashboard/templates')
           }}
           className="bg-blue-600 hover:bg-blue-700 text-white font-montserrat font-bold py-3.5 px-6 rounded-full shadow-[0_8px_30px_rgb(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgb(37,99,235,0.6)] hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
         >

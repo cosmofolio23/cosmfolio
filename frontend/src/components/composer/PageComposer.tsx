@@ -358,7 +358,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
 
   return (
     <div 
-      className="relative flex items-center print:hidden" 
+      className="relative flex items-center print:hidden" data-html2canvas-ignore="true" 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -367,7 +367,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full pt-1 z-50 print:hidden cursor-default">
+        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" >
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left">
           <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
           <div className="flex flex-col gap-3">
@@ -398,7 +398,7 @@ function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isA
   const baseClasses = "absolute flex items-center gap-2 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
   
   return (
-    <div className={`${baseClasses} opacity-100`} style={style} onPointerDown={e => e.stopPropagation()}>
+    <div className={`${baseClasses} opacity-100`} style={style} onPointerDown={e => e.stopPropagation()} data-html2canvas-ignore="true">
       {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
       {block.freeform && (
         <>
@@ -468,7 +468,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
           <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Profile</span>
         </div>
-        <div className="flex items-center gap-3 print:hidden">
+        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -509,7 +509,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Experience / Education</span>
-        <div className="flex items-center gap-3 print:hidden">
+        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
@@ -548,10 +548,10 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
                 style={{ color: finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
+            <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left print:hidden">Click + ADD to create a timeline entry</button>}
+        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left print:hidden" data-html2canvas-ignore="true">Click + ADD to create a timeline entry</button>}
       </div>
     </div>
   )
@@ -614,7 +614,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
-        <div className="flex items-center gap-3 print:hidden">
+        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
@@ -636,7 +636,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
                 {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
                 <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               </div>
-              <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
+              <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
             </div>
             
             {/* Segmented Architectural Bar Chart */}
@@ -652,7 +652,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
             </div>
           </div>
         ))}
-        {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full print:hidden">Click + ADD to create a skill</button>}
+        {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a skill</button>}
       </div>
     </div>
   )
@@ -674,7 +674,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
-        <div className="flex items-center gap-3 print:hidden">
+        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
@@ -712,10 +712,10 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
                 style={{ color: finalText, minHeight: '14px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
+            <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full print:hidden">Click + ADD to create a list item</button>}
+        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a list item</button>}
       </div>
     </div>
   )
@@ -784,8 +784,9 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
       {!isPinned && (
         <div 
           onPointerDown={e => onPointerDown(e, 'resize')}
-          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden" 
-          style={{ cursor: 'nwse-resize', zIndex: 60 }} 
+          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden" data-html2canvas-ignore="true" 
+          style={{ cursor: 'nwse-resize', zIndex: 60 }}
+          
         />
       )}
     </div>
@@ -1028,14 +1029,14 @@ function RegionView({
                 }}
                 override={{ color: block.color, fontFamily: block.fontFamily, scale: block.fontSize }}
               />
-              <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden">
+              <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden" data-html2canvas-ignore="true">
                 <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
                   ✏️ Edit Title Block
                 </span>
               </div>
               
               {editingTitleBlock && (
-                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 text-white z-50 p-3 rounded-lg shadow-2xl border border-slate-700/80 text-[11px] space-y-2.5 cursor-default min-w-[240px]" onClick={e => e.stopPropagation()}>
+                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 text-white z-[10000] p-3 rounded-lg shadow-2xl border border-slate-700/80 text-[11px] space-y-2.5 cursor-default min-w-[240px]" onClick={e => e.stopPropagation()} data-html2canvas-ignore="true">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
                     <span className="font-bold text-blue-400 uppercase tracking-widest text-[9px]">Edit Title Block</span>
                     <button type="button" onClick={(e) => { e.stopPropagation(); setEditingTitleBlock(false) }} className="text-slate-400 hover:text-white text-xs">✕</button>

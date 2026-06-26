@@ -107,6 +107,8 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
             is_pro = user_data.get("is_pro") or user_data.get("plan_type") == "pro"
             if not is_pro and export_count >= 2:
                 raise HTTPException(status_code=403, detail="UPGRADE_REQUIRED_EXPORTS")
+            elif is_pro and export_count >= 3:
+                raise HTTPException(status_code=403, detail="PRO_LIMIT_REACHED")
 
         # Simple HTML-to-PDF rendering (basic)
         # In production, use WeasyPrint or similar
@@ -187,7 +189,7 @@ async def track_export(project_id: str, authorization: str = Header(None)):
 
         limit = 2
         if plan_type == "pro":
-            limit = 2 + (boost_pack_count * 2)
+            limit = 3
             
         is_bypass = is_admin
         is_pro = (plan_type == "pro")
@@ -224,7 +226,7 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
             
         limit = 2
         if plan_type == "pro":
-            limit = 2 + (boost_pack_count * 2)
+            limit = 3
             
         is_bypass = is_admin
         is_pro = (plan_type == "pro")

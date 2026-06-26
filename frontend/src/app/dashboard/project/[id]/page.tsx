@@ -73,7 +73,7 @@ export default function ProjectPage() {
             </div>
           </div>
           <Link
-            href={`/dashboard/project/${params.id}/portfolio`}
+            href={`/dashboard/templates/default/editor?project=${params.id}`}
             className="btn-primary flex items-center gap-2"
           >
             <span>✨</span>

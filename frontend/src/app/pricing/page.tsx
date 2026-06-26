@@ -19,7 +19,7 @@ const useRazorpay: () => { Razorpay: any } = typeof window !== 'undefined'
 const FREE_FEATURES = [
   'Unlimited portfolios',
   '6 pages per portfolio',
-  '2 PDF exports',
+  '2 PDF exports (watermarked)',
   'Standard templates',
   'Full design tools',
 ]
@@ -27,7 +27,7 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   'Unlimited portfolios',
   '30 pages per portfolio',
-  '2 PDF exports',
+  '3 PDF exports (no watermark)',
   'Standard + Premium templates',
   'Full design tools',
 ]

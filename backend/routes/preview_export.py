@@ -60,9 +60,11 @@ async def export_portfolio_as_pdf(
             elif not is_free and len(pages) > 30:
                 raise HTTPException(status_code=403, detail="Pro tier is limited to 30 pages per portfolio.")
             
-            # Enforce Download Limit for All Users (2 PDF exports)
-            if export_count >= 2:
-                raise HTTPException(status_code=403, detail="All tiers are limited to 2 PDF exports for this beta.")
+            # Enforce Download Limit
+            if is_free and export_count >= 2:
+                raise HTTPException(status_code=403, detail="Free tier is limited to 2 PDF exports. Please upgrade to Pro.")
+            elif not is_free and export_count >= 3:
+                raise HTTPException(status_code=403, detail="Pro tier is limited to 3 PDF exports.")
 
         # Get projects and assets
         projects = supabase.table("projects").select("*").eq("user_id", current_user["user_id"]).execute()

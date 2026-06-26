@@ -1606,6 +1606,14 @@ export default function TemplateEditor() {
     markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
   }
 
+  const addContentSpreadPage = () => {
+    const blocks = [
+      createBlock('title'), createBlock('contents'), createBlock('render')
+    ]
+    const newPage: Page = { id: uid('p'), type: 'contents', layoutId: 'spread.contents-minimal', blocks, isSpread: true }
+    markDirty(); setPages([...pages, newPage]); setCurrentIdx(pages.length)
+  }
+
   const deletePage = (idx: number) => {
     if (pages.length <= 1) return
     markDirty(); setPages(pages.filter((_, i) => i !== idx))
@@ -2031,12 +2039,7 @@ export default function TemplateEditor() {
               <button onClick={undo} disabled={historyIdx <= 0} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Undo (Ctrl+Z)">↶</button>
               <button onClick={redo} disabled={historyIdx >= history.length - 1} className="px-2 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-30" title="Redo (Ctrl+Shift+Z)">↷</button>
             </div>
-            {projectId && (
-              <>
-                <Link href={`/dashboard/portfolio-book/${projectId}`} className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-medium hover:brightness-95" title="View as book">📖 Book</Link>
-                <Link href={`/dashboard/portfolio-web/${projectId}`} className="px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg text-sm font-medium hover:opacity-90 shadow-sm" title="Interactive Web Experience">🌐 Web</Link>
-              </>
-            )}
+
             <button onClick={() => setShowSpreadManager(true)} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700" title="Visual Spread Manager">⏹️ Spreads</button>
             <button onClick={() => startTour()} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 shadow-sm" title="Help / Tour">❔ Help</button>
             <div className="flex rounded-lg border border-gray-300 overflow-hidden text-xs">
@@ -2094,7 +2097,8 @@ export default function TemplateEditor() {
                 {(['project', 'about', 'cover', 'contact', 'resume', 'contents'] as const).map(t => (
                   <button key={t} onClick={() => addPage(t)} className="px-2 py-1.5 text-[11px] border border-gray-300 rounded hover:bg-gray-50 capitalize">+ {t}</button>
                 ))}
-                <button onClick={addSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-blue-300 rounded hover:bg-blue-50 text-blue-700 font-medium">📖 + Spread (2-page)</button>
+                <button onClick={addSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-blue-300 rounded hover:bg-blue-50 text-blue-700 font-medium">📐 + Project Spread</button>
+                <button onClick={addContentSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-orange-300 rounded hover:bg-orange-50 text-orange-700 font-medium">📑 + Content Spread</button>
                 <button onClick={addResumeSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-purple-300 rounded hover:bg-purple-50 text-purple-700 font-medium">🎓 + Resume Spread</button>
               </div>
             </div>
@@ -2134,33 +2138,9 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main ref={canvasRef} className={`relative group/canvas flex-1 overflow-auto bg-gray-300/40 flex flex-col`} id="tour-canvas">
-          <style>{`
-            .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
-            .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
-            .portfolio-page .text-sm { font-size: 0.875em; line-height: 1.25rem; }
-            .portfolio-page .text-base { font-size: 1em; line-height: 1.5rem; }
-            .portfolio-page .text-lg { font-size: 1.125em; line-height: 1.75rem; }
-            .portfolio-page .text-xl { font-size: 1.25em; line-height: 1.75rem; }
-            .portfolio-page .text-2xl { font-size: 1.5em; line-height: 2rem; }
-            .portfolio-page .text-3xl { font-size: 1.875em; line-height: 2.25rem; }
-            .portfolio-page .text-4xl { font-size: 2.25em; line-height: 2.5rem; }
-            .portfolio-page .text-5xl { font-size: 3em; line-height: 1; }
-            .portfolio-page .text-6xl { font-size: 3.75em; line-height: 1; }
-            .portfolio-page .text-7xl { font-size: 4.5em; line-height: 1; }
-            .portfolio-page .text-8xl { font-size: 6em; line-height: 1; }
-            .portfolio-page .text-\\[8px\\] { font-size: ${8 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[9px\\] { font-size: ${9 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[9\\.5px\\] { font-size: ${9.5 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[10px\\] { font-size: ${10 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[11px\\] { font-size: ${11 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[12px\\] { font-size: ${12 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[13px\\] { font-size: ${13 * (tokens.fontScale || 1)}px !important; }
-            .portfolio-page .text-\\[14px\\] { font-size: ${14 * (tokens.fontScale || 1)}px !important; }
-          `}</style>
-
-          {/* Zoom controls — Photoshop-style; canvas scrolls when zoomed past the pane */}
-          <div className="sticky top-0 z-30 flex justify-center pointer-events-none mt-2 mb-3 shrink-0">
+        <div className="relative flex-1 flex flex-col min-w-0 bg-gray-300/40">
+          {/* Zoom controls — floating above the canvas */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex justify-center pointer-events-none">
             <div id="tour-canvas-zoom" className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">
               <button onClick={zoomOut} title="Zoom out" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">−</button>
               <button onClick={() => applyZoomCentered(1)} title="Reset to 100%" className="px-2 text-xs font-medium text-gray-700 tabular-nums min-w-[44px]">{Math.round(canvasZoom * 100)}%</button>
@@ -2169,6 +2149,31 @@ export default function TemplateEditor() {
               <button onClick={fitToScreen} title="Fit page to screen" className="px-2.5 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-xs font-medium">Fit</button>
             </div>
           </div>
+
+          <main ref={canvasRef} className={`relative group/canvas flex-1 overflow-auto flex flex-col pt-12`} id="tour-canvas">
+            <style>{`
+              .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
+              .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
+              .portfolio-page .text-sm { font-size: 0.875em; line-height: 1.25rem; }
+              .portfolio-page .text-base { font-size: 1em; line-height: 1.5rem; }
+              .portfolio-page .text-lg { font-size: 1.125em; line-height: 1.75rem; }
+              .portfolio-page .text-xl { font-size: 1.25em; line-height: 1.75rem; }
+              .portfolio-page .text-2xl { font-size: 1.5em; line-height: 2rem; }
+              .portfolio-page .text-3xl { font-size: 1.875em; line-height: 2.25rem; }
+              .portfolio-page .text-4xl { font-size: 2.25em; line-height: 2.5rem; }
+              .portfolio-page .text-5xl { font-size: 3em; line-height: 1; }
+              .portfolio-page .text-6xl { font-size: 3.75em; line-height: 1; }
+              .portfolio-page .text-7xl { font-size: 4.5em; line-height: 1; }
+              .portfolio-page .text-8xl { font-size: 6em; line-height: 1; }
+              .portfolio-page .text-\\[8px\\] { font-size: ${8 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[9px\\] { font-size: ${9 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[9\\.5px\\] { font-size: ${9.5 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[10px\\] { font-size: ${10 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[11px\\] { font-size: ${11 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[12px\\] { font-size: ${12 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[13px\\] { font-size: ${13 * (tokens.fontScale || 1)}px !important; }
+              .portfolio-page .text-\\[14px\\] { font-size: ${14 * (tokens.fontScale || 1)}px !important; }
+            `}</style>
 
           {currentPage?.isSpread ? (
             /* True Spread Canvas: single 1520px-wide page, cols 1-6 = left, 7-12 = right */
@@ -2322,7 +2327,8 @@ export default function TemplateEditor() {
             {' · '}
             <span>Active Editing: {currentPage.type.toUpperCase()} layout ({getSpec(currentPage.layoutId).name})</span>
           </div>
-        </main>
+          </main>
+        </div>
 
         {/* Right: inspector - toggle on mobile */}
         {isMobile && (

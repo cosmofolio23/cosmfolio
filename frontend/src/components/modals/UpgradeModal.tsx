@@ -75,7 +75,7 @@ export default function UpgradeModal({
                 <div className="mt-0.5 bg-accent-gold text-white rounded-full p-0.5">
                   <Check className="w-3 h-3" />
                 </div>
-                <span className="text-text-secondary dark:text-dark-text-secondary text-sm">Unlimited high-quality PDF exports</span>
+                <span className="text-text-secondary dark:text-dark-text-secondary text-sm">3 high-quality PDF exports (no watermark)</span>
               </li>
               <li className="flex items-start gap-3">
                 <div className="mt-0.5 bg-accent-gold text-white rounded-full p-0.5">
