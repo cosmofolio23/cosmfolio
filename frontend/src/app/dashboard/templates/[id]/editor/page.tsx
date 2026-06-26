@@ -2693,7 +2693,7 @@ export default function TemplateEditor() {
                     setSelectedFreeEl({ ...sel, ...patch })
                     markDirty()
                   }
-                  const layerOp = (op: 'front' | 'back' | 'lock' | 'dup' | 'del') => {
+                  const layerOp = (op: 'front' | 'back' | 'forward' | 'backward' | 'lock' | 'dup' | 'del') => {
                     if (!currentPage) return
                     const els = currentPage.freeElements || []
                     if (op === 'del') { updatePage({ ...currentPage, freeElements: els.filter(e => e.id !== sel.id) }); setSelectedFreeEl(null); markDirty(); return }
@@ -2701,7 +2701,15 @@ export default function TemplateEditor() {
                     if (op === 'dup') { const clone = { ...sel, id: `fe-${Date.now().toString(36)}-dup`, x: sel.x + 3, y: sel.y + 3 }; updatePage({ ...currentPage, freeElements: [...els, clone] }); markDirty(); return }
                     const maxZ = Math.max(...els.map(e => e.z || 1))
                     const minZ = Math.min(...els.map(e => e.z || 1))
-                    patchFree({ z: op === 'front' ? maxZ + 1 : Math.max(0, minZ - 1) })
+                    const currentZ = sel.z || 1
+                    
+                    let newZ = currentZ
+                    if (op === 'front') newZ = maxZ + 1
+                    if (op === 'back') newZ = Math.max(0, minZ - 1)
+                    if (op === 'forward') newZ = currentZ + 1
+                    if (op === 'backward') newZ = Math.max(0, currentZ - 1)
+                    
+                    patchFree({ z: newZ })
                   }
                   return (
                     <div className="border-t pt-4 space-y-3">
@@ -2713,8 +2721,10 @@ export default function TemplateEditor() {
 
                       {/* Object actions */}
                       <div className="flex flex-wrap gap-1.5">
-                        <button onClick={() => layerOp('front')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">⬆ Front</button>
-                        <button onClick={() => layerOp('back')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">⬇ Back</button>
+                        <button onClick={() => layerOp('front')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50" title="Bring to Front">⇈ Front</button>
+                        <button onClick={() => layerOp('forward')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50" title="Bring Forward">⇧ Fwd</button>
+                        <button onClick={() => layerOp('backward')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50" title="Send Backward">⇩ Bwd</button>
+                        <button onClick={() => layerOp('back')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50" title="Send to Back">⇊ Back</button>
                         <button onClick={() => layerOp('lock')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">{sel.locked ? '🔒 Unlock' : '🔓 Lock'}</button>
                         <button onClick={() => layerOp('dup')} className="px-2 py-1 text-[10px] border border-gray-200 rounded hover:bg-gray-50">⧉ Dup</button>
                         <button onClick={() => layerOp('del')} className="px-2 py-1 text-[10px] border border-red-100 text-red-500 rounded hover:bg-red-50">🗑 Delete</button>

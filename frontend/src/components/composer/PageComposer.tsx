@@ -55,12 +55,29 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
   const images = allImages(page.blocks)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
 
-  const patchBlock = (id: string, patch: Partial<Block> & { isDeleted?: boolean }) => {
+  const patchBlock = (id: string, patch: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => {
     if (patch.isDeleted) {
       onChange({ ...page, blocks: page.blocks.filter(b => b.id !== id) })
       return
     }
-    onChange({ ...page, blocks: page.blocks.map(b => b.id === id ? { ...b, ...patch } : b) })
+    const newPatch = { ...patch }
+    if (newPatch.zOp) {
+      const block = page.blocks.find(b => b.id === id)
+      if (block && block.freeform) {
+        const zs = page.blocks.map(b => b.freeform?.z || 1)
+        const currentZ = block.freeform.z || 1
+        const maxZ = Math.max(1, ...zs)
+        const minZ = Math.min(1, ...zs)
+        let newZ = currentZ
+        if (newPatch.zOp === 'front') newZ = maxZ + 1
+        if (newPatch.zOp === 'back') newZ = Math.max(0, minZ - 1)
+        if (newPatch.zOp === 'forward') newZ = currentZ + 1
+        if (newPatch.zOp === 'backward') newZ = Math.max(0, currentZ - 1)
+        newPatch.freeform = { ...block.freeform, z: newZ }
+      }
+      delete newPatch.zOp
+    }
+    onChange({ ...page, blocks: page.blocks.map(b => b.id === id ? { ...b, ...newPatch } : b) })
   }
 
   const addBlock = (type: BlockType): Block => {
@@ -357,14 +374,23 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
   )
 }
 
-function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean }) => void, showTypography?: boolean }) {
+function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => void, showTypography?: boolean }) {
   return (
     <div className="absolute top-1 right-1 flex items-center gap-2 opacity-0 group-hover/block-container:opacity-100 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto">
       {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
       {block.freeform && (
-        <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } }) }} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
-          {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
-        </button>
+        <>
+          <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'front' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Bring to Front">⇈</button>
+          <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'forward' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Bring Forward">⇧</button>
+          <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'backward' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Send Backward">⇩</button>
+          <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'back' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Send to Back">⇊</button>
+          
+          <div className="w-px h-3 bg-gray-300 mx-1"></div>
+          
+          <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } }) }} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+            {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+          </button>
+        </>
       )}
       <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
         {block.freeform ? '↩ Grid' : '🔓 Unlock'}
