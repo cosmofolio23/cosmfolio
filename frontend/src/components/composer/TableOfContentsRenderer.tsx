@@ -128,9 +128,17 @@ export function TableOfContentsRenderer({
     }
   }
 
-  const styleConfig: TocStyleParams = block.tocStyle || getDefaultStyle(layoutId)
-  const { variant } = styleConfig
+  const styleConfig = block.tocStyle || getDefaultStyle(layoutId)
+  const { variant, structure, imageShape, numbering, lines } = styleConfig
 
+  const updateStyle = (patch: Partial<TocStyleParams>) => {
+    onChange({
+      tocStyle: {
+        ...styleConfig,
+        ...patch
+      }
+    })
+  }
   const overlayEnabled = styleConfig.overlayEnabled !== false
   const overlayBg = overlayEnabled ? hexToRgba(styleConfig.overlayColor || '#ffffff', styleConfig.overlayOpacity ?? 0.85) : 'transparent'
   const overlayPad = overlayEnabled ? `${styleConfig.overlayPadding ?? 20}px` : '0px'
@@ -209,17 +217,13 @@ export function TableOfContentsRenderer({
                     : ''
 
     return (
-      <div className="w-full relative h-full flex flex-col pt-8 px-8 group">
+      <div className={`w-full relative h-full flex flex-col pt-8 px-8 group ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
         <div className="flex justify-between items-end mb-12">
           <h2 className="text-4xl font-bold uppercase tracking-widest" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
             {block.label || 'Contents'}
           </h2>
         </div>
-        <div className="absolute top-4 right-4 z-50 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={handleRandomize} className="text-xs bg-black/10 hover:bg-black/20 text-black px-3 py-1.5 rounded-full transition-colors backdrop-blur-md">
-            🎲 Randomize Style (50+)
-          </button>
-        </div>
+        
 
         <div className={gridClass}>
           {items.map((it, idx) => (
@@ -248,11 +252,7 @@ export function TableOfContentsRenderer({
 
   const renderVerticalStripes = () => (
     <div className="w-full h-full flex gap-2 pt-4 px-4 pb-12 overflow-hidden relative group">
-      <div className="absolute top-4 right-4 z-50 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={handleRandomize} className="text-xs bg-black/50 hover:bg-black text-white px-3 py-1.5 rounded-full shadow-lg transition-colors">
-          🎲 Change Style
-        </button>
-      </div>
+      
       {items.map((it, idx) => (
         <div key={idx} className="flex-1 h-full relative overflow-hidden flex flex-col">
           <div className="w-full flex-1 bg-gray-200 relative overflow-hidden">
@@ -273,11 +273,7 @@ export function TableOfContentsRenderer({
 
   const renderMinimalAccent = () => (
     <div className="w-full h-full flex justify-center items-center py-20 relative group">
-      <div className="absolute top-4 right-4 z-50 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={handleRandomize} className="text-xs bg-black/10 hover:bg-black/20 text-black px-3 py-1.5 rounded-full transition-colors">
-          🎲 Change Style
-        </button>
-      </div>
+      
       <div className="grid grid-cols-2 md:grid-cols-4 gap-x-16 gap-y-24 max-w-5xl mx-auto px-8 w-full">
         {items.map((it, idx) => (
           <div key={idx} className="relative">
@@ -304,11 +300,7 @@ export function TableOfContentsRenderer({
 
   const renderModernCutout = () => (
     <div className="w-full h-full p-8 relative flex flex-col group overflow-hidden bg-gray-50">
-      <div className="absolute top-4 right-4 z-50 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={handleRandomize} className="text-xs bg-black/10 hover:bg-black/20 text-black px-3 py-1.5 rounded-full transition-colors">
-          🎲 Change Style
-        </button>
-      </div>
+      
       <h2 className="text-xl font-bold uppercase tracking-[0.3em] mb-12 text-blue-600 pl-4">Table of Contents</h2>
       <div className="flex-1 flex gap-4 w-full h-full justify-center">
         {items.map((it, idx) => (
@@ -331,11 +323,7 @@ export function TableOfContentsRenderer({
 
   const renderHanddrawnTimeline = () => (
     <div className="w-full h-full flex items-center px-12 relative group bg-[#fdfbf7]">
-      <div className="absolute top-4 right-4 z-50 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={handleRandomize} className="text-xs bg-black/10 hover:bg-black/20 text-black px-3 py-1.5 rounded-full transition-colors">
-          🎲 Change Style
-        </button>
-      </div>
+      
       
       {/* Hand drawn thick black line */}
       <div className="absolute top-1/2 left-12 right-12 h-2 bg-black rounded-[50%] transform -translate-y-1/2" 
@@ -625,22 +613,87 @@ export function TableOfContentsRenderer({
   )
   }
 
-  switch (variant) {
-    case 'vertical-stripes': return renderVerticalStripes()
-    case 'minimal-accent': return renderMinimalAccent()
-    case 'modern-cutout': return renderModernCutout()
-    case 'handdrawn-timeline': return renderHanddrawnTimeline()
-    case 'magazine': return renderMagazine()
-    case 'timeline': return renderTimeline()
-    case 'grid': return renderGrid()
-    case 'luxury': return renderLuxury()
-    case 'research': return renderResearch()
-    case 'parametric': return renderParametric()
-    case 'competition': return renderCompetition()
-    case 'academic': return renderAcademic()
-    case 'minimal': return renderMinimal()
-    case 'generative':
-    default:
-      return renderGenerative()
+  const renderContent = () => {
+    switch (variant) {
+      case 'vertical-stripes': return renderVerticalStripes()
+      case 'minimal-accent': return renderMinimalAccent()
+      case 'modern-cutout': return renderModernCutout()
+      case 'handdrawn-timeline': return renderHanddrawnTimeline()
+      case 'magazine': return renderMagazine()
+      case 'timeline': return renderTimeline()
+      case 'grid': return renderGrid()
+      case 'luxury': return renderLuxury()
+      case 'research': return renderResearch()
+      case 'parametric': return renderParametric()
+      case 'competition': return renderCompetition()
+      case 'academic': return renderAcademic()
+      case 'minimal': return renderMinimal()
+      case 'generative':
+      default:
+        return renderGenerative()
+    }
   }
+
+  return (
+    <div className="w-full h-full relative group">
+      {renderContent()}
+
+      {/* Editor Controls Overlay */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-50 bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left pointer-events-auto">
+        <div className="flex justify-between items-center mb-1">
+          <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Layout Style</div>
+          <button onClick={handleRandomize} className="text-[9px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">🎲 Random</button>
+        </div>
+        <select 
+          className="bg-black/5 hover:bg-black/10 text-black text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-md outline-none w-full border border-black/10 transition"
+          value={variant}
+          onChange={(e) => updateStyle({ variant: e.target.value as any })}
+        >
+          <option value="generative">Organic Generative</option>
+          <optgroup label="Modern Styles">
+            <option value="vertical-stripes">Vertical Stripes</option>
+            <option value="minimal-accent">Minimal Accent</option>
+            <option value="modern-cutout">Modern Cutout</option>
+            <option value="handdrawn-timeline">Hand-drawn Timeline</option>
+          </optgroup>
+          <optgroup label="Legacy Layouts">
+            <option value="magazine">Magazine Style</option>
+            <option value="timeline">Timeline Style</option>
+            <option value="grid">Image Grid Style</option>
+            <option value="luxury">Luxury Style</option>
+            <option value="research">Research Style</option>
+            <option value="parametric">Parametric Style</option>
+            <option value="competition">Competition Style</option>
+            <option value="academic">Academic Thesis Style</option>
+            <option value="minimal">Minimal Default</option>
+          </optgroup>
+        </select>
+        
+        <div className="w-full h-px bg-black/10 my-2" />
+        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Overlay Settings</div>
+        
+        <label className="flex items-center gap-2 text-[10px] uppercase font-bold cursor-pointer hover:bg-black/5 p-1 -mx-1 rounded">
+          <input type="checkbox" checked={overlayEnabled} onChange={e => updateStyle({ overlayEnabled: e.target.checked })} className="rounded" />
+          Enable Frosted Card
+        </label>
+        
+        <div className={`flex flex-col gap-3 mt-2 ${!overlayEnabled ? 'opacity-30 pointer-events-none' : ''}`}>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] uppercase text-gray-500 font-semibold">Color</span>
+            <input type="color" value={styleConfig.overlayColor || '#ffffff'} onChange={e => updateStyle({ overlayColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Opacity</span><span className="text-[9px] font-mono">{Math.round((styleConfig.overlayOpacity ?? 0.85)*100)}%</span></div>
+            <input type="range" min="0" max="1" step="0.05" value={styleConfig.overlayOpacity ?? 0.85} onChange={e => updateStyle({ overlayOpacity: parseFloat(e.target.value) })} className="w-full accent-black" />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Padding</span><span className="text-[9px] font-mono">{styleConfig.overlayPadding ?? 20}px</span></div>
+            <input type="range" min="0" max="60" step="2" value={styleConfig.overlayPadding ?? 20} onChange={e => updateStyle({ overlayPadding: parseInt(e.target.value) })} className="w-full accent-black" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
