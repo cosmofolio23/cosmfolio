@@ -24,6 +24,10 @@ export interface TocStyleParams {
   overlayColor?: string
   overlayOpacity?: number
   overlayPadding?: number
+  // Typography overrides
+  textColor?: string
+  titleColor?: string
+  fontSizeMultiplier?: number
 }
 
 interface ProjectIndexItem {
@@ -37,7 +41,7 @@ interface ProjectIndexItem {
 }
 
 export function TableOfContentsRenderer({
-  block, tokens, pages, onChange, layoutId
+  block, tokens: baseTokens, pages, onChange, layoutId
 }: {
   block: Block
   tokens: DesignTokens
@@ -131,6 +135,12 @@ export function TableOfContentsRenderer({
   const styleConfig = block.tocStyle || getDefaultStyle(layoutId)
   const { variant, structure, imageShape, numbering, lines } = styleConfig
 
+  const tokens = {
+    ...baseTokens,
+    primary: styleConfig.titleColor || baseTokens.primary,
+    text: styleConfig.textColor || baseTokens.text
+  }
+
   const updateStyle = (patch: Partial<TocStyleParams>) => {
     onChange({
       tocStyle: {
@@ -210,10 +220,10 @@ export function TableOfContentsRenderer({
                     : structure === 'carousel' ? 'flex flex-row overflow-x-auto pb-8 snap-x w-full max-w-full'
                     : 'flex flex-col'
 
-    const itemClass = structure === 'zigzag' ? 'flex items-center even:flex-row-reverse min-h-0' 
-                    : ['filmstrip', 'carousel'].includes(structure || '') ? 'flex-shrink-0 w-64 md:w-80 flex flex-col snap-start relative min-h-0'
-                    : ['bento-box', 'mosaic'].includes(structure || '') ? 'flex flex-col bg-white/40 p-3 rounded-xl border border-white/50 backdrop-blur-sm relative overflow-hidden min-h-0'
-                    : 'flex flex-col relative min-h-0'
+    const itemClass = structure === 'zigzag' ? 'flex items-center even:flex-row-reverse min-h-[32px]' 
+                    : ['filmstrip', 'carousel'].includes(structure || '') ? 'flex-shrink-0 w-64 md:w-80 flex flex-col snap-start relative min-h-[32px]'
+                    : ['bento-box', 'mosaic'].includes(structure || '') ? 'flex flex-col bg-white/40 p-3 rounded-xl border border-white/50 backdrop-blur-sm relative overflow-hidden min-h-[32px]'
+                    : 'flex flex-col relative min-h-[32px]'
 
     const lineClass = lines === 'dotted' ? 'border-b border-dashed border-gray-300' 
                     : lines === 'solid' ? 'border-b border-solid border-gray-200' 
@@ -638,7 +648,9 @@ export function TableOfContentsRenderer({
 
   return (
     <div className="w-full h-full relative group">
-      {renderContent()}
+      <div className="w-full h-full" style={{ zoom: styleConfig.fontSizeMultiplier || 1 } as React.CSSProperties}>
+        {renderContent()}
+      </div>
 
       {/* Editor Controls Overlay */}
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-50 bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left pointer-events-auto">
@@ -695,6 +707,26 @@ export function TableOfContentsRenderer({
             <input type="range" min="0" max="60" step="2" value={styleConfig.overlayPadding ?? 20} onChange={e => updateStyle({ overlayPadding: parseInt(e.target.value) })} className="w-full accent-black" />
           </div>
         </div>
+
+        <div className="w-full h-px bg-black/10 my-2" />
+        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Typography</div>
+
+        <div className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round((styleConfig.fontSizeMultiplier || 1)*100)}%</span></div>
+            <input type="range" min="0.5" max="2" step="0.1" value={styleConfig.fontSizeMultiplier || 1} onChange={e => updateStyle({ fontSizeMultiplier: parseFloat(e.target.value) })} className="w-full accent-black" />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] uppercase text-gray-500 font-semibold">Text Color</span>
+            <input type="color" value={styleConfig.textColor || tokens.text} onChange={e => updateStyle({ textColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] uppercase text-gray-500 font-semibold">Title Color</span>
+            <input type="color" value={styleConfig.titleColor || tokens.primary} onChange={e => updateStyle({ titleColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+          </div>
+        </div>
+
+        <p className="text-[8px] leading-tight text-gray-400 italic mt-3 text-center border-t border-black/5 pt-2">Tip: To resize the card itself, drag the blue corners of the block on your canvas.</p>
       </div>
     </div>
   )
