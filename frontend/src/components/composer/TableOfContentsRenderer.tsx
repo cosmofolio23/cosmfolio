@@ -49,6 +49,8 @@ export function TableOfContentsRenderer({
   onChange: (patch: Partial<Block>) => void
   layoutId?: string
 }) {
+  const [activeTab, setActiveTab] = React.useState<string | null>(null)
+  const [isEditorOpen, setIsEditorOpen] = React.useState(false)
   const projectItems: ProjectIndexItem[] = []
   let projCount = 0
   
@@ -653,101 +655,118 @@ export function TableOfContentsRenderer({
       </div>
 
       {/* Editor Controls Overlay */}
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-50 bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left pointer-events-auto">
-        <div className="flex justify-between items-center mb-1">
-          <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Layout Style</div>
-          <button onClick={handleRandomize} className="text-[9px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">🎲 Random</button>
-        </div>
-        <select 
-          className="bg-black/5 hover:bg-black/10 text-black text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-md outline-none w-full border border-black/10 transition"
-          value={variant}
-          onChange={(e) => updateStyle({ variant: e.target.value as any })}
-        >
-          <option value="generative">Organic Generative</option>
-          <optgroup label="Modern Styles">
-            <option value="vertical-stripes">Vertical Stripes</option>
-            <option value="minimal-accent">Minimal Accent</option>
-            <option value="modern-cutout">Modern Cutout</option>
-            <option value="handdrawn-timeline">Hand-drawn Timeline</option>
-          </optgroup>
-          <optgroup label="Legacy Layouts">
-            <option value="magazine">Magazine Style</option>
-            <option value="timeline">Timeline Style</option>
-            <option value="grid">Image Grid Style</option>
-            <option value="luxury">Luxury Style</option>
-            <option value="research">Research Style</option>
-            <option value="parametric">Parametric Style</option>
-            <option value="competition">Competition Style</option>
-            <option value="academic">Academic Thesis Style</option>
-            <option value="minimal">Minimal Default</option>
-          </optgroup>
-        </select>
-        
-        <div className="w-full h-px bg-black/10 my-2" />
-        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Overlay Settings</div>
-        
-        <label className="flex items-center gap-2 text-[10px] uppercase font-bold cursor-pointer hover:bg-black/5 p-1 -mx-1 rounded">
-          <input type="checkbox" checked={overlayEnabled} onChange={e => updateStyle({ overlayEnabled: e.target.checked })} className="rounded" />
-          Enable Frosted Card
-        </label>
-        
-        <div className={`flex flex-col gap-3 mt-2 ${!overlayEnabled ? 'opacity-30 pointer-events-none' : ''}`}>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] uppercase text-gray-500 font-semibold">Color</span>
-            <input type="color" value={styleConfig.overlayColor || '#ffffff'} onChange={e => updateStyle({ overlayColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
-          </div>
-          
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Opacity</span><span className="text-[9px] font-mono">{Math.round((styleConfig.overlayOpacity ?? 0.85)*100)}%</span></div>
-            <input type="range" min="0" max="1" step="0.05" value={styleConfig.overlayOpacity ?? 0.85} onChange={e => updateStyle({ overlayOpacity: parseFloat(e.target.value) })} className="w-full accent-black" />
-          </div>
-          
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Padding</span><span className="text-[9px] font-mono">{styleConfig.overlayPadding ?? 20}px</span></div>
-            <input type="range" min="0" max="60" step="2" value={styleConfig.overlayPadding ?? 20} onChange={e => updateStyle({ overlayPadding: parseInt(e.target.value) })} className="w-full accent-black" />
-          </div>
-        </div>
-
-        <div className="w-full h-px bg-black/10 my-2" />
-        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Typography</div>
-
-        <div className="flex flex-col gap-3 mt-2">
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round((styleConfig.fontSizeMultiplier || 1)*100)}%</span></div>
-            <input type="range" min="0.5" max="2" step="0.1" value={styleConfig.fontSizeMultiplier || 1} onChange={e => updateStyle({ fontSizeMultiplier: parseFloat(e.target.value) })} className="w-full accent-black" />
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] uppercase text-gray-500 font-semibold">Text Color</span>
-            <input type="color" value={styleConfig.textColor || tokens.text} onChange={e => updateStyle({ textColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] uppercase text-gray-500 font-semibold">Title Color</span>
-            <input type="color" value={styleConfig.titleColor || tokens.primary} onChange={e => updateStyle({ titleColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
-          </div>
-        </div>
-
-        <div className="w-full h-px bg-black/10 my-2" />
-        {block.freeform && (
+      <div 
+        className="absolute top-2 right-2 flex flex-col items-end gap-2 z-50 print:hidden pointer-events-auto"
+        onMouseEnter={() => setIsEditorOpen(true)}
+        onMouseLeave={() => { setIsEditorOpen(false); setActiveTab(null); }}
+      >
+        {/* Toolbar */}
+        <div className={`flex items-center gap-1 bg-white/95 backdrop-blur-md shadow-lg border border-black/10 rounded-md p-1 transition-opacity duration-200 ${isEditorOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <button onClick={() => setActiveTab(t => t === 'layout' ? null : 'layout')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'layout' ? 'bg-black/5' : ''}`} title="Layout Style">📐</button>
+          <button onClick={() => setActiveTab(t => t === 'overlay' ? null : 'overlay')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'overlay' ? 'bg-black/5' : ''}`} title="Overlay Settings">🎨</button>
+          <button onClick={() => setActiveTab(t => t === 'typography' ? null : 'typography')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'typography' ? 'bg-black/5' : ''}`} title="Typography">A</button>
+          <div className="w-px h-4 bg-black/10 mx-1" />
+          {block.freeform && (
+            <button 
+              onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })}
+              className={`p-1.5 rounded transition-colors ${block.freeform.pinned ? 'text-green-600 bg-green-50' : 'hover:bg-black/5'}`}
+              title={block.freeform.pinned ? 'Unpin from Screen' : 'Pin to Screen'}
+            >
+              📍
+            </button>
+          )}
           <button 
-            onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })}
-            className={`w-full py-2 mb-1 rounded text-[10px] font-bold uppercase tracking-wider transition ${block.freeform.pinned ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+            onClick={() => {
+              if (block.freeform) {
+                onChange({ freeform: undefined })
+              } else {
+                onChange({ freeform: { x: 10, y: 10, w: 50, h: 50 } })
+              }
+            }}
+            className={`p-1.5 rounded transition-colors hover:bg-black/5 ${block.freeform ? 'text-blue-600' : ''}`}
+            title={block.freeform ? 'Snap to Grid' : 'Unlock from Grid'}
           >
-            {block.freeform.pinned ? '📍 Unpin from Screen' : '📌 Pin to Screen'}
+            {block.freeform ? '↩' : '🔓'}
           </button>
-        )}
-        <button 
-          onClick={() => {
-            if (block.freeform) {
-              onChange({ freeform: undefined })
-            } else {
-              onChange({ freeform: { x: 10, y: 10, w: 50, h: 50 } })
-            }
-          }}
-          className="w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-[10px] font-bold uppercase tracking-wider transition"
-        >
-          {block.freeform ? '↩ Snap to Grid' : '🔓 Unlock from Grid'}
-        </button>
+        </div>
 
+        {/* Tab Panels */}
+        {activeTab === 'layout' && (
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Layout Style</div>
+              <button onClick={handleRandomize} className="text-[9px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">🎲 Random</button>
+            </div>
+            <select 
+              className="bg-black/5 hover:bg-black/10 text-black text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-md outline-none w-full border border-black/10 transition"
+              value={variant}
+              onChange={(e) => updateStyle({ variant: e.target.value as any })}
+            >
+              <option value="generative">Organic Generative</option>
+              <optgroup label="Modern Styles">
+                <option value="vertical-stripes">Vertical Stripes</option>
+                <option value="minimal-accent">Minimal Accent</option>
+                <option value="modern-cutout">Modern Cutout</option>
+                <option value="handdrawn-timeline">Hand-drawn Timeline</option>
+              </optgroup>
+              <optgroup label="Legacy Layouts">
+                <option value="magazine">Magazine Style</option>
+                <option value="timeline">Timeline Style</option>
+                <option value="grid">Image Grid Style</option>
+                <option value="luxury">Luxury Style</option>
+                <option value="research">Research Style</option>
+                <option value="parametric">Parametric Style</option>
+                <option value="competition">Competition Style</option>
+                <option value="academic">Academic Thesis Style</option>
+                <option value="minimal">Minimal Default</option>
+              </optgroup>
+            </select>
+          </div>
+        )}
+
+        {activeTab === 'overlay' && (
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
+            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Overlay Settings</div>
+            <label className="flex items-center gap-2 text-[10px] uppercase font-bold cursor-pointer hover:bg-black/5 p-1 -mx-1 rounded">
+              <input type="checkbox" checked={overlayEnabled} onChange={e => updateStyle({ overlayEnabled: e.target.checked })} className="rounded" />
+              Enable Frosted Card
+            </label>
+            <div className={`flex flex-col gap-3 mt-3 ${!overlayEnabled ? 'opacity-30 pointer-events-none' : ''}`}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] uppercase text-gray-500 font-semibold">Color</span>
+                <input type="color" value={styleConfig.overlayColor || '#ffffff'} onChange={e => updateStyle({ overlayColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Opacity</span><span className="text-[9px] font-mono">{Math.round((styleConfig.overlayOpacity ?? 0.85)*100)}%</span></div>
+                <input type="range" min="0" max="1" step="0.05" value={styleConfig.overlayOpacity ?? 0.85} onChange={e => updateStyle({ overlayOpacity: parseFloat(e.target.value) })} className="w-full accent-black" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Padding</span><span className="text-[9px] font-mono">{styleConfig.overlayPadding ?? 20}px</span></div>
+                <input type="range" min="0" max="60" step="2" value={styleConfig.overlayPadding ?? 20} onChange={e => updateStyle({ overlayPadding: parseInt(e.target.value) })} className="w-full accent-black" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'typography' && (
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
+            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round((styleConfig.fontSizeMultiplier || 1)*100)}%</span></div>
+                <input type="range" min="0.5" max="2" step="0.1" value={styleConfig.fontSizeMultiplier || 1} onChange={e => updateStyle({ fontSizeMultiplier: parseFloat(e.target.value) })} className="w-full accent-black" />
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] uppercase text-gray-500 font-semibold">Text Color</span>
+                <input type="color" value={styleConfig.textColor || tokens.text} onChange={e => updateStyle({ textColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] uppercase text-gray-500 font-semibold">Title Color</span>
+                <input type="color" value={styleConfig.titleColor || tokens.primary} onChange={e => updateStyle({ titleColor: e.target.value })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
