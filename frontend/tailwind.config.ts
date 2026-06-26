@@ -131,15 +131,14 @@ const config: Config = {
         600: '600ms',
       },
       animation: {
-        'fade-in': 'fadeIn 0.2s ease-out forwards',
-        'fade-out': 'fadeOut 0.2s ease-out forwards',
-        'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'slide-down': 'slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'scale-grow': 'scaleGrow 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'scale-shrink': 'scaleShrink 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'fade-in': 'fadeIn 0.3s ease-out forwards',
+        'fade-out': 'fadeOut 0.2s ease-in forwards',
+        'slide-up': 'slideUp 0.3s ease-out forwards',
+        'slide-down': 'slideDown 0.3s ease-out forwards',
+        'scale-grow': 'scaleGrow 0.25s ease-out forwards',
+        'scale-shrink': 'scaleShrink 0.2s ease-in forwards',
         'shimmer': 'shimmer 2s infinite linear',
-        'progress-shimmer': 'progressShimmer 2s infinite linear',
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse': 'pulse 2s infinite',
         'spin-slow': 'spin 3s linear infinite',
         'spin-medium': 'spin 2s linear infinite',
       },
@@ -171,10 +170,6 @@ const config: Config = {
         shimmer: {
           '0%': { backgroundPosition: '-1000px 0' },
           '100%': { backgroundPosition: '1000px 0' },
-        },
-        progressShimmer: {
-          '0%': { transform: 'translateX(-100%)' },
-          '100%': { transform: 'translateX(300%)' },
         },
         pulse: {
           '0%, 100%': { opacity: '1' },

@@ -367,7 +367,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default">
+        <div className="absolute right-0 top-full pt-1 z-50 print:hidden cursor-default">
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left">
           <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
           <div className="flex flex-col gap-3">
@@ -395,7 +395,7 @@ function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isA
   if (!isActive) return null
 
   const style: React.CSSProperties = pos ? { top: Math.max(0, pos.y - 45), left: pos.x } : {}
-  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-[10000] print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
+  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
   
   return (
     <div className={`${baseClasses} opacity-100`} style={style} onPointerDown={e => e.stopPropagation()}>
@@ -769,7 +769,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
         top: `${block.freeform!.y}%`,
         width: `${block.freeform!.w}%`,
         height: `${block.freeform!.h}%`,
-        zIndex: zClass?.includes('10000') ? 10000 : (block.freeform!.z !== undefined ? block.freeform!.z : 50),
+        zIndex: block.freeform!.z !== undefined ? block.freeform!.z : 50,
       }}
       onPointerDown={isPinned ? undefined : e => onPointerDown(e, 'move')}
       onPointerMove={isPinned ? undefined : onPointerMove}
@@ -1035,7 +1035,7 @@ function RegionView({
               </div>
               
               {editingTitleBlock && (
-                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 text-white z-[10000] p-3 rounded-lg shadow-2xl border border-slate-700/80 text-[11px] space-y-2.5 cursor-default min-w-[240px]" onClick={e => e.stopPropagation()}>
+                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 text-white z-50 p-3 rounded-lg shadow-2xl border border-slate-700/80 text-[11px] space-y-2.5 cursor-default min-w-[240px]" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
                     <span className="font-bold text-blue-400 uppercase tracking-widest text-[9px]">Edit Title Block</span>
                     <button type="button" onClick={(e) => { e.stopPropagation(); setEditingTitleBlock(false) }} className="text-slate-400 hover:text-white text-xs">✕</button>
