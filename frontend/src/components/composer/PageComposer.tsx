@@ -344,20 +344,31 @@ function ImageUploadPlaceholder({
 
 function BlockTypographySettings({ block, tokens, onChange }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void }) {
   const [open, setOpen] = useState(false)
-  const [isEditorOpen, setIsEditorOpen] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+  }
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setOpen(false)
+    }, 300)
+  }
 
   return (
     <div 
       className="relative flex items-center print:hidden" 
-      onMouseEnter={() => setIsEditorOpen(true)}
-      onMouseLeave={() => { setIsEditorOpen(false); setOpen(false); }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <button onClick={() => setOpen(!open)} className="text-[12px] p-1 rounded transition-colors font-bold opacity-40 hover:opacity-100 hover:bg-black/5" style={{ color: tokens.text }} title="Typography">
         A
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left z-50 print:hidden cursor-default">
+        <div className="absolute right-0 top-full pt-1 z-50 print:hidden cursor-default">
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left">
           <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
@@ -372,6 +383,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
               <span className="text-[9px] uppercase text-gray-500 font-semibold">Title Color</span>
               <input type="color" value={block.tocStyle?.titleColor || tokens.primary} onChange={e => onChange({ tocStyle: { ...(block.tocStyle || {}), titleColor: e.target.value } })} className="w-6 h-6 rounded cursor-pointer border border-black/10 p-0" />
             </div>
+          </div>
           </div>
         </div>
       )}

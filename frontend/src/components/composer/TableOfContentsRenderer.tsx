@@ -54,6 +54,7 @@ export function TableOfContentsRenderer({
 }) {
   const [activeTab, setActiveTab] = React.useState<string | null>(null)
   const [isEditorOpen, setIsEditorOpen] = React.useState(false)
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   const projectItems: ProjectIndexItem[] = []
   let projCount = 0
   
@@ -689,9 +690,17 @@ export function TableOfContentsRenderer({
 
       {/* Editor Controls Overlay */}
       <div 
-        className="absolute top-2 right-2 flex flex-col items-end gap-2 z-50 print:hidden pointer-events-auto"
-        onMouseEnter={() => setIsEditorOpen(true)}
-        onMouseLeave={() => { setIsEditorOpen(false); setActiveTab(null); }}
+        className="absolute top-2 right-2 flex flex-col items-end z-50 print:hidden pointer-events-auto"
+        onMouseEnter={() => {
+          if (timeoutRef.current) clearTimeout(timeoutRef.current)
+          setIsEditorOpen(true)
+        }}
+        onMouseLeave={() => {
+          timeoutRef.current = setTimeout(() => {
+            setIsEditorOpen(false)
+            setActiveTab(null)
+          }, 300)
+        }}
       >
         {/* Toolbar */}
         <div className={`flex items-center gap-1 bg-white/95 backdrop-blur-md shadow-lg border border-black/10 rounded-md p-1 transition-opacity duration-200 ${isEditorOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
