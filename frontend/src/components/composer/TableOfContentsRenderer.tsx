@@ -14,11 +14,16 @@ export function hexToRgba(hex: string, opacity: number) {
 
 export interface TocStyleParams {
   variant: 'vertical-stripes' | 'minimal-accent' | 'modern-cutout' | 'handdrawn-timeline' | 'generative' | 'magazine' | 'timeline' | 'grid' | 'luxury' | 'research' | 'parametric' | 'competition' | 'academic' | 'minimal'
-  // Generative properties (to enable 50+ iterations)
-  structure?: 'list' | 'grid' | 'zigzag' | 'masonry' | 'scroll'
-  imageShape?: 'pill' | 'square' | 'tall' | 'circle' | 'none'
-  numbering?: 'outline' | 'asterisk' | 'serif' | 'minimal' | 'circled'
+  // Generative properties (to enable 100+ iterations)
+  structure?: 'list' | 'grid' | 'zigzag' | 'masonry' | 'scroll' | 'mosaic' | 'bento-box' | 'carousel' | 'filmstrip'
+  imageShape?: 'pill' | 'square' | 'tall' | 'circle' | 'none' | 'arch' | 'diamond' | 'hexagon' | 'fluid'
+  numbering?: 'outline' | 'asterisk' | 'serif' | 'minimal' | 'circled' | 'roman-numerals' | 'oversized-watermark' | 'minimal-slash'
   lines?: 'dotted' | 'solid' | 'none'
+  // Local overlay properties
+  overlayEnabled?: boolean
+  overlayColor?: string
+  overlayOpacity?: number
+  overlayPadding?: number
 }
 
 interface ProjectIndexItem {
@@ -75,10 +80,7 @@ export function TableOfContentsRenderer({
 
   // Fallback for fresh templates
   
-  const overlayEnabled = tokens.overlayEnabled !== false
-  const overlayBg = overlayEnabled ? hexToRgba(tokens.overlayColor || '#ffffff', tokens.overlayOpacity ?? 0.85) : 'transparent'
-  const overlayPad = overlayEnabled ? `${tokens.overlayPadding ?? 20}px` : '0px'
-  const baseOverlayCls = overlayEnabled ? 'backdrop-blur-md rounded-xl shadow-lg' : ''
+
 
   const items = projectItems.length > 0 ? projectItems : [
     { num: '01', title: 'Cultural Center', year: '2025', typology: 'Cultural', location: 'Tokyo, JP', thumbnail: '', pageNumber: '06' },
@@ -103,7 +105,16 @@ export function TableOfContentsRenderer({
     if (l.includes('competition')) return { variant: 'competition' }
     if (l.includes('academic') || l.includes('thesis')) return { variant: 'academic' }
     if (l.includes('minimal')) return { variant: 'minimal' }
-    return { variant: 'minimal' }
+    
+    // Auto-match complex layouts to Generative combinations heavily featuring images
+    if (l.includes('arch-heavy')) return { variant: 'generative', structure: 'mosaic', imageShape: 'square', numbering: 'oversized-watermark', lines: 'none' }
+    if (l.includes('cover')) return { variant: 'generative', structure: 'bento-box', imageShape: 'arch', numbering: 'minimal-slash', lines: 'solid' }
+    if (l.includes('about')) return { variant: 'generative', structure: 'filmstrip', imageShape: 'fluid', numbering: 'serif', lines: 'dotted' }
+    if (l.includes('project')) return { variant: 'generative', structure: 'masonry', imageShape: 'square', numbering: 'outline', lines: 'none' }
+    if (l.includes('spread')) return { variant: 'generative', structure: 'grid', imageShape: 'tall', numbering: 'minimal', lines: 'solid' }
+    
+    // Default fallback to a rich generative style
+    return { variant: 'generative', structure: 'bento-box', imageShape: 'arch', numbering: 'roman-numerals', lines: 'solid' }
 
     if (l.includes('luxury') || l.includes('editorial')) return { variant: 'modern-cutout' }
     
@@ -120,12 +131,18 @@ export function TableOfContentsRenderer({
   const styleConfig: TocStyleParams = block.tocStyle || getDefaultStyle(layoutId)
   const { variant } = styleConfig
 
+  const overlayEnabled = styleConfig.overlayEnabled !== false
+  const overlayBg = overlayEnabled ? hexToRgba(styleConfig.overlayColor || '#ffffff', styleConfig.overlayOpacity ?? 0.85) : 'transparent'
+  const overlayPad = overlayEnabled ? `${styleConfig.overlayPadding ?? 20}px` : '0px'
+  const baseOverlayCls = overlayEnabled ? 'backdrop-blur-md rounded-xl shadow-lg' : ''
+
+
   // Generate a random style
   const handleRandomize = () => {
     const variants = ['vertical-stripes', 'minimal-accent', 'modern-cutout', 'handdrawn-timeline', 'generative', 'magazine', 'timeline', 'grid', 'luxury', 'research', 'parametric', 'competition', 'academic', 'minimal'] as const
-    const structures = ['list', 'grid', 'zigzag', 'masonry'] as const
-    const shapes = ['pill', 'square', 'tall', 'circle', 'none'] as const
-    const numberings = ['outline', 'asterisk', 'serif', 'minimal', 'circled'] as const
+    const structures = ['list', 'grid', 'zigzag', 'masonry', 'scroll', 'mosaic', 'bento-box', 'carousel', 'filmstrip'] as const
+    const shapes = ['pill', 'square', 'tall', 'circle', 'arch', 'diamond', 'hexagon', 'fluid'] as const
+    const numberings = ['outline', 'asterisk', 'serif', 'minimal', 'circled', 'roman-numerals', 'oversized-watermark', 'minimal-slash'] as const
     const lineStyles = ['dotted', 'solid', 'none'] as const
     
     const nextVariant = variants[Math.floor(Math.random() * variants.length)]
@@ -150,7 +167,12 @@ export function TableOfContentsRenderer({
         case 'circle': return 'rounded-full aspect-square'
         case 'tall': return 'rounded-md aspect-[3/4]'
         case 'square': return 'rounded-md aspect-square'
-        default: return 'hidden'
+        case 'arch': return 'rounded-t-full rounded-b-md aspect-[2/3]'
+        case 'diamond': return 'rounded-md rotate-45 scale-75 aspect-square'
+        case 'hexagon': return 'rounded-xl aspect-square' // simplified hex
+        case 'fluid': return 'rounded-[40%_60%_70%_30%/40%_50%_60%_50%] aspect-square'
+        case 'none': return 'hidden'
+        default: return 'rounded-md aspect-square'
       }
     }
 
@@ -160,15 +182,27 @@ export function TableOfContentsRenderer({
         case 'asterisk': return <span className="text-lg font-bold" style={{ color: tokens.accent }}>*{num}</span>
         case 'serif': return <span className="text-2xl font-serif italic text-gray-400">{num}.</span>
         case 'circled': return <span className="w-8 h-8 rounded-full border border-current flex items-center justify-center text-xs font-bold">{num}</span>
+        case 'roman-numerals': 
+          const romanMap: Record<string, string> = { '01': 'I', '02': 'II', '03': 'III', '04': 'IV', '05': 'V', '06': 'VI', '07': 'VII', '08': 'VIII', '09': 'IX', '10': 'X', '11': 'XI', '12': 'XII' }
+          return <span className="font-serif italic text-lg opacity-70">{romanMap[num] || num}</span>
+        case 'oversized-watermark': return <span className="absolute -left-4 -top-6 text-[80px] font-black opacity-5 pointer-events-none z-0 tracking-tighter">{num}</span>
+        case 'minimal-slash': return <span className="text-xs font-mono opacity-50">/{num}</span>
         default: return <span className="text-sm font-bold opacity-60">{num}</span>
       }
     }
 
     const gridClass = structure === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 gap-8' 
                     : structure === 'masonry' ? 'columns-2 md:columns-3 gap-8'
+                    : structure === 'mosaic' ? 'grid grid-cols-4 gap-4 [&>*:nth-child(3n+1)]:col-span-2 [&>*:nth-child(3n+1)]:row-span-2'
+                    : structure === 'bento-box' ? 'grid grid-cols-3 auto-rows-[250px] gap-6 [&>*:nth-child(4n+1)]:col-span-2'
+                    : structure === 'filmstrip' ? 'flex flex-row overflow-x-auto gap-8 pb-8 snap-x w-full max-w-full'
+                    : structure === 'carousel' ? 'flex flex-row overflow-x-auto gap-12 pb-12 snap-x w-full max-w-full'
                     : 'flex flex-col gap-6'
 
-    const itemClass = structure === 'zigzag' ? 'flex items-center gap-8 even:flex-row-reverse' : 'flex flex-col gap-4'
+    const itemClass = structure === 'zigzag' ? 'flex items-center gap-8 even:flex-row-reverse' 
+                    : ['filmstrip', 'carousel'].includes(structure || '') ? 'flex-shrink-0 w-80 flex flex-col gap-6 snap-start relative'
+                    : ['bento-box', 'mosaic'].includes(structure || '') ? 'flex flex-col gap-4 bg-white/40 p-4 rounded-xl border border-white/50 backdrop-blur-sm relative overflow-hidden'
+                    : 'flex flex-col gap-4 relative'
 
     const lineClass = lines === 'dotted' ? 'border-b border-dashed border-gray-300' 
                     : lines === 'solid' ? 'border-b border-solid border-gray-200' 
@@ -191,15 +225,13 @@ export function TableOfContentsRenderer({
           {items.map((it, idx) => (
             <div key={idx} className={`${itemClass} ${lineClass} pb-4 mb-4 break-inside-avoid`}>
               {imageShape !== 'none' && (
-                <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-32 relative`}>
-                  {it.thumbnail ? (
-                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${it.thumbnail})` }} />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-bold">{it.num}</div>
-                  )}
+                <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-full md:w-32 relative ${['diamond'].includes(imageShape||'') ? 'origin-center' : ''} ${['bento-box', 'mosaic', 'carousel', 'filmstrip'].includes(structure||'') ? '!w-full flex-1 min-h-[120px] md:min-h-[160px]' : ''}`}>
+                  <div className={`absolute inset-0 bg-cover bg-center ${['diamond'].includes(imageShape||'') ? '-rotate-45 scale-150' : ''}`} style={it.thumbnail ? { backgroundImage: `url(${it.thumbnail})` } : { backgroundColor: '#f0f0f0' }}>
+                    {!it.thumbnail && <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-mono text-xs opacity-50">IMG_{it.num}</div>}
+                  </div>
                 </div>
               )}
-              <div className="flex-1 flex flex-col justify-center">
+              <div className="flex-1 flex flex-col justify-center relative z-10">
                 <div className="flex items-center justify-between w-full mb-2">
                   {getNumberingUI(it.num)}
                   <span className="font-mono text-sm tracking-widest" style={{ color: tokens.accent }}>{it.pageNumber}</span>
