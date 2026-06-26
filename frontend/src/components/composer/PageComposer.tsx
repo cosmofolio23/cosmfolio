@@ -64,8 +64,8 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
     if (newPatch.zOp) {
       const block = page.blocks.find(b => b.id === id)
       if (block && block.freeform) {
-        const zs = page.blocks.map(b => b.freeform?.z || 1)
-        const currentZ = block.freeform.z || 1
+        const zs = page.blocks.map(b => b.freeform?.z ?? 50)
+        const currentZ = block.freeform.z ?? 50
         const maxZ = Math.max(1, ...zs)
         const minZ = Math.min(1, ...zs)
         let newZ = currentZ
@@ -740,15 +740,14 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
 
   return (
     <div 
-      className={`absolute shadow-2xl ${isPinned ? '' : 'ring-1 ring-blue-500/50 hover:ring-blue-500'} group/free rounded transition-all focus-within:z-[110] focus:z-[110] hover:z-[110] outline-none ${zClass}`}
+      className={`absolute shadow-2xl ${isPinned ? '' : 'ring-1 ring-blue-500/50 hover:ring-blue-500'} group/free rounded transition-all focus-within:z-[110] focus:z-[110] outline-none ${zClass}`}
       tabIndex={-1}
       style={{
         left: `${block.freeform!.x}%`,
         top: `${block.freeform!.y}%`,
         width: `${block.freeform!.w}%`,
         height: `${block.freeform!.h}%`,
-        zIndex: 50,
-        backgroundColor: tokens.background || '#ffffff',
+        zIndex: block.freeform!.z !== undefined ? block.freeform!.z : 50,
       }}
       onPointerDown={isPinned ? undefined : e => onPointerDown(e, 'move')}
       onPointerMove={isPinned ? undefined : onPointerMove}
