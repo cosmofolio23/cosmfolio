@@ -83,6 +83,8 @@ export interface Block {
 
   // TOC Generative Engine styling
   tocStyle?: any
+  // Unlocked Mode styling
+  freeform?: { x: number, y: number, w: number, h: number }
 }
 
 export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume' | 'contents'

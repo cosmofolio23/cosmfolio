@@ -726,6 +726,20 @@ export function TableOfContentsRenderer({
           </div>
         </div>
 
+        <div className="w-full h-px bg-black/10 my-2" />
+        <button 
+          onClick={() => {
+            if (block.freeform) {
+              onChange({ freeform: undefined })
+            } else {
+              onChange({ freeform: { x: 10, y: 10, w: 50, h: 50 } })
+            }
+          }}
+          className="w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-[10px] font-bold uppercase tracking-wider transition"
+        >
+          {block.freeform ? '🔒 Lock to Grid' : '🔓 Unlock from Grid'}
+        </button>
+
       </div>
     </div>
   )

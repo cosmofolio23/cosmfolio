@@ -377,7 +377,12 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
-        <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+        <div className="flex items-center gap-3">
+          <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title="Unlock from Grid">
+            {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
+          </button>
+        </div>
       </div>
       <div className="flex flex-col flex-1 overflow-hidden pb-2 pr-1" style={{ gap: Math.max(0, 16 - entries.length * 3) + 'px' }}>
         {entries.map((e, i) => (
@@ -465,9 +470,14 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
 
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
-      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: tokens.muted + '40' }}>
+      <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
-        <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+        <div className="flex items-center gap-3">
+          <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title="Unlock from Grid">
+            {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
+          </button>
+        </div>
       </div>
       
       <div className="flex-1 grid grid-cols-1 @xs:grid-cols-2 gap-x-6 overflow-hidden pr-1 content-start mt-1" style={{ rowGap: Math.max(4, 16 - items.length * 2) + 'px' }}>
@@ -511,7 +521,12 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
-        <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+        <div className="flex items-center gap-3">
+          <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title="Unlock from Grid">
+            {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
+          </button>
+        </div>
       </div>
       <div className="flex flex-col flex-1 overflow-hidden pr-1 mt-1" style={{ gap: Math.max(0, 14 - entries.length * 3) + 'px' }}>
         {entries.map((e, i) => (
@@ -543,6 +558,72 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
         ))}
         {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full">Click + ADD to create a list item</button>}
       </div>
+    </div>
+  )
+}
+
+function FreeformWrapper({ block, patchBlock, children, zClass }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string }) {
+  const dragRef = useRef<{ mode: 'move'|'resize', sx: number, sy: number, startFree: any } | null>(null)
+
+  const isFree = !!block?.freeform
+  if (!isFree) return <>{children}</>
+
+  const onPointerDown = (e: React.PointerEvent, mode: 'move'|'resize') => {
+    e.stopPropagation()
+    dragRef.current = { mode, sx: e.clientX, sy: e.clientY, startFree: { ...block.freeform } }
+    ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+  }
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    const d = dragRef.current
+    if (!d || !block?.freeform) return
+    const container = e.currentTarget.parentElement // The grid container
+    const rect = container?.getBoundingClientRect()
+    if (!rect) return
+
+    const dxp = ((e.clientX - d.sx) / rect.width) * 100
+    const dyp = ((e.clientY - d.sy) / rect.height) * 100
+
+    const patch: any = {}
+    if (d.mode === 'move') {
+      patch.x = d.startFree.x + dxp
+      patch.y = d.startFree.y + dyp
+    } else {
+      patch.w = Math.max(5, d.startFree.w + dxp)
+      patch.h = Math.max(5, d.startFree.h + dyp)
+    }
+    patchBlock(block.id, { freeform: { ...block.freeform, ...patch } })
+  }
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    dragRef.current = null
+  }
+
+  return (
+    <div 
+      className={`absolute shadow-2xl ring-1 ring-blue-500/50 hover:ring-blue-500 group/free ${zClass}`}
+      style={{
+        left: `${block.freeform!.x}%`,
+        top: `${block.freeform!.y}%`,
+        width: `${block.freeform!.w}%`,
+        height: `${block.freeform!.h}%`,
+        zIndex: 50
+      }}
+      onPointerDown={e => onPointerDown(e, 'move')}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      <div className="w-full h-full cursor-move pointer-events-auto">
+        {children}
+      </div>
+      
+      {/* SE Resize Handle */}
+      <div 
+        onPointerDown={e => onPointerDown(e, 'resize')}
+        className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity" 
+        style={{ cursor: 'nwse-resize', zIndex: 60 }} 
+      />
     </div>
   )
 }
@@ -736,8 +817,12 @@ function RegionView({
     setEditingTitleBlock(false)
   }
 
+  const isFree = !!block?.freeform
+  const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
+
   return (
-    <div style={style} className={`min-h-0 overflow-hidden ${z}`}>
+    <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z}>
+    <div style={finalStyle} className={`min-h-0 overflow-hidden ${z}`}>
       {region.role === 'title' && (
         titleBlock
           ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
@@ -919,6 +1004,7 @@ function RegionView({
         </div>
       )}
     </div>
+    </FreeformWrapper>
   )
 }
 
