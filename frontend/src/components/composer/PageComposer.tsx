@@ -232,7 +232,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
       {/* Free-tier watermark — tiled diagonally across the whole page */}
       {showWatermark && (
-        <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden select-none" aria-hidden="true">
+        <div className="absolute inset-0 pointer-events-none z-[9999] overflow-hidden select-none" aria-hidden="true">
           <div className="absolute inset-[-25%] flex flex-col justify-around -rotate-[30deg]">
             {Array.from({ length: 9 }).map((_, r) => (
               <div
@@ -980,7 +980,9 @@ function RegionView({
       style={finalStyle} 
       className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30'} group/block-container ${z}`}
       onPointerDown={e => {
-        e.stopPropagation()
+        if (!isFree || block.freeform?.pinned) {
+          e.stopPropagation()
+        }
         const rect = e.currentTarget.getBoundingClientRect()
         // Account for CSS transform scale (e.g. from canvas zoom)
         const scaleX = rect.width / (e.currentTarget.offsetWidth || 1)
