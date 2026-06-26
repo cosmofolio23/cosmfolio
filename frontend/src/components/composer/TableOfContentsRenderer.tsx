@@ -43,7 +43,7 @@ interface ProjectIndexItem {
 }
 
 export function TableOfContentsRenderer({
-  block, tokens: baseTokens, pages, onChange, layoutId
+  block, tokens: baseTokens, pages, onChange, layoutId, onUploadImage
 }: {
   block: Block
   tokens: DesignTokens

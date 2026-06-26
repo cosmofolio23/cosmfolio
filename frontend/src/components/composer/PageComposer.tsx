@@ -348,7 +348,6 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
           </div>
         </div>
       )}
-      )}
     </div>
   )
 }
@@ -934,7 +933,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
     <div style={finalStyle} className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} group/block-container ${z}`}>
       {!['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
-        <BlockHoverToolbar block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} showTypography={region.role !== 'image'} />
+        <BlockHoverToolbar block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} showTypography={!['render', 'plan', 'section', 'diagram', 'headshot'].includes(block.type)} />
       )}
       {region.role === 'title' && (
         titleBlock
