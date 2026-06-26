@@ -843,7 +843,7 @@ function RegionView({
 
   return (
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
-    <div style={finalStyle} className={`min-h-0 overflow-hidden p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} ${z}`}>
+    <div style={finalStyle} className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} ${z}`}>
       {region.role === 'title' && (
         titleBlock
           ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
