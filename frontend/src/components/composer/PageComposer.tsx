@@ -379,8 +379,8 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
-          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Lock to Grid" : "Unlock from Grid"}>
-            {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
         </div>
       </div>
@@ -474,8 +474,8 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
-          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Lock to Grid" : "Unlock from Grid"}>
-            {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
         </div>
       </div>
@@ -523,8 +523,8 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
-          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Lock to Grid" : "Unlock from Grid"}>
-            {block.freeform ? '🔒 Lock' : '🔓 Unlock'}
+          <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
         </div>
       </div>
@@ -601,7 +601,8 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
 
   return (
     <div 
-      className={`absolute shadow-2xl ring-1 ring-blue-500/50 hover:ring-blue-500 group/free rounded ${zClass}`}
+      className={`absolute shadow-2xl ring-1 ring-blue-500/50 hover:ring-blue-500 group/free rounded transition-all focus-within:z-[110] focus:z-[110] hover:z-[110] outline-none ${zClass}`}
+      tabIndex={-1}
       style={{
         left: `${block.freeform!.x}%`,
         top: `${block.freeform!.y}%`,

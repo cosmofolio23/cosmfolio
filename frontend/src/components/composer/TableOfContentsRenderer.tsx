@@ -737,7 +737,7 @@ export function TableOfContentsRenderer({
           }}
           className="w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-[10px] font-bold uppercase tracking-wider transition"
         >
-          {block.freeform ? '🔒 Lock to Grid' : '🔓 Unlock from Grid'}
+          {block.freeform ? '↩ Snap to Grid' : '🔓 Unlock from Grid'}
         </button>
 
       </div>
