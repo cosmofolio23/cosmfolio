@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
 interface Message {
   id: string

@@ -9,7 +9,7 @@ import TemplateMockup from '@/components/templates/TemplateMockup'
 import { buildEmptySheetSet } from '@/lib/buildSheetSet'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
 interface SheetTemplate {
   id: string

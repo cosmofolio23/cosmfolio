@@ -80,9 +80,7 @@ function PricingPageInner() {
       // Fetch current plan type
       const fetchPlan = async () => {
         try {
-          const API_URL = process.env.NODE_ENV === 'production'
-            ? 'https://cosmfolio-backend.onrender.com'
-            : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+          const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
           const token = localStorage.getItem('auth_token')
           const res = await fetch(`${API_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -111,9 +109,7 @@ function PricingPageInner() {
     setIsApplying(true)
     setPromoMessage('')
     try {
-      const API_URL = process.env.NODE_ENV === 'production'
-        ? 'https://cosmfolio-backend.onrender.com'
-        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
       
       // Try as 100% free coupon first
@@ -174,9 +170,7 @@ function PricingPageInner() {
     setIsCheckingOut(true)
     trackEvent('payment_started', { product_type: productType, currency })
     try {
-      const API_URL = process.env.NODE_ENV === 'production'
-        ? 'https://cosmfolio-backend.onrender.com'
-        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
 
       const res = await fetch(`${API_URL}/api/payments/checkout`, {

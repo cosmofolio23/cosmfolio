@@ -66,7 +66,7 @@ export default function Dashboard() {
       }
 
       // Create project with type
-      const res = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/projects`, {
+      const res = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/projects`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${currentToken}`,

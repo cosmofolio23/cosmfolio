@@ -7,7 +7,7 @@ import { getSpec } from '@/components/composer/layoutSpecs'
 import PageComposer from '@/components/composer/PageComposer'
 import type { Page, DesignTokens } from '@/components/composer/types'
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
 interface PortfolioData {
   project: {

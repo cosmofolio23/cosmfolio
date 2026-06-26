@@ -51,9 +51,7 @@ export default function ProfilePage() {
 
   const fetchDetails = async () => {
     try {
-      const API_URL = process.env.NODE_ENV === 'production'
-        ? 'https://cosmfolio-backend.onrender.com'
-        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/auth/me`, {
@@ -80,9 +78,7 @@ export default function ProfilePage() {
     setDetailsSuccess('')
     
     try {
-      const API_URL = process.env.NODE_ENV === 'production'
-        ? 'https://cosmfolio-backend.onrender.com'
-        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/auth/profile`, {
@@ -127,9 +123,7 @@ export default function ProfilePage() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const API_URL = process.env.NODE_ENV === 'production'
-        ? 'https://cosmfolio-backend.onrender.com'
-        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/auth/avatar`, {

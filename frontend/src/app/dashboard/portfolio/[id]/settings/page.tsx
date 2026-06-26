@@ -58,7 +58,7 @@ export default function PortfolioSettingsPage() {
       const savedToken = token || localStorage.getItem('auth_token')
 
       const res = await fetch(
-        `${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios/${portfolioId}/settings`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios/${portfolioId}/settings`,
         {
           headers: { 'Authorization': `Bearer ${savedToken}` }
         }
@@ -104,7 +104,7 @@ export default function PortfolioSettingsPage() {
       const savedToken = token || localStorage.getItem('auth_token')
 
       const res = await fetch(
-        `${process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios/${portfolioId}/settings`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')}/api/portfolios/${portfolioId}/settings`,
         {
           method: 'PUT',
           headers: {

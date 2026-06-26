@@ -52,7 +52,7 @@ const startTour = () => {
 type DesignPack = { name: string; tokens: DesignTokens; createdAt: string }
 type Asset = { id: string; url: string; name: string; uploadedAt: string; size: number }
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://cosmfolio-backend.onrender.com' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 
 interface Template {
   id: string
