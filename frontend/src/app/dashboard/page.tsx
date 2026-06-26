@@ -30,7 +30,7 @@ export default function Dashboard() {
   const router = useRouter()
 
   const isPro = user?.is_pro || user?.plan_type === 'pro'
-  const isAdmin = user?.email === 'boseraj001@gmail.com'
+  const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
 
   useEffect(() => {
     if (!isAuthenticated) {

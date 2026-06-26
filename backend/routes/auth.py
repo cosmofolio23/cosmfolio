@@ -521,7 +521,7 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
     Get all registered users for admin dashboard.
     Gated strictly for boseraj001@gmail.com
     """
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden: Admin access only"
@@ -545,7 +545,7 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
 @router.post("/admin/users/{user_id}/reset-exports")
 async def reset_user_exports(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Reset a user's export count to 0"""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         database.supabase.table("users").update({"export_count": 0}).eq("id", user_id).execute()
@@ -556,7 +556,7 @@ async def reset_user_exports(user_id: str, current_user: dict = Depends(get_curr
 @router.post("/admin/users/{user_id}/upgrade")
 async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Upgrade user to Pro (unlimited exports)"""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         database.supabase.table("users").update({"is_pro": True}).eq("id", user_id).execute()
@@ -567,7 +567,7 @@ async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_curren
 @router.post("/admin/users/{user_id}/downgrade")
 async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Downgrade user to Free"""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         database.supabase.table("users").update({"is_pro": False}).eq("id", user_id).execute()
@@ -578,7 +578,7 @@ async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_curr
 @router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Delete a user from Firebase + all Supabase tables."""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     errors = []
     try:
@@ -693,7 +693,7 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
     Get all registered users for admin dashboard.
     Gated strictly for boseraj001@gmail.com
     """
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden: Admin access only"
@@ -717,7 +717,7 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
 @router.post("/admin/users/{user_id}/reset-exports")
 async def reset_user_exports(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Reset a user's export count to 0"""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         database.supabase.table("users").update({"export_count": 0}).eq("id", user_id).execute()
@@ -728,7 +728,7 @@ async def reset_user_exports(user_id: str, current_user: dict = Depends(get_curr
 @router.post("/admin/users/{user_id}/upgrade")
 async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Upgrade user to Pro (unlimited exports)"""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         database.supabase.table("users").update({"is_pro": True}).eq("id", user_id).execute()
@@ -739,7 +739,7 @@ async def upgrade_user_pro(user_id: str, current_user: dict = Depends(get_curren
 @router.post("/admin/users/{user_id}/downgrade")
 async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Downgrade user to Free"""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     try:
         database.supabase.table("users").update({"is_pro": False}).eq("id", user_id).execute()
@@ -750,7 +750,7 @@ async def downgrade_user_pro(user_id: str, current_user: dict = Depends(get_curr
 @router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user_from_deps)):
     """Admin only: Delete a user from Firebase + all Supabase tables."""
-    if not current_user or current_user.get("email") != "boseraj001@gmail.com":
+    if not current_user or current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access only")
     errors = []
     try:

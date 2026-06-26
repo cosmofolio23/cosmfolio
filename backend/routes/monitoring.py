@@ -91,7 +91,7 @@ async def get_dashboard_stats(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user)
 ):
-    if user.email != 'boseraj001@gmail.com':
+    if user.email.lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=403, detail="Not authorized")
         
     try:

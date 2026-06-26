@@ -190,7 +190,7 @@ async def apply_code(req: JoinRequest):
 @router.get("/admin/list")
 async def admin_list_ambassadors(current_user: dict = Depends(get_current_user)):
     # Check admin
-    if current_user.get("email") != "boseraj001@gmail.com":
+    if current_user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=403, detail="Admin only")
         
     res = supabase.table("ambassadors").select("*").order("successful_sales", desc=True).execute()

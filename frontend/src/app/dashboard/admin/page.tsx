@@ -52,7 +52,7 @@ export default function AdminDashboard() {
   const [newCouponMaxUses, setNewCouponMaxUses] = useState(100)
   const [isCreatingCoupon, setIsCreatingCoupon] = useState(false)
 
-  const isAdmin = user?.email === 'boseraj001@gmail.com'
+  const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
   
   const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
 

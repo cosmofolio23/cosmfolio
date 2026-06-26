@@ -82,7 +82,7 @@ interface FilterPreset {
 export default function TemplateMarketplace() {
   const router = useRouter()
   const { isAuthenticated, token, user } = useAuthStore()
-  const isAdmin = user?.email === 'boseraj001@gmail.com'
+  const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
   const [templates, setTemplates] = useState<Template[]>([])
   const [libTab, setLibTab] = useState<LibTab>('portfolios')
   const [isLoading, setIsLoading] = useState(true)
