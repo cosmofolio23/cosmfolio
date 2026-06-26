@@ -199,37 +199,39 @@ export function TableOfContentsRenderer({
       }
     }
 
-    const gridClass = structure === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 gap-8' 
-                    : structure === 'masonry' ? 'columns-2 md:columns-3 gap-8'
-                    : structure === 'mosaic' ? 'grid grid-cols-4 gap-4 [&>*:nth-child(3n+1)]:col-span-2 [&>*:nth-child(3n+1)]:row-span-2'
-                    : structure === 'bento-box' ? 'grid grid-cols-3 auto-rows-[250px] gap-6 [&>*:nth-child(4n+1)]:col-span-2'
-                    : structure === 'filmstrip' ? 'flex flex-row overflow-x-auto gap-8 pb-8 snap-x w-full max-w-full'
-                    : structure === 'carousel' ? 'flex flex-row overflow-x-auto gap-12 pb-12 snap-x w-full max-w-full'
-                    : 'flex flex-col gap-6'
+    const dynGap = Math.max(8, 32 - items.length * 1.5)
+    const dynGapSmall = Math.max(4, 16 - items.length * 1)
 
-    const itemClass = structure === 'zigzag' ? 'flex items-center gap-8 even:flex-row-reverse' 
-                    : ['filmstrip', 'carousel'].includes(structure || '') ? 'flex-shrink-0 w-80 flex flex-col gap-6 snap-start relative'
-                    : ['bento-box', 'mosaic'].includes(structure || '') ? 'flex flex-col gap-4 bg-white/40 p-4 rounded-xl border border-white/50 backdrop-blur-sm relative overflow-hidden'
-                    : 'flex flex-col gap-4 relative'
+    const gridClass = structure === 'grid' ? 'grid grid-cols-2 md:grid-cols-3' 
+                    : structure === 'masonry' ? 'columns-2 md:columns-3'
+                    : structure === 'mosaic' ? 'grid grid-cols-4 [&>*:nth-child(3n+1)]:col-span-2 [&>*:nth-child(3n+1)]:row-span-2'
+                    : structure === 'bento-box' ? 'grid grid-cols-3 auto-rows-[minmax(0,1fr)] [&>*:nth-child(4n+1)]:col-span-2'
+                    : structure === 'filmstrip' ? 'flex flex-row overflow-x-auto pb-4 snap-x w-full max-w-full'
+                    : structure === 'carousel' ? 'flex flex-row overflow-x-auto pb-8 snap-x w-full max-w-full'
+                    : 'flex flex-col'
+
+    const itemClass = structure === 'zigzag' ? 'flex items-center even:flex-row-reverse min-h-0' 
+                    : ['filmstrip', 'carousel'].includes(structure || '') ? 'flex-shrink-0 w-64 md:w-80 flex flex-col snap-start relative min-h-0'
+                    : ['bento-box', 'mosaic'].includes(structure || '') ? 'flex flex-col bg-white/40 p-3 rounded-xl border border-white/50 backdrop-blur-sm relative overflow-hidden min-h-0'
+                    : 'flex flex-col relative min-h-0'
 
     const lineClass = lines === 'dotted' ? 'border-b border-dashed border-gray-300' 
                     : lines === 'solid' ? 'border-b border-solid border-gray-200' 
                     : ''
 
     return (
-      <div className={`w-full relative h-full flex flex-col pt-8 px-8 group ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
-        <div className="flex justify-between items-end mb-12">
-          <h2 className="text-4xl font-bold uppercase tracking-widest" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+      <div className={`w-full relative h-full flex flex-col pt-8 px-8 group overflow-hidden ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        <div className="flex justify-between items-end mb-4 md:mb-8 shrink-0">
+          <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-widest" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
             {block.label || 'Contents'}
           </h2>
         </div>
         
-
-        <div className={gridClass}>
+        <div className={`flex-1 min-h-0 overflow-hidden ${gridClass}`} style={{ gap: dynGap + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className={`${itemClass} ${lineClass} pb-4 mb-4 break-inside-avoid`}>
+            <div key={idx} className={`${itemClass} ${lineClass} pb-2 mb-2 break-inside-avoid`} style={{ gap: dynGapSmall + 'px' }}>
               {imageShape !== 'none' && (
-                <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-full md:w-32 relative ${['diamond'].includes(imageShape||'') ? 'origin-center' : ''} ${['bento-box', 'mosaic', 'carousel', 'filmstrip'].includes(structure||'') ? '!w-full flex-1 min-h-[120px] md:min-h-[160px]' : ''}`}>
+                <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-full md:w-32 relative ${['diamond'].includes(imageShape||'') ? 'origin-center' : ''} ${['bento-box', 'mosaic', 'carousel', 'filmstrip'].includes(structure||'') ? '!w-full flex-1 basis-[80px] md:basis-[120px] shrink min-h-[40px]' : ''}`}>
                   <div className={`absolute inset-0 bg-cover bg-center ${['diamond'].includes(imageShape||'') ? '-rotate-45 scale-150' : ''}`} style={it.thumbnail ? { backgroundImage: `url(${it.thumbnail})` } : { backgroundColor: '#f0f0f0' }}>
                     {!it.thumbnail && <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-mono text-xs opacity-50">IMG_{it.num}</div>}
                   </div>

@@ -375,13 +375,13 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
-      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: tokens.muted + '40' }}>
+      <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col flex-1 overflow-hidden pb-4 pr-1" style={{ gap: Math.max(2, 16 - entries.length * 2.5) + 'px' }}>
+      <div className="flex flex-col flex-1 overflow-hidden pb-2 pr-1" style={{ gap: Math.max(0, 16 - entries.length * 3) + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className="group relative pl-4 @sm:pl-0 flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start">
+          <div key={i} className="group relative pl-4 @sm:pl-0 flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-hidden">
             {/* Timeline dot (Mobile) or left border */}
             <div className="hidden @sm:block w-[1.5px] h-full absolute left-0 top-0 bottom-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             
@@ -389,9 +389,9 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
               <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.accent }} />
             </div>
             
-            <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight" style={{ color: tokens.primary, fontFamily: tokens.headingFont }} />
-              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+            <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-hidden min-h-0 shrink">
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: tokens.primary, fontFamily: tokens.headingFont }} />
+              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
               <textarea 
                 value={e.detail || ''} 
                 onChange={ev => upd(i, 'detail', ev.target.value)} 
@@ -401,8 +401,8 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
                 }}
                 placeholder="Description / Details" 
                 rows={1} 
-                className="w-full mt-1 text-[9.5px] leading-relaxed opacity-70 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden" 
-                style={{ color: tokens.text, fontFamily: tokens.bodyFont, minHeight: '16px' }} 
+                className="w-full mt-1 text-[9.5px] leading-relaxed opacity-70 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0" 
+                style={{ color: tokens.text, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
             <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer">✕</button>
@@ -509,18 +509,18 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
   const isAchievement = label === 'Achievements'
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
-      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: tokens.muted + '40' }}>
+      <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
         <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
       </div>
-      <div className="flex flex-col flex-1 overflow-hidden pr-1 mt-1" style={{ gap: Math.max(2, 14 - entries.length * 2) + 'px' }}>
+      <div className="flex flex-col flex-1 overflow-hidden pr-1 mt-1" style={{ gap: Math.max(0, 14 - entries.length * 3) + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className="group flex gap-2 items-start relative pl-3">
+          <div key={i} className="group flex gap-2 items-start relative pl-3 shrink min-h-0 overflow-hidden">
             <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>+</span>
-            <div className="flex-1 min-w-0">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
+            <div className="flex-1 min-w-0 flex flex-col min-h-0 shrink">
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: tokens.text, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
-                <div className="flex gap-2 items-center mt-0.5">
+                <div className="flex gap-2 items-center mt-0.5 shrink-0">
                   <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.text }} />
                   <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: tokens.text }} />
                 </div>
@@ -534,11 +534,11 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
                 }}
                 placeholder="Detail" 
                 rows={1} 
-                className="block w-full text-[9px] mt-1 leading-relaxed opacity-60 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden" 
+                className="w-full mt-1 text-[9px] leading-relaxed opacity-60 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0" 
                 style={{ color: tokens.text, minHeight: '14px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Item" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer">✕</button>
+            <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer">✕</button>
           </div>
         ))}
         {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full">Click + ADD to create a list item</button>}
