@@ -28,6 +28,7 @@ export interface TocStyleParams {
   textColor?: string
   titleColor?: string
   fontSizeMultiplier?: number
+  customThumbnails?: Record<string, string>
 }
 
 interface ProjectIndexItem {
@@ -38,6 +39,7 @@ interface ProjectIndexItem {
   location: string
   thumbnail: string
   pageNumber: string
+  pageIndex: number
 }
 
 export function TableOfContentsRenderer({
@@ -48,6 +50,7 @@ export function TableOfContentsRenderer({
   pages: any[]
   onChange: (patch: Partial<Block>) => void
   layoutId?: string
+  onUploadImage?: (file: File) => Promise<string>
 }) {
   const [activeTab, setActiveTab] = React.useState<string | null>(null)
   const [isEditorOpen, setIsEditorOpen] = React.useState(false)
@@ -68,7 +71,7 @@ export function TableOfContentsRenderer({
           const typology = fields.find((f: any) => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || 'Residential'
           
           const imgBlock = p.blocks?.find((b: any) => ['render', 'plan', 'section', 'diagram'].includes(b.type) && b.imageUrl)
-          const thumbnail = imgBlock?.imageUrl || ''
+          const thumbnail = block.tocStyle?.customThumbnails?.[String(idx)] || imgBlock?.imageUrl || ''
           
           projectItems.push({
             num: String(projCount).padStart(2, '0'),
@@ -77,7 +80,8 @@ export function TableOfContentsRenderer({
             typology,
             location,
             thumbnail,
-            pageNumber: String(idx + 1).padStart(2, '0')
+            pageNumber: String(idx + 1).padStart(2, '0'),
+            pageIndex: idx
           })
         }
       }
@@ -89,11 +93,11 @@ export function TableOfContentsRenderer({
 
 
   const items = projectItems.length > 0 ? projectItems : [
-    { num: '01', title: 'Cultural Center', year: '2025', typology: 'Cultural', location: 'Tokyo, JP', thumbnail: '', pageNumber: '06' },
-    { num: '02', title: 'Urban Housing', year: '2026', typology: 'Residential', location: 'London, UK', thumbnail: '', pageNumber: '18' },
-    { num: '03', title: 'Computational Pavillion', year: '2026', typology: 'Experimental', location: 'Zurich, CH', thumbnail: '', pageNumber: '24' },
-    { num: '04', title: 'Mixed-Use Highrise', year: '2026', typology: 'Commercial', location: 'New York, US', thumbnail: '', pageNumber: '32' },
-    { num: '05', title: 'Parametric Bridge', year: '2027', typology: 'Infrastructure', location: 'Dubai, UAE', thumbnail: '', pageNumber: '40' }
+    { num: '01', title: 'Cultural Center', year: '2025', typology: 'Cultural', location: 'Tokyo, JP', thumbnail: block.tocStyle?.customThumbnails?.['0'] || '', pageNumber: '06', pageIndex: 0 },
+    { num: '02', title: 'Urban Housing', year: '2026', typology: 'Residential', location: 'London, UK', thumbnail: block.tocStyle?.customThumbnails?.['1'] || '', pageNumber: '18', pageIndex: 1 },
+    { num: '03', title: 'Computational Pavillion', year: '2026', typology: 'Experimental', location: 'Zurich, CH', thumbnail: block.tocStyle?.customThumbnails?.['2'] || '', pageNumber: '24', pageIndex: 2 },
+    { num: '04', title: 'Mixed-Use Highrise', year: '2026', typology: 'Commercial', location: 'New York, US', thumbnail: block.tocStyle?.customThumbnails?.['3'] || '', pageNumber: '32', pageIndex: 3 },
+    { num: '05', title: 'Parametric Bridge', year: '2027', typology: 'Infrastructure', location: 'Dubai, UAE', thumbnail: block.tocStyle?.customThumbnails?.['4'] || '', pageNumber: '40', pageIndex: 4 }
   ]
 
   // Map legacy layoutId to initial style if no tocStyle is provided
@@ -243,10 +247,39 @@ export function TableOfContentsRenderer({
           {items.map((it, idx) => (
             <div key={idx} className={`${itemClass} ${lineClass} pb-2 mb-2 break-inside-avoid`} style={{ gap: dynGapSmall + 'px' }}>
               {imageShape !== 'none' && (
-                <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-full md:w-32 relative ${['diamond'].includes(imageShape||'') ? 'origin-center' : ''} ${['bento-box', 'mosaic', 'carousel', 'filmstrip'].includes(structure||'') ? '!w-full flex-1 basis-[80px] md:basis-[120px] shrink min-h-[40px]' : ''}`}>
+                <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-full md:w-32 relative ${['diamond'].includes(imageShape||'') ? 'origin-center' : ''} ${['bento-box', 'mosaic', 'carousel', 'filmstrip'].includes(structure||'') ? '!w-full flex-1 basis-[80px] md:basis-[120px] shrink min-h-[40px]' : ''} group/img`}>
                   <div className={`absolute inset-0 bg-cover bg-center ${['diamond'].includes(imageShape||'') ? '-rotate-45 scale-150' : ''}`} style={it.thumbnail ? { backgroundImage: `url(${it.thumbnail})` } : { backgroundColor: '#f0f0f0' }}>
                     {!it.thumbnail && <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-mono text-xs opacity-50">IMG_{it.num}</div>}
                   </div>
+                  {onUploadImage && (
+                    <div 
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition flex flex-col items-center justify-center text-white text-[10px] font-semibold backdrop-blur-sm cursor-pointer z-10 print:hidden"
+                      onClick={() => {
+                        const input = document.createElement('input')
+                        input.type = 'file'
+                        input.accept = 'image/*'
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0]
+                          if (!file) return
+                          const url = await onUploadImage(file)
+                          if (url) {
+                            onChange({
+                              tocStyle: {
+                                ...styleConfig,
+                                customThumbnails: {
+                                  ...(styleConfig.customThumbnails || {}),
+                                  [String(it.pageIndex)]: url
+                                }
+                              }
+                            })
+                          }
+                        }
+                        input.click()
+                      }}
+                    >
+                      <span className="bg-black/50 px-2 py-1 rounded">📷 Change</span>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex-1 flex flex-col justify-center relative z-10">

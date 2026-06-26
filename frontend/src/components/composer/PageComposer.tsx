@@ -348,10 +348,26 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
           </div>
         </div>
       )}
+      )}
     </div>
   )
 }
 
+function BlockHoverToolbar({ block, tokens, onChange, showTypography = true }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void, showTypography?: boolean }) {
+  return (
+    <div className="absolute top-1 right-1 flex items-center gap-2 opacity-0 group-hover/block-container:opacity-100 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto">
+      {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
+      {block.freeform && (
+        <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } }) }} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+          {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+        </button>
+      )}
+      <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+        {block.freeform ? '↩ Grid' : '🔓 Unlock'}
+      </button>
+    </div>
+  )
+}
 
 function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onUpload?: (f: File) => Promise<string> }) {
   const fileRef = useRef<HTMLInputElement>(null)
@@ -916,7 +932,10 @@ function RegionView({
 
   return (
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
-    <div style={finalStyle} className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} ${z}`}>
+    <div style={finalStyle} className={`min-h-0 ${region.role === 'contents' ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : 'z-20 hover:z-[100] focus-within:z-[100]'} group/block-container ${z}`}>
+      {!['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
+        <BlockHoverToolbar block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} showTypography={region.role !== 'image'} />
+      )}
       {region.role === 'title' && (
         titleBlock
           ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
@@ -1071,7 +1090,7 @@ function RegionView({
       {region.role === 'contents' && (
         <div className="w-full h-full flex flex-col justify-between">
           <div className="flex-1 min-h-0">
-            <ContentsBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} pages={pages || []} layoutId={spec.id} />
+            <ContentsBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} pages={pages || []} layoutId={spec.id} onUploadImage={onUploadImage} />
           </div>
           {onUpdateGlobalPages && (
             <button

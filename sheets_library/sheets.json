@@ -1,7 +1,7 @@
 [
   {
     "id": "sht_001",
-    "name": "Concept — Minimal Thesis",
+    "name": "Concept \u2014 Minimal Thesis",
     "sheet_type": "concept",
     "category": "Conceptual",
     "description": "Clean minimal concept sheet with central thesis statement, concept sketch, and supporting diagrams on white field.",
@@ -72,7 +72,7 @@
   },
   {
     "id": "sht_002",
-    "name": "Concept — Bold Manifesto",
+    "name": "Concept \u2014 Bold Manifesto",
     "sheet_type": "concept",
     "category": "Bold",
     "description": "Typography-forward concept sheet where the concept statement is the visual hero, oversized words with supporting imagery.",
@@ -136,10 +136,10 @@
   },
   {
     "id": "sht_003",
-    "name": "Concept — Narrative Flow",
+    "name": "Concept \u2014 Narrative Flow",
     "sheet_type": "concept",
     "category": "Narrative",
-    "description": "Story-driven concept sheet with a left-to-right reading flow: problem → concept → response.",
+    "description": "Story-driven concept sheet with a left-to-right reading flow: problem \u2192 concept \u2192 response.",
     "format": "A1_landscape",
     "colors": {
       "primary": "#2A2A2A",
@@ -208,7 +208,7 @@
   },
   {
     "id": "sht_004",
-    "name": "Concept — Parametric Diagram",
+    "name": "Concept \u2014 Parametric Diagram",
     "sheet_type": "concept",
     "category": "Parametric",
     "description": "Computational concept sheet with generative iterations, parametric diagrams, and data-driven concept explanation.",
@@ -279,7 +279,7 @@
   },
   {
     "id": "sht_005",
-    "name": "Concept — Exploded Axonometric",
+    "name": "Concept \u2014 Exploded Axonometric",
     "sheet_type": "concept",
     "category": "Diagrammatic",
     "description": "Concept sheet centered on an exploded axonometric showing all design layers with callout annotations.",
@@ -349,7 +349,7 @@
   },
   {
     "id": "sht_006",
-    "name": "Concept — Black Canvas Dark",
+    "name": "Concept \u2014 Black Canvas Dark",
     "sheet_type": "concept",
     "category": "Dark Premium",
     "description": "Dark-mode concept board with white/gold diagrams on black background, cinematic atmosphere.",
@@ -418,7 +418,7 @@
   },
   {
     "id": "sht_007",
-    "name": "Concept — Hand Sketch Organic",
+    "name": "Concept \u2014 Hand Sketch Organic",
     "sheet_type": "concept",
     "category": "Sketch",
     "description": "Hand-drawn concept board with scanned sketches, watercolor textures, and personal annotations.",
@@ -488,7 +488,7 @@
   },
   {
     "id": "sht_008",
-    "name": "Concept — Sustainability Systems",
+    "name": "Concept \u2014 Sustainability Systems",
     "sheet_type": "concept",
     "category": "Sustainable",
     "description": "Green concept sheet showing passive systems, energy flows, and sustainability strategy as core concept.",
@@ -559,7 +559,7 @@
   },
   {
     "id": "sht_009",
-    "name": "Concept — Urban Context Response",
+    "name": "Concept \u2014 Urban Context Response",
     "sheet_type": "concept",
     "category": "Urban",
     "description": "Urban-scale concept sheet showing site context analysis leading to design response, city-scale thinking.",
@@ -630,7 +630,7 @@
   },
   {
     "id": "sht_010",
-    "name": "Concept — Collage Experiential",
+    "name": "Concept \u2014 Collage Experiential",
     "sheet_type": "concept",
     "category": "Collage",
     "description": "Collage-style concept board mixing textures, photography, and abstract forms to convey atmosphere.",
@@ -693,7 +693,7 @@
   },
   {
     "id": "sht_011",
-    "name": "Site Analysis — Full Analytical",
+    "name": "Site Analysis \u2014 Full Analytical",
     "sheet_type": "site_analysis",
     "category": "Analytical",
     "description": "Comprehensive site analysis with sun path, wind, traffic, vegetation, topography, and noise analysis diagrams.",
@@ -761,7 +761,7 @@
   },
   {
     "id": "sht_012",
-    "name": "Site Analysis — Minimal Map Focus",
+    "name": "Site Analysis \u2014 Minimal Map Focus",
     "sheet_type": "site_analysis",
     "category": "Minimalist",
     "description": "Minimal site analysis with large central map and clean data callouts around the periphery.",
@@ -824,7 +824,7 @@
   },
   {
     "id": "sht_013",
-    "name": "Site Analysis — Climate & Environment",
+    "name": "Site Analysis \u2014 Climate & Environment",
     "sheet_type": "site_analysis",
     "category": "Sustainable",
     "description": "Climate-focused site analysis emphasizing sun path, wind patterns, rainfall, and seasonal conditions.",
@@ -904,7 +904,7 @@
   },
   {
     "id": "sht_014",
-    "name": "Site Analysis — Urban Context",
+    "name": "Site Analysis \u2014 Urban Context",
     "sheet_type": "site_analysis",
     "category": "Urban",
     "description": "Urban context analysis showing figure-ground, circulation, land use, building heights, and infrastructure.",
@@ -991,7 +991,7 @@
   },
   {
     "id": "sht_015",
-    "name": "Site Analysis — Photographic Context",
+    "name": "Site Analysis \u2014 Photographic Context",
     "sheet_type": "site_analysis",
     "category": "Photographic",
     "description": "Photo-driven site analysis with site photography, aerial views, and annotated context images.",
@@ -1055,7 +1055,7 @@
   },
   {
     "id": "sht_016",
-    "name": "Site Analysis — Landscape & Ecology",
+    "name": "Site Analysis \u2014 Landscape & Ecology",
     "sheet_type": "site_analysis",
     "category": "Landscape",
     "description": "Ecology-focused site analysis with vegetation survey, water systems, soil types, and biodiversity mapping.",
@@ -1127,7 +1127,7 @@
   },
   {
     "id": "sht_017",
-    "name": "Site Analysis — Historical Layers",
+    "name": "Site Analysis \u2014 Historical Layers",
     "sheet_type": "site_analysis",
     "category": "Heritage",
     "description": "Historical site analysis showing temporal layers: historical maps, archaeological finds, heritage constraints.",
@@ -1187,11 +1187,11 @@
       "location": true
     },
     "style_notes": "Aged cream paper, sepia tones, sienna accent for heritage constraints, timeline arrows",
-    "preview_image": "Cream A1 landscape with 4 historical maps in chronological row (1800→1900→1950→now), heritage overlay bottom-left, archival photos bottom-right, sepia tones"
+    "preview_image": "Cream A1 landscape with 4 historical maps in chronological row (1800\u21921900\u21921950\u2192now), heritage overlay bottom-left, archival photos bottom-right, sepia tones"
   },
   {
     "id": "sht_018",
-    "name": "Site Analysis — Dark Drone Aerial",
+    "name": "Site Analysis \u2014 Dark Drone Aerial",
     "sheet_type": "site_analysis",
     "category": "Dark Premium",
     "description": "Dark-background site analysis with dramatic drone photography and glowing analytical overlays.",
@@ -1255,7 +1255,7 @@
   },
   {
     "id": "sht_019",
-    "name": "Mood Board — Classic Grid",
+    "name": "Mood Board \u2014 Classic Grid",
     "sheet_type": "mood_board",
     "category": "Classic",
     "description": "Classic mood board with structured grid of inspiration images, material swatches, and color palette.",
@@ -1326,7 +1326,7 @@
   },
   {
     "id": "sht_020",
-    "name": "Mood Board — Organic Collage",
+    "name": "Mood Board \u2014 Organic Collage",
     "sheet_type": "mood_board",
     "category": "Organic",
     "description": "Freeform collage mood board with overlapping images, textures, and handwritten notes.",
@@ -1382,7 +1382,7 @@
   },
   {
     "id": "sht_021",
-    "name": "Mood Board — Material Focus",
+    "name": "Mood Board \u2014 Material Focus",
     "sheet_type": "mood_board",
     "category": "Materials",
     "description": "Material-led mood board with large material swatches, close-up textures, and supplier references.",
@@ -1453,7 +1453,7 @@
   },
   {
     "id": "sht_022",
-    "name": "Mood Board — Interior Styling",
+    "name": "Mood Board \u2014 Interior Styling",
     "sheet_type": "mood_board",
     "category": "Interior",
     "description": "Interior styling mood board with furniture references, color palettes, and lifestyle vignettes.",
@@ -1524,7 +1524,7 @@
   },
   {
     "id": "sht_023",
-    "name": "Mood Board — Dark Luxury",
+    "name": "Mood Board \u2014 Dark Luxury",
     "sheet_type": "mood_board",
     "category": "Dark Premium",
     "description": "Dark luxury mood board with moody photography, gold accents, and premium material selections.",
@@ -1587,7 +1587,7 @@
   },
   {
     "id": "sht_024",
-    "name": "Mood Board — Minimalist Zen",
+    "name": "Mood Board \u2014 Minimalist Zen",
     "sheet_type": "mood_board",
     "category": "Minimalist",
     "description": "Ultra-minimal mood board with maximum whitespace, few carefully selected images, and restrained palette.",
@@ -1656,7 +1656,7 @@
   },
   {
     "id": "sht_025",
-    "name": "Mood Board — Tropical Biophilic",
+    "name": "Mood Board \u2014 Tropical Biophilic",
     "sheet_type": "mood_board",
     "category": "Tropical",
     "description": "Lush tropical mood board with greenery, natural materials, and resort-living inspiration.",
@@ -1719,7 +1719,7 @@
   },
   {
     "id": "sht_026",
-    "name": "Mood Board — Brutalist Raw",
+    "name": "Mood Board \u2014 Brutalist Raw",
     "sheet_type": "mood_board",
     "category": "Brutalist",
     "description": "Raw concrete-focused mood board with heavy textures, stark contrasts, and industrial materials.",
@@ -1782,7 +1782,7 @@
   },
   {
     "id": "sht_027",
-    "name": "Floor Plan — Standard Technical",
+    "name": "Floor Plan \u2014 Standard Technical",
     "sheet_type": "floor_plan",
     "category": "Technical",
     "description": "Standard technical floor plan sheet with title block, scale bar, north arrow, room labels, and dimensions.",
@@ -1856,7 +1856,7 @@
   },
   {
     "id": "sht_028",
-    "name": "Floor Plan — Rendered Presentation",
+    "name": "Floor Plan \u2014 Rendered Presentation",
     "sheet_type": "floor_plan",
     "category": "Presentation",
     "description": "Rendered presentation floor plan with materials shown, furniture layouts, landscaping, and shadows.",
@@ -1921,7 +1921,7 @@
   },
   {
     "id": "sht_029",
-    "name": "Floor Plan — Multi-Level Stack",
+    "name": "Floor Plan \u2014 Multi-Level Stack",
     "sheet_type": "floor_plan",
     "category": "Technical",
     "description": "Multi-level plan sheet showing all floors stacked or side-by-side for comparison.",
@@ -1993,7 +1993,7 @@
   },
   {
     "id": "sht_030",
-    "name": "Floor Plan — Minimal Gallery",
+    "name": "Floor Plan \u2014 Minimal Gallery",
     "sheet_type": "floor_plan",
     "category": "Minimalist",
     "description": "Minimal presentation plan with generous white space, thin lines, and elegant labeling.",
@@ -2056,7 +2056,7 @@
   },
   {
     "id": "sht_031",
-    "name": "Floor Plan — Color-Zoned Program",
+    "name": "Floor Plan \u2014 Color-Zoned Program",
     "sheet_type": "floor_plan",
     "category": "Diagrammatic",
     "description": "Color-coded programmatic plan with zones highlighted by function: public, private, service, circulation.",
@@ -2128,7 +2128,7 @@
   },
   {
     "id": "sht_032",
-    "name": "Floor Plan — Landscape Site Plan",
+    "name": "Floor Plan \u2014 Landscape Site Plan",
     "sheet_type": "floor_plan",
     "category": "Landscape",
     "description": "Site plan with landscape design showing planting zones, hardscape, water features, and outdoor furniture.",
@@ -2193,7 +2193,7 @@
   },
   {
     "id": "sht_033",
-    "name": "Floor Plan — Dark Contrast",
+    "name": "Floor Plan \u2014 Dark Contrast",
     "sheet_type": "floor_plan",
     "category": "Dark Premium",
     "description": "Dark-mode floor plan with white lines on black background for dramatic gallery-style presentation.",
@@ -2256,7 +2256,7 @@
   },
   {
     "id": "sht_034",
-    "name": "Floor Plan — Furniture Layout",
+    "name": "Floor Plan \u2014 Furniture Layout",
     "sheet_type": "floor_plan",
     "category": "Interior",
     "description": "Interior furniture layout plan with detailed furniture symbols, finish schedules, and design intent.",
@@ -2327,7 +2327,7 @@
   },
   {
     "id": "sht_035",
-    "name": "Section — Standard Technical",
+    "name": "Section \u2014 Standard Technical",
     "sheet_type": "section",
     "category": "Technical",
     "description": "Standard technical building section with material hatching, annotations, and dimensions.",
@@ -2400,7 +2400,7 @@
   },
   {
     "id": "sht_036",
-    "name": "Section — Rendered Atmospheric",
+    "name": "Section \u2014 Rendered Atmospheric",
     "sheet_type": "section",
     "category": "Presentation",
     "description": "Rendered atmospheric section showing interior spaces, light, people, and material character.",
@@ -2464,7 +2464,7 @@
   },
   {
     "id": "sht_037",
-    "name": "Section — Wall Detail Assembly",
+    "name": "Section \u2014 Wall Detail Assembly",
     "sheet_type": "section",
     "category": "Technical",
     "description": "Detailed wall section showing all construction layers from foundation to roof with material callouts.",
@@ -2527,7 +2527,7 @@
   },
   {
     "id": "sht_038",
-    "name": "Section — Landscape Terrain",
+    "name": "Section \u2014 Landscape Terrain",
     "sheet_type": "section",
     "category": "Landscape",
     "description": "Landscape section showing terrain, planting, building integration with ground, and site context.",
@@ -2591,7 +2591,7 @@
   },
   {
     "id": "sht_039",
-    "name": "Section — Perspective Section",
+    "name": "Section \u2014 Perspective Section",
     "sheet_type": "section",
     "category": "Presentation",
     "description": "3D perspective section (sectional perspective) showing cut building with interior depth and context.",
@@ -2654,7 +2654,7 @@
   },
   {
     "id": "sht_040",
-    "name": "Section — Multiple Sections Comparison",
+    "name": "Section \u2014 Multiple Sections Comparison",
     "sheet_type": "section",
     "category": "Technical",
     "description": "Multiple building sections on one sheet (longitudinal + transverse) for comparison.",
@@ -2726,7 +2726,7 @@
   },
   {
     "id": "sht_041",
-    "name": "Elevation — Standard Technical",
+    "name": "Elevation \u2014 Standard Technical",
     "sheet_type": "elevation",
     "category": "Technical",
     "description": "Standard technical building elevation with material indications, level lines, and annotations.",
@@ -2798,7 +2798,7 @@
   },
   {
     "id": "sht_042",
-    "name": "Elevation — Rendered Facade",
+    "name": "Elevation \u2014 Rendered Facade",
     "sheet_type": "elevation",
     "category": "Presentation",
     "description": "Rendered facade elevation showing materials, shadows, landscape context, and human figures.",
@@ -2862,7 +2862,7 @@
   },
   {
     "id": "sht_043",
-    "name": "Elevation — All Four Facades",
+    "name": "Elevation \u2014 All Four Facades",
     "sheet_type": "elevation",
     "category": "Technical",
     "description": "Four facade elevations on one sheet (North, South, East, West) for complete building exterior overview.",
@@ -2942,7 +2942,7 @@
   },
   {
     "id": "sht_044",
-    "name": "Elevation — Street Context",
+    "name": "Elevation \u2014 Street Context",
     "sheet_type": "elevation",
     "category": "Urban",
     "description": "Street elevation showing the building in context with neighboring buildings, streetscape, and urban fabric.",
@@ -3006,7 +3006,7 @@
   },
   {
     "id": "sht_045",
-    "name": "Elevation — Facade Detail Study",
+    "name": "Elevation \u2014 Facade Detail Study",
     "sheet_type": "elevation",
     "category": "Technical",
     "description": "Facade detail study with overall elevation plus zoomed-in detail panels showing material joints and assemblies.",
@@ -3084,7 +3084,7 @@
   },
   {
     "id": "sht_046",
-    "name": "Elevation — Dark Dramatic Night",
+    "name": "Elevation \u2014 Dark Dramatic Night",
     "sheet_type": "elevation",
     "category": "Dark Premium",
     "description": "Night elevation rendering showing building lit up, interior glow, and dramatic nightscape.",
@@ -3138,7 +3138,7 @@
   },
   {
     "id": "sht_047",
-    "name": "Axonometric — Exploded Assembly",
+    "name": "Axonometric \u2014 Exploded Assembly",
     "sheet_type": "axonometric",
     "category": "Technical",
     "description": "Exploded axonometric showing building systems: structure, envelope, interior, MEP, landscape as separate layers.",
@@ -3200,7 +3200,7 @@
   },
   {
     "id": "sht_048",
-    "name": "Axonometric — Worm's Eye",
+    "name": "Axonometric \u2014 Worm's Eye",
     "sheet_type": "axonometric",
     "category": "Presentation",
     "description": "Worm's-eye axonometric (view from below) showing spatial relationships, ceiling planes, and structural expression.",
@@ -3262,7 +3262,7 @@
   },
   {
     "id": "sht_049",
-    "name": "Axonometric — Site Context Isometric",
+    "name": "Axonometric \u2014 Site Context Isometric",
     "sheet_type": "axonometric",
     "category": "Urban",
     "description": "Isometric site view showing the building in full urban context with surrounding buildings, streets, and landscape.",
@@ -3325,7 +3325,7 @@
   },
   {
     "id": "sht_050",
-    "name": "Axonometric — Cutaway Interior",
+    "name": "Axonometric \u2014 Cutaway Interior",
     "sheet_type": "axonometric",
     "category": "Presentation",
     "description": "Cutaway axonometric revealing interior spaces, furniture, and daily life within the architecture.",
@@ -3389,7 +3389,7 @@
   },
   {
     "id": "sht_051",
-    "name": "Axonometric — Construction Sequence",
+    "name": "Axonometric \u2014 Construction Sequence",
     "sheet_type": "axonometric",
     "category": "Technical",
     "description": "Construction sequence axonometric showing 4-6 build stages from foundation to completion.",
@@ -3475,11 +3475,11 @@
       "project_title": true
     },
     "style_notes": "6 progressive axonometric stages left-to-right, orange stage numbers, timeline feel",
-    "preview_image": "White A1 landscape with 6 axonometric stages in a row (foundation→structure→envelope→interior→landscape→complete), orange stage numbers"
+    "preview_image": "White A1 landscape with 6 axonometric stages in a row (foundation\u2192structure\u2192envelope\u2192interior\u2192landscape\u2192complete), orange stage numbers"
   },
   {
     "id": "sht_052",
-    "name": "Detail — Construction Detail Grid",
+    "name": "Detail \u2014 Construction Detail Grid",
     "sheet_type": "detail",
     "category": "Technical",
     "description": "Grid of 4-6 construction details with material callouts, dimensions, and specifications.",
@@ -3537,7 +3537,7 @@
   },
   {
     "id": "sht_053",
-    "name": "Detail — Facade System Assembly",
+    "name": "Detail \u2014 Facade System Assembly",
     "sheet_type": "detail",
     "category": "Technical",
     "description": "Facade system detail sheet showing curtain wall or cladding assembly with all components labeled.",
@@ -3608,7 +3608,7 @@
   },
   {
     "id": "sht_054",
-    "name": "Detail — Material Joint Close-Up",
+    "name": "Detail \u2014 Material Joint Close-Up",
     "sheet_type": "detail",
     "category": "Materials",
     "description": "Material joint detail sheet showing close-up construction joints, material transitions, and craftsmanship.",
@@ -3671,7 +3671,7 @@
   },
   {
     "id": "sht_055",
-    "name": "Detail — Staircase/Railing Detail",
+    "name": "Detail \u2014 Staircase/Railing Detail",
     "sheet_type": "detail",
     "category": "Technical",
     "description": "Staircase and railing detail sheet with plan, section, handrail profile, and balustrade details.",
@@ -3751,7 +3751,7 @@
   },
   {
     "id": "sht_056",
-    "name": "Presentation Board — Full Project A1",
+    "name": "Presentation Board \u2014 Full Project A1",
     "sheet_type": "presentation_board",
     "category": "Comprehensive",
     "description": "Complete project presentation board with concept, plans, sections, renders, and project data on one sheet.",
@@ -3834,7 +3834,7 @@
   },
   {
     "id": "sht_057",
-    "name": "Presentation Board — Competition A0",
+    "name": "Presentation Board \u2014 Competition A0",
     "sheet_type": "presentation_board",
     "category": "Competition",
     "description": "Large-format competition board designed for jury viewing, bold graphics, and clear hierarchy.",
@@ -3916,7 +3916,7 @@
   },
   {
     "id": "sht_058",
-    "name": "Presentation Board — Landscape Panoramic",
+    "name": "Presentation Board \u2014 Landscape Panoramic",
     "sheet_type": "presentation_board",
     "category": "Landscape",
     "description": "Wide panoramic presentation board optimized for landscape/master plan projects.",
@@ -3995,7 +3995,7 @@
   },
   {
     "id": "sht_059",
-    "name": "Presentation Board — Student Crit Board",
+    "name": "Presentation Board \u2014 Student Crit Board",
     "sheet_type": "presentation_board",
     "category": "Academic",
     "description": "Student crit-ready board with concept, process, drawings, and models for design review.",
@@ -4070,7 +4070,7 @@
   },
   {
     "id": "sht_060",
-    "name": "Presentation Board — Minimal Gallery",
+    "name": "Presentation Board \u2014 Minimal Gallery",
     "sheet_type": "presentation_board",
     "category": "Minimalist",
     "description": "Gallery-style minimal presentation board with one hero image and restrained supporting information.",
@@ -4140,7 +4140,7 @@
   },
   {
     "id": "sht_061",
-    "name": "Presentation Board — Dark Cinematic",
+    "name": "Presentation Board \u2014 Dark Cinematic",
     "sheet_type": "presentation_board",
     "category": "Dark Premium",
     "description": "Dark cinematic presentation board with dramatic renders and gold accent information.",
@@ -4211,7 +4211,7 @@
   },
   {
     "id": "sht_062",
-    "name": "Diagram — Circulation & Program",
+    "name": "Diagram \u2014 Circulation & Program",
     "sheet_type": "diagram",
     "category": "Analytical",
     "description": "Circulation and programmatic analysis diagram showing movement patterns, spatial relationships, and program adjacencies.",
@@ -4281,7 +4281,7 @@
   },
   {
     "id": "sht_063",
-    "name": "Diagram — Massing Study",
+    "name": "Diagram \u2014 Massing Study",
     "sheet_type": "diagram",
     "category": "Conceptual",
     "description": "Massing study progression showing form development from basic volume through design iterations.",
@@ -4343,7 +4343,7 @@
   },
   {
     "id": "sht_064",
-    "name": "Diagram — Environmental Strategy",
+    "name": "Diagram \u2014 Environmental Strategy",
     "sheet_type": "diagram",
     "category": "Sustainable",
     "description": "Environmental strategy diagram showing passive design, energy systems, and sustainability metrics.",
@@ -4407,7 +4407,7 @@
   },
   {
     "id": "sht_065",
-    "name": "Diagram — Design Timeline Process",
+    "name": "Diagram \u2014 Design Timeline Process",
     "sheet_type": "diagram",
     "category": "Process",
     "description": "Project timeline diagram showing design phases from brief through construction with key milestones.",
@@ -4466,11 +4466,11 @@
       "project_title": true
     },
     "style_notes": "Clean horizontal timeline, orange milestone markers, phase thumbnails below, Gantt-chart feel",
-    "preview_image": "White A2 landscape with horizontal timeline bar center, milestone markers above, phase thumbnails below (brief→concept→design→docs→construction→completion)"
+    "preview_image": "White A2 landscape with horizontal timeline bar center, milestone markers above, phase thumbnails below (brief\u2192concept\u2192design\u2192docs\u2192construction\u2192completion)"
   },
   {
     "id": "sht_066",
-    "name": "Diagram — Structural System",
+    "name": "Diagram \u2014 Structural System",
     "sheet_type": "diagram",
     "category": "Technical",
     "description": "Structural system diagram showing load paths, structural grid, member sizing, and foundation system.",
@@ -4540,7 +4540,7 @@
   },
   {
     "id": "sht_067",
-    "name": "Materials — Finish Schedule Board",
+    "name": "Materials \u2014 Finish Schedule Board",
     "sheet_type": "materials",
     "category": "Interior",
     "description": "Interior finish schedule board with room-by-room material selections, swatches, and specifications.",
@@ -4603,7 +4603,7 @@
   },
   {
     "id": "sht_068",
-    "name": "Materials — Exterior Facade Palette",
+    "name": "Materials \u2014 Exterior Facade Palette",
     "sheet_type": "materials",
     "category": "Technical",
     "description": "Exterior facade material palette showing cladding, glazing, and roofing selections with product specifications.",
@@ -4666,7 +4666,7 @@
   },
   {
     "id": "sht_069",
-    "name": "Materials — Color & Material Concept",
+    "name": "Materials \u2014 Color & Material Concept",
     "sheet_type": "materials",
     "category": "Conceptual",
     "description": "Material concept board showing the material narrative: inspiration, palette development, and application.",
@@ -4725,12 +4725,12 @@
       "material_concept_text": true,
       "project_title": true
     },
-    "style_notes": "Warm tactile palette, narrative from inspiration→palette→application, handwritten Caveat annotations",
+    "style_notes": "Warm tactile palette, narrative from inspiration\u2192palette\u2192application, handwritten Caveat annotations",
     "preview_image": "Warm cream A2 portrait: inspiration images top, material palette swatches with rationale center, renders showing materials applied bottom"
   },
   {
     "id": "sht_070",
-    "name": "Render — Hero Perspective Full-Bleed",
+    "name": "Render \u2014 Hero Perspective Full-Bleed",
     "sheet_type": "render",
     "category": "Presentation",
     "description": "Single hero perspective render presented full-bleed with minimal overlay information.",
@@ -4776,7 +4776,7 @@
   },
   {
     "id": "sht_071",
-    "name": "Render — Before & After Comparison",
+    "name": "Render \u2014 Before & After Comparison",
     "sheet_type": "render",
     "category": "Adaptive Reuse",
     "description": "Before/after split comparison showing existing condition vs. proposed design render.",
@@ -4852,7 +4852,7 @@
   },
   {
     "id": "sht_072",
-    "name": "Render — Interior Vignettes Grid",
+    "name": "Render \u2014 Interior Vignettes Grid",
     "sheet_type": "render",
     "category": "Interior",
     "description": "Grid of interior vignette renders showing different spaces within the project.",
@@ -4914,7 +4914,7 @@
   },
   {
     "id": "sht_073",
-    "name": "Render — Aerial Bird's Eye",
+    "name": "Render \u2014 Aerial Bird's Eye",
     "sheet_type": "render",
     "category": "Urban",
     "description": "Aerial bird's-eye view render showing the project in its full site context from above.",
@@ -4984,7 +4984,7 @@
   },
   {
     "id": "sht_074",
-    "name": "Process — Design Development Timeline",
+    "name": "Process \u2014 Design Development Timeline",
     "sheet_type": "process",
     "category": "Process",
     "description": "Design development sheet showing project evolution from sketch to construction document.",
@@ -5066,11 +5066,11 @@
       "project_title": true
     },
     "style_notes": "5 columns showing design evolution, orange phase dividers, sketch-to-built narrative",
-    "preview_image": "White A1 landscape with 5 columns (Sketch→Schematic→Design Dev→CDs→Built) showing project evolution, orange dividers, chronological flow"
+    "preview_image": "White A1 landscape with 5 columns (Sketch\u2192Schematic\u2192Design Dev\u2192CDs\u2192Built) showing project evolution, orange dividers, chronological flow"
   },
   {
     "id": "sht_075",
-    "name": "Process — Model Photography",
+    "name": "Process \u2014 Model Photography",
     "sheet_type": "process",
     "category": "Conceptual",
     "description": "Physical model photography sheet with multiple angles, detail shots, and context models.",
@@ -5141,7 +5141,7 @@
   },
   {
     "id": "sht_076",
-    "name": "Process — Iterative Sketch Studies",
+    "name": "Process \u2014 Iterative Sketch Studies",
     "sheet_type": "process",
     "category": "Sketch",
     "description": "Sketch study sheet showing iterative hand drawings, options explored, and selected direction.",
@@ -5215,7 +5215,7 @@
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Clean, white space heavy concept board focusing on a hero image and sparse text.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -5274,7 +5274,7 @@
     "sheet_type": "section",
     "category": "Technical Drawings",
     "description": "Technical sheet layout optimized for highly detailed building sections with callouts.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#F0F0F0",
       "accent": "#FF4500",
@@ -5333,7 +5333,7 @@
     "sheet_type": "mood_board",
     "category": "Conceptual Ideas",
     "description": "Masonry grid style mood board for materials and references.",
-    "source": "pinterest",
+    "source": "Gallery",
     "colors": {
       "primary": "#EFEFEF",
       "accent": "#C9A66B",
@@ -5383,7 +5383,7 @@
     "sheet_type": "plan",
     "category": "Technical Drawings",
     "description": "Large format sheet dedicated to urban master plans and site contexts.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FDFDFD",
       "accent": "#2E8B57",
@@ -5433,7 +5433,7 @@
     "sheet_type": "render",
     "category": "Presentation Boards",
     "description": "A pitch black sheet designed to make glowing night renders pop.",
-    "source": "dribbble",
+    "source": "Creative",
     "colors": {
       "primary": "#000000",
       "accent": "#FFDD00",
@@ -5483,7 +5483,7 @@
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "Sequential layout to show the step-by-step evolution of a form.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FAFAFA",
       "accent": "#0055FF",
@@ -5583,7 +5583,7 @@
     "sheet_type": "materials",
     "category": "Presentation Boards",
     "description": "Highly tactile layout focusing on close-up texture photography and swatch circles.",
-    "source": "pinterest",
+    "source": "Gallery",
     "colors": {
       "primary": "#F4F1EA",
       "accent": "#8B4513",
@@ -5633,7 +5633,7 @@
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "A dense, comprehensive A0 board combining renders, plans, and heavy text for competitions.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#E60000",
@@ -5692,7 +5692,7 @@
     "sheet_type": "site_analysis",
     "category": "Conceptual Ideas",
     "description": "Graphic-heavy layout designed to layer site data, sun paths, and context maps.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#E8ECEF",
       "accent": "#FF6B6B",
@@ -5792,7 +5792,7 @@
     "sheet_type": "landscape",
     "category": "Presentation Boards",
     "description": "Ultra-wide format designed to showcase sweeping landscape renders or long street elevations.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#8FBC8F",
@@ -5842,7 +5842,7 @@
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
     "description": "Layout prioritizing vertical space for tall exploded axonometric drawings.",
-    "source": "dribbble",
+    "source": "Creative",
     "colors": {
       "primary": "#FAFAFA",
       "accent": "#FF0055",
@@ -5892,7 +5892,7 @@
     "sheet_type": "structural",
     "category": "Technical Drawings",
     "description": "Blueprint-inspired dark layout for highlighting structural grids and members.",
-    "source": "pinterest",
+    "source": "Gallery",
     "colors": {
       "primary": "#1A1A1D",
       "accent": "#4ECCA3",
@@ -5942,7 +5942,7 @@
     "sheet_type": "floor_plan",
     "category": "Technical Drawings",
     "description": "Grid layout designed to show multiple levels of floor plans on a single sheet.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -5988,11 +5988,11 @@
   },
   {
     "id": "sht_092",
-    "name": "Canva Infographic Grid",
+    "name": "Graphic Infographic Grid",
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
-    "description": "Inspired by Canva infographics, utilizing colorful background shapes and easy-to-read data blocks.",
-    "source": "canva",
+    "description": "Inspired by Graphic infographics, utilizing colorful background shapes and easy-to-read data blocks.",
+    "source": "Graphic",
     "colors": {
       "primary": "#F1F5F9",
       "accent": "#F59E0B",
@@ -6038,11 +6038,11 @@
   },
   {
     "id": "sht_093",
-    "name": "Adobe Express Mood Board",
+    "name": "Studio Express Mood Board",
     "sheet_type": "mood_board",
     "category": "Conceptual Ideas",
-    "description": "A very loose, overlapping collage layout mimicking Adobe Express social media templates.",
-    "source": "adobe",
+    "description": "A very loose, overlapping collage layout mimicking Studio Express social media templates.",
+    "source": "Studio",
     "colors": {
       "primary": "#FAF5FF",
       "accent": "#9333EA",
@@ -6079,11 +6079,11 @@
   },
   {
     "id": "sht_094",
-    "name": "Archifolio Competition Board",
+    "name": "Portfolio Competition Board",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Standard high-level competition board. Dark banner at top, massive render, plans at bottom.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -6138,11 +6138,11 @@
   },
   {
     "id": "sht_095",
-    "name": "Issuu Technical Dossier",
+    "name": "Editorial Technical Dossier",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "Looks like an official government or military technical dossier. High contrast, mono fonts.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#F0F0F0",
       "accent": "#D12A2F",
@@ -6188,11 +6188,11 @@
   },
   {
     "id": "sht_096",
-    "name": "Behance Wireframe Flow",
+    "name": "Showcase Wireframe Flow",
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "UX/UI inspired flow chart layout mapping user circulation through a building.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#222831",
       "accent": "#00ADB5",
@@ -6229,11 +6229,11 @@
   },
   {
     "id": "sht_097",
-    "name": "Canva Pitch Board",
+    "name": "Graphic Pitch Board",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Commercial pitch board focusing heavily on marketing text and one hero visual.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#E63946",
@@ -6288,11 +6288,11 @@
   },
   {
     "id": "sht_098",
-    "name": "Adobe Portfolio Cover Sheet",
+    "name": "Studio Portfolio Cover Sheet",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Minimal web-like cover sheet. Huge image, tiny logo.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#000000",
       "accent": "#FFFFFF",
@@ -6338,11 +6338,11 @@
   },
   {
     "id": "sht_099",
-    "name": "Issuu Urban Plan Spread",
+    "name": "Editorial Urban Plan Spread",
     "sheet_type": "plan",
     "category": "Technical Drawings",
     "description": "Designed for massive urban plans spreading across two pages in a publication.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FBFBFB",
       "accent": "#D4AF37",
@@ -6379,11 +6379,11 @@
   },
   {
     "id": "sht_100",
-    "name": "Archifolio Section Perspective",
+    "name": "Portfolio Section Perspective",
     "sheet_type": "section",
     "category": "Technical Drawings",
     "description": "Layout tailored specifically to display complex section-perspectives.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#333333",
@@ -6429,11 +6429,11 @@
   },
   {
     "id": "sht_101",
-    "name": "Behance Axo Explosion",
+    "name": "Showcase Axo Explosion",
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
     "description": "Dark theme, specifically framed for tall vertical exploded axonometrics.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#151515",
       "accent": "#FF3366",
@@ -6479,11 +6479,11 @@
   },
   {
     "id": "sht_102",
-    "name": "Adobe Express Collage Details",
+    "name": "Studio Express Collage Details",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "A very unconventional, artsy way to present construction details using collage elements.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FDFBF7",
       "accent": "#E6A8A8",
@@ -6520,11 +6520,11 @@
   },
   {
     "id": "sht_103",
-    "name": "Canva Multi-Plan Presenter",
+    "name": "Graphic Multi-Plan Presenter",
     "sheet_type": "floor_plan",
     "category": "Technical Drawings",
     "description": "Clean, colorful presentation sheet for showing multiple small floor plans (e.g. apartment types).",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#F4F7F6",
       "accent": "#00A8E8",
@@ -6570,11 +6570,11 @@
   },
   {
     "id": "sht_104",
-    "name": "Issuu Case Study",
+    "name": "Editorial Case Study",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Magazine style case study layout. Heavy on text and comparative photos.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -6620,11 +6620,11 @@
   },
   {
     "id": "sht_105",
-    "name": "Behance Glitch Tech",
+    "name": "Showcase Glitch Tech",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Highly experimental glitch-art aesthetic for cutting-edge digital architecture.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#000000",
       "accent": "#00FF41",
@@ -6670,11 +6670,11 @@
   },
   {
     "id": "sht_106",
-    "name": "Archifolio Master Elevation",
+    "name": "Portfolio Master Elevation",
     "sheet_type": "elevation",
     "category": "Technical Drawings",
     "description": "Reserved exclusively for incredibly detailed, massive building elevations.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#4A4A4A",
@@ -6720,11 +6720,11 @@
   },
   {
     "id": "sht_107",
-    "name": "Canva Playful Diagram",
+    "name": "Graphic Playful Diagram",
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
     "description": "Playful, colorful isometric diagrams with large friendly annotations.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFF5EB",
       "accent": "#FF8A65",
@@ -6770,11 +6770,11 @@
   },
   {
     "id": "sht_108",
-    "name": "Adobe Express Minimal Poster",
+    "name": "Studio Express Minimal Poster",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Poster-style presentation board. Extremely minimal, looks like an art gallery advertisement.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#F2F2F2",
       "accent": "#000000",
@@ -6820,11 +6820,11 @@
   },
   {
     "id": "sht_109",
-    "name": "Issuu Monograph Plan",
+    "name": "Editorial Monograph Plan",
     "sheet_type": "floor_plan",
     "category": "Technical Drawings",
     "description": "High-end book format. Floor plan on the right page, negative space and title on the left.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#555555",
@@ -6870,11 +6870,11 @@
   },
   {
     "id": "sht_110",
-    "name": "Behance UI Overlay",
+    "name": "Showcase UI Overlay",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Concept presentation that looks like a software interface or app overlay.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#1E1E24",
       "accent": "#FB3640",
@@ -6920,11 +6920,11 @@
   },
   {
     "id": "sht_111",
-    "name": "Archifolio Detail Matrix",
+    "name": "Portfolio Detail Matrix",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "Extremely dense, highly organized matrix of construction details.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -6961,11 +6961,11 @@
   },
   {
     "id": "sht_112",
-    "name": "Canva Agency Process",
+    "name": "Graphic Agency Process",
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "Bright, clear diagrammatic layout with pastel process arrows and friendly text.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#F7F9FC",
       "accent": "#FF6B6B",
@@ -7011,11 +7011,11 @@
   },
   {
     "id": "sht_113",
-    "name": "Behance Isometric City",
+    "name": "Showcase Isometric City",
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
     "description": "Massive isometric city scale diagram with floating UI data tags.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#1A1A24",
       "accent": "#00FFC4",
@@ -7052,11 +7052,11 @@
   },
   {
     "id": "sht_114",
-    "name": "Adobe Express Mood Grid",
+    "name": "Studio Express Mood Grid",
     "sheet_type": "mood_board",
     "category": "Presentation Boards",
     "description": "Trendy, asymmetrical masonry layout for material and inspiration boards.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FAF8F5",
       "accent": "#D4A373",
@@ -7082,7 +7082,7 @@
     ],
     "format": "square",
     "aspect_ratio": "1:1",
-    "preview_image": "Pinterest-style masonry grid, warm beige and terracotta tones",
+    "preview_image": "Gallery-style masonry grid, warm beige and terracotta tones",
     "style_notes": "Interior design, FF&E presentations, client visioning.",
     "content_requirements": {
       "renders": 10,
@@ -7093,11 +7093,11 @@
   },
   {
     "id": "sht_115",
-    "name": "Issuu Historic Survey",
+    "name": "Editorial Historic Survey",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Classic, academic layout for historical building analysis. Deep margins, serif fonts.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#800000",
@@ -7143,11 +7143,11 @@
   },
   {
     "id": "sht_116",
-    "name": "Archifolio Detail Hero",
+    "name": "Portfolio Detail Hero",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "Showcases a single, incredibly complex 3D construction detail.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#E67E22",
@@ -7193,11 +7193,11 @@
   },
   {
     "id": "sht_117",
-    "name": "Canva Real Estate Pitch",
+    "name": "Graphic Real Estate Pitch",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Sales-oriented presentation board highlighting ROI, square footage, and key features.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#F4F6F7",
       "accent": "#2980B9",
@@ -7243,11 +7243,11 @@
   },
   {
     "id": "sht_118",
-    "name": "Behance Tech Exploded Axo",
+    "name": "Showcase Tech Exploded Axo",
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
     "description": "Dark mode, neon-accented exploded axonometric. Very sci-fi/tech.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#0F172A",
       "accent": "#38BDF8",
@@ -7284,11 +7284,11 @@
   },
   {
     "id": "sht_119",
-    "name": "Issuu Monograph Elevation",
+    "name": "Editorial Monograph Elevation",
     "sheet_type": "elevation",
     "category": "Technical Drawings",
     "description": "Crisp, thin-line elevation drawing with massive amounts of white space framing it.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -7334,11 +7334,11 @@
   },
   {
     "id": "sht_120",
-    "name": "Adobe Express Sketch Collage",
+    "name": "Studio Express Sketch Collage",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Messy, artistic layout layering hand sketches over faded 3D massing models.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFDF9",
       "accent": "#FF4500",
@@ -7375,11 +7375,11 @@
   },
   {
     "id": "sht_121",
-    "name": "Archifolio Masterplan Matrix",
+    "name": "Portfolio Masterplan Matrix",
     "sheet_type": "plan",
     "category": "Technical Drawings",
     "description": "Grid of 4 to 6 different iterations of a masterplan.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#27AE60",
@@ -7425,11 +7425,11 @@
   },
   {
     "id": "sht_122",
-    "name": "Canva Social Render Post",
+    "name": "Graphic Social Render Post",
     "sheet_type": "render",
     "category": "Presentation Boards",
     "description": "Square format optimized for Instagram. High impact image, tiny logo.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#000000",
       "accent": "#FFFFFF",
@@ -7466,11 +7466,11 @@
   },
   {
     "id": "sht_123",
-    "name": "Behance Parametric Facade",
+    "name": "Showcase Parametric Facade",
     "sheet_type": "elevation",
     "category": "Technical Drawings",
     "description": "Layout focusing on complex script-generated facade patterns. High contrast.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF0055",
@@ -7516,11 +7516,11 @@
   },
   {
     "id": "sht_124",
-    "name": "Issuu Concrete Section",
+    "name": "Editorial Concrete Section",
     "sheet_type": "section",
     "category": "Technical Drawings",
     "description": "Brutalist layout for massive concrete building sections. Heavy lineweights.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#E0E0E0",
       "accent": "#FF0000",
@@ -7557,11 +7557,11 @@
   },
   {
     "id": "sht_125",
-    "name": "Archifolio Interior Flow",
+    "name": "Portfolio Interior Flow",
     "sheet_type": "floor_plan",
     "category": "Technical Drawings",
     "description": "A floor plan tightly cropped to interior spaces, with furniture layout highlighted.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#C4A484",
@@ -7607,11 +7607,11 @@
   },
   {
     "id": "sht_126",
-    "name": "Canva Step-by-Step",
+    "name": "Graphic Step-by-Step",
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "Playful, highly visual 1-2-3-4 step diagram layout for explaining concepts to clients.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFF5F5",
       "accent": "#FF4757",
@@ -7657,11 +7657,11 @@
   },
   {
     "id": "sht_127",
-    "name": "Adobe Print Presentation",
+    "name": "Studio Print Presentation",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Ultra-clean A0 board. A massive render with a rigid grid of plans below it.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -7707,11 +7707,11 @@
   },
   {
     "id": "sht_128",
-    "name": "Issuu Urban Spread",
+    "name": "Editorial Urban Spread",
     "sheet_type": "plan",
     "category": "Technical Drawings",
     "description": "Double page spread dedicated to a massive scale urban plan.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#F4F4F4",
       "accent": "#808080",
@@ -7748,11 +7748,11 @@
   },
   {
     "id": "sht_129",
-    "name": "Behance 3D Section",
+    "name": "Showcase 3D Section",
     "sheet_type": "section",
     "category": "Technical Drawings",
     "description": "Dark aesthetic layout for a 3D cutaway section render.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#1A1A1A",
       "accent": "#00FF66",
@@ -7789,11 +7789,11 @@
   },
   {
     "id": "sht_130",
-    "name": "Archifolio Detail Zoom",
+    "name": "Portfolio Detail Zoom",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "Shows an overall elevation on the left, and a zoomed in 1:10 detail of a joint on the right.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#0055A4",
@@ -7839,11 +7839,11 @@
   },
   {
     "id": "sht_131",
-    "name": "Canva Concept Map",
+    "name": "Graphic Concept Map",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Mind-map style layout connecting inspiration images to text bubbles.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FDF6E3",
       "accent": "#D33682",
@@ -7880,11 +7880,11 @@
   },
   {
     "id": "sht_132",
-    "name": "Behance Vaporwave Grid",
+    "name": "Showcase Vaporwave Grid",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Vaporwave aesthetic. Bright pinks and cyans, neon grids, and floating UI elements.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FF71CE",
       "accent": "#01CDFE",
@@ -7930,11 +7930,11 @@
   },
   {
     "id": "sht_133",
-    "name": "Issuu Bauhaus Analysis",
+    "name": "Editorial Bauhaus Analysis",
     "sheet_type": "diagram",
     "category": "Conceptual Ideas",
     "description": "Primary colors and strict geometric grids for analyzing a building's massing.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#E23D28",
       "accent": "#0A3B7C",
@@ -7971,11 +7971,11 @@
   },
   {
     "id": "sht_134",
-    "name": "Canva Y2K Tech Board",
+    "name": "Graphic Y2K Tech Board",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Late 90s / early 2000s tech boom aesthetic. Silver gradients, bubble UI shapes.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#C0C0C0",
       "accent": "#FF00FF",
@@ -8021,11 +8021,11 @@
   },
   {
     "id": "sht_135",
-    "name": "Adobe Pure Blank",
+    "name": "Studio Pure Blank",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "The ultimate blank canvas. Almost entirely white space.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#EBEBEB",
@@ -8062,11 +8062,11 @@
   },
   {
     "id": "sht_136",
-    "name": "Archifolio Storyboard Sequence",
+    "name": "Portfolio Storyboard Sequence",
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "Film storyboard layout. Sequential frames explaining a walk-through of the space.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#F2F2F2",
       "accent": "#D12A2A",
@@ -8103,11 +8103,11 @@
   },
   {
     "id": "sht_137",
-    "name": "Issuu Japanese Vertical",
+    "name": "Editorial Japanese Vertical",
     "sheet_type": "concept",
     "category": "Conceptual Ideas",
     "description": "Inspired by Japanese print magazines. Vertical text elements, extreme precision.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FDFBF7",
       "accent": "#C42D2D",
@@ -8153,11 +8153,11 @@
   },
   {
     "id": "sht_138",
-    "name": "Behance 50/50 Split",
+    "name": "Showcase 50/50 Split",
     "sheet_type": "presentation_board",
     "category": "Presentation Boards",
     "description": "Pure black and pure white blocks splitting the page in half.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#000000",
       "accent": "#000000",
@@ -8203,11 +8203,11 @@
   },
   {
     "id": "sht_139",
-    "name": "Archifolio Sketch Spread",
+    "name": "Portfolio Sketch Spread",
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "Designed specifically for scanned hand drawings. Sepia tones, tape graphics.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#E8DCC4",
       "accent": "#5E4D3C",
@@ -8244,11 +8244,11 @@
   },
   {
     "id": "sht_140",
-    "name": "Adobe CMYK Neon",
+    "name": "Studio CMYK Neon",
     "sheet_type": "presentation_board",
     "category": "Colorful",
     "description": "Fluid neon gradients (cyan, magenta, yellow) mixing softly in the background.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FF00FF",
       "accent": "#00FFFF",
@@ -8285,11 +8285,11 @@
   },
   {
     "id": "sht_141",
-    "name": "Issuu Blueprint Print",
+    "name": "Editorial Blueprint Print",
     "sheet_type": "elevation",
     "category": "Technical Drawings",
     "description": "Looks like a cyanotype blueprint. White lines on blue backgrounds.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#0033A0",
       "accent": "#FFFFFF",
@@ -8326,11 +8326,11 @@
   },
   {
     "id": "sht_142",
-    "name": "Behance NFT Trading Card",
+    "name": "Showcase NFT Trading Card",
     "sheet_type": "render",
     "category": "Modern",
     "description": "Designed for virtual architecture. Renders formatted as digital trading cards with stats.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#0D0D0D",
       "accent": "#8A2BE2",
@@ -8376,11 +8376,11 @@
   },
   {
     "id": "sht_143",
-    "name": "Canva Botanical Presentation",
+    "name": "Graphic Botanical Presentation",
     "sheet_type": "presentation_board",
     "category": "Organic",
     "description": "Heavy use of sage greens, botanical illustrations, and soft framing.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#E8EFE8",
       "accent": "#6D9773",
@@ -8426,11 +8426,11 @@
   },
   {
     "id": "sht_144",
-    "name": "Archifolio Infinite Timeline",
+    "name": "Portfolio Infinite Timeline",
     "sheet_type": "process",
     "category": "Conceptual Ideas",
     "description": "A single continuous timeline layout. Graphics bleed across the edges.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#E74C3C",
@@ -8467,11 +8467,11 @@
   },
   {
     "id": "sht_145",
-    "name": "Adobe Pop Editorial",
+    "name": "Studio Pop Editorial",
     "sheet_type": "presentation_board",
     "category": "Editorial",
     "description": "Pop-culture magazine style. Massive pull quotes and bold headers.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#F0E6D2",
       "accent": "#FF3366",
@@ -8517,11 +8517,11 @@
   },
   {
     "id": "sht_146",
-    "name": "Issuu Swiss Grid Matrix",
+    "name": "Editorial Swiss Grid Matrix",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "Strict adherence to the Swiss Design grid. Mathematical alignment of details.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF0000",
@@ -8558,11 +8558,11 @@
   },
   {
     "id": "sht_147",
-    "name": "Behance Metallic Blob",
+    "name": "Showcase Metallic Blob",
     "sheet_type": "presentation_board",
     "category": "Maximalist",
     "description": "Layout uses 3D rendered metallic blobs to frame the actual architectural projects.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#EFEFEF",
       "accent": "#8A2BE2",
@@ -8599,11 +8599,11 @@
   },
   {
     "id": "sht_148",
-    "name": "Canva Watercolor Wash",
+    "name": "Graphic Watercolor Wash",
     "sheet_type": "plan",
     "category": "Technical Drawings",
     "description": "A soft watercolor wash background used to present landscape or site plans.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FDFBF7",
       "accent": "#85A3B2",
@@ -8640,11 +8640,11 @@
   },
   {
     "id": "sht_149",
-    "name": "Adobe Lookbook Grid",
+    "name": "Studio Lookbook Grid",
     "sheet_type": "materials",
     "category": "Presentation Boards",
     "description": "Fashion lookbook format. Grid of material photos with tiny item codes.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -8681,11 +8681,11 @@
   },
   {
     "id": "sht_150",
-    "name": "Archifolio Transmittal",
+    "name": "Portfolio Transmittal",
     "sheet_type": "floor_plan",
     "category": "Technical Drawings",
     "description": "Imitates an IFC drawing transmittal sheet. Heavy title blocks, revision clouds.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF0000",
@@ -8731,11 +8731,11 @@
   },
   {
     "id": "sht_151",
-    "name": "Issuu Monograph Detail",
+    "name": "Editorial Monograph Detail",
     "sheet_type": "detail",
     "category": "Technical Drawings",
     "description": "High-end book format. Exquisitely rendered detail on one side, poetic text on the other.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",

@@ -848,13 +848,14 @@ interface ProjectIndexItem {
 }
 
 export function ContentsBlock({
-  block, tokens, onChange, pages, layoutId
+  block, tokens, onChange, pages, layoutId, onUploadImage
 }: {
   block: Block
   tokens: DesignTokens
   onChange: (patch: Partial<Block>) => void
   pages: any[]
   layoutId: string
+  onUploadImage?: (file: File) => Promise<string>
 }) {
-  return <TableOfContentsRenderer block={block} tokens={tokens} onChange={onChange} pages={pages} layoutId={layoutId} />
+  return <TableOfContentsRenderer block={block} tokens={tokens} onChange={onChange} pages={pages} layoutId={layoutId} onUploadImage={onUploadImage} />
 }

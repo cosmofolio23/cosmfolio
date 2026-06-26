@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "tpl_001",
     "name": "Nordic Minimal",
@@ -929,7 +929,7 @@
     "id": "tpl_020",
     "name": "Terracotta Earth",
     "category": "Residential",
-    "description": "Warm terracotta and earth-tone palette for Mediterranean, adobe, and warm-climate architecture.",
+    "description": "Warm terracotta and earth-tone palette for Mediterranean, Studio, and warm-climate architecture.",
     "colors": {
       "primary": "#3D2817",
       "accent": "#C5704D",
@@ -970,7 +970,7 @@
       "materials": true
     },
     "preview_image": "Warm cream pages with terracotta and clay accents, Mediterranean photography, classical serif type, earthy mood",
-    "style_notes": "Mediterranean, adobe, Southwest, regional architects",
+    "style_notes": "Mediterranean, Studio, Southwest, regional architects",
     "page_count_range": "24-32",
     "orientation": "portrait_A4"
   },
@@ -2413,9 +2413,9 @@
   },
   {
     "id": "tpl_050",
-    "name": "Desert Adobe",
+    "name": "Desert Studio",
     "category": "Residential",
-    "description": "Desert and adobe architecture portfolio with warm earth tones and regional vernacular celebration.",
+    "description": "Desert and Studio architecture portfolio with warm earth tones and regional vernacular celebration.",
     "colors": {
       "primary": "#5C3A21",
       "accent": "#D2691E",
@@ -2967,7 +2967,7 @@
     "name": "Museum",
     "category": "Contemporary",
     "description": "Sophisticated, yet modern feel with crisp hero image and centered content. Contemporary aesthetic with professional proportions.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#1A1A1A",
@@ -3016,7 +3016,7 @@
     "name": "Palazzo",
     "category": "Minimalist",
     "description": "Refined canvas with subtle shadow details. Minimalist aesthetic with elegant proportions and refined spacing.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#F5F5F5",
       "accent": "#1A1A1A",
@@ -3064,7 +3064,7 @@
     "name": "Deco",
     "category": "Industrial",
     "description": "Dark industrial aesthetic with bright mineral green accents. Art Deco inspired with modern sensibility.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#1A1A1A",
       "accent": "#90EE90",
@@ -3112,7 +3112,7 @@
     "name": "Chapter",
     "category": "Organic",
     "description": "Laidback but crisp design with full-page cover image and blurred text overlay. Organic contemporary aesthetic.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#2C2C2C",
@@ -3160,7 +3160,7 @@
     "name": "Agora",
     "category": "Minimalist",
     "description": "Timeless design with full-width hero images and monochrome palette. Customizable with accent colors.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#000000",
       "accent": "customizable",
@@ -3208,7 +3208,7 @@
     "name": "Downtown",
     "category": "Brutalist",
     "description": "Strong first impression with oversized typography and prominent visuals. Brutalist modern aesthetic.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#1A1A1A",
       "accent": "#FFFFFF",
@@ -3256,7 +3256,7 @@
     "name": "Loft",
     "category": "Contemporary",
     "description": "Elegant layout with 5-image rotating slideshow gallery. Sleek and professional aesthetic.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#1A1A1A",
@@ -3304,7 +3304,7 @@
     "name": "Classica",
     "category": "Dark Premium",
     "description": "Luxurious dark aesthetic with golden fonts and Art Deco inspired details. Premium luxury feel.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#2C2C2C",
       "accent": "#DAA520",
@@ -3352,7 +3352,7 @@
     "name": "Neue",
     "category": "Industrial",
     "description": "Simplicity with soulfulness using white space and dark bronze tones. Industrial minimalist aesthetic.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#8B7355",
@@ -3400,7 +3400,7 @@
     "name": "Modular",
     "category": "Modern",
     "description": "Flexible modular layouts with subtle pink-grey color palette. Contemporary minimalist approach.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FFB6C1",
@@ -3448,7 +3448,7 @@
     "name": "Haus",
     "category": "Bauhaus",
     "description": "Asymmetrical layout with dual image sections and striking typography. Bauhaus design principles.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#000000",
       "accent": "#FFFFFF",
@@ -3496,7 +3496,7 @@
     "name": "Beaux",
     "category": "Classical",
     "description": "Classical elegant design with serif typeface and 3D shadow effects. Light sophisticated aesthetic.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#F5F1E8",
       "accent": "#3A2F2A",
@@ -3544,7 +3544,7 @@
     "name": "Metropolitan",
     "category": "Brutalist",
     "description": "5-image slideshow hero for showcasing work across responsive formats. Brutalist modern approach.",
-    "source": "Archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#1A1A1A",
       "accent": "#FFFFFF",
@@ -3591,8 +3591,8 @@
     "id": "tpl_074",
     "name": "Nordic Minimal",
     "category": "Scandinavian",
-    "description": "Clean, light, and airy layout inspired by Behance top portfolios. Emphasizes negative space and high-key imagery.",
-    "source": "behance",
+    "description": "Clean, light, and airy layout inspired by Showcase top portfolios. Emphasizes negative space and high-key imagery.",
+    "source": "Showcase",
     "colors": {
       "primary": "#FAFAFA",
       "accent": "#4A5D4E",
@@ -3640,8 +3640,8 @@
     "id": "tpl_075",
     "name": "Concrete Raw",
     "category": "Brutalist",
-    "description": "Bold typography, stark contrasts, and industrial vibes drawn from Dribbble experimental layouts.",
-    "source": "dribbble",
+    "description": "Bold typography, stark contrasts, and industrial vibes drawn from Creative experimental layouts.",
+    "source": "Creative",
     "colors": {
       "primary": "#1A1A1A",
       "accent": "#FF3366",
@@ -3689,8 +3689,8 @@
     "id": "tpl_076",
     "name": "The Architect's Journal",
     "category": "Editorial",
-    "description": "Magazine-style layout inspired by Issuu publications. Features multi-column text and pull quotes.",
-    "source": "issuu",
+    "description": "Magazine-style layout inspired by Editorial publications. Features multi-column text and pull quotes.",
+    "source": "Editorial",
     "colors": {
       "primary": "#F4F1EA",
       "accent": "#B83A26",
@@ -3836,8 +3836,8 @@
     "id": "tpl_079",
     "name": "Bauhaus Grid",
     "category": "Bauhaus",
-    "description": "Strict grid systems, primary colors, and geometric precision inspired by Pinterest mood boards.",
-    "source": "pinterest",
+    "description": "Strict grid systems, primary colors, and geometric precision inspired by Gallery mood boards.",
+    "source": "Gallery",
     "colors": {
       "primary": "#E4DCD3",
       "accent": "#D12A2F",
@@ -3883,10 +3883,10 @@
   },
   {
     "id": "tpl_080",
-    "name": "Archifolio Master",
+    "name": "Portfolio Master",
     "category": "Minimalist",
-    "description": "Based on top Archifolio layouts: extremely clean, focus purely on high-res renders and drawings.",
-    "source": "archifolio",
+    "description": "Based on top Portfolio layouts: extremely clean, focus purely on high-res renders and drawings.",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -3934,8 +3934,8 @@
     "id": "tpl_081",
     "name": "Parametric Flow",
     "category": "Parametric",
-    "description": "Fluid layouts with overlapping organic shapes, perfect for Zaha Hadid-style portfolios from Dribbble.",
-    "source": "dribbble",
+    "description": "Fluid layouts with overlapping organic shapes, perfect for Zaha Hadid-style portfolios from Creative.",
+    "source": "Creative",
     "colors": {
       "primary": "#0D0E15",
       "accent": "#00E5FF",
@@ -3983,8 +3983,8 @@
     "id": "tpl_082",
     "name": "Artisan Craft",
     "category": "Organic",
-    "description": "Warm earth tones and soft edges, inspired by Pinterest boards focused on sustainable architecture.",
-    "source": "pinterest",
+    "description": "Warm earth tones and soft edges, inspired by Gallery boards focused on sustainable architecture.",
+    "source": "Gallery",
     "colors": {
       "primary": "#F5EFE6",
       "accent": "#A37E58",
@@ -4081,8 +4081,8 @@
     "id": "tpl_084",
     "name": "Layered Maximalist",
     "category": "Maximalist",
-    "description": "Dense, collage-like layout from Issuu student portfolios.",
-    "source": "issuu",
+    "description": "Dense, collage-like layout from Editorial student portfolios.",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF4500",
@@ -4130,8 +4130,8 @@
     "id": "tpl_085",
     "name": "Industrial Edge",
     "category": "Industrial",
-    "description": "Inspired by Behance architecture offices: metal tones, crisp lines, strict grids.",
-    "source": "behance",
+    "description": "Inspired by Showcase architecture offices: metal tones, crisp lines, strict grids.",
+    "source": "Showcase",
     "colors": {
       "primary": "#333333",
       "accent": "#FF8C00",
@@ -4180,7 +4180,7 @@
     "name": "Monochrome Grid",
     "category": "Monochrome",
     "description": "Entirely black and white layout for high-contrast architectural photography.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#000000",
       "accent": "#FFFFFF",
@@ -4228,8 +4228,8 @@
     "id": "tpl_087",
     "name": "Vibrant Portfolio",
     "category": "Colorful",
-    "description": "Playful, colorful layouts extracted from Dribbble pop-architecture trends.",
-    "source": "dribbble",
+    "description": "Playful, colorful layouts extracted from Creative pop-architecture trends.",
+    "source": "Creative",
     "colors": {
       "primary": "#E8F0FF",
       "accent": "#4338CA",
@@ -4375,8 +4375,8 @@
     "id": "tpl_090",
     "name": "Neon Brutalism",
     "category": "Brutalist",
-    "description": "Edgy and raw layout with neon green accents over dark slate, inspired by experimental Behance portfolios.",
-    "source": "behance",
+    "description": "Edgy and raw layout with neon green accents over dark slate, inspired by experimental Showcase portfolios.",
+    "source": "Showcase",
     "colors": {
       "primary": "#121212",
       "accent": "#39FF14",
@@ -4424,8 +4424,8 @@
     "id": "tpl_091",
     "name": "The Lookbook",
     "category": "Editorial",
-    "description": "Fashion-inspired architectural lookbook layout from Pinterest.",
-    "source": "pinterest",
+    "description": "Fashion-inspired architectural lookbook layout from Gallery.",
+    "source": "Gallery",
     "colors": {
       "primary": "#F7F5F0",
       "accent": "#C9A66B",
@@ -4473,8 +4473,8 @@
     "id": "tpl_092",
     "name": "Dark Premium Obsidian",
     "category": "Dark Premium",
-    "description": "Ultra-luxury dark theme found on exclusive Archifolio profiles.",
-    "source": "archifolio",
+    "description": "Ultra-luxury dark theme found on exclusive Portfolio profiles.",
+    "source": "Portfolio",
     "colors": {
       "primary": "#050505",
       "accent": "#E5E5E5",
@@ -4522,8 +4522,8 @@
     "id": "tpl_093",
     "name": "Drafting Board",
     "category": "Industrial",
-    "description": "Technical layout resembling a blueprint or drafting board, popular on Dribbble.",
-    "source": "dribbble",
+    "description": "Technical layout resembling a blueprint or drafting board, popular on Creative.",
+    "source": "Creative",
     "colors": {
       "primary": "#E6E6E6",
       "accent": "#0051BA",
@@ -4571,8 +4571,8 @@
     "id": "tpl_094",
     "name": "Swiss Grid Foundation",
     "category": "Bauhaus",
-    "description": "Classic Swiss design principles: strict 4-column grid, Helvetica, red accents. Seen on Pinterest graphic boards.",
-    "source": "pinterest",
+    "description": "Classic Swiss design principles: strict 4-column grid, Helvetica, red accents. Seen on Gallery graphic boards.",
+    "source": "Gallery",
     "colors": {
       "primary": "#F4F4F4",
       "accent": "#E3000F",
@@ -4620,8 +4620,8 @@
     "id": "tpl_095",
     "name": "Terracotta Organic",
     "category": "Organic",
-    "description": "Warm clay tones, arched image frames, and flowing layouts found on Issuu.",
-    "source": "issuu",
+    "description": "Warm clay tones, arched image frames, and flowing layouts found on Editorial.",
+    "source": "Editorial",
     "colors": {
       "primary": "#E8D8CE",
       "accent": "#C06E52",
@@ -4718,8 +4718,8 @@
     "id": "tpl_097",
     "name": "Dynamic Web Sync",
     "category": "Modern",
-    "description": "Looks like a modern scrolling website translated to PDF. From Dribbble UI/UX crossovers.",
-    "source": "dribbble",
+    "description": "Looks like a modern scrolling website translated to PDF. From Creative UI/UX crossovers.",
+    "source": "Creative",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF6B6B",
@@ -4768,7 +4768,7 @@
     "name": "Generative Node",
     "category": "Parametric",
     "description": "Dark theme with node-based diagrammatic backgrounds for algorithmic design portfolios.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#0D1117",
       "accent": "#58A6FF",
@@ -4816,8 +4816,8 @@
     "id": "tpl_099",
     "name": "Expressive Sketchbook",
     "category": "Artistic",
-    "description": "Scrapbook style with tape marks, sketched borders, and hand-written font accents from Pinterest.",
-    "source": "pinterest",
+    "description": "Scrapbook style with tape marks, sketched borders, and hand-written font accents from Gallery.",
+    "source": "Gallery",
     "colors": {
       "primary": "#FDFBF7",
       "accent": "#D9534F",
@@ -4865,8 +4865,8 @@
     "id": "tpl_100",
     "name": "Chromatic Spectra",
     "category": "Colorful",
-    "description": "Vibrant gradients and bold color blocking for a highly energetic portfolio from Issuu.",
-    "source": "issuu",
+    "description": "Vibrant gradients and bold color blocking for a highly energetic portfolio from Editorial.",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFD700",
       "accent": "#FF007F",
@@ -5012,8 +5012,8 @@
     "id": "tpl_103",
     "name": "The Archive Spread",
     "category": "Maximalist",
-    "description": "Data-heavy, dense layout showing massive amounts of research and mapping. Issuu thesis style.",
-    "source": "issuu",
+    "description": "Data-heavy, dense layout showing massive amounts of research and mapping. Editorial thesis style.",
+    "source": "Editorial",
     "colors": {
       "primary": "#EAEAEA",
       "accent": "#FF3300",
@@ -5061,8 +5061,8 @@
     "id": "tpl_104",
     "name": "Portfolio One-Pager",
     "category": "Contemporary",
-    "description": "A continuously scrolling single-page layout converted for print, from Behance UI/UX.",
-    "source": "behance",
+    "description": "A continuously scrolling single-page layout converted for print, from Showcase UI/UX.",
+    "source": "Showcase",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -5110,8 +5110,8 @@
     "id": "tpl_105",
     "name": "Gallery Frame",
     "category": "Artistic",
-    "description": "Every image is framed like a painting in a gallery. Extracted from Dribbble art direction boards.",
-    "source": "dribbble",
+    "description": "Every image is framed like a painting in a gallery. Extracted from Creative art direction boards.",
+    "source": "Creative",
     "colors": {
       "primary": "#E8E6E1",
       "accent": "#2B2A28",
@@ -5208,8 +5208,8 @@
     "id": "tpl_107",
     "name": "The Blueprint",
     "category": "Industrial",
-    "description": "Inverted colors: blue background with white lines, simulating traditional cyanotype blueprints from Pinterest.",
-    "source": "pinterest",
+    "description": "Inverted colors: blue background with white lines, simulating traditional cyanotype blueprints from Gallery.",
+    "source": "Gallery",
     "colors": {
       "primary": "#003366",
       "accent": "#FFFFFF",
@@ -5257,8 +5257,8 @@
     "id": "tpl_108",
     "name": "Eco-Brutalist",
     "category": "Brutalist",
-    "description": "Heavy concrete visuals mixed with vibrant plant greens, trending on Archifolio.",
-    "source": "archifolio",
+    "description": "Heavy concrete visuals mixed with vibrant plant greens, trending on Portfolio.",
+    "source": "Portfolio",
     "colors": {
       "primary": "#D1D5DB",
       "accent": "#10B981",
@@ -5304,10 +5304,10 @@
   },
   {
     "id": "tpl_109",
-    "name": "Canva Fresh Print",
+    "name": "Graphic Fresh Print",
     "category": "Modern",
-    "description": "Inspired by Canva's top architectural templates. Clean, bright, and very approachable with pastel accents.",
-    "source": "canva",
+    "description": "Inspired by Graphic's top architectural templates. Clean, bright, and very approachable with pastel accents.",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FDBEB9",
@@ -5346,17 +5346,17 @@
       "year": true,
       "location": true
     },
-    "preview_image": "Soft pastels, Canva-style easy layout, very friendly",
+    "preview_image": "Soft pastels, Graphic-style easy layout, very friendly",
     "style_notes": "Great for students and young freelancers wanting an approachable look.",
     "page_count_range": "10-20",
     "orientation": "portrait_A4"
   },
   {
     "id": "tpl_110",
-    "name": "Adobe Portfolio Pro",
+    "name": "Studio Portfolio Pro",
     "category": "Minimalist",
-    "description": "Extremely clean web-first layout translated to PDF, based on Adobe Portfolio default themes.",
-    "source": "adobe",
+    "description": "Extremely clean web-first layout translated to PDF, based on Studio Portfolio default themes.",
+    "source": "Studio",
     "colors": {
       "primary": "#FAFAFA",
       "accent": "#0054FF",
@@ -5366,7 +5366,7 @@
     },
     "fonts": {
       "heading": "Proxima Nova",
-      "body": "Adobe Clean",
+      "body": "Studio Clean",
       "accent": "Courier"
     },
     "layouts": {
@@ -5395,17 +5395,17 @@
       "year": false,
       "location": false
     },
-    "preview_image": "Looks exactly like a responsive Adobe Portfolio website",
+    "preview_image": "Looks exactly like a responsive Studio Portfolio website",
     "style_notes": "For architects who want their PDF to look like their website.",
     "page_count_range": "15-25",
     "orientation": "portrait_A4"
   },
   {
     "id": "tpl_111",
-    "name": "Issuu Thesis Grid",
+    "name": "Editorial Thesis Grid",
     "category": "Academic",
     "description": "Dense, highly researched academic format with deep margins for annotations.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#F4F4F4",
       "accent": "#D13438",
@@ -5451,10 +5451,10 @@
   },
   {
     "id": "tpl_112",
-    "name": "Archifolio Studio",
+    "name": "Portfolio Studio",
     "category": "Contemporary",
     "description": "High-end studio presentation layout. Focus on huge hero images and very short text.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#000000",
       "accent": "#FFB800",
@@ -5500,10 +5500,10 @@
   },
   {
     "id": "tpl_113",
-    "name": "Behance 3D Mastery",
+    "name": "Showcase 3D Mastery",
     "category": "Artistic",
     "description": "Designed for 3D artists. Features wireframe-to-render transition layouts.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#222222",
       "accent": "#00E5FF",
@@ -5549,10 +5549,10 @@
   },
   {
     "id": "tpl_114",
-    "name": "Canva Pitch Deck",
+    "name": "Graphic Pitch Deck",
     "category": "Presentation",
     "description": "Slide-deck format optimized for 16:9 screen sharing and client pitches.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#0A2540",
       "accent": "#635BFF",
@@ -5598,10 +5598,10 @@
   },
   {
     "id": "tpl_115",
-    "name": "Adobe Express Collage",
+    "name": "Studio Express Collage",
     "category": "Maximalist",
     "description": "Trendy, social-media inspired scrapbook with torn paper edges and sticker graphics.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFF0E5",
       "accent": "#FF4500",
@@ -5647,10 +5647,10 @@
   },
   {
     "id": "tpl_116",
-    "name": "Issuu Magazine Spread",
+    "name": "Editorial Magazine Spread",
     "category": "Editorial",
     "description": "High-fashion architecture magazine layout with 3-column text spreads.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#D12A2F",
@@ -5696,10 +5696,10 @@
   },
   {
     "id": "tpl_117",
-    "name": "Behance Concept Grid",
+    "name": "Showcase Concept Grid",
     "category": "Bauhaus",
-    "description": "Strict isometric and orthographic grid layouts from trending Behance industrial designers.",
-    "source": "behance",
+    "description": "Strict isometric and orthographic grid layouts from trending Showcase industrial designers.",
+    "source": "Showcase",
     "colors": {
       "primary": "#EFEFEF",
       "accent": "#0055FF",
@@ -5745,10 +5745,10 @@
   },
   {
     "id": "tpl_118",
-    "name": "Archifolio Storyteller",
+    "name": "Portfolio Storyteller",
     "category": "Organic",
     "description": "Narrative-driven layout that focuses heavily on sketches and concept development.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#F9F6F0",
       "accent": "#8F7D6D",
@@ -5794,10 +5794,10 @@
   },
   {
     "id": "tpl_119",
-    "name": "Canva Bold & Bright",
+    "name": "Graphic Bold & Bright",
     "category": "Colorful",
     "description": "High contrast, highly saturated colors popular in modern marketing materials.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#4A00E0",
       "accent": "#8E2DE2",
@@ -5843,10 +5843,10 @@
   },
   {
     "id": "tpl_120",
-    "name": "Issuu Concrete Brut",
+    "name": "Editorial Concrete Brut",
     "category": "Brutalist",
     "description": "Raw concrete textures, monospaced fonts, unaligned margins.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#2D2D2D",
       "accent": "#FF0000",
@@ -5892,10 +5892,10 @@
   },
   {
     "id": "tpl_121",
-    "name": "Adobe Behance Hybrid",
+    "name": "Studio Showcase Hybrid",
     "category": "Contemporary",
-    "description": "Combines Adobe's clean typography with Behance's massive edge-to-edge imagery.",
-    "source": "adobe",
+    "description": "Combines Studio's clean typography with Showcase's massive edge-to-edge imagery.",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#333333",
@@ -5941,10 +5941,10 @@
   },
   {
     "id": "tpl_122",
-    "name": "Archifolio Noir",
+    "name": "Portfolio Noir",
     "category": "Monochrome",
     "description": "Greyscale elegance focusing purely on form and lighting.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#1A1A1A",
       "accent": "#FFFFFF",
@@ -5990,10 +5990,10 @@
   },
   {
     "id": "tpl_123",
-    "name": "Canva Geometric",
+    "name": "Graphic Geometric",
     "category": "Modern",
     "description": "Utilizes vector geometric shapes to frame content. Very dynamic.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFFAF0",
       "accent": "#FF6F61",
@@ -6039,10 +6039,10 @@
   },
   {
     "id": "tpl_124",
-    "name": "Issuu Blueprint Overlay",
+    "name": "Editorial Blueprint Overlay",
     "category": "Industrial",
     "description": "Technical drawings overlaid on top of faded renders.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#0044CC",
@@ -6088,10 +6088,10 @@
   },
   {
     "id": "tpl_125",
-    "name": "Behance Neon Tech",
+    "name": "Showcase Neon Tech",
     "category": "Parametric",
     "description": "Cyberpunk inspired architectural presentation. Dark with glowing pinks/cyans.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#0B0C10",
       "accent": "#66FCF1",
@@ -6137,10 +6137,10 @@
   },
   {
     "id": "tpl_126",
-    "name": "Adobe InDesign Classic",
+    "name": "Studio InDesign Classic",
     "category": "Minimalist",
     "description": "The quintessential blank architectural portfolio based on classic InDesign master pages.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -6186,10 +6186,10 @@
   },
   {
     "id": "tpl_127",
-    "name": "Canva Brochure",
+    "name": "Graphic Brochure",
     "category": "Commercial",
     "description": "Trifold/Brochure style layout adapted for multi-page PDF. Real estate focus.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#F4F7F6",
       "accent": "#2E4053",
@@ -6235,10 +6235,10 @@
   },
   {
     "id": "tpl_128",
-    "name": "Archifolio Exhibition",
+    "name": "Portfolio Exhibition",
     "category": "Artistic",
     "description": "Designed like a museum exhibition catalog.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#EFEBE9",
       "accent": "#4E342E",
@@ -6284,10 +6284,10 @@
   },
   {
     "id": "tpl_129",
-    "name": "Canva Agency",
+    "name": "Graphic Agency",
     "category": "Modern",
-    "description": "Bold, accessible agency layout from Canva. Uses duotone imagery and clear, bold typography.",
-    "source": "canva",
+    "description": "Bold, accessible agency layout from Graphic. Uses duotone imagery and clear, bold typography.",
+    "source": "Graphic",
     "colors": {
       "primary": "#E1EBEE",
       "accent": "#F47C7C",
@@ -6333,10 +6333,10 @@
   },
   {
     "id": "tpl_130",
-    "name": "Adobe Express Editorial",
+    "name": "Studio Express Editorial",
     "category": "Editorial",
-    "description": "Magazine-like, heavy typography overlapping images, inspired by Adobe Express fashion templates.",
-    "source": "adobe",
+    "description": "Magazine-like, heavy typography overlapping images, inspired by Studio Express fashion templates.",
+    "source": "Studio",
     "colors": {
       "primary": "#F7F5F0",
       "accent": "#DDA77B",
@@ -6382,10 +6382,10 @@
   },
   {
     "id": "tpl_131",
-    "name": "Behance UX UI",
+    "name": "Showcase UX UI",
     "category": "Modern",
     "description": "App-interface inspired layout. Rounded corners, drop shadows, floating cards.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#F0F2F5",
       "accent": "#1877F2",
@@ -6431,10 +6431,10 @@
   },
   {
     "id": "tpl_132",
-    "name": "Archifolio Studio Dark",
+    "name": "Portfolio Studio Dark",
     "category": "Dark Premium",
     "description": "Absolute pitch black with stark white text, focusing 100% on high-contrast renders.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#000000",
       "accent": "#FFFFFF",
@@ -6480,10 +6480,10 @@
   },
   {
     "id": "tpl_133",
-    "name": "Issuu Monograph",
+    "name": "Editorial Monograph",
     "category": "Classical",
     "description": "Heavy, book-like layout with extensive text columns and wide margins.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -6529,10 +6529,10 @@
   },
   {
     "id": "tpl_134",
-    "name": "Canva Social Format",
+    "name": "Graphic Social Format",
     "category": "Modern",
     "description": "Designed specifically for vertical scrolling on mobile phones, like Instagram Carousels.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFFAFA",
       "accent": "#FF4B4B",
@@ -6578,10 +6578,10 @@
   },
   {
     "id": "tpl_135",
-    "name": "Behance Wireframe Cyber",
+    "name": "Showcase Wireframe Cyber",
     "category": "Parametric",
     "description": "Cyberpunk inspired, dark themes with glowing neon grids.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#0D0E15",
       "accent": "#00FFCC",
@@ -6627,10 +6627,10 @@
   },
   {
     "id": "tpl_136",
-    "name": "Adobe Print Ready",
+    "name": "Studio Print Ready",
     "category": "Minimalist",
     "description": "InDesign default master template look. Purely functional, highly legible.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -6676,10 +6676,10 @@
   },
   {
     "id": "tpl_137",
-    "name": "Issuu Collage Brut",
+    "name": "Editorial Collage Brut",
     "category": "Brutalist",
-    "description": "Messy, overlaid layouts showing intense research and process. Staple of academic Issuu zines.",
-    "source": "issuu",
+    "description": "Messy, overlaid layouts showing intense research and process. Staple of academic Editorial zines.",
+    "source": "Editorial",
     "colors": {
       "primary": "#EFEFEF",
       "accent": "#FF0000",
@@ -6725,10 +6725,10 @@
   },
   {
     "id": "tpl_138",
-    "name": "Archifolio Gallery Wall",
+    "name": "Portfolio Gallery Wall",
     "category": "Artistic",
     "description": "Every page looks like a pristine museum gallery wall framing a singular masterpiece.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FCFAF8",
       "accent": "#2B2A29",
@@ -6774,10 +6774,10 @@
   },
   {
     "id": "tpl_139",
-    "name": "Canva Brochure Fold",
+    "name": "Graphic Brochure Fold",
     "category": "Commercial",
     "description": "Layout simulating a printed trifold brochure for real estate marketing.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#145DA0",
@@ -6823,10 +6823,10 @@
   },
   {
     "id": "tpl_140",
-    "name": "Behance Brand Identity",
+    "name": "Showcase Brand Identity",
     "category": "Contemporary",
     "description": "Treats the architectural portfolio like a graphic design branding package.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FFDE00",
       "accent": "#000000",
@@ -6872,10 +6872,10 @@
   },
   {
     "id": "tpl_141",
-    "name": "Adobe Express Fluid",
+    "name": "Studio Express Fluid",
     "category": "Organic",
     "description": "Flowing, non-linear layouts with organic wave shapes intersecting the grid.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#E0F7FA",
       "accent": "#00838F",
@@ -6921,10 +6921,10 @@
   },
   {
     "id": "tpl_142",
-    "name": "Issuu Technical Dossier",
+    "name": "Editorial Technical Dossier",
     "category": "Industrial",
     "description": "Blueprint and technical manual aesthetic, drawing heavily on mono fonts and lines.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#F8F8F8",
       "accent": "#0033CC",
@@ -6970,10 +6970,10 @@
   },
   {
     "id": "tpl_143",
-    "name": "Archifolio Developer",
+    "name": "Portfolio Developer",
     "category": "Commercial",
     "description": "Clean, stats-heavy layout for pitching to developers. Focus on data and yield.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#27AE60",
@@ -7019,10 +7019,10 @@
   },
   {
     "id": "tpl_144",
-    "name": "Canva Retro 70s",
+    "name": "Graphic Retro 70s",
     "category": "Colorful",
     "description": "Fun, retro aesthetic with warm oranges, browns, and rounded serif fonts.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#F2E8D5",
       "accent": "#D95D39",
@@ -7068,10 +7068,10 @@
   },
   {
     "id": "tpl_145",
-    "name": "Adobe Express Minimal Poster",
+    "name": "Studio Express Minimal Poster",
     "category": "Minimalist",
     "description": "Every page looks like an independent, highly minimal art poster.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#F7F7F7",
       "accent": "#000000",
@@ -7117,10 +7117,10 @@
   },
   {
     "id": "tpl_146",
-    "name": "Issuu Scrapbook Grid",
+    "name": "Editorial Scrapbook Grid",
     "category": "Maximalist",
     "description": "Structured but dense grid showing multiple iterations and process models.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#EFEFEF",
       "accent": "#333333",
@@ -7166,10 +7166,10 @@
   },
   {
     "id": "tpl_147",
-    "name": "Behance Architect's Desk",
+    "name": "Showcase Architect's Desk",
     "category": "Artistic",
     "description": "Layout uses a subtle desk texture background, placing elements like papers on a table.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#DCD7C9",
       "accent": "#A27B5C",
@@ -7215,10 +7215,10 @@
   },
   {
     "id": "tpl_148",
-    "name": "Canva Neon Gradient",
+    "name": "Graphic Neon Gradient",
     "category": "Colorful",
     "description": "Heavy use of trendy liquid gradients and glassmorphism UI elements.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#E0C3FC",
       "accent": "#8EC5FC",
@@ -7264,10 +7264,10 @@
   },
   {
     "id": "tpl_149",
-    "name": "Behance Vaporwave",
+    "name": "Showcase Vaporwave",
     "category": "Colorful",
     "description": "Vaporwave aesthetic. Bright pinks, cyans, grids, and retro-tech nostalgia.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#FF71CE",
       "accent": "#01CDFE",
@@ -7313,10 +7313,10 @@
   },
   {
     "id": "tpl_150",
-    "name": "Issuu Bauhaus Revival",
+    "name": "Editorial Bauhaus Revival",
     "category": "Bauhaus",
     "description": "Primary colors (red, blue, yellow) and strict geometric grids.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#E23D28",
       "accent": "#0A3B7C",
@@ -7362,10 +7362,10 @@
   },
   {
     "id": "tpl_151",
-    "name": "Canva Y2K",
+    "name": "Graphic Y2K",
     "category": "Maximalist",
     "description": "Late 90s / early 2000s tech boom aesthetic. Silver gradients, bubble shapes.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#C0C0C0",
       "accent": "#FF00FF",
@@ -7411,10 +7411,10 @@
   },
   {
     "id": "tpl_152",
-    "name": "Adobe Clean Slate",
+    "name": "Studio Clean Slate",
     "category": "Minimalist",
     "description": "The ultimate blank canvas. Barely there grey lines, massive white space.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#EBEBEB",
@@ -7460,10 +7460,10 @@
   },
   {
     "id": "tpl_153",
-    "name": "Archifolio Storyboard",
+    "name": "Portfolio Storyboard",
     "category": "Narrative",
     "description": "Film storyboard layout. Sequential frames explaining a walk-through of the space.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#F2F2F2",
       "accent": "#D12A2A",
@@ -7509,10 +7509,10 @@
   },
   {
     "id": "tpl_154",
-    "name": "Issuu Japanese Minimal",
+    "name": "Editorial Japanese Minimal",
     "category": "Minimalist",
     "description": "Inspired by Japanese print magazines. Vertical text elements, extreme precision.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FDFBF7",
       "accent": "#C42D2D",
@@ -7558,10 +7558,10 @@
   },
   {
     "id": "tpl_155",
-    "name": "Behance High Contrast",
+    "name": "Showcase High Contrast",
     "category": "Contemporary",
     "description": "Pure black and pure white blocks splitting the page in half.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#000000",
       "accent": "#000000",
@@ -7607,10 +7607,10 @@
   },
   {
     "id": "tpl_156",
-    "name": "Canva Resume Plus",
+    "name": "Graphic Resume Plus",
     "category": "Commercial",
     "description": "A resume-first portfolio. The first 3 pages are a detailed CV, followed by tight project summaries.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#EDF2F7",
       "accent": "#3182CE",
@@ -7656,10 +7656,10 @@
   },
   {
     "id": "tpl_157",
-    "name": "Archifolio Sketchbook",
+    "name": "Portfolio Sketchbook",
     "category": "Organic",
     "description": "Designed specifically for scanned hand drawings. Sepia tones, tape graphics.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#E8DCC4",
       "accent": "#5E4D3C",
@@ -7705,10 +7705,10 @@
   },
   {
     "id": "tpl_158",
-    "name": "Adobe Express Neon Gradient",
+    "name": "Studio Express Neon Gradient",
     "category": "Colorful",
     "description": "Fluid neon gradients (cyan, magenta, yellow) mixing softly in the background.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FF00FF",
       "accent": "#00FFFF",
@@ -7754,10 +7754,10 @@
   },
   {
     "id": "tpl_159",
-    "name": "Issuu Blueprint",
+    "name": "Editorial Blueprint",
     "category": "Industrial",
     "description": "Every page looks like a cyanotype blueprint. White lines on blue backgrounds.",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#0033A0",
       "accent": "#FFFFFF",
@@ -7803,10 +7803,10 @@
   },
   {
     "id": "tpl_160",
-    "name": "Behance Crypto Metaverse",
+    "name": "Showcase Crypto Metaverse",
     "category": "Modern",
     "description": "Designed for virtual architecture. Floating elements, glassmorphism, crypto punk vibes.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#0D0D0D",
       "accent": "#8A2BE2",
@@ -7852,10 +7852,10 @@
   },
   {
     "id": "tpl_161",
-    "name": "Canva Botanical",
+    "name": "Graphic Botanical",
     "category": "Organic",
     "description": "Heavy use of sage greens, botanical illustrations, and soft framing.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#E8EFE8",
       "accent": "#6D9773",
@@ -7901,10 +7901,10 @@
   },
   {
     "id": "tpl_162",
-    "name": "Archifolio Competition Landscape",
+    "name": "Portfolio Competition Landscape",
     "category": "Presentation",
     "description": "A single continuous timeline layout. Intended to be printed as an endless folding accordion.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#E74C3C",
@@ -7950,10 +7950,10 @@
   },
   {
     "id": "tpl_163",
-    "name": "Adobe Express Magazine",
+    "name": "Studio Express Magazine",
     "category": "Editorial",
     "description": "Pop-culture magazine style. Drop caps, pull quotes, bold headers.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#F0E6D2",
       "accent": "#FF3366",
@@ -7999,10 +7999,10 @@
   },
   {
     "id": "tpl_164",
-    "name": "Issuu Swiss Typography",
+    "name": "Editorial Swiss Typography",
     "category": "Minimalist",
     "description": "Strict adherence to the International Typographic Style (Swiss Design).",
-    "source": "issuu",
+    "source": "Editorial",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF0000",
@@ -8048,10 +8048,10 @@
   },
   {
     "id": "tpl_165",
-    "name": "Behance Experimental 3D",
+    "name": "Showcase Experimental 3D",
     "category": "Maximalist",
     "description": "Layout uses 3D rendered blobs and shapes to frame the actual architectural projects.",
-    "source": "behance",
+    "source": "Showcase",
     "colors": {
       "primary": "#EFEFEF",
       "accent": "#8A2BE2",
@@ -8097,10 +8097,10 @@
   },
   {
     "id": "tpl_166",
-    "name": "Canva Watercolor",
+    "name": "Graphic Watercolor",
     "category": "Organic",
     "description": "Soft watercolor wash backgrounds and delicate serifs.",
-    "source": "canva",
+    "source": "Graphic",
     "colors": {
       "primary": "#FDFBF7",
       "accent": "#85A3B2",
@@ -8146,10 +8146,10 @@
   },
   {
     "id": "tpl_167",
-    "name": "Adobe Express Lookbook",
+    "name": "Studio Express Lookbook",
     "category": "Presentation",
     "description": "Fashion lookbook format. Almost entirely image based with tiny item codes.",
-    "source": "adobe",
+    "source": "Studio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#000000",
@@ -8195,10 +8195,10 @@
   },
   {
     "id": "tpl_168",
-    "name": "Archifolio Construction Doc",
+    "name": "Portfolio Construction Doc",
     "category": "Technical Drawings",
     "description": "Imitates a set of issued for construction (IFC) drawings. Title blocks, revision clouds.",
-    "source": "archifolio",
+    "source": "Portfolio",
     "colors": {
       "primary": "#FFFFFF",
       "accent": "#FF0000",
@@ -8339,7 +8339,7 @@
     "id": "cosmo-special-3",
     "name": "Cosmo Special 2",
     "category": "Cosmo Special",
-    "source": "behance-extract",
+    "source": "Showcase-extract",
     "origin_file": "Architecture-Portfolio_Yavanikaa-Sindhu_2019-24",
     "orientation": "portrait",
     "page_count": 38,
@@ -8401,7 +8401,7 @@
     "id": "cosmo-special-4",
     "name": "Cosmo Special 3",
     "category": "Cosmo Special",
-    "source": "behance-extract",
+    "source": "Showcase-extract",
     "origin_file": "Architecture-Portfolio",
     "orientation": "landscape",
     "page_count": 24,
@@ -8463,7 +8463,7 @@
     "id": "cosmo-special-5",
     "name": "Cosmo Special 4",
     "category": "Cosmo Special",
-    "source": "behance-extract",
+    "source": "Showcase-extract",
     "origin_file": "PORTFOLIO-INTERIOR-DESIGN-2024-2026",
     "orientation": "portrait",
     "page_count": 3,

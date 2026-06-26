@@ -2095,7 +2095,7 @@ export default function TemplateEditor() {
         </aside>
 
         {/* Center: canvas */}
-        <main ref={canvasRef} className={`relative group/canvas ${isMobile ? 'flex-1' : 'flex-1'} overflow-auto ${isMobile ? 'p-2' : 'p-8'} bg-gray-300/40`} id="tour-canvas">
+        <main ref={canvasRef} className={`relative group/canvas flex-1 overflow-auto bg-gray-300/40 flex flex-col`} id="tour-canvas">
           <style>{`
             .portfolio-page { font-size: ${16 * (tokens.fontScale || 1)}px; }
             .portfolio-page .text-xs { font-size: 0.75em; line-height: 1rem; }
@@ -2121,7 +2121,7 @@ export default function TemplateEditor() {
           `}</style>
 
           {/* Zoom controls — Photoshop-style; canvas scrolls when zoomed past the pane */}
-          <div className="sticky top-0 z-30 flex justify-center pointer-events-none -mt-2 mb-3">
+          <div className="sticky top-0 z-30 flex justify-center pointer-events-none mt-2 mb-3 shrink-0">
             <div id="tour-canvas-zoom" className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">
               <button onClick={zoomOut} title="Zoom out" className="w-7 h-7 rounded-full hover:bg-gray-100 text-gray-700 text-lg leading-none flex items-center justify-center">−</button>
               <button onClick={() => setCanvasZoom(1)} title="Reset to 100%" className="px-2 text-xs font-medium text-gray-700 tabular-nums min-w-[44px]">{Math.round(canvasZoom * 100)}%</button>
@@ -2136,7 +2136,7 @@ export default function TemplateEditor() {
             (() => {
               const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
               return (
-                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
+                <div className="mx-auto mt-4 mb-16 select-none shrink-0" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
                   <div className="origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                     <SpreadComposer
                       page={currentPage}
@@ -2168,7 +2168,7 @@ export default function TemplateEditor() {
               const rightIdx = leftIdx + 1
               const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
               return (
-                <div className="mx-auto select-none" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
+                <div className="mx-auto mt-4 mb-16 select-none shrink-0" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
                 <div className="flex gap-0 items-stretch justify-center relative overflow-visible py-2 origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                   {/* Left Page */}
                   <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
@@ -2247,7 +2247,7 @@ export default function TemplateEditor() {
               {(() => {
               const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
               return (
-            <div className="mx-auto select-none" style={{ width: 760 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
+            <div className="m-auto select-none shrink-0" style={{ width: 760 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
               <div className="origin-top-left" style={{ width: 760, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                 <PageComposer
                   page={currentPage}
