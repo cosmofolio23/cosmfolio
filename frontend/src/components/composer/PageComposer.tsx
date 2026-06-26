@@ -377,7 +377,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Experience / Education</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 print:hidden">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -415,10 +415,10 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
                 style={{ color: tokens.text, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer">✕</button>
+            <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left">Click + ADD to create a timeline entry</button>}
+        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left print:hidden">Click + ADD to create a timeline entry</button>}
       </div>
     </div>
   )
@@ -477,7 +477,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 print:hidden">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -498,7 +498,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
                 {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
                 <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: tokens.primary, fontFamily: tokens.bodyFont }} />
               </div>
-              <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer">✕</button>
+              <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
             </div>
             
             {/* Segmented Architectural Bar Chart */}
@@ -514,7 +514,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
             </div>
           </div>
         ))}
-        {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full">Click + ADD to create a skill</button>}
+        {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full print:hidden">Click + ADD to create a skill</button>}
       </div>
     </div>
   )
@@ -531,7 +531,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden">
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>{label}</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 print:hidden">
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -568,10 +568,10 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
                 style={{ color: tokens.text, minHeight: '14px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer">✕</button>
+            <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden">✕</button>
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full">Click + ADD to create a list item</button>}
+        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full print:hidden">Click + ADD to create a list item</button>}
       </div>
     </div>
   )
@@ -641,7 +641,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
       {!isPinned && (
         <div 
           onPointerDown={e => onPointerDown(e, 'resize')}
-          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity" 
+          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden" 
           style={{ cursor: 'nwse-resize', zIndex: 60 }} 
         />
       )}
@@ -858,7 +858,7 @@ function RegionView({
                 }}
                 override={{ color: block.color, fontFamily: block.fontFamily, scale: block.fontSize }}
               />
-              <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center">
+              <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden">
                 <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
                   ✏️ Edit Title Block
                 </span>
