@@ -378,11 +378,11 @@ export function TableOfContentsRenderer({
   const renderMagazine = () => {
     const featured = items[0]
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
-        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2 shrink-0" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Contents'}
         </h3>
-        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+        <div className="grid grid-cols-12 gap-4 flex-1 overflow-hidden shrink min-h-0">
           <div className="col-span-5 bg-black/5 rounded overflow-hidden relative flex flex-col justify-end p-3 min-h-[160px]">
             {featured.thumbnail ? (
               <div className="absolute inset-0 w-full h-full opacity-80" style={{ backgroundImage: `url(${featured.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -395,9 +395,9 @@ export function TableOfContentsRenderer({
               <span className="text-[9px] block">Page {featured.pageNumber}</span>
             </div>
           </div>
-          <div className="col-span-7 space-y-2">
+          <div className="col-span-7 flex flex-col flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(0, 10 - items.length * 0.5) + 'px' }}>
             {items.map((it, idx) => (
-              <div key={idx} className="flex items-center justify-between border-b pb-1.5 border-black/5 text-xs">
+              <div key={idx} className="flex items-center justify-between border-b pb-1.5 border-black/5 text-xs shrink min-h-0">
                 <div className="flex gap-2">
                   <span className="font-bold opacity-60">{it.num}</span>
                   <div>
@@ -416,13 +416,13 @@ export function TableOfContentsRenderer({
 
   const renderTimeline = () => {
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
-        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+        <h3 className="text-xl font-bold uppercase tracking-widest mb-4 border-b pb-2 shrink-0" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Timeline'}
         </h3>
-        <div className="relative border-l border-slate-350 pl-4 ml-2 space-y-4 flex-1">
+        <div className="relative border-l border-slate-350 pl-4 ml-2 flex flex-col flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(0, 16 - items.length * 0.5) + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className="relative text-xs">
+            <div key={idx} className="relative text-xs shrink min-h-0">
               <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 border border-white" />
               <div className="flex justify-between items-baseline">
                 <div>
@@ -441,13 +441,13 @@ export function TableOfContentsRenderer({
 
   const renderGrid = () => {
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-3" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           {block.label || 'Project Index'}
         </h3>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(2, 8 - items.length * 0.5) + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2">
+            <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2 shrink min-h-0">
               <div className="w-12 h-12 bg-black/5 rounded overflow-hidden flex-shrink-0">
                 {it.thumbnail ? (
                   <div className="w-full h-full" style={{ backgroundImage: `url(${it.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -472,13 +472,13 @@ export function TableOfContentsRenderer({
 
   const renderLuxury = () => {
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-yellow-900/10' : ''}`} style={{ fontFamily: 'Playfair Display, Lora, Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-yellow-900/10' : ''}`} style={{ fontFamily: 'Playfair Display, Lora, Georgia, serif', backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-2xl font-normal tracking-[0.15em] text-center mb-5 italic" style={{ color: tokens.primary }}>
           {block.label || 'Portfolio Index'}
         </h3>
-        <div className="space-y-3">
+        <div className="flex flex-col flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(0, 12 - items.length * 0.5) + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className="flex justify-between items-baseline border-b border-yellow-800/10 pb-1.5 text-xs">
+            <div key={idx} className="flex justify-between items-baseline border-b border-yellow-800/10 pb-1.5 text-xs shrink min-h-0">
               <div className="flex items-baseline gap-3">
                 <span className="text-[10px] tracking-wider text-yellow-700/80 font-serif italic">{it.num}</span>
                 <div>
@@ -496,11 +496,11 @@ export function TableOfContentsRenderer({
 
   const renderResearch = () => {
     return (
-      <div className={`w-full flex flex-col h-full font-mono text-[9px] text-slate-600 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 font-mono text-[9px] text-slate-600 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-xs font-bold uppercase tracking-widest mb-3 border-b border-dashed pb-1.5" style={{ color: tokens.primary }}>
           // INDEX_SPEC_REF_01
         </h3>
-        <table className="w-full border-collapse">
+        <div className="flex-1 overflow-hidden shrink min-h-0 relative"><table className="w-full border-collapse absolute inset-0">
           <thead>
             <tr className="border-b border-slate-350 text-left opacity-75">
               <th className="py-1">ID</th>
@@ -521,20 +521,20 @@ export function TableOfContentsRenderer({
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     )
   }
 
   const renderParametric = () => {
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-lg font-black uppercase tracking-tighter mb-4 italic" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           PROJECTS.MATRIX
         </h3>
-        <div className="space-y-2.5">
+        <div className="flex flex-col flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(0, 10 - items.length * 0.5) + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className="group flex items-stretch border-l-4 border-slate-900 bg-slate-50 p-2 text-xs transition hover:bg-slate-100">
+            <div key={idx} className="group flex items-stretch border-l-4 border-slate-900 bg-slate-50 p-2 text-xs transition hover:bg-slate-100 shrink min-h-0">
               <div className="flex-1 min-w-0 pr-2">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[9px] bg-slate-900 text-white px-1 font-bold">{it.num}</span>
@@ -555,13 +555,13 @@ export function TableOfContentsRenderer({
 
   const renderCompetition = () => {
     return (
-      <div className={`w-full flex flex-col h-full ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
+      <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-slate-200' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
         <h3 className="text-xl font-bold uppercase tracking-tight mb-4" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>
           INDEX / WORK_SAMPLES
         </h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 flex-1 overflow-hidden shrink min-h-0" style={{ gap: Math.max(2, 12 - items.length * 0.5) + 'px' }}>
           {items.map((it, idx) => (
-            <div key={idx} className="border-t-2 border-slate-900 pt-2 flex flex-col justify-between text-xs min-h-[90px]">
+            <div key={idx} className="border-t-2 border-slate-900 pt-2 flex flex-col justify-between text-xs shrink min-h-0 min-h-[40px]">
               <div>
                 <div className="flex justify-between font-bold text-[10px]">
                   <span>{it.num}</span>
