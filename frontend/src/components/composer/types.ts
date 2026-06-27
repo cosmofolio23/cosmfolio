@@ -83,6 +83,8 @@ export interface Block {
 
   // TOC Generative Engine styling
   tocStyle?: any
+  // Resume Block styling engine
+  resumeStyle?: any
   // Unlocked Mode styling
   freeform?: { x: number, y: number, w: number, h: number, pinned?: boolean, z?: number }
 }

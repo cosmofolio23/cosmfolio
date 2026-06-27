@@ -342,6 +342,89 @@ function ImageUploadPlaceholder({
    block in place — no separate form/modal needed.
    ══════════════════════════════════════════════════════════════════════════*/
 
+function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void }) {
+  const [open, setOpen] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+  }
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setOpen(false)
+    }, 300)
+  }
+
+  const styleConfig = block.resumeStyle || {}
+  const updateStyle = (patch: any) => onChange({ resumeStyle: { ...styleConfig, ...patch } })
+
+  return (
+    <div 
+      className="relative flex items-center print:hidden" data-html2canvas-ignore="true" 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <button onClick={() => setOpen(!open)} className="text-[12px] p-1 rounded transition-colors opacity-40 hover:opacity-100 hover:bg-black/5" title="Block Style">
+        🎨
+      </button>
+      
+      {open && (
+        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" >
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
+            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Block Style</div>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase text-gray-500 font-semibold">Layout Variant</span>
+                <select 
+                  className="bg-black/5 text-[10px] uppercase font-bold p-1 rounded outline-none border border-black/10 w-full"
+                  value={styleConfig.variant || 'list'}
+                  onChange={e => updateStyle({ variant: e.target.value })}
+                >
+                  <option value="list">Standard List</option>
+                  <option value="timeline">Timeline</option>
+                  <option value="bento">Bento Grid</option>
+                  <option value="masonry">Masonry</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase text-gray-500 font-semibold">Proficiency Style (Skills)</span>
+                <select 
+                  className="bg-black/5 text-[10px] uppercase font-bold p-1 rounded outline-none border border-black/10 w-full"
+                  value={styleConfig.barStyle || 'dots'}
+                  onChange={e => updateStyle({ barStyle: e.target.value })}
+                >
+                  <option value="dots">Minimal Dots (●●●○○)</option>
+                  <option value="bars">Progress Bars</option>
+                  <option value="text">Numeric (3/5)</option>
+                  <option value="none">Hidden</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase text-gray-500 font-semibold">Divider Line</span>
+                <select 
+                  className="bg-black/5 text-[10px] uppercase font-bold p-1 rounded outline-none border border-black/10 w-full"
+                  value={styleConfig.divider || 'none'}
+                  onChange={e => updateStyle({ divider: e.target.value })}
+                >
+                  <option value="none">None</option>
+                  <option value="solid">Solid Line</option>
+                  <option value="dashed">Dashed Line</option>
+                  <option value="dotted">Dotted Line</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1 mt-1">
+                <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Item Spacing</span><span className="text-[9px] font-mono">{styleConfig.gap ?? 16}px</span></div>
+                <input type="range" min="4" max="48" step="4" value={styleConfig.gap ?? 16} onChange={e => updateStyle({ gap: parseInt(e.target.value) })} className="w-full accent-black" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function BlockTypographySettings({ block, tokens, onChange }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void }) {
   const [open, setOpen] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -467,14 +550,24 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
   const finalText = block.color || tokens.text
   const finalFontSize = block.fontSize || 1
 
+  const styleConfig = block.resumeStyle || {}
+  const variant = styleConfig.variant || 'list'
+  const divider = styleConfig.divider || 'none'
+  const gap = styleConfig.gap ?? 16
+
+  const isBento = variant === 'bento'
+  const wrapperClass = isBento ? 'bg-black/5 p-4 rounded-xl border border-black/5' : ''
+  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
+
   return (
-    <div className="w-full h-full flex flex-col gap-2 overflow-hidden relative" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className={`w-full h-full flex flex-col overflow-hidden relative ${wrapperClass} ${dividerClass}`} style={{ zoom: finalFontSize, gap: gap + 'px' } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <div className="flex items-center gap-2">
           <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Profile</span>
         </div>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+          <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           {block.freeform && (
             <button onClick={() => onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } })} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
@@ -494,7 +587,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
           <button onClick={save} className="text-[9px] font-bold tracking-wider px-3 py-1 rounded self-start mt-1" style={{ background: tokens.accent, color: '#fff' }}>SAVE</button>
         </div>
       ) : (
-        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors" style={{ color: finalText, fontFamily: tokens.bodyFont }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
+        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors whitespace-pre-wrap" style={{ color: finalText, fontFamily: tokens.bodyFont }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
           {block.text || <span className="opacity-40 italic">Click to write your architectural manifesto or professional summary...</span>}
         </p>
       )}
@@ -512,12 +605,22 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
   const finalPrimary = block.tocStyle?.titleColor || tokens.primary
   const finalText = block.color || tokens.text
   const finalFontSize = block.fontSize || 1
-  
+
+  const styleConfig = block.resumeStyle || {}
+  const variant = styleConfig.variant || 'timeline'
+  const divider = styleConfig.divider || 'none'
+  const gap = styleConfig.gap ?? 16
+
+  const gridClass = variant === 'list' ? 'flex flex-col' : variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 'grid grid-cols-1 @xs:grid-cols-2 gap-6'
+  const itemClass = variant === 'bento' ? 'bg-black/5 p-4 rounded-xl border border-black/5' : ''
+  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
+
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+          <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
@@ -532,11 +635,12 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>
       </div>
-      <div className="flex flex-col flex-1 overflow-hidden pb-2 pr-1" style={{ gap: Math.max(0, 16 - entries.length * 3) + 'px' }}>
+      <div className={`flex-1 overflow-hidden pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className="group relative pl-4 @sm:pl-0 flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-hidden">
-            {/* Timeline dot (Mobile) or left border */}
-            <div className="hidden @sm:block w-[1.5px] h-full absolute left-0 top-0 bottom-0" style={{ background: tokens.accent, opacity: 0.2 }} />
+          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-hidden break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : ''}`}>
+            {variant === 'timeline' && (
+              <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
+            )}
             
             <div className="w-16 @sm:w-20 shrink-0">
               <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.accent }} />
@@ -620,11 +724,21 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
   const finalText = block.color || tokens.text
   const finalFontSize = block.fontSize || 1
 
+  const styleConfig = block.resumeStyle || {}
+  const barStyle = styleConfig.barStyle || 'bars'
+  const divider = styleConfig.divider || 'none'
+  const gap = styleConfig.gap ?? 16
+  const variant = styleConfig.variant || 'list'
+
+  const gridClass = variant === 'list' ? 'flex flex-col' : variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6' : 'grid grid-cols-1 @xs:grid-cols-2'
+  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-2' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-2' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-2' : ''
+
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+          <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
@@ -640,9 +754,9 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
         </div>
       </div>
       
-      <div className="flex-1 grid grid-cols-1 @xs:grid-cols-2 gap-x-6 overflow-hidden pr-1 content-start mt-1" style={{ rowGap: Math.max(4, 16 - items.length * 2) + 'px' }}>
+      <div className={`flex-1 overflow-hidden pr-1 content-start mt-1 ${gridClass}`} style={{ gap: gap + 'px' }}>
         {items.map((s, i) => (
-          <div key={i} className="group flex flex-col gap-1.5">
+          <div key={i} className={`group flex flex-col gap-1.5 break-inside-avoid ${dividerClass}`}>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
@@ -651,17 +765,28 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
               <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
             </div>
             
-            {/* Segmented Architectural Bar Chart */}
-            <div className="flex gap-[2px] h-[3px] w-full mt-0.5">
-              {[1,2,3,4,5].map(level => (
-                <button 
-                  key={level} 
-                  onClick={() => upd(i, 'level', level)} 
-                  className="flex-1 rounded-sm transition-all duration-300 ease-out hover:brightness-110 hover:scale-y-150" 
-                  style={{ background: level <= s.level ? tokens.accent : tokens.muted, opacity: level <= s.level ? 1 : 0.2 }} 
-                />
-              ))}
-            </div>
+            {barStyle === 'bars' && (
+              <div className="flex gap-[2px] h-[3px] w-full mt-0.5">
+                {[1,2,3,4,5].map(level => (
+                  <button key={level} onClick={() => upd(i, 'level', level)} className="flex-1 rounded-sm transition-all duration-300 ease-out hover:brightness-110 hover:scale-y-150" style={{ background: level <= s.level ? tokens.accent : tokens.muted, opacity: level <= s.level ? 1 : 0.2 }} />
+                ))}
+              </div>
+            )}
+            
+            {barStyle === 'dots' && (
+              <div className="flex gap-1 items-center mt-0.5">
+                {[1,2,3,4,5].map(level => (
+                  <button key={level} onClick={() => upd(i, 'level', level)} className="w-1.5 h-1.5 rounded-full transition-all hover:scale-150" style={{ background: level <= s.level ? tokens.accent : tokens.muted, opacity: level <= s.level ? 1 : 0.2 }} />
+                ))}
+              </div>
+            )}
+
+            {barStyle === 'text' && (
+              <div className="flex items-center gap-2 mt-0.5">
+                <input type="range" min="1" max="5" value={s.level} onChange={e => upd(i, 'level', parseInt(e.target.value))} className="w-16 accent-black print:hidden" />
+                <span className="text-[9px] font-bold tracking-widest opacity-60" style={{ color: tokens.accent }}>{s.level} / 5</span>
+              </div>
+            )}
           </div>
         ))}
         {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a skill</button>}
@@ -682,11 +807,21 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
   const finalText = block.color || tokens.text
   const finalFontSize = block.fontSize || 1
 
+  const styleConfig = block.resumeStyle || {}
+  const variant = styleConfig.variant || 'list'
+  const divider = styleConfig.divider || 'none'
+  const gap = styleConfig.gap ?? 14
+
+  const gridClass = variant === 'list' ? 'flex flex-col' : variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 'grid grid-cols-1 @xs:grid-cols-2 gap-6'
+  const itemClass = variant === 'bento' ? 'bg-black/5 p-4 rounded-xl border border-black/5' : ''
+  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
+
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+          <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
           {block.freeform && (
@@ -701,10 +836,14 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>
       </div>
-      <div className="flex flex-col flex-1 overflow-hidden pr-1 mt-1" style={{ gap: Math.max(0, 14 - entries.length * 3) + 'px' }}>
+      <div className={`flex-1 overflow-hidden pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className="group flex gap-2 items-start relative pl-3 shrink min-h-0 overflow-hidden">
-            <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>{icon}</span>
+          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-hidden break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : 'pl-3'}`}>
+            {variant === 'timeline' ? (
+               <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
+            ) : (
+               <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>{icon}</span>
+            )}
             <div className="flex-1 min-w-0 flex flex-col min-h-0 shrink">
               <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
