@@ -1135,15 +1135,31 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
       onPointerUp={isPinned ? undefined : onPointerUp}
       onPointerCancel={isPinned ? undefined : onPointerUp}
     >
-      {/* Drag Handle */}
+      {/* Drag Handles */}
       {!isPinned && !readonly && (
-        <div 
-          className="absolute -top-3 -left-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
-          onPointerDown={e => onPointerDown(e, 'move')}
-          style={{ cursor: 'move' }}
-        >
-          <Move className="w-3.5 h-3.5" />
-        </div>
+        <>
+          <div 
+            className="absolute -top-3 -left-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
+            onPointerDown={e => onPointerDown(e, 'move')}
+            style={{ cursor: 'move' }}
+          >
+            <Move className="w-3.5 h-3.5" />
+          </div>
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 -left-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
+            onPointerDown={e => onPointerDown(e, 'move')}
+            style={{ cursor: 'move' }}
+          >
+            <Move className="w-3.5 h-3.5" />
+          </div>
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 -right-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
+            onPointerDown={e => onPointerDown(e, 'move')}
+            style={{ cursor: 'move' }}
+          >
+            <Move className="w-3.5 h-3.5" />
+          </div>
+        </>
       )}
 
       <div className={`w-full h-full pointer-events-auto`}>
