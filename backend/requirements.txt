@@ -28,3 +28,4 @@ slowapi==0.1.9
 starlette==0.27.0
 cryptography==41.0.7
 razorpay==1.4.1
+setuptools>=69.0.0
