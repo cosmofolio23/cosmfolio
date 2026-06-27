@@ -70,6 +70,7 @@ function PricingPageInner() {
   const [isApplying, setIsApplying] = useState(false)
   const [promoMessage, setPromoMessage] = useState('')
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [isRestoring, setIsRestoring] = useState(false)
   const [userPlan, setUserPlan] = useState('free')
   const [appliedReferralCode, setAppliedReferralCode] = useState('')
   const [discountPercentage, setDiscountPercentage] = useState(0)
@@ -152,6 +153,30 @@ function PricingPageInner() {
       setDiscountPercentage(0)
     } finally {
       setIsApplying(false)
+    }
+  }
+
+  const handleRestorePurchase = async () => {
+    if (!isAuthenticated) return
+    setIsRestoring(true)
+    try {
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const token = localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/payments/restore`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setUserPlan('pro')
+        setPaymentStatus({ isOpen: true, status: 'success', message: data.message })
+      } else {
+        setPaymentStatus({ isOpen: true, status: 'error', message: data.detail || 'Failed to restore purchase' })
+      }
+    } catch (err: any) {
+      setPaymentStatus({ isOpen: true, status: 'error', message: err.message || 'Network error' })
+    } finally {
+      setIsRestoring(false)
     }
   }
 
@@ -371,13 +396,24 @@ function PricingPageInner() {
                       ✓ You are a Pro Member
                     </div>
                   ) : (
-                    <button 
-                      onClick={() => handleCheckout('pro_upgrade')}
-                      disabled={isCheckingOut}
-                      className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm shadow-xl shadow-accent-gold/20"
-                    >
-                      {isCheckingOut ? 'Processing...' : 'Upgrade Now'}
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <button 
+                        onClick={() => handleCheckout('pro_upgrade')}
+                        disabled={isCheckingOut || isRestoring}
+                        className="btn-primary w-full text-center block py-3 md:py-2 text-base md:text-sm shadow-xl shadow-accent-gold/20"
+                      >
+                        {isCheckingOut ? 'Processing...' : 'Upgrade Now'}
+                      </button>
+                      {isAuthenticated && (
+                        <button
+                          onClick={handleRestorePurchase}
+                          disabled={isRestoring || isCheckingOut}
+                          className="text-xs text-text-secondary hover:text-accent-gold underline decoration-accent-gold/30 underline-offset-4 mt-2 mb-1 transition-colors"
+                        >
+                          {isRestoring ? 'Restoring...' : 'Paid but not upgraded? Restore Purchase'}
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   {isAuthenticated && userPlan !== 'pro' && (

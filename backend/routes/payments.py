@@ -324,3 +324,52 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
     process_ambassador_reward(user_id, product_type, tx["amount"], req.razorpay_order_id, req.razorpay_payment_id)
 
     return {"success": True, "message": "Payment verified and entitlements granted"}
+
+@router.post("/restore")
+async def restore_purchase(current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    # Find all transactions for this user that are NOT paid
+    tx_res = database.supabase.table("transactions").select("*").eq("user_id", user_id).execute()
+    if not tx_res.data:
+        raise HTTPException(status_code=400, detail="No purchase history found to restore")
+        
+    for tx in tx_res.data:
+        if tx["status"] == "paid" and tx["product_type"] == "pro_upgrade":
+            # Just ensure they are actually pro
+            database.supabase.table("users").update({"plan_type": "pro", "is_pro": True}).eq("id", user_id).execute()
+            return {"success": True, "message": "Pro status restored from previous successful transaction"}
+            
+        if tx["status"] != "paid" and tx["product_type"] == "pro_upgrade":
+            try:
+                # Ask Razorpay if this order was actually paid
+                payments = razorpay_client.order.payments(tx["gateway_order_id"])
+                for payment in payments.get("items", []):
+                    if payment.get("status") == "captured":
+                        # We found a missing successful payment!
+                        
+                        # 1. Mark transaction paid
+                        database.supabase.table("transactions").update({
+                            "status": "paid",
+                            "gateway_payment_id": payment.get("id")
+                        }).eq("id", tx["id"]).execute()
+                        
+                        # 2. Upgrade user
+                        from datetime import datetime
+                        database.supabase.table("users").update({
+                            "plan_type": "pro",
+                            "is_pro": True,
+                            "payment_status": "paid",
+                            "pro_purchase_date": datetime.utcnow().isoformat(),
+                            "payment_gateway": "razorpay",
+                            "payment_id": payment.get("id"),
+                            "currency": tx.get("currency", "INR")
+                        }).eq("id", user_id).execute()
+                        
+                        return {"success": True, "message": "Purchase recovered and Pro status granted!"}
+            except Exception as e:
+                print(f"Restore check failed for order {tx['gateway_order_id']}: {e}")
+                
+    raise HTTPException(status_code=400, detail="No successful payments found to restore")
