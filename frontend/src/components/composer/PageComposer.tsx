@@ -962,21 +962,21 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0 group/skill">
                 {isSoftware && s.imageUrl ? (
-                  <div className="relative group/img">
+                  <div className="relative">
                     <img src={s.imageUrl} alt={s.name} className="w-5 h-5 object-contain rounded-sm" />
                     {!readonly && onUploadImage && (
-                      <label className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 cursor-pointer rounded-sm transition-opacity" title="Change Image">
-                        <span className="text-[8px] font-bold">↑</span>
+                      <label className="absolute -inset-1 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/skill:opacity-100 cursor-pointer rounded transition-opacity z-10 shadow-sm" title="Change Image">
+                        <span className="text-[10px] font-bold">↑</span>
                         <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
                       </label>
                     )}
                   </div>
                 ) : isSoftware ? (
-                  <div className="relative group/img">
+                  <div className="relative">
                     <SoftwareIcon name={s.name} fallbackText={s.icon} />
                     {!readonly && onUploadImage && (
-                      <label className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 cursor-pointer rounded-sm transition-opacity" title="Upload custom image">
-                        <span className="text-[8px] font-bold">↑</span>
+                      <label className="absolute -inset-1 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/skill:opacity-100 cursor-pointer rounded transition-opacity z-10 shadow-sm" title="Upload custom image">
+                        <span className="text-[10px] font-bold">↑</span>
                         <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
                       </label>
                     )}

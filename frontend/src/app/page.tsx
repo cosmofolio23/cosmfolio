@@ -290,7 +290,7 @@ export default function Home() {
         <div className="container-centered relative z-10">
           <div className="text-center mb-16">
             <span className="text-xs uppercase tracking-widest font-semibold text-accent-primary dark:text-accent-gold px-3 py-1 rounded-full bg-accent-primary/10 dark:bg-accent-gold/10">Gallery</span>
-            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">Explore Portfolio Styles</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mt-4 text-text-primary dark:text-dark-text-primary">Explore 100+ Templates and 100+ Layouts</h2>
             <p className="text-lg text-text-secondary dark:text-dark-text-secondary mt-2 max-w-xl mx-auto">See what your portfolio could look like</p>
           </div>
 
