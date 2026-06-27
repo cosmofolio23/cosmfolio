@@ -560,7 +560,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
   const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
 
   return (
-    <div className={`w-full h-full flex flex-col overflow-hidden relative ${wrapperClass} ${dividerClass}`} style={{ zoom: finalFontSize, gap: gap + 'px' } as React.CSSProperties}>
+    <div className={`w-full h-full flex flex-col overflow-visible relative ${wrapperClass} ${dividerClass}`} style={{ zoom: finalFontSize, gap: gap + 'px' } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <div className="flex items-center gap-2">
           <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
@@ -616,7 +616,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
   const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
 
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Experience / Education</span>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
@@ -734,7 +734,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
   const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-2' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-2' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-2' : ''
 
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
@@ -817,7 +817,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
   const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
 
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-hidden" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
