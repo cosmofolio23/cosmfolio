@@ -355,7 +355,7 @@ export default function TemplateEditor() {
   const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportUsed, setExportUsed] = useState(0)
-  const [exportLimit] = useState(2)
+  const [exportLimit, setExportLimit] = useState(2)
   const [exportBypass, setExportBypass] = useState(isAdmin)
   const [tbCat, setTbCat] = useState<'All' | (typeof TITLE_BLOCK_CATEGORIES)[number]>('All')
   const [previewSpread, setPreviewSpread] = useState(false)
@@ -703,17 +703,23 @@ export default function TemplateEditor() {
         if (res.ok) {
           const data = await res.json()
           setExportUsed(data.export_count || 0)
+          setExportLimit(data.limit || 2)
           setExportBypass(isAdmin || !!data.is_bypass)
           localStorage.setItem('cosmofolio_export_count_v2', String(data.export_count || 0))
+          localStorage.setItem('cosmofolio_export_limit_v2', String(data.limit || 2))
         } else {
           // fallback
           const local = Number(localStorage.getItem('cosmofolio_export_count_v2')) || 0
+          const localLim = Number(localStorage.getItem('cosmofolio_export_limit_v2')) || 2
           setExportUsed(local)
+          setExportLimit(localLim)
         }
       } catch { 
         // offline fallback
         const local = Number(localStorage.getItem('cosmofolio_export_count_v2')) || 0
+        const localLim = Number(localStorage.getItem('cosmofolio_export_limit_v2')) || 2
         setExportUsed(local)
+        setExportLimit(localLim)
       }
     }
     syncExportCount()

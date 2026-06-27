@@ -97,7 +97,7 @@ async def export_document_as_pdf(project_id: str, authorization: str = Header(No
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No document found. Save your portfolio first.")
 
         # Check export limit (supabase is imported at module level)
-        user_resp = supabase.table("users").select("export_count, is_pro").eq("id", current_user["user_id"]).execute()
+        user_resp = supabase.table("users").select("export_count, is_pro, plan_type").eq("id", current_user["user_id"]).execute()
         export_count = 0
         email = current_user.get("email") or ""
         is_bypass = email.lower() == "boseraj001@gmail.com"
@@ -170,7 +170,10 @@ async def track_export(project_id: str, authorization: str = Header(None)):
         
         if user_resp.data:
             export_count = user_resp.data[0].get("export_count") or 0
+            is_pro_db = user_resp.data[0].get("is_pro") or False
             plan_type = user_resp.data[0].get("plan_type") or "free"
+            if is_pro_db:
+                plan_type = "pro"
             boost_pack_count = user_resp.data[0].get("boost_pack_count") or 0
             
             # Don't count exports for admin users
@@ -213,7 +216,10 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
         
         if user_resp.data:
             export_count = user_resp.data[0].get("export_count") or 0
+            is_pro_db = user_resp.data[0].get("is_pro") or False
             plan_type = user_resp.data[0].get("plan_type") or "free"
+            if is_pro_db:
+                plan_type = "pro"
             boost_pack_count = user_resp.data[0].get("boost_pack_count") or 0
         else:
             supabase.table("users").insert({

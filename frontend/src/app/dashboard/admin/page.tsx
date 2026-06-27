@@ -469,17 +469,17 @@ export default function AdminDashboard() {
                             )}
                           </td>
                           <td className="py-4 px-3 text-center">
-                            {item.is_pro ? (
+                            {item.email.toLowerCase() === 'boseraj001@gmail.com' ? (
                               <span className="text-emerald-500 font-bold text-xs">Unlimited</span>
                             ) : (
                               <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                                item.export_count >= 2 
+                                item.export_count >= (item.is_pro ? 3 : 2)
                                   ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                                   : item.export_count > 0
                                     ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                                     : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                               }`}>
-                                {item.export_count} / 2
+                                {item.export_count || 0} / {item.is_pro ? 3 : 2}
                               </span>
                             )}
                           </td>
