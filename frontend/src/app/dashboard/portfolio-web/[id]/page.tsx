@@ -172,6 +172,7 @@ function ParallaxPage({ page, tokens, pageSize, index, totalPages }: { page: Pag
             editableFree={false}
             overflowVisible={false}
             grid={undefined}
+            readonly={true}
           />
         </motion.div>
       </div>

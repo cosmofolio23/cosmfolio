@@ -335,6 +335,7 @@ export default function PortfolioBookPage() {
               onUpdateMasterElement={() => {}}
               pageSize={pageSize}
               showWatermark={isFreeTier}
+              readonly={true}
             />
           </div>
         )}
@@ -382,6 +383,7 @@ export default function PortfolioBookPage() {
                   onUpdateMasterElement={() => {}}
                   pageSize={pageSize}
                   showWatermark={isFreeTier}
+                  readonly={true}
                 />
               )}
             </div>

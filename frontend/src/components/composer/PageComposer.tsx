@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import type { Block, Page, DesignTokens, BlockType, ResumeEntry, SkillItem } from './types'
 import { allImages, createBlock } from './types'
 import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layoutSpecs'
+import { getVariantClasses, getDividerClasses } from './StyleOptions'
 import {
   ImageBlock, LegendBlock, MetaBlock, TitleBlock, SubtitleBlock, DescriptionBlock, pickContrast, ContentsBlock,
 } from './Blocks'
@@ -42,6 +43,8 @@ interface Props {
   pageSize?: PageSize
   /** Free-tier watermark — shown for free users, hidden for Pro/admin. */
   showWatermark?: boolean
+  /** Readonly mode - hides all editing UI and empty states */
+  readonly?: boolean
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
@@ -50,7 +53,7 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   software: 'software', achievement: 'achievement', interest: 'interest',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true, readonly = false }: Props) {
   const [activeBlock, setActiveBlock] = useState<{ id: string, x: number, y: number } | null>(null)
   
   const spec = getSpec(page.layoutId)
@@ -167,6 +170,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             masterElements={masterElements}
             activeBlock={activeBlock}
             setActiveBlock={setActiveBlock}
+            readonly={readonly}
             onInsertImage={url => {
               // Exact placeholder slot replacement logic (BUG 1)
               const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
@@ -262,12 +266,13 @@ function gridStyle(r: Region): React.CSSProperties {
 }
 
 function ImageUploadPlaceholder({
-  style, onUploadImage, onDone, type
+  style, onUploadImage, onDone, type, readonly
 }: {
   style: React.CSSProperties
   onUploadImage?: (file: File) => Promise<string>
   onDone: (url: string) => void
   type: BlockType
+  readonly?: boolean
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -308,19 +313,21 @@ function ImageUploadPlaceholder({
         const file = e.dataTransfer.files?.[0]
         if (file) await handleUpload(file)
       }}
-      onClick={() => fileInputRef.current?.click()}
-      className={`relative flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/40 transition border-2 border-dashed rounded-sm cursor-pointer ${
-        isDragging ? 'border-blue-500 bg-blue-50/10 text-blue-500' : 'border-gray-300'
-      }`}
+      onClick={() => { if (!readonly) fileInputRef.current?.click() }}
+      className={`relative flex flex-col items-center justify-center text-gray-400 transition rounded-sm ${
+        readonly 
+          ? 'border-transparent text-transparent pointer-events-none' 
+          : `hover:text-blue-500 hover:bg-blue-50/40 border-2 border-dashed cursor-pointer ${isDragging ? 'border-blue-500 bg-blue-50/10 text-blue-500' : 'border-gray-300'}`
+      } print:border-transparent print:text-transparent print:bg-transparent`}
     >
       {uploading ? (
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin print:hidden" />
       ) : (
-        <>
+        <div className={`flex flex-col items-center print:hidden ${readonly ? 'opacity-0' : ''}`}>
           <span className="text-2xl leading-none">＋</span>
           <span className="text-[9px] uppercase tracking-widest font-semibold mt-1">{type || 'Image'}</span>
           <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
-        </>
+        </div>
       )}
       <input
         type="file"
@@ -348,6 +355,7 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setOpen(true)
   }
 
   const handleMouseLeave = () => {
@@ -358,6 +366,16 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
 
   const styleConfig = block.resumeStyle || {}
   const updateStyle = (patch: any) => onChange({ resumeStyle: { ...styleConfig, ...patch } })
+
+  const randomize = () => {
+    import('./StyleOptions').then(({ LAYOUT_VARIANTS, BAR_STYLES, DIVIDERS }) => {
+      const rV = LAYOUT_VARIANTS[Math.floor(Math.random() * LAYOUT_VARIANTS.length)].value
+      const rB = BAR_STYLES[Math.floor(Math.random() * BAR_STYLES.length)].value
+      const rD = DIVIDERS[Math.floor(Math.random() * DIVIDERS.length)].value
+      const rG = Math.floor(Math.random() * 7 + 1) * 4 // random multiple of 4 from 4 to 32
+      updateStyle({ variant: rV, barStyle: rB, divider: rD, gap: rG })
+    })
+  }
 
   return (
     <div 
@@ -371,9 +389,18 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
       
       {open && (
         <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" >
-          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
-            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Block Style</div>
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left max-h-[350px] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Block Style</div>
+              <button onClick={randomize} className="text-[9px] font-bold text-blue-500 hover:text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">🎲 Randomize</button>
+            </div>
+            
             <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Item Spacing</span><span className="text-[9px] font-mono">{styleConfig.gap ?? 16}px</span></div>
+                <input type="range" min="4" max="48" step="4" value={styleConfig.gap ?? 16} onChange={e => updateStyle({ gap: parseInt(e.target.value) })} className="w-full accent-black" />
+              </div>
+              
               <div className="flex flex-col gap-1">
                 <span className="text-[9px] uppercase text-gray-500 font-semibold">Layout Variant</span>
                 <select 
@@ -381,10 +408,32 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
                   value={styleConfig.variant || 'list'}
                   onChange={e => updateStyle({ variant: e.target.value })}
                 >
-                  <option value="list">Standard List</option>
-                  <option value="timeline">Timeline</option>
-                  <option value="bento">Bento Grid</option>
-                  <option value="masonry">Masonry</option>
+                  <optgroup label="Standard">
+                    <option value="list">Standard List</option>
+                    <option value="timeline">Timeline</option>
+                    <option value="bento">Bento Grid</option>
+                    <option value="masonry">Masonry</option>
+                    <option value="grid-2">2-Column Grid</option>
+                    <option value="grid-3">3-Column Grid</option>
+                  </optgroup>
+                  <optgroup label="Cards">
+                    <option value="cards-elevated">Elevated Cards</option>
+                    <option value="cards-flat">Flat Cards</option>
+                    <option value="cards-outlined">Outlined Cards</option>
+                  </optgroup>
+                  <optgroup label="Aesthetic">
+                    <option value="minimal">Ultra Minimal</option>
+                    <option value="compact">Compact List</option>
+                    <option value="expanded">Expanded Layout</option>
+                    <option value="modern">Modern Accent</option>
+                    <option value="classic">Classic Serif</option>
+                    <option value="tech">Tech Monospace</option>
+                    <option value="elegant">Elegant Spaced</option>
+                    <option value="playful">Playful Rounded</option>
+                    <option value="brutal">Brutalist</option>
+                    <option value="glass">Glassmorphism</option>
+                    <option value="neumorphic">Neumorphic</option>
+                  </optgroup>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
@@ -398,6 +447,22 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
                   <option value="bars">Progress Bars</option>
                   <option value="text">Numeric (3/5)</option>
                   <option value="none">Hidden</option>
+                  <option value="circles">Hollow Circles (○○○○○)</option>
+                  <option value="squares">Squares (■■■□□)</option>
+                  <option value="diamonds">Diamonds (◆◆◆◇◇)</option>
+                  <option value="stars">Stars (★★★☆☆)</option>
+                  <option value="dashes">Dashes (---  )</option>
+                  <option value="blocks">Blocks (███░░)</option>
+                  <option value="percentage">Percentage (80%)</option>
+                  <option value="tag">Tag Badge</option>
+                  <option value="pill">Pill Badge</option>
+                  <option value="outline">Outline Bar</option>
+                  <option value="gradient">Gradient Bar</option>
+                  <option value="segmented">Segmented Bar</option>
+                  <option value="emoji">Fire Emojis</option>
+                  <option value="plus">Plus Signs (+++)</option>
+                  <option value="slash">Slashes (///)</option>
+                  <option value="text-only">Skill Text Only</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
@@ -411,11 +476,23 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
                   <option value="solid">Solid Line</option>
                   <option value="dashed">Dashed Line</option>
                   <option value="dotted">Dotted Line</option>
+                  <option value="double">Double Line</option>
+                  <option value="thick">Thick Solid</option>
+                  <option value="gradient">Gradient Line</option>
+                  <option value="zigzag">Zig Zag (CSS)</option>
+                  <option value="wave">Wavy Line</option>
+                  <option value="dots-spaced">Widely Spaced Dots</option>
+                  <option value="dashes-spaced">Widely Spaced Dashes</option>
+                  <option value="shadow">Bottom Shadow</option>
+                  <option value="glow">Bottom Glow</option>
+                  <option value="fade">Faded Edges Line</option>
+                  <option value="slash-sep">Slash Separator (///)</option>
+                  <option value="diamond-sep">Diamond Center (— ◇ —)</option>
+                  <option value="star-sep">Star Center (— ★ —)</option>
+                  <option value="circle-sep">Circle Center (— ○ —)</option>
+                  <option value="square-sep">Square Center (— □ —)</option>
+                  <option value="plus-sep">Plus Center (— + —)</option>
                 </select>
-              </div>
-              <div className="flex flex-col gap-1 mt-1">
-                <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Item Spacing</span><span className="text-[9px] font-mono">{styleConfig.gap ?? 16}px</span></div>
-                <input type="range" min="4" max="48" step="4" value={styleConfig.gap ?? 16} onChange={e => updateStyle({ gap: parseInt(e.target.value) })} className="w-full accent-black" />
               </div>
             </div>
           </div>
@@ -523,7 +600,7 @@ function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isA
   )
 }
 
-function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onUpload?: (f: File) => Promise<string> }) {
+function ResumeHeadshot({ block, tokens, onChange, onUpload, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onUpload?: (f: File) => Promise<string>; readonly?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const handle = async (file: File) => {
@@ -557,7 +634,7 @@ function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; t
   )
 }
 
-function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void }) {
+function ResumeBio({ block, tokens, onChange, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(block.text || '')
   const save = () => { onChange({ text: draft }); setEditing(false) }
@@ -571,9 +648,8 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
   const divider = styleConfig.divider || 'none'
   const gap = styleConfig.gap ?? 16
 
-  const isBento = variant === 'bento'
-  const wrapperClass = isBento ? 'bg-black/5 p-4 rounded-xl border border-black/5' : ''
-  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
+  const wrapperClass = getVariantClasses(variant)
+  const dividerClass = getDividerClasses(divider)
 
   return (
     <div className={`w-full h-full flex flex-col overflow-visible relative ${wrapperClass} ${dividerClass}`} style={{ zoom: finalFontSize, gap: gap + 'px' } as React.CSSProperties}>
@@ -582,7 +658,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
           <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Profile</span>
         </div>
-        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+        {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           {block.freeform && (
@@ -595,7 +671,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
           </button>
           <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
-        </div>
+        </div>}
       </div>
       {editing ? (
         <div className="flex flex-col gap-1 flex-1 pl-6">
@@ -611,7 +687,7 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
   )
 }
 
-function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void }) {
+function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean }) {
   const entries: ResumeEntry[] = block.resumeEntries || []
   const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
   const add = () => patch([...entries, { title: 'Degree / School', org: 'Institution', year: '2026', detail: '' }])
@@ -627,15 +703,24 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
   const divider = styleConfig.divider || 'none'
   const gap = styleConfig.gap ?? 16
 
-  const gridClass = variant === 'list' ? 'flex flex-col' : variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 'grid grid-cols-1 @xs:grid-cols-2 gap-6'
-  const itemClass = variant === 'bento' ? 'bg-black/5 p-4 rounded-xl border border-black/5' : ''
-  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
+  const isMasonry = variant === 'masonry'
+  const isBento = variant === 'bento'
+  const isTimeline = variant === 'timeline'
+  
+  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' ? 'flex flex-col' : 
+                    isTimeline ? 'flex flex-col pl-4 border-l border-black/10' : 
+                    isMasonry ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : 
+                    variant === 'grid-3' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6' : 
+                    'grid grid-cols-1 @xs:grid-cols-2 gap-6'
+
+  const itemClass = getVariantClasses(variant)
+  const dividerClass = getDividerClasses(divider)
 
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Experience / Education</span>
-        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+      {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
@@ -649,7 +734,7 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
           </button>
           <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
-        </div>
+        </div>}
       </div>
       <div className={`flex-1 overflow-hidden pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
@@ -678,10 +763,10 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
                 style={{ color: finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
+            {!readonly && <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left print:hidden" data-html2canvas-ignore="true">Click + ADD to create a timeline entry</button>}
+        {entries.length === 0 && !readonly && <button onClick={add} className="text-[10px] opacity-40 italic mt-2 text-left print:hidden" data-html2canvas-ignore="true">Click + ADD to create a timeline entry</button>}
       </div>
     </div>
   )
@@ -728,7 +813,87 @@ function SoftwareIcon({ name, fallbackText }: { name: string, fallbackText?: str
   );
 }
 
-function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; label?: string }) {
+function SkillProficiencyRenderer({ style, level, tokens, readonly, onChange }: { style: string, level: number, tokens: DesignTokens, readonly?: boolean, onChange: (lvl: number) => void }) {
+  if (style === 'none' || style === 'text-only') return null;
+
+  if (style === 'text') {
+    return (
+      <div className="flex items-center gap-2 mt-0.5">
+        <input type="range" min="1" max="5" value={level} onChange={e => onChange(parseInt(e.target.value))} className={`w-16 accent-black ${readonly ? 'pointer-events-none opacity-50' : 'print:hidden'}`} />
+        <span className="text-[9px] font-bold tracking-widest opacity-60" style={{ color: tokens.accent }}>{level} / 5</span>
+      </div>
+    )
+  }
+
+  if (style === 'percentage') {
+    const pct = level * 20;
+    return (
+      <div className="flex items-center gap-2 mt-0.5 w-full">
+        <div className="flex-1 bg-black/5 h-1 rounded-full overflow-hidden relative cursor-pointer" onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          onChange(Math.max(1, Math.min(5, Math.ceil((clickX / rect.width) * 5))));
+        }}>
+          <div className="absolute top-0 left-0 h-full transition-all duration-500" style={{ width: `${pct}%`, background: tokens.accent }} />
+        </div>
+        <span className="text-[9px] font-mono opacity-60 w-8 text-right" style={{ color: tokens.accent }}>{pct}%</span>
+      </div>
+    )
+  }
+
+  if (style === 'gradient') {
+    const pct = level * 20;
+    return (
+      <div className="w-full h-1.5 rounded-full overflow-hidden mt-1 cursor-pointer" onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          onChange(Math.max(1, Math.min(5, Math.ceil((clickX / rect.width) * 5))));
+        }}>
+        <div className="h-full transition-all duration-500 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500" style={{ width: `${pct}%` }} />
+      </div>
+    )
+  }
+
+  if (style === 'tag' || style === 'pill') {
+    return (
+      <div className="mt-1">
+        <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 ${style === 'pill' ? 'rounded-full' : 'rounded-sm'}`} style={{ background: tokens.accent, color: '#fff' }}>
+          Level {level}
+        </span>
+      </div>
+    )
+  }
+
+  const icons: Record<string, string> = { circles: '○', squares: '□', diamonds: '◇', stars: '☆', plus: '+', slash: '/', emoji: '🤍' }
+  const filledIcons: Record<string, string> = { circles: '●', squares: '■', diamonds: '◆', stars: '★', plus: '+', slash: '/', emoji: '🔥' }
+
+  if (icons[style]) {
+    return (
+      <div className="flex gap-[1px] mt-0.5 text-[10px] tracking-widest leading-none">
+        {[1,2,3,4,5].map(l => (
+          <button key={l} onClick={() => onChange(l)} className="transition-transform hover:scale-125" style={{ color: l <= level ? tokens.accent : tokens.muted, opacity: l <= level ? 1 : 0.3 }}>
+            {l <= level ? filledIcons[style] : icons[style]}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  // Default block-based styles
+  const isOutline = style === 'outline'
+  const isDashes = style === 'dashes'
+  const isSegmented = style === 'segmented'
+  
+  return (
+    <div className={`flex w-full mt-0.5 ${isSegmented ? 'gap-0 rounded-full overflow-hidden' : 'gap-[2px]'}`} style={{ height: isDashes ? '1px' : '3px' }}>
+      {[1,2,3,4,5].map(l => (
+        <button key={l} onClick={() => onChange(l)} className={`flex-1 transition-all duration-300 hover:brightness-110 hover:scale-y-150 ${isOutline ? 'border border-current bg-transparent' : ''} ${!isSegmented && !isOutline ? 'rounded-sm' : ''}`} style={{ background: isOutline && l > level ? 'transparent' : (l <= level ? tokens.accent : tokens.muted), opacity: l <= level ? 1 : 0.2 }} />
+      ))}
+    </div>
+  )
+}
+
+function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills' }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean; label?: string }) {
   const items: SkillItem[] = block.skillItems || []
   const patch = (next: SkillItem[]) => onChange({ skillItems: next })
   const add = () => patch([...items, { name: 'New Skill', level: 3, icon: '' }])
@@ -746,14 +911,23 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
   const gap = styleConfig.gap ?? 16
   const variant = styleConfig.variant || 'list'
 
-  const gridClass = variant === 'list' ? 'flex flex-col' : variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6' : 'grid grid-cols-1 @xs:grid-cols-2'
-  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-2' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-2' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-2' : ''
+  const isMasonry = variant === 'masonry'
+  const isBento = variant === 'bento'
+  const isTimeline = variant === 'timeline'
+
+  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' ? 'flex flex-col' : 
+                    isTimeline ? 'flex flex-col pl-4 border-l border-black/10' : 
+                    isMasonry ? 'columns-1 @xs:columns-2 gap-x-6' : 
+                    variant === 'grid-3' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6' : 
+                    'grid grid-cols-1 @xs:grid-cols-2'
+  
+  const dividerClass = getDividerClasses(divider)
 
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
-        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+        {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
@@ -767,7 +941,7 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
           </button>
           <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
-        </div>
+        </div>}
       </div>
       
       <div className={`flex-1 overflow-hidden pr-1 content-start mt-1 ${gridClass}`} style={{ gap: gap + 'px' }}>
@@ -778,40 +952,19 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
                 {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
                 <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               </div>
-              <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
+              {!readonly && <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
             </div>
             
-            {barStyle === 'bars' && (
-              <div className="flex gap-[2px] h-[3px] w-full mt-0.5">
-                {[1,2,3,4,5].map(level => (
-                  <button key={level} onClick={() => upd(i, 'level', level)} className="flex-1 rounded-sm transition-all duration-300 ease-out hover:brightness-110 hover:scale-y-150" style={{ background: level <= s.level ? tokens.accent : tokens.muted, opacity: level <= s.level ? 1 : 0.2 }} />
-                ))}
-              </div>
-            )}
-            
-            {barStyle === 'dots' && (
-              <div className="flex gap-1 items-center mt-0.5">
-                {[1,2,3,4,5].map(level => (
-                  <button key={level} onClick={() => upd(i, 'level', level)} className="w-1.5 h-1.5 rounded-full transition-all hover:scale-150" style={{ background: level <= s.level ? tokens.accent : tokens.muted, opacity: level <= s.level ? 1 : 0.2 }} />
-                ))}
-              </div>
-            )}
-
-            {barStyle === 'text' && (
-              <div className="flex items-center gap-2 mt-0.5">
-                <input type="range" min="1" max="5" value={s.level} onChange={e => upd(i, 'level', parseInt(e.target.value))} className="w-16 accent-black print:hidden" />
-                <span className="text-[9px] font-bold tracking-widest opacity-60" style={{ color: tokens.accent }}>{s.level} / 5</span>
-              </div>
-            )}
+            <SkillProficiencyRenderer style={barStyle} level={s.level} tokens={tokens} readonly={readonly} onChange={(lvl) => upd(i, 'level', lvl)} />
           </div>
         ))}
-        {items.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a skill</button>}
+        {items.length === 0 && !readonly && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full col-span-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a skill</button>}
       </div>
     </div>
   )
 }
 
-function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; label: string; icon: string }) {
+function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean; label: string; icon: string }) {
   const entries: ResumeEntry[] = block.resumeEntries || []
   const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
   const add = () => patch([...entries, { title: 'New Entry', org: '', year: '', detail: '' }])
@@ -836,7 +989,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
     <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
-        <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
+        {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
           <ResumeBlockStyleSettings block={block} tokens={tokens} onChange={onChange} />
           <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />
           <button onClick={add} className="text-[9px] font-bold opacity-40 hover:opacity-100 transition-opacity" style={{ color: tokens.accent }}>+ ADD</button>
@@ -850,7 +1003,7 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
           </button>
           <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
-        </div>
+        </div>}
       </div>
       <div className={`flex-1 overflow-hidden pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
@@ -881,16 +1034,16 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
                 style={{ color: finalText, minHeight: '14px' }} 
               />
             </div>
-            <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
+            {!readonly && <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
           </div>
         ))}
-        {entries.length === 0 && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a list item</button>}
+        {entries.length === 0 && !readonly && <button onClick={add} className="text-[10px] opacity-40 italic mt-1 text-left w-full print:hidden" data-html2canvas-ignore="true">Click + ADD to create a list item</button>}
       </div>
     </div>
   )
 }
 
-function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string, tokens: DesignTokens }) {
+function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string, tokens: DesignTokens, readonly?: boolean }) {
   const dragRef = useRef<{ mode: 'move'|'resize', sx: number, sy: number, startFree: any } | null>(null)
 
   const isFree = !!block?.freeform
@@ -940,22 +1093,29 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
         height: `${block.freeform!.h}%`,
         zIndex: block.freeform!.z !== undefined ? block.freeform!.z : 50,
       }}
-      onPointerDown={isPinned ? undefined : e => onPointerDown(e, 'move')}
       onPointerMove={isPinned ? undefined : onPointerMove}
       onPointerUp={isPinned ? undefined : onPointerUp}
       onPointerCancel={isPinned ? undefined : onPointerUp}
     >
-      <div className={`w-full h-full ${isPinned ? '' : 'cursor-move'} pointer-events-auto`}>
+      {/* Drag Handle */}
+      {!isPinned && !readonly && (
+        <div 
+          className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100]" data-html2canvas-ignore="true" 
+          onPointerDown={e => onPointerDown(e, 'move')}
+          style={{ cursor: 'move' }}
+        />
+      )}
+
+      <div className={`w-full h-full pointer-events-auto`}>
         {children}
       </div>
       
-      {/* SE Resize Handle */}
-      {!isPinned && (
+      {/* Resize Handle */}
+      {!isPinned && !readonly && (
         <div 
+          className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100]" data-html2canvas-ignore="true" 
           onPointerDown={e => onPointerDown(e, 'resize')}
-          className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden" data-html2canvas-ignore="true" 
-          style={{ cursor: 'nwse-resize', zIndex: 60 }}
-          
+          style={{ cursor: 'nwse-resize' }}
         />
       )}
     </div>
@@ -965,7 +1125,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens }: { bloc
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly
 }: {
   region: Region
   spec: LayoutSpec
@@ -984,6 +1144,7 @@ function RegionView({
   masterElements?: MasterElement[]
   activeBlock?: { id: string, x: number, y: number } | null
   setActiveBlock?: (v: { id: string, x: number, y: number } | null) => void
+  readonly?: boolean
 }) {
   const style = { ...gridStyle(region) }
 
@@ -1030,6 +1191,7 @@ function RegionView({
         onDone={url => {
           onInsertImage?.(url)
         }}
+        readonly={readonly}
       />
     )
   }
@@ -1157,7 +1319,7 @@ function RegionView({
   const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
 
   return (
-    <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk}>
+    <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
       className={`min-h-0 ${region.role === 'contents' || activeBlock?.id === block.id ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
@@ -1176,7 +1338,7 @@ function RegionView({
         })
       }}
     >
-      {!['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
+      {!readonly && !['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
         <BlockHoverToolbar 
           block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} 
           showTypography={!['render', 'plan', 'section', 'diagram', 'headshot', 'toc', 'index'].includes(block.type)}
@@ -1328,13 +1490,13 @@ function RegionView({
       {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
       {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
-      {region.role === 'headshot' && <ResumeHeadshot block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} onUpload={onUploadImage} />}
-      {region.role === 'bio' && <ResumeBio block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
-      {region.role === 'education' && <ResumeEducation block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
-      {region.role === 'skills' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Skills" />}
-      {region.role === 'software' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Software" />}
-      {region.role === 'achievement' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Achievements" icon="🏆" />}
-      {region.role === 'interest' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} label="Interests" icon="✦" />}
+      {region.role === 'headshot' && <ResumeHeadshot block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} onUpload={onUploadImage} readonly={readonly} />}
+      {region.role === 'bio' && <ResumeBio block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
+      {region.role === 'education' && <ResumeEducation block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
+      {region.role === 'skills' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Skills" />}
+      {region.role === 'software' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Software" />}
+      {region.role === 'achievement' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Achievements" icon="🏆" />}
+      {region.role === 'interest' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Interests" icon="✦" />}
       {region.role === 'contents' && (
         <div className="w-full h-full flex flex-col justify-between">
           <div className="flex-1 min-h-0">

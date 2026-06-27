@@ -74,6 +74,7 @@ export default function SpreadComposer({
       <PageComposer
         {...rest}
         pageSize={spreadSize}
+        readonly={!editMode}
       />
     </div>
   )

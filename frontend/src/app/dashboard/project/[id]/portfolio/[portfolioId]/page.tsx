@@ -466,7 +466,7 @@ export default function PortfolioEditorPage() {
           <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
             {pages.map((page) => (
               <div key={page.id}>
-                <PageComposer page={page} tokens={tokens} onChange={() => {}} showWatermark={!isPro} />
+                <PageComposer page={page} tokens={tokens} onChange={() => {}} showWatermark={!isPro} readonly={true} />
                 <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
               </div>
             ))}
