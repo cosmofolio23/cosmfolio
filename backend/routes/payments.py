@@ -336,6 +336,7 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
     if not tx_res.data:
         raise HTTPException(status_code=400, detail="No purchase history found to restore")
         
+    errors = []
     for tx in tx_res.data:
         if tx["status"] == "paid" and tx["product_type"] == "pro_upgrade":
             # Just ensure they are actually pro
@@ -370,6 +371,9 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
                         
                         return {"success": True, "message": "Purchase recovered and Pro status granted!"}
             except Exception as e:
-                print(f"Restore check failed for order {tx['gateway_order_id']}: {e}")
+                err_msg = f"Order {tx['gateway_order_id']}: {str(e)}"
+                print(f"Restore check failed: {err_msg}")
+                errors.append(err_msg)
                 
-    raise HTTPException(status_code=400, detail="No successful payments found to restore")
+    error_str = " | ".join(errors) if errors else "No captured payments found on Razorpay for your orders."
+    raise HTTPException(status_code=400, detail=f"Failed to restore: {error_str}")
