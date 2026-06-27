@@ -82,7 +82,7 @@ export interface CvTokens {
   headerAlign: 'left' | 'center' | 'right'
 }
 
-export const DEFAULT_TOKENS: CvTokens = {
+const DEFAULT_TOKENS: CvTokens = {
   fontHeading: "'Inter', sans-serif",
   fontBody: "'Inter', sans-serif",
   accent: '#9C7416',
