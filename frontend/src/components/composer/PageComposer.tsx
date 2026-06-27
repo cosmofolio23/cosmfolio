@@ -1163,7 +1163,7 @@ function RegionView({
       {!['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
         <BlockHoverToolbar 
           block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} 
-          showTypography={!['render', 'plan', 'section', 'diagram', 'headshot'].includes(block.type)} 
+          showTypography={!['render', 'plan', 'section', 'diagram', 'headshot', 'toc', 'index'].includes(block.type)}
           isActive={activeBlock?.id === block.id}
           pos={activeBlock?.id === block.id ? { x: activeBlock.x, y: activeBlock.y } : undefined}
         />
