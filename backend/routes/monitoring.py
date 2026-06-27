@@ -81,6 +81,8 @@ async def track_error(
         print(f"[Monitoring Error] Failed to track error: {str(e)}")
         return {"status": "error"}
 
+import datetime as dt
+
 @router.get("/admin/dashboard-stats")
 async def get_dashboard_stats(
     db: Session = Depends(get_db),
@@ -90,22 +92,27 @@ async def get_dashboard_stats(
         raise HTTPException(status_code=403, detail="Not authorized")
         
     try:
-        total_users = db.execute(text("SELECT COUNT(*) FROM auth.users")).scalar()
-        today_signups = db.execute(text("SELECT COUNT(*) FROM auth.users WHERE created_at >= NOW() - INTERVAL '24 hours'")).scalar()
-        portfolios_count = db.execute(text("SELECT COUNT(*) FROM portfolios")).scalar()
-        exports = db.execute(text("SELECT COUNT(*) FROM activity_logs WHERE event_name = 'pdf_export_success'")).scalar()
-        error_count = db.execute(text("SELECT COUNT(*) FROM error_logs WHERE resolved = FALSE")).scalar()
+        total_users = db.table("users").select("id", count="exact").execute().count or 0
         
-        # Simple active users (users who performed an activity in last 7 days)
-        active_users = db.execute(text("SELECT COUNT(DISTINCT user_id) FROM activity_logs WHERE created_at >= NOW() - INTERVAL '7 days'")).scalar()
+        yesterday = (dt.datetime.utcnow() - dt.timedelta(days=1)).isoformat()
+        today_signups = db.table("users").select("id", count="exact").gte("created_at", yesterday).execute().count or 0
+        
+        portfolios_count = db.table("portfolios").select("id", count="exact").execute().count or 0
+        exports = db.table("activity_logs").select("id", count="exact").eq("event_name", "pdf_export_success").execute().count or 0
+        error_count = db.table("error_logs").select("id", count="exact").eq("resolved", False).execute().count or 0
+        
+        seven_days_ago = (dt.datetime.utcnow() - dt.timedelta(days=7)).isoformat()
+        active_logs = db.table("activity_logs").select("user_id").gte("created_at", seven_days_ago).execute().data
+        active_users = len(set(log["user_id"] for log in active_logs if log.get("user_id")))
         
         return {
-            "total_users": total_users or 0,
-            "today_signups": today_signups or 0,
-            "portfolios_count": portfolios_count or 0,
-            "exports": exports or 0,
-            "error_count": error_count or 0,
-            "active_users": active_users or 0
+            "total_users": total_users,
+            "today_signups": today_signups,
+            "portfolios_count": portfolios_count,
+            "exports": exports,
+            "error_count": error_count,
+            "active_users": active_users
         }
     except Exception as e:
+        print(f"Error in get_dashboard_stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
