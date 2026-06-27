@@ -327,41 +327,58 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
 
 @router.post("/restore")
 async def restore_purchase(current_user: dict = Depends(get_current_user)):
-    user_id = current_user.get("user_id")
-    if not user_id:
+    current_user_id = current_user.get("user_id")
+    if not current_user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
         
     # Find all transactions for this user
     email = current_user.get("email", "")
-    print(f"[RESTORE] Looking up transactions for user_id={user_id}, auth={current_user.get('auth')}, email={email}")
+    print(f"[RESTORE] Looking up transactions for user_id={current_user_id}, auth={current_user.get('auth')}, email={email}")
+    
+    tx_user_id = current_user_id  # The user_id that owns the transactions
     
     # Try direct user_id match first
-    tx_res = database.supabase.table("transactions").select("*").eq("user_id", user_id).execute()
+    tx_res = database.supabase.table("transactions").select("*").eq("user_id", current_user_id).execute()
     
     # If no transactions found, look up ALL user_ids associated with this email
     if not tx_res.data and email:
-        print(f"[RESTORE] No transactions for user_id={user_id}, trying email lookup for {email}")
+        print(f"[RESTORE] No transactions for user_id={current_user_id}, trying email lookup for {email}")
         user_res = database.supabase.table("users").select("id").eq("email", email).execute()
         if user_res.data:
             for u in user_res.data:
                 alt_id = u["id"]
-                if alt_id != user_id:
+                if alt_id != current_user_id:
                     print(f"[RESTORE] Trying alternative user_id={alt_id}")
                     alt_tx = database.supabase.table("transactions").select("*").eq("user_id", alt_id).execute()
                     if alt_tx.data:
                         tx_res = alt_tx
-                        user_id = alt_id  # Use this ID for the upgrade
+                        tx_user_id = alt_id
                         break
     
     print(f"[RESTORE] Found {len(tx_res.data)} transactions")
     if not tx_res.data:
-        raise HTTPException(status_code=400, detail=f"No purchase history found for {email or user_id}. Contact support if you believe this is an error.")
+        raise HTTPException(status_code=400, detail=f"No purchase history found for {email or current_user_id}. Contact support if you believe this is an error.")
+    
+    def _upgrade_all_user_records():
+        """Upgrade both the current session user and the transaction-owner user to pro."""
+        from datetime import datetime, timezone
+        pro_fields = {
+            "plan_type": "pro",
+            "is_pro": True,
+            "payment_status": "paid",
+            "pro_purchase_date": datetime.now(timezone.utc).isoformat(),
+            "payment_gateway": "razorpay",
+        }
+        # Always upgrade the current session user
+        database.supabase.table("users").update(pro_fields).eq("id", current_user_id).execute()
+        # Also upgrade the transaction-owner user if different
+        if tx_user_id != current_user_id:
+            database.supabase.table("users").update(pro_fields).eq("id", tx_user_id).execute()
         
     errors = []
     for tx in tx_res.data:
         if tx["status"] == "paid" and tx["product_type"] == "pro_upgrade":
-            # Just ensure they are actually pro
-            database.supabase.table("users").update({"plan_type": "pro", "is_pro": True}).eq("id", user_id).execute()
+            _upgrade_all_user_records()
             return {"success": True, "message": "Pro status restored from previous successful transaction"}
             
         if tx["status"] != "paid" and tx["product_type"] == "pro_upgrade":
@@ -378,17 +395,8 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
                             "gateway_payment_id": payment.get("id")
                         }).eq("id", tx["id"]).execute()
                         
-                        # 2. Upgrade user
-                        from datetime import datetime
-                        database.supabase.table("users").update({
-                            "plan_type": "pro",
-                            "is_pro": True,
-                            "payment_status": "paid",
-                            "pro_purchase_date": datetime.utcnow().isoformat(),
-                            "payment_gateway": "razorpay",
-                            "payment_id": payment.get("id"),
-                            "currency": tx.get("currency", "INR")
-                        }).eq("id", user_id).execute()
+                        # 2. Upgrade all user records
+                        _upgrade_all_user_records()
                         
                         return {"success": True, "message": "Purchase recovered and Pro status granted!"}
             except Exception as e:
@@ -398,3 +406,4 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
                 
     error_str = " | ".join(errors) if errors else "No captured payments found on Razorpay for your orders."
     raise HTTPException(status_code=400, detail=f"Failed to restore: {error_str}")
+
