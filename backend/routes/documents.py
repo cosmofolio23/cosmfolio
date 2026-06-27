@@ -192,7 +192,7 @@ async def track_export(project_id: str, authorization: str = Header(None)):
 
         limit = 2
         if plan_type == "pro":
-            limit = 3
+            limit = 3 + (boost_pack_count * 5)
             
         is_bypass = is_admin
         is_pro = (plan_type == "pro")
@@ -232,11 +232,11 @@ async def get_export_count(project_id: str, authorization: str = Header(None)):
             
         limit = 2
         if plan_type == "pro":
-            limit = 3
+            limit = 3 + (boost_pack_count * 5)
             
         is_bypass = is_admin
         is_pro = (plan_type == "pro")
-        return {"export_count": export_count, "limit": limit, "is_bypass": is_bypass, "is_pro": is_pro}
+        return {"export_count": export_count, "limit": limit, "is_bypass": is_bypass, "is_pro": is_pro, "boost_packs": boost_pack_count}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Get export count failed: {str(e)[:100]}")
 

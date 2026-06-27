@@ -146,7 +146,7 @@ export default function Dashboard() {
           </div>
           
           {/* Upgrade Card */}
-          {!isPro && (
+          {!isPro ? (
              <div className="p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F3E5AB] to-[#9C7416] rounded-2xl w-full md:w-72 shadow-lg hover:shadow-xl hover:-translate-y-1 transition duration-300 group cursor-pointer" onClick={() => window.location.href='/pricing'}>
                 <div className="bg-bg-primary dark:bg-dark-bg-primary rounded-[15px] p-5 h-full flex flex-col justify-between relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent-gold/10 rounded-full blur-2xl group-hover:bg-accent-gold/20 transition duration-500"></div>
@@ -160,6 +160,23 @@ export default function Dashboard() {
                    </div>
                    <button className="w-full py-2 bg-gradient-to-r from-[#D4AF37] to-[#9C7416] text-white rounded-lg text-sm font-semibold transition hover:brightness-110 flex items-center justify-center gap-2">
                       Upgrade Now <span>→</span>
+                   </button>
+                </div>
+             </div>
+          ) : (
+             <div className="p-[1px] bg-gradient-to-br from-[#4F46E5] via-[#818CF8] to-[#312E81] rounded-2xl w-full md:w-72 shadow-lg hover:shadow-xl hover:-translate-y-1 transition duration-300 group cursor-pointer" onClick={() => window.location.href='/pricing'}>
+                <div className="bg-bg-primary dark:bg-dark-bg-primary rounded-[15px] p-5 h-full flex flex-col justify-between relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition duration-500"></div>
+                   <div>
+                     <h3 className="text-indigo-600 dark:text-indigo-400 font-bold text-lg flex items-center gap-2 mb-3 font-montserrat">🚀 Boost Pack</h3>
+                     <ul className="text-xs text-text-secondary dark:text-dark-text-secondary space-y-2 mb-5 font-inter">
+                       <li className="flex items-center gap-2"><span className="text-indigo-500 font-bold">✓</span> +10 Portfolio Pages</li>
+                       <li className="flex items-center gap-2"><span className="text-indigo-500 font-bold">✓</span> +2 PDF Exports</li>
+                       <li className="flex items-center gap-2"><span className="text-indigo-500 font-bold">✓</span> Stack Multiple Packs</li>
+                     </ul>
+                   </div>
+                   <button className="w-full py-2 bg-gradient-to-r from-indigo-500 to-indigo-700 text-white rounded-lg text-sm font-semibold transition hover:brightness-110 flex items-center justify-center gap-2">
+                      Get Boost Pack <span>→</span>
                    </button>
                 </div>
              </div>

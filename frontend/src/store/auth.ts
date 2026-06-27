@@ -10,6 +10,7 @@ interface User {
   created_at?: string
   is_pro?: boolean
   plan_type?: string
+  boost_pack_count?: number
 }
 
 interface AuthStore {
@@ -163,7 +164,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
             name: userData.name || '',
             created_at: userData.created_at,
             plan_type: userData.plan_type,
-            is_pro: userData.plan_type === 'pro'
+            is_pro: userData.plan_type === 'pro',
+            boost_pack_count: userData.boost_pack_count
           }
         })
       }

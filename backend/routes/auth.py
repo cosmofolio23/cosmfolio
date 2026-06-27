@@ -476,12 +476,11 @@ async def update_demographics(
     return {"success": True}
 
 @router.get("/me")
-async def get_current_user(authorization: str = Header(None)):
-    """Get current user info from Firebase token"""
+async def get_current_user(current_user: dict = Depends(get_current_user_from_deps)):
+    """Get current user info from token"""
     try:
-        decoded_token = get_current_user_from_token(authorization)
-        user_id = decoded_token.get("uid")
-        email = decoded_token.get("email")
+        user_id = current_user.get("user_id")
+        email = current_user.get("email")
 
         if database.supabase:
             user_data = database.supabase.table("users").select("*").eq("id", user_id).execute()

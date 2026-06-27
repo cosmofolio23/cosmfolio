@@ -359,50 +359,69 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
     if not tx_res.data:
         raise HTTPException(status_code=400, detail=f"No purchase history found for {email or current_user_id}. Contact support if you believe this is an error.")
     
-    def _upgrade_all_user_records():
-        """Upgrade both the current session user and the transaction-owner user to pro."""
+    def _upgrade_all_user_records(has_pro: bool, boost_count: int):
+        """Upgrade both the current session user and the transaction-owner user."""
         from datetime import datetime, timezone
-        pro_fields = {
-            "plan_type": "pro",
-            "is_pro": True,
-            "payment_status": "paid",
-            "pro_purchase_date": datetime.now(timezone.utc).isoformat(),
-            "payment_gateway": "razorpay",
-        }
-        # Always upgrade the current session user
-        database.supabase.table("users").update(pro_fields).eq("id", current_user_id).execute()
-        # Also upgrade the transaction-owner user if different
+        updates = {}
+        if has_pro:
+            updates.update({
+                "plan_type": "pro",
+                "is_pro": True,
+                "payment_status": "paid",
+                "pro_purchase_date": datetime.now(timezone.utc).isoformat(),
+                "payment_gateway": "razorpay",
+            })
+        if boost_count > 0:
+            updates["boost_pack_count"] = boost_count
+            
+        if not updates:
+            return
+            
+        # Always update the current session user
+        database.supabase.table("users").update(updates).eq("id", current_user_id).execute()
+        # Also update the transaction-owner user if different
         if tx_user_id != current_user_id:
-            database.supabase.table("users").update(pro_fields).eq("id", tx_user_id).execute()
+            database.supabase.table("users").update(updates).eq("id", tx_user_id).execute()
         
     errors = []
+    has_pro = False
+    boost_count = 0
+    restored_something = False
+    
     for tx in tx_res.data:
-        if tx["status"] == "paid" and tx["product_type"] == "pro_upgrade":
-            _upgrade_all_user_records()
-            return {"success": True, "message": "Pro status restored from previous successful transaction"}
-            
-        if tx["status"] != "paid" and tx["product_type"] == "pro_upgrade":
+        is_paid = (tx["status"] == "paid")
+        
+        if not is_paid:
             try:
                 # Ask Razorpay if this order was actually paid
                 payments = razorpay_client.order.payments(tx["gateway_order_id"])
                 for payment in payments.get("items", []):
                     if payment.get("status") == "captured":
                         # We found a missing successful payment!
-                        
-                        # 1. Mark transaction paid
+                        is_paid = True
                         database.supabase.table("transactions").update({
                             "status": "paid",
                             "gateway_payment_id": payment.get("id")
                         }).eq("id", tx["id"]).execute()
-                        
-                        # 2. Upgrade all user records
-                        _upgrade_all_user_records()
-                        
-                        return {"success": True, "message": "Purchase recovered and Pro status granted!"}
+                        break
             except Exception as e:
                 err_msg = f"Order {tx['gateway_order_id']}: {str(e)}"
                 print(f"Restore check failed: {err_msg}")
                 errors.append(err_msg)
+                
+        if is_paid:
+            restored_something = True
+            if tx["product_type"] == "pro_upgrade":
+                has_pro = True
+            elif tx["product_type"] == "boost_pack":
+                boost_count += 1
+                
+    if restored_something:
+        _upgrade_all_user_records(has_pro, boost_count)
+        msg_parts = []
+        if has_pro: msg_parts.append("Pro status")
+        if boost_count > 0: msg_parts.append(f"{boost_count} Boost Pack(s)")
+        return {"success": True, "message": f"Restored: {' and '.join(msg_parts)}"}
                 
     error_str = " | ".join(errors) if errors else "No captured payments found on Razorpay for your orders."
     raise HTTPException(status_code=400, detail=f"Failed to restore: {error_str}")

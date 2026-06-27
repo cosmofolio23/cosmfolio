@@ -60,11 +60,16 @@ export default function DashboardHeader() {
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold tracking-wider uppercase whitespace-nowrap ${
                       has('is_pro')
-                        ? 'bg-gold-gradient text-white border-transparent'
+                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#9C7416] text-white shadow-sm border-transparent'
                         : 'bg-surface-secondary dark:bg-dark-surface-secondary text-text-secondary dark:text-dark-text-secondary border border-divider dark:border-dark-divider'
                     }`}>
                       {has('is_pro') ? 'PRO' : 'FREEMIUM'}
                     </span>
+                    {has('is_pro') && (user?.boost_pack_count || 0) > 0 && (
+                      <span className="px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold tracking-wider uppercase whitespace-nowrap bg-indigo-500 text-white shadow-sm border-transparent">
+                        🚀 {user?.boost_pack_count} Boost{(user?.boost_pack_count || 0) > 1 ? 's' : ''}
+                      </span>
+                    )}
                     {!has('is_pro') && (
                       <button
                         onClick={(e) => { e.preventDefault(); router.push('/pricing') }}

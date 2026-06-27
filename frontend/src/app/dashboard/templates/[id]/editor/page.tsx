@@ -304,7 +304,7 @@ export default function TemplateEditor() {
           if (isAdmin) {
              setMaxPages(999)
           } else if (userIsPro) {
-             setMaxPages(data.limit ? (data.limit === 2 ? 30 : 30 + ((data.limit - 2) * 10)) : 30) // Assuming limit scales with boost packs, 1 boost pack = +20 pages
+             setMaxPages(30 + ((data.boost_packs || 0) * 10)) // 30 pages for Pro + 10 pages per boost pack
           } else {
              setMaxPages(6)
           }
@@ -1691,8 +1691,10 @@ export default function TemplateEditor() {
       if (exportUsed >= exportLimit && !exportBypass) {
         setUpgradeModal({
           isOpen: true,
-          title: "Your portfolio is ready 🚀",
-          subtitle: `You've used your free exports. Upgrade to Pro for unlimited exports and premium layouts.`
+          title: isPro ? "Export Limit Reached" : "Your portfolio is ready 🚀",
+          subtitle: isPro 
+            ? "You've used all your Pro exports. Purchase Boost Packs to increase your export limits."
+            : "You've used your free exports. Upgrade to Pro for more exports and premium layouts."
         })
         return
       }
