@@ -1122,7 +1122,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
 
   return (
     <div 
-      className={`absolute shadow-2xl ${isPinned ? '' : 'ring-1 ring-blue-500/50 hover:ring-blue-500'} group/free rounded transition-all focus-within:z-[110] focus:z-[110] outline-none ${zClass}`}
+      className={`absolute ${isPinned ? '' : 'ring-1 ring-blue-500/50 hover:ring-blue-500'} group/free rounded transition-all focus-within:z-[110] focus:z-[110] outline-none ${zClass}`}
       tabIndex={-1}
       style={{
         left: `${block.freeform!.x}%`,
