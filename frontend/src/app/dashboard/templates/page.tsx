@@ -141,7 +141,7 @@ export default function TemplateMarketplace() {
         })
         if (res.ok) {
           const data = await res.json()
-          setIsPro(isAdmin || !!data.user?.is_pro || !!data.user?.is_bypass || data.user?.plan_type === 'pro')
+          setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass || data.plan_type === 'pro')
         }
       } catch (e) {
         console.error(e)
