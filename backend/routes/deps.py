@@ -91,7 +91,25 @@ def _decode_jwt_payload(token: str) -> dict:
         return {}
 
 
+
+def _resolve_db_user(token_uid: str, email: str) -> str:
+    """Ensure we use the existing database ID if the email already exists."""
+    if not email:
+        return token_uid
+    try:
+        from database import supabase
+        if not supabase: return token_uid
+        res = supabase.table("users").select("id").eq("email", email).execute()
+        if res.data:
+            return res.data[0]["id"]
+        supabase.table("users").upsert({"id": token_uid, "email": email, "updated_at": __import__('datetime').datetime.utcnow().isoformat()}).execute()
+        return token_uid
+    except Exception as e:
+        print(f"[AUTH WARNING] DB sync failed: {e}")
+        return token_uid
+
 def get_current_user(authorization: str = Header(None)):
+
     """Extract and verify token from Authorization header"""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
@@ -113,9 +131,11 @@ def get_current_user(authorization: str = Header(None)):
         if firebase_app:
             from firebase_admin import auth as firebase_auth
             decoded = firebase_auth.verify_id_token(token)
+            token_uid = decoded.get("uid") or decoded.get("sub")
+            email = decoded.get("email", "")
             return {
-                "user_id": decoded.get("uid") or decoded.get("sub"),
-                "email": decoded.get("email", ""),
+                "user_id": _resolve_db_user(token_uid, email),
+                "email": email,
                 "auth": "firebase"
             }
     except Exception:
@@ -124,18 +144,13 @@ def get_current_user(authorization: str = Header(None)):
     # METHOD 2: Firebase Cryptographic Fallback (using Google's certificates directly)
     try:
         verified_user = verify_firebase_token_fallback(token)
-        # Lazy sync user to ensure foreign keys don't fail
-        try:
-            from database import supabase
-            if supabase:
-                supabase.table("users").upsert({
-                    "id": verified_user["user_id"],
-                    "email": verified_user.get("email", ""),
-                    "updated_at": __import__('datetime').datetime.utcnow().isoformat()
-                }).execute()
-        except Exception as e:
-            print(f"[AUTH WARNING] Lazy sync failed: {e}")
-        return verified_user
+        token_uid = verified_user["user_id"]
+        email = verified_user.get("email", "")
+        return {
+            "user_id": _resolve_db_user(token_uid, email),
+            "email": email,
+            "auth": "firebase_verified_fallback"
+        }
     except Exception as e:
         last_error = f"Firebase Fallback Error: {e}"
         print(f"[AUTH ERROR] {last_error}")
