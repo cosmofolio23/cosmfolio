@@ -142,6 +142,9 @@ export default function TemplateMarketplace() {
         if (res.ok) {
           const data = await res.json()
           setIsPro(isAdmin || !!data.is_pro || !!data.is_bypass || data.plan_type === 'pro')
+        } else if (res.status === 401) {
+          localStorage.removeItem('auth_token')
+          router.push('/signin')
         }
       } catch (e) {
         console.error(e)
