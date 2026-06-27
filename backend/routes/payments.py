@@ -332,11 +332,30 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=401, detail="Not authenticated")
         
     # Find all transactions for this user
-    print(f"[RESTORE] Looking up transactions for user_id={user_id}, auth={current_user.get('auth')}, email={current_user.get('email')}")
+    email = current_user.get("email", "")
+    print(f"[RESTORE] Looking up transactions for user_id={user_id}, auth={current_user.get('auth')}, email={email}")
+    
+    # Try direct user_id match first
     tx_res = database.supabase.table("transactions").select("*").eq("user_id", user_id).execute()
+    
+    # If no transactions found, look up ALL user_ids associated with this email
+    if not tx_res.data and email:
+        print(f"[RESTORE] No transactions for user_id={user_id}, trying email lookup for {email}")
+        user_res = database.supabase.table("users").select("id").eq("email", email).execute()
+        if user_res.data:
+            for u in user_res.data:
+                alt_id = u["id"]
+                if alt_id != user_id:
+                    print(f"[RESTORE] Trying alternative user_id={alt_id}")
+                    alt_tx = database.supabase.table("transactions").select("*").eq("user_id", alt_id).execute()
+                    if alt_tx.data:
+                        tx_res = alt_tx
+                        user_id = alt_id  # Use this ID for the upgrade
+                        break
+    
     print(f"[RESTORE] Found {len(tx_res.data)} transactions")
     if not tx_res.data:
-        raise HTTPException(status_code=400, detail=f"No purchase history found for user {current_user.get('email', user_id)}")
+        raise HTTPException(status_code=400, detail=f"No purchase history found for {email or user_id}. Contact support if you believe this is an error.")
         
     errors = []
     for tx in tx_res.data:
