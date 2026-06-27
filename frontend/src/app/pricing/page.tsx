@@ -171,7 +171,8 @@ function PricingPageInner() {
         setUserPlan('pro')
         setPaymentStatus({ isOpen: true, status: 'success', message: data.message })
       } else {
-        setPaymentStatus({ isOpen: true, status: 'error', message: data.detail || 'Failed to restore purchase' })
+        const errMsg = data.error?.message || data.detail || 'Failed to restore purchase'
+        setPaymentStatus({ isOpen: true, status: 'error', message: errMsg })
       }
     } catch (err: any) {
       setPaymentStatus({ isOpen: true, status: 'error', message: err.message || 'Network error' })
