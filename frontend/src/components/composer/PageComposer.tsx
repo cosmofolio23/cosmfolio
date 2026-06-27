@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { Move, Maximize2 } from 'lucide-react'
 import type { Block, Page, DesignTokens, BlockType, ResumeEntry, SkillItem } from './types'
 import { allImages, createBlock } from './types'
 import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layoutSpecs'
@@ -1070,7 +1071,10 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
       patch.x = d.startFree.x + dxp
       patch.y = d.startFree.y + dyp
     } else {
-      patch.w = Math.max(5, d.startFree.w + dxp)
+      const newW = Math.max(5, d.startFree.w - dxp)
+      const actualDxP = d.startFree.w - newW
+      patch.w = newW
+      patch.x = d.startFree.x + actualDxP
       patch.h = Math.max(5, d.startFree.h + dyp)
     }
     patchBlock(block.id, { freeform: { ...block.freeform, ...patch } })
@@ -1100,10 +1104,12 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
       {/* Drag Handle */}
       {!isPinned && !readonly && (
         <div 
-          className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100]" data-html2canvas-ignore="true" 
+          className="absolute -top-3 -left-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
           onPointerDown={e => onPointerDown(e, 'move')}
           style={{ cursor: 'move' }}
-        />
+        >
+          <Move className="w-3.5 h-3.5" />
+        </div>
       )}
 
       <div className={`w-full h-full pointer-events-auto`}>
@@ -1113,10 +1119,12 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
       {/* Resize Handle */}
       {!isPinned && !readonly && (
         <div 
-          className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-blue-500 rounded-sm pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100]" data-html2canvas-ignore="true" 
+          className="absolute -bottom-3 -left-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-sm flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
           onPointerDown={e => onPointerDown(e, 'resize')}
-          style={{ cursor: 'nwse-resize' }}
-        />
+          style={{ cursor: 'nesw-resize' }}
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+        </div>
       )}
     </div>
   )
