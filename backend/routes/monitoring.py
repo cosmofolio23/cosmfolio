@@ -85,10 +85,10 @@ import datetime as dt
 
 @router.get("/admin/dashboard-stats")
 async def get_dashboard_stats(
-    db: Session = Depends(get_db),
-    user: UserResponse = Depends(get_current_user)
+    db = Depends(get_db),
+    user: dict = Depends(get_current_user)
 ):
-    if user.email.lower() != "boseraj001@gmail.com":
+    if not user or user.get("email", "").lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=403, detail="Not authorized")
         
     stats = {
