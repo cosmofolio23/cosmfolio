@@ -1045,12 +1045,12 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
 }
 
 function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string, tokens: DesignTokens, readonly?: boolean }) {
-  const dragRef = useRef<{ mode: 'move'|'resize', sx: number, sy: number, startFree: any } | null>(null)
+  const dragRef = useRef<{ mode: 'move'|'resize-bl'|'resize-br', sx: number, sy: number, startFree: any } | null>(null)
 
   const isFree = !!block?.freeform
   if (!isFree) return <>{children}</>
 
-  const onPointerDown = (e: React.PointerEvent, mode: 'move'|'resize') => {
+  const onPointerDown = (e: React.PointerEvent, mode: 'move'|'resize-bl'|'resize-br') => {
     e.stopPropagation()
     dragRef.current = { mode, sx: e.clientX, sy: e.clientY, startFree: { ...block.freeform } }
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
@@ -1070,11 +1070,14 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
     if (d.mode === 'move') {
       patch.x = d.startFree.x + dxp
       patch.y = d.startFree.y + dyp
-    } else {
+    } else if (d.mode === 'resize-bl') {
       const newW = Math.max(5, d.startFree.w - dxp)
       const actualDxP = d.startFree.w - newW
       patch.w = newW
       patch.x = d.startFree.x + actualDxP
+      patch.h = Math.max(5, d.startFree.h + dyp)
+    } else if (d.mode === 'resize-br') {
+      patch.w = Math.max(5, d.startFree.w + dxp)
       patch.h = Math.max(5, d.startFree.h + dyp)
     }
     patchBlock(block.id, { freeform: { ...block.freeform, ...patch } })
@@ -1116,12 +1119,23 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
         {children}
       </div>
       
-      {/* Resize Handle */}
+      {/* Resize Handle BL */}
       {!isPinned && !readonly && (
         <div 
           className="absolute -bottom-3 -left-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-sm flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
-          onPointerDown={e => onPointerDown(e, 'resize')}
+          onPointerDown={e => onPointerDown(e, 'resize-bl')}
           style={{ cursor: 'nesw-resize' }}
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+        </div>
+      )}
+      
+      {/* Resize Handle BR */}
+      {!isPinned && !readonly && (
+        <div 
+          className="absolute -bottom-3 -right-3 w-6 h-6 bg-white border-2 border-blue-500 rounded-sm flex items-center justify-center pointer-events-auto opacity-0 group-hover/free:opacity-100 transition-opacity print:hidden shadow-sm z-[100] text-blue-500" data-html2canvas-ignore="true" 
+          onPointerDown={e => onPointerDown(e, 'resize-br')}
+          style={{ cursor: 'nwse-resize' }}
         >
           <Maximize2 className="w-3.5 h-3.5" />
         </div>
@@ -1330,7 +1344,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${region.role === 'contents' || activeBlock?.id === block.id ? 'overflow-visible' : 'overflow-hidden'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
+      className={`min-h-0 ${region.role === 'contents' || activeBlock?.id === block.id ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()
