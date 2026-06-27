@@ -51,11 +51,31 @@ class NotificationService:
             part = MIMEText(html_content, "html")
             msg.attach(part)
             
-            # Connect to SMTP server and send
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                server.starttls()
-                server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                server.send_message(msg)
+            # Force IPv4 for SMTP to fix Railway "Network is unreachable" IPv6 issues
+            import socket
+            import smtplib
+            
+            _orig_getaddrinfo = socket.getaddrinfo
+            def _ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+                if host == SMTP_SERVER:
+                    family = socket.AF_INET
+                return _orig_getaddrinfo(host, port, family, type, proto, flags)
+            
+            socket.getaddrinfo = _ipv4_getaddrinfo
+            
+            try:
+                if SMTP_PORT == 465:
+                    server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+                else:
+                    server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+                    server.starttls()
+                    
+                with server:
+                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                    server.send_message(msg)
+            finally:
+                # Restore original getaddrinfo
+                socket.getaddrinfo = _orig_getaddrinfo
             
             return True
         except Exception as e:
