@@ -91,28 +91,40 @@ async def get_dashboard_stats(
     if user.email.lower() != "boseraj001@gmail.com":
         raise HTTPException(status_code=403, detail="Not authorized")
         
+    stats = {
+        "total_users": 0,
+        "today_signups": 0,
+        "portfolios_count": 0,
+        "exports": 0,
+        "error_count": 0,
+        "active_users": 0
+    }
+    
     try:
-        total_users = db.table("users").select("id", count="exact").execute().count or 0
-        
+        stats["total_users"] = db.table("users").select("id", count="exact").execute().count or 0
+    except Exception as e: print(f"total_users error: {e}")
+    
+    try:
         yesterday = (dt.datetime.utcnow() - dt.timedelta(days=1)).isoformat()
-        today_signups = db.table("users").select("id", count="exact").gte("created_at", yesterday).execute().count or 0
-        
-        portfolios_count = db.table("portfolios").select("id", count="exact").execute().count or 0
-        exports = db.table("activity_logs").select("id", count="exact").eq("event_name", "pdf_export_success").execute().count or 0
-        error_count = db.table("error_logs").select("id", count="exact").eq("resolved", False).execute().count or 0
-        
+        stats["today_signups"] = db.table("users").select("id", count="exact").gte("created_at", yesterday).execute().count or 0
+    except Exception as e: print(f"today_signups error: {e}")
+
+    try:
+        stats["portfolios_count"] = db.table("portfolios").select("id", count="exact").execute().count or 0
+    except Exception as e: print(f"portfolios_count error: {e}")
+
+    try:
+        stats["exports"] = db.table("activity_logs").select("id", count="exact").eq("event_name", "pdf_export_success").execute().count or 0
+    except Exception as e: print(f"exports error: {e}")
+
+    try:
+        stats["error_count"] = db.table("error_logs").select("id", count="exact").eq("resolved", False).execute().count or 0
+    except Exception as e: print(f"error_count error: {e}")
+
+    try:
         seven_days_ago = (dt.datetime.utcnow() - dt.timedelta(days=7)).isoformat()
         active_logs = db.table("activity_logs").select("user_id").gte("created_at", seven_days_ago).execute().data
-        active_users = len(set(log["user_id"] for log in active_logs if log.get("user_id")))
-        
-        return {
-            "total_users": total_users,
-            "today_signups": today_signups,
-            "portfolios_count": portfolios_count,
-            "exports": exports,
-            "error_count": error_count,
-            "active_users": active_users
-        }
-    except Exception as e:
-        print(f"Error in get_dashboard_stats: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        stats["active_users"] = len(set(log["user_id"] for log in active_logs if log.get("user_id")))
+    except Exception as e: print(f"active_users error: {e}")
+
+    return stats
