@@ -2313,6 +2313,7 @@ export default function TemplateEditor() {
                   }}
                   onUpdateMasterElement={updateMasterElement}
                   pageSize={publishingPortfolio.pageSize}
+                  overflowVisible
                 />
               </div>
             </div>

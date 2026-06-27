@@ -370,7 +370,7 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" >
+        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" style={{ transform: `scale(${1 / (block.fontSize || 1)})`, transformOrigin: 'top right' }}>
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
             <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Block Style</div>
             <div className="flex flex-col gap-3">
@@ -450,7 +450,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" >
+        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" style={{ transform: `scale(${1 / (block.fontSize || 1)})`, transformOrigin: 'top right' }}>
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left">
           <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
           <div className="flex flex-col gap-3">
