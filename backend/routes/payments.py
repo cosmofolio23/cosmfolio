@@ -331,10 +331,12 @@ async def restore_purchase(current_user: dict = Depends(get_current_user)):
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
         
-    # Find all transactions for this user that are NOT paid
+    # Find all transactions for this user
+    print(f"[RESTORE] Looking up transactions for user_id={user_id}, auth={current_user.get('auth')}, email={current_user.get('email')}")
     tx_res = database.supabase.table("transactions").select("*").eq("user_id", user_id).execute()
+    print(f"[RESTORE] Found {len(tx_res.data)} transactions")
     if not tx_res.data:
-        raise HTTPException(status_code=400, detail="No purchase history found to restore")
+        raise HTTPException(status_code=400, detail=f"No purchase history found for user {current_user.get('email', user_id)}")
         
     errors = []
     for tx in tx_res.data:
