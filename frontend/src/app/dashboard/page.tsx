@@ -182,7 +182,7 @@ export default function Dashboard() {
                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left duration-300">✨</div>
                <h3 className="font-montserrat font-bold text-blue-700 dark:text-blue-400 mb-1.5 text-lg">My Portfolios</h3>
                <p className="text-xs text-blue-600/70 dark:text-blue-300/70 mb-4 font-inter leading-relaxed">Continue editing your recent projects.</p>
-               <div className="text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 rounded-md inline-block">Last opened 15m ago</div>
+               <div className="text-blue-700 dark:text-blue-400 font-bold text-sm group-hover:translate-x-1 transition-transform inline-block">View all →</div>
             </div>
           </Link>
 

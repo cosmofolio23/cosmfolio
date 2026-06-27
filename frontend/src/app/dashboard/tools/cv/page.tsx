@@ -11,6 +11,7 @@ import Link from 'next/link'
 import Logo from '@/components/Logo'
 import { libraryApi } from '@/lib/libraryApi'
 import { downloadBlob } from '@/lib/saveToLibrary'
+import { useAuthStore } from '@/store/auth'
 
 // Themes mirror the portfolio design packs so CV + portfolio feel like one package
 const THEMES = [
@@ -64,53 +65,111 @@ const DEFAULT_DATA: CvData = {
   extracurricular: [],
 }
 
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+export interface CvTokens {
+  fontHeading: string
+  fontBody: string
+  accent: string
+  headerBg: string
+  headerText: string
+  bg: string
+  text: string
+  spacingScale: number
+  sectionGap: number
+  itemGap: number
+  borderStyle: 'solid' | 'dashed' | 'dotted' | 'none'
+  borderWidth: number
+  titleSize: number
+  headerAlign: 'left' | 'center' | 'right'
+}
 
-function buildCvHtml(d: CvData, theme: typeof THEMES[number], layout: string, viz: 'dots' | 'bars'): string {
-  const a = theme.accent
+export const DEFAULT_TOKENS: CvTokens = {
+  fontHeading: "'Inter', sans-serif",
+  fontBody: "'Inter', sans-serif",
+  accent: '#9C7416',
+  headerBg: '#191919',
+  headerText: '#FBE7A1',
+  bg: '#ffffff',
+  text: '#1a1a1a',
+  spacingScale: 1,
+  sectionGap: 14,
+  itemGap: 6,
+  borderStyle: 'solid',
+  borderWidth: 1.5,
+  titleSize: 26,
+  headerAlign: 'left'
+}
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+function buildCvStyles(t: CvTokens) {
+  return `
+    .cv-page { font-family: ${t.fontBody}; color: ${t.text}; background: ${t.bg}; width: 100%; min-height: 100%; line-height: 1.5; box-sizing: border-box; }
+    .cv-header-bar { background: ${t.headerBg}; color: ${t.headerText}; padding: ${26 * t.spacingScale}px 36px; text-align: ${t.headerAlign}; }
+    .cv-header-name { font-family: ${t.fontHeading}; font-size: ${t.titleSize}px; font-weight: 800; letter-spacing: 0.04em; }
+    .cv-header-contact { font-size: 11px; margin-top: 5px; opacity: 0.85; }
+    .cv-section { margin-top: ${t.sectionGap * t.spacingScale}px; }
+    .cv-section-title { 
+      font-family: ${t.fontHeading}; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; 
+      color: ${t.accent}; text-transform: uppercase; 
+      border-bottom: ${t.borderStyle !== 'none' ? `${t.borderWidth}px ${t.borderStyle} ${t.accent}33` : 'none'}; 
+      padding-bottom: 3px; margin-bottom: ${7 * t.spacingScale}px; 
+    }
+    .cv-item { margin-bottom: ${t.itemGap * t.spacingScale}px; }
+    .cv-item-title { font-size: 12.5px; font-weight: bold; }
+    .cv-item-meta { font-size: 12px; }
+    .cv-item-submeta { font-size: 11px; color: #666; }
+    .cv-item-desc { font-size: 11.5px; color: #444; margin-top: 1px; }
+    .cv-accent-text { color: ${t.accent}; }
+    .cv-skill-row td { padding: 2px 14px 2px 0; font-size: 12px; }
+    .cv-text-content { font-size: 12px; color: #333; }
+  `
+}
+
+function buildCvHtml(d: CvData, tokens: CvTokens, layout: string, viz: 'dots' | 'bars' | 'text'): string {
+  const a = tokens.accent
   const sec = (title: string, inner: string) => inner
-    ? `<div style="margin-top:14px"><div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:${a};text-transform:uppercase;border-bottom:1.5px solid ${a}33;padding-bottom:3px;margin-bottom:7px">${title}</div>${inner}</div>`
+    ? `<div class="cv-section"><div class="cv-section-title">${title}</div>${inner}</div>`
     : ''
-  const dots = (lvl: number) => viz === 'dots'
-    ? `<span style="color:${a};letter-spacing:2px">${'●'.repeat(lvl)}${'○'.repeat(5 - lvl)}</span>`
-    : `<span style="display:inline-block;width:90px;height:6px;background:${a}22;border-radius:3px;vertical-align:middle"><span style="display:block;width:${lvl * 20}%;height:6px;background:${a};border-radius:3px"></span></span>`
+  
+  const dots = (lvl: number) => {
+    if (viz === 'text') return `<span style="color:${a};font-weight:600;font-size:10px">${lvl}/5</span>`
+    if (viz === 'bars') return `<span style="display:inline-block;width:90px;height:6px;background:${a}22;border-radius:3px;vertical-align:middle"><span style="display:block;width:${lvl * 20}%;height:6px;background:${a};border-radius:3px"></span></span>`
+    return `<span style="color:${a};letter-spacing:2px">${'●'.repeat(lvl)}${'○'.repeat(5 - lvl)}</span>`
+  }
 
   const contact = [d.location, d.phone, d.email, d.linkedin, d.portfolio].filter(Boolean)
     .map(x => esc(x)).join('&nbsp;&nbsp;·&nbsp;&nbsp;')
 
   const softwareHtml = d.software.filter(s => s.name).map(s =>
-    `<tr><td style="padding:2px 14px 2px 0;font-size:12px">${esc(s.name)}</td><td style="font-size:11px">${dots(s.level)}</td></tr>`).join('')
+    `<tr class="cv-skill-row"><td>${esc(s.name)}</td><td>${dots(s.level)}</td></tr>`).join('')
 
   const eduHtml = d.education.filter(e => e.degree || e.college).map(e =>
-    `<div style="margin-bottom:6px"><b style="font-size:12.5px">${esc(e.degree)}</b> — <span style="font-size:12px">${esc(e.college)}</span><div style="font-size:11px;color:#666">${esc([e.year, e.score && `Score: ${e.score}`].filter(Boolean).join(' · '))}</div></div>`).join('')
+    `<div class="cv-item"><span class="cv-item-title">${esc(e.degree)}</span> — <span class="cv-item-meta">${esc(e.college)}</span><div class="cv-item-submeta">${esc([e.year, e.score && `Score: ${e.score}`].filter(Boolean).join(' · '))}</div></div>`).join('')
 
   const projHtml = d.projects.filter(p => p.name).map(p =>
-    `<div style="margin-bottom:7px"><b style="font-size:12.5px">${esc(p.name)}</b> <span style="font-size:11px;color:${a}">${esc([p.type, p.year].filter(Boolean).join(' · '))}</span>${p.desc ? `<div style="font-size:11.5px;color:#444;margin-top:1px">${esc(p.desc)}</div>` : ''}</div>`).join('')
+    `<div class="cv-item"><span class="cv-item-title">${esc(p.name)}</span> <span class="cv-item-submeta cv-accent-text">${esc([p.type, p.year].filter(Boolean).join(' · '))}</span>${p.desc ? `<div class="cv-item-desc">${esc(p.desc)}</div>` : ''}</div>`).join('')
 
   const rows = (list: Row[]) => list.filter(r => r.title).map(r =>
-    `<div style="margin-bottom:5px"><b style="font-size:12px">${esc(r.title)}</b>${r.detail ? `<div style="font-size:11.5px;color:#444">${esc(r.detail)}</div>` : ''}</div>`).join('')
+    `<div class="cv-item"><span class="cv-item-title">${esc(r.title)}</span>${r.detail ? `<div class="cv-item-desc">${esc(r.detail)}</div>` : ''}</div>`).join('')
 
   const skillsBlock = sec('Software', softwareHtml ? `<table style="border-collapse:collapse">${softwareHtml}</table>` : '') +
-    sec('Design skills', d.designSkills ? `<div style="font-size:12px;color:#333">${esc(d.designSkills)}</div>` : '') +
-    sec('Languages', d.languages ? `<div style="font-size:12px;color:#333">${esc(d.languages)}</div>` : '') +
-    sec('Soft skills', d.softSkills ? `<div style="font-size:12px;color:#333">${esc(d.softSkills)}</div>` : '')
+    sec('Design skills', d.designSkills ? `<div class="cv-text-content">${esc(d.designSkills)}</div>` : '') +
+    sec('Languages', d.languages ? `<div class="cv-text-content">${esc(d.languages)}</div>` : '') +
+    sec('Soft skills', d.softSkills ? `<div class="cv-text-content">${esc(d.softSkills)}</div>` : '')
 
-  const mainBlock = sec('Profile', d.profile ? `<div style="font-size:12px;line-height:1.55;color:#333">${esc(d.profile)}</div>` : '') +
+  const mainBlock = sec('Profile', d.profile ? `<div class="cv-text-content" style="line-height:1.55">${esc(d.profile)}</div>` : '') +
     sec('Education', eduHtml) +
     sec('Projects', projHtml) +
     sec('Experience', rows(d.experience)) +
     sec('Achievements', rows(d.achievements)) +
     sec('Extra-curricular', rows(d.extracurricular))
 
-  const isMinimal = layout === 'minimal'
-  const headerBg = isMinimal ? '#ffffff' : theme.headerBg
-  const headerText = isMinimal ? '#111111' : theme.headerText
-  const headerPad = layout === 'graphic' ? '34px 36px' : isMinimal ? '34px 36px 8px' : '26px 36px'
   const accentBar = layout === 'graphic' ? `<div style="height:7px;background:${a}"></div>` : ''
-
-  const header = `${accentBar}<div style="background:${headerBg};color:${headerText};padding:${headerPad}">
-    <div style="font-size:${isMinimal ? 30 : 26}px;font-weight:800;letter-spacing:${isMinimal ? '0.02em' : '0.04em'}">${esc(d.name || 'Your Name')}</div>
-    <div style="font-size:11px;margin-top:5px;opacity:0.85">${contact || 'your contact details'}</div>
+  const isMinimal = layout === 'minimal'
+  const headerPad = layout === 'graphic' ? `${34 * tokens.spacingScale}px 36px` : isMinimal ? `${34 * tokens.spacingScale}px 36px 8px` : `${26 * tokens.spacingScale}px 36px`
+  
+  const header = `${accentBar}<div class="cv-header-bar" style="padding:${headerPad};background:${isMinimal ? '#ffffff' : tokens.headerBg};color:${isMinimal ? '#111111' : tokens.headerText}">
+    <div class="cv-header-name" style="letter-spacing:${isMinimal ? '0.02em' : '0.04em'};font-size:${isMinimal ? tokens.titleSize + 4 : tokens.titleSize}px">${esc(d.name || 'Your Name')}</div>
+    <div class="cv-header-contact">${contact || 'your contact details'}</div>
   </div>`
 
   let body = ''
@@ -123,7 +182,8 @@ function buildCvHtml(d: CvData, theme: typeof THEMES[number], layout: string, vi
     body = `<div style="padding:4px 36px 30px">${mainBlock}${skillsBlock}</div>`
   }
 
-  return `<div style="font-family:${theme.font};color:#1a1a1a;background:#ffffff;width:100%;min-height:100%">${header}${body}</div>`
+  const styles = `<style>${buildCvStyles(tokens)}</style>`
+  return `<div class="cv-page">${styles}${header}${body}</div>`
 }
 
 function buildAtsText(d: CvData): string {
@@ -148,8 +208,12 @@ export default function CvGeneratorPage() {
   const [data, setData] = useState<CvData>(DEFAULT_DATA)
   const [themeId, setThemeId] = useState('gold')
   const [layout, setLayout] = useState('two')
-  const [viz, setViz] = useState<'dots' | 'bars'>('dots')
+  const [viz, setViz] = useState<'dots' | 'bars' | 'text'>('dots')
   const [notice, setNotice] = useState('')
+  const [tokens, setTokens] = useState<CvTokens>(DEFAULT_TOKENS)
+  
+  const { user } = useAuthStore()
+  const isAdmin = user?.email === 'boseraj001@gmail.com'
 
   const theme = THEMES.find(t => t.id === themeId) || THEMES[0]
   const flash = (m: string) => { setNotice(m); setTimeout(() => setNotice(''), 4000) }
@@ -163,7 +227,7 @@ export default function CvGeneratorPage() {
     return () => clearTimeout(t)
   }, [data])
 
-  const html = useMemo(() => buildCvHtml(data, theme, layout, viz), [data, theme, layout, viz])
+  const html = useMemo(() => buildCvHtml(data, tokens, layout, viz), [data, tokens, layout, viz])
 
   const set = (patch: Partial<CvData>) => setData(d => ({ ...d, ...patch }))
 
@@ -262,7 +326,10 @@ export default function CvGeneratorPage() {
             <Card title="Style — matches your portfolio">
               <div className="grid grid-cols-2 gap-1.5 mb-2">
                 {THEMES.map(t => (
-                  <button key={t.id} onClick={() => setThemeId(t.id)}
+                  <button key={t.id} onClick={() => {
+                    setThemeId(t.id)
+                    setTokens(prev => ({ ...prev, accent: t.accent, headerBg: t.headerBg, headerText: t.headerText, fontHeading: t.font, fontBody: t.font }))
+                  }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs ${themeId === t.id ? 'border-[#D4AF37] bg-[#FBE7A1]/20' : 'border-gray-200'}`}>
                     <span className="w-4 h-4 rounded-full border" style={{ background: t.accent }} />{t.name}
                   </button>
@@ -273,11 +340,77 @@ export default function CvGeneratorPage() {
                   <button key={l.id} onClick={() => setLayout(l.id)} className={`px-2.5 py-1.5 rounded-lg text-xs ${layout === l.id ? 'bg-[#D4AF37] text-white' : 'bg-gray-100 text-gray-600'}`}>{l.name}</button>
                 ))}
                 <span className="flex-1" />
-                {(['dots', 'bars'] as const).map(v => (
+                {(['dots', 'bars', 'text'] as const).map(v => (
                   <button key={v} onClick={() => setViz(v)} className={`px-2.5 py-1.5 rounded-lg text-xs capitalize ${viz === v ? 'bg-[#9C7416] text-white' : 'bg-gray-100 text-gray-600'}`}>{v}</button>
                 ))}
               </div>
             </Card>
+
+            {isAdmin && (
+              <Card title="Advanced Style Engine (Admin Only)">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 block mb-1">Global Spacing Scale</label>
+                    <input type="range" min="0.5" max="2" step="0.1" value={tokens.spacingScale} onChange={e => setTokens(p => ({ ...p, spacingScale: parseFloat(e.target.value) }))} className="w-full" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 block mb-1">Section Gap ({tokens.sectionGap}px)</label>
+                    <input type="range" min="0" max="40" step="1" value={tokens.sectionGap} onChange={e => setTokens(p => ({ ...p, sectionGap: parseInt(e.target.value) }))} className="w-full" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 block mb-1">Item Gap ({tokens.itemGap}px)</label>
+                    <input type="range" min="0" max="20" step="1" value={tokens.itemGap} onChange={e => setTokens(p => ({ ...p, itemGap: parseInt(e.target.value) }))} className="w-full" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 block mb-1">Header Title Size ({tokens.titleSize}px)</label>
+                    <input type="range" min="16" max="48" step="1" value={tokens.titleSize} onChange={e => setTokens(p => ({ ...p, titleSize: parseInt(e.target.value) }))} className="w-full" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 block mb-1">Heading Font</label>
+                      <select value={tokens.fontHeading} onChange={e => setTokens(p => ({ ...p, fontHeading: e.target.value }))} className="w-full border rounded text-xs p-1">
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                        <option value="'Playfair Display', serif">Playfair Display</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 block mb-1">Body Font</label>
+                      <select value={tokens.fontBody} onChange={e => setTokens(p => ({ ...p, fontBody: e.target.value }))} className="w-full border rounded text-xs p-1">
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                        <option value="'Playfair Display', serif">Playfair Display</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 block mb-1">Divider Style</label>
+                      <select value={tokens.borderStyle} onChange={e => setTokens(p => ({ ...p, borderStyle: e.target.value as any }))} className="w-full border rounded text-xs p-1">
+                        <option value="solid">Solid</option>
+                        <option value="dashed">Dashed</option>
+                        <option value="dotted">Dotted</option>
+                        <option value="none">None</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 block mb-1">Divider Width</label>
+                      <input type="number" step="0.5" value={tokens.borderWidth} onChange={e => setTokens(p => ({ ...p, borderWidth: parseFloat(e.target.value) }))} className="w-full border rounded text-xs p-1" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 block mb-1">Header Alignment</label>
+                    <select value={tokens.headerAlign} onChange={e => setTokens(p => ({ ...p, headerAlign: e.target.value as any }))} className="w-full border rounded text-xs p-1">
+                      <option value="left">Left</option>
+                      <option value="center">Center</option>
+                      <option value="right">Right</option>
+                    </select>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             <Card title="Personal info">
               <div className="grid grid-cols-2 gap-2">

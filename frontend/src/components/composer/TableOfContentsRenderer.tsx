@@ -730,6 +730,8 @@ export function TableOfContentsRenderer({
           >
             {block.freeform ? '↩' : '🔓'}
           </button>
+          <div className="w-px h-4 bg-black/10 mx-1" />
+          <button onClick={() => (onChange as any)({ isDeleted: true })} className="p-1.5 rounded hover:bg-red-50 text-red-500/50 hover:text-red-600 transition-colors" title="Remove Block">✕</button>
         </div>
 
         {/* Tab Panels */}

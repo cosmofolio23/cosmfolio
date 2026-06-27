@@ -434,20 +434,26 @@ function ResumeHeadshot({ block, tokens, onChange, onUpload }: { block: Block; t
   }
   if (block.imageUrl) {
     return (
-      <div className="relative w-full h-full group cursor-pointer overflow-hidden rounded-lg" onClick={() => fileRef.current?.click()}>
-        <img src={block.imageUrl} alt="headshot" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style={{ objectPosition: `${50 + (block.xOffset || 0)}% ${50 + (block.yOffset || 0)}%` }} />
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold backdrop-blur-sm">Change Photo</div>
+      <div className="relative w-full h-full group overflow-hidden rounded-lg">
+        <div className="absolute inset-0 cursor-pointer" onClick={() => fileRef.current?.click()}>
+          <img src={block.imageUrl} alt="headshot" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style={{ objectPosition: `${50 + (block.xOffset || 0)}% ${50 + (block.yOffset || 0)}%` }} />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold backdrop-blur-sm">Change Photo</div>
+        </div>
+        <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="absolute top-2 right-2 text-[10px] bg-red-500 hover:bg-red-600 text-white w-5 h-5 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 print:hidden shadow-sm" title="Remove Block">✕</button>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
       </div>
     )
   }
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition" onClick={() => fileRef.current?.click()}>
-      {uploading ? <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" /> : <>
-        <span className="text-3xl opacity-50">👤</span>
-        <span className="text-[9px] uppercase tracking-widest font-semibold text-gray-400">Add Photo</span>
-      </>}
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
+    <div className="relative w-full h-full group">
+      <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition" onClick={() => fileRef.current?.click()}>
+        {uploading ? <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" /> : <>
+          <span className="text-3xl opacity-50">👤</span>
+          <span className="text-[9px] uppercase tracking-widest font-semibold text-gray-400">Add Photo</span>
+        </>}
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
+      </div>
+      <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="absolute top-2 right-2 text-[10px] bg-red-500 hover:bg-red-600 text-white w-5 h-5 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 print:hidden shadow-sm" title="Remove Block">✕</button>
     </div>
   )
 }
@@ -478,6 +484,8 @@ function ResumeBio({ block, tokens, onChange }: { block: Block; tokens: DesignTo
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
+          <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
+          <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>
       </div>
       {editing ? (
@@ -520,6 +528,8 @@ function ResumeEducation({ block, tokens, onChange }: { block: Block; tokens: De
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
+          <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
+          <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>
       </div>
       <div className="flex flex-col flex-1 overflow-hidden pb-2 pr-1" style={{ gap: Math.max(0, 16 - entries.length * 3) + 'px' }}>
@@ -625,6 +635,8 @@ function ResumeSkills({ block, tokens, onChange, label = 'Skills' }: { block: Bl
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
+          <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
+          <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>
       </div>
       
@@ -685,6 +697,8 @@ function ResumeList({ block, tokens, onChange, label, icon }: { block: Block; to
           <button onClick={() => onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } })} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
             {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
+          <div className="w-[1px] h-3 bg-current opacity-10 mx-1" />
+          <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>
       </div>
       <div className="flex flex-col flex-1 overflow-hidden pr-1 mt-1" style={{ gap: Math.max(0, 14 - entries.length * 3) + 'px' }}>
