@@ -310,12 +310,6 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "provider": "Razorpay",
             "payment_id": req.razorpay_payment_id
         })
-        
-    # Process Ambassador Reward
-    process_ambassador_reward(user_id, product_type, tx["amount"], req.razorpay_order_id, req.razorpay_payment_id)
-
-    return {"success": True, "message": "Payment verified and entitlements granted"}
-
     elif product_type == "boost_pack":
         NotificationService.sendBoostPackAlert({
             "name": "User",
@@ -325,5 +319,8 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "new_page_limit": 10 + ((current_count + 1) * 5),
             "new_download_limit": 3 + ((current_count + 1) * 5)
         })
+        
+    # Process Ambassador Reward
+    process_ambassador_reward(user_id, product_type, tx["amount"], req.razorpay_order_id, req.razorpay_payment_id)
 
-    return {"success": True}
+    return {"success": True, "message": "Payment verified and entitlements granted"}

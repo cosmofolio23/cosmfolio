@@ -186,3 +186,11 @@ def get_current_user(authorization: str = Header(None)):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=f"Could not validate credentials. Reason: {last_error}"
     )
+
+def get_current_user_optional(authorization: str = Header(None)):
+    if not authorization:
+        return None
+    try:
+        return get_current_user(authorization)
+    except Exception:
+        return None

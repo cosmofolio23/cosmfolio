@@ -33,11 +33,11 @@ async def track_activity(
         user_id = user.id if user else None
         
         # Save to database
-        db.execute(
-            text("INSERT INTO activity_logs (user_id, event_name, metadata) VALUES (:uid, :evt, :meta)"),
-            {"uid": user_id, "evt": activity.event_name, "meta": activity.model_dump_json(include={'metadata'})}
-        )
-        db.commit()
+        db.table("activity_logs").insert({
+            "user_id": user_id,
+            "event_name": activity.event_name,
+            "metadata": activity.model_dump_json(include={'metadata'})
+        }).execute()
         return {"status": "ok"}
     except Exception as e:
         print(f"[Monitoring Error] Failed to track activity: {str(e)}")
@@ -53,20 +53,15 @@ async def track_error(
     try:
         user_id = user.id if user else None
         
-        db.execute(
-            text("""INSERT INTO error_logs (user_id, error_type, message, stack_trace, page, browser, device) 
-               VALUES (:uid, :type, :msg, :stack, :page, :browser, :dev)"""),
-            {
-                "uid": user_id,
-                "type": error.error_type,
-                "msg": error.message,
-                "stack": error.stack_trace,
-                "page": error.page,
-                "browser": error.browser,
-                "dev": error.device
-            }
-        )
-        db.commit()
+        db.table("error_logs").insert({
+            "user_id": user_id,
+            "error_type": error.error_type,
+            "message": error.message,
+            "stack_trace": error.stack_trace,
+            "page": error.page,
+            "browser": error.browser,
+            "device": error.device
+        }).execute()
 
         # Alert admin if critical
         critical_types = ["pdf_export_failed", "payment_error", "payment_failed", "crash"]
