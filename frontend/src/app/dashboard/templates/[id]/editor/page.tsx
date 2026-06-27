@@ -70,7 +70,7 @@ const ADD_BLOCKS: { type: BlockType; icon: string }[] = [
   { type: 'description', icon: '¶' }, { type: 'legend', icon: '①' },
   { type: 'render', icon: '🖼️' }, { type: 'plan', icon: '📐' }, { type: 'section', icon: '📏' }, { type: 'diagram', icon: '◑' },
   { type: 'contents', icon: '☰' }, { type: 'headshot', icon: '👤' }, { type: 'bio', icon: '✍️' }, { type: 'education', icon: '🎓' },
-  { type: 'skills', icon: '⭐' }, { type: 'software', icon: '💻' }, { type: 'achievement', icon: '🏆' }, { type: 'interest', icon: '❤️' },
+  { type: 'experience', icon: '💼' }, { type: 'skills', icon: '⭐' }, { type: 'software', icon: '💻' }, { type: 'achievement', icon: '🏆' }, { type: 'interest', icon: '❤️' },
 ]
 
 const HEADING_FONTS = ['Montserrat', 'Playfair Display', 'Roboto', 'Inter', 'Poppins', 'Georgia', 'Lora', 'Bebas Neue', 'Oswald', 'Arial']

@@ -25,6 +25,7 @@ export type BlockType =
   | 'software'     // Software proficiency (icons + bars)
   | 'achievement'  // Awards, competitions, publications
   | 'interest'     // Hobbies / interests
+  | 'experience'   // Work experience
 
 export interface MetaField {
   label: string
@@ -47,6 +48,7 @@ export interface SkillItem {
   name: string
   level: number     // 0–5
   icon?: string     // emoji or short text icon
+  imageUrl?: string // optional custom image uploaded by user
 }
 
 export interface Block {
@@ -208,6 +210,10 @@ export function createBlock(type: BlockType): Block {
                           { title: 'Music', detail: 'Guitar, 6 years' },
                           { title: 'Reading', detail: 'Design theory & sci-fi' },
                         ] }
+    case 'experience':  return { ...base, resumeEntries: [
+                          { title: 'Architectural Intern', org: 'Studio X', year: '2025', detail: 'Drafting and 3D modeling.' },
+                          { title: 'Freelance Designer', org: 'Self-employed', year: '2024', detail: 'Residential interiors.' },
+                        ] }
     default:            return base
   }
 }
@@ -217,7 +223,7 @@ const BLOCK_LABELS: Record<BlockType, string> = {
   legend: 'Legend', render: 'Render', plan: 'Plan', section: 'Section', diagram: 'Diagram',
   contents: 'Table of Contents',
   headshot: 'Headshot', bio: 'Bio', education: 'Education', skills: 'Skills',
-  software: 'Software', achievement: 'Achievements', interest: 'Interests',
+  software: 'Software', achievement: 'Achievements', interest: 'Interests', experience: 'Experience',
 }
 export function blockLabel(t: BlockType): string { return BLOCK_LABELS[t] }
 

@@ -72,6 +72,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "CosmoFolio",
+            "url": "https://thecosmofolio.com",
+            "logo": "https://thecosmofolio.com/logo.png",
+            "sameAs": [
+              "https://www.instagram.com/cosmoatelier.in",
+              "https://www.linkedin.com/company/cosmo-atelier"
+            ]
+          })
+        }}
+      />
       {/* Navigation */}
       <Navbar />
 

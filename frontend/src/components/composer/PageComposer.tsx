@@ -51,7 +51,7 @@ interface Props {
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   title: 'title', subtitle: 'subtitle', text: 'description', legend: 'legend', meta: 'meta', contents: 'contents',
   headshot: 'headshot', bio: 'bio', education: 'education', skills: 'skills',
-  software: 'software', achievement: 'achievement', interest: 'interest',
+  software: 'software', achievement: 'achievement', interest: 'interest', experience: 'experience',
 }
 
 export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true, readonly = false }: Props) {
@@ -894,13 +894,24 @@ function SkillProficiencyRenderer({ style, level, tokens, readonly, onChange }: 
   )
 }
 
-function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills' }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean; label?: string }) {
+function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onUploadImage }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean; label?: string; onUploadImage?: (f: File) => Promise<string> }) {
   const items: SkillItem[] = block.skillItems || []
   const patch = (next: SkillItem[]) => onChange({ skillItems: next })
   const add = () => patch([...items, { name: 'New Skill', level: 3, icon: '' }])
   const upd = (i: number, k: keyof SkillItem, v: string | number) => patch(items.map((s, idx) => idx === i ? { ...s, [k]: v } : s))
   const del = (i: number) => patch(items.filter((_, idx) => idx !== i))
   const isSoftware = label === 'Software'
+
+  const handleImageUpload = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !onUploadImage) return
+    try {
+      const url = await onUploadImage(file)
+      upd(i, 'imageUrl', url)
+    } catch (err) {
+      console.error('Failed to upload software image', err)
+    }
+  }
 
   const finalPrimary = block.tocStyle?.titleColor || tokens.primary
   const finalText = block.color || tokens.text
@@ -949,8 +960,28 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills' }: {
         {items.map((s, i) => (
           <div key={i} className={`group flex flex-col gap-1.5 break-inside-avoid ${dividerClass}`}>
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                {isSoftware && <SoftwareIcon name={s.name} fallbackText={s.icon} />}
+              <div className="flex items-center gap-2 flex-1 min-w-0 group/skill">
+                {isSoftware && s.imageUrl ? (
+                  <div className="relative group/img">
+                    <img src={s.imageUrl} alt={s.name} className="w-5 h-5 object-contain rounded-sm" />
+                    {!readonly && onUploadImage && (
+                      <label className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 cursor-pointer rounded-sm transition-opacity" title="Change Image">
+                        <span className="text-[8px] font-bold">↑</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
+                      </label>
+                    )}
+                  </div>
+                ) : isSoftware ? (
+                  <div className="relative group/img">
+                    <SoftwareIcon name={s.name} fallbackText={s.icon} />
+                    {!readonly && onUploadImage && (
+                      <label className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 cursor-pointer rounded-sm transition-opacity" title="Upload custom image">
+                        <span className="text-[8px] font-bold">↑</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
+                      </label>
+                    )}
+                  </div>
+                ) : null}
                 <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               </div>
               {!readonly && <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
@@ -1360,7 +1391,7 @@ function RegionView({
         })
       }}
     >
-      {!readonly && !['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest'].includes(region.role) && (
+      {!readonly && !['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) && (
         <BlockHoverToolbar 
           block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} 
           showTypography={!['render', 'plan', 'section', 'diagram', 'headshot', 'toc', 'index'].includes(block.type)}
@@ -1515,10 +1546,11 @@ function RegionView({
       {region.role === 'headshot' && <ResumeHeadshot block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} onUpload={onUploadImage} readonly={readonly} />}
       {region.role === 'bio' && <ResumeBio block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
       {region.role === 'education' && <ResumeEducation block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
-      {region.role === 'skills' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Skills" />}
-      {region.role === 'software' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Software" />}
+      {region.role === 'skills' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Skills" onUploadImage={onUploadImage} />}
+      {region.role === 'software' && <ResumeSkills block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Software" onUploadImage={onUploadImage} />}
       {region.role === 'achievement' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Achievements" icon="🏆" />}
-      {region.role === 'interest' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Interests" icon="✦" />}
+      {region.role === 'interest' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Interests" icon="❤️" />}
+      {region.role === 'experience' && <ResumeList block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} label="Work Experience" icon="💼" />}
       {region.role === 'contents' && (
         <div className="w-full h-full flex flex-col justify-between">
           <div className="flex-1 min-h-0">

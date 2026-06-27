@@ -14,7 +14,7 @@ import {
 } from './types'
 
 export type RegionRole = 'image' | 'title' | 'subtitle' | 'text' | 'legend' | 'meta' | 'contents'
-  | 'headshot' | 'bio' | 'education' | 'skills' | 'software' | 'achievement' | 'interest'
+  | 'headshot' | 'bio' | 'education' | 'skills' | 'software' | 'achievement' | 'interest' | 'experience'
 
 export interface Region {
   role: RegionRole

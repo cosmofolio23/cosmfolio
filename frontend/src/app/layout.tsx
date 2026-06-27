@@ -12,11 +12,18 @@ export const metadata: Metadata = {
   title: 'CosmoFolio — Architecture Portfolio Generator',
   description: 'Build a professional architecture portfolio in minutes from preset templates. Free to start.',
   keywords: ['architecture portfolio', 'portfolio generator', 'architecture students', 'B.Arch portfolio', 'portfolio templates'],
-  icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+  alternates: {
+    canonical: 'https://thecosmofolio.com',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.webmanifest',
 
   openGraph: {
     title: 'CosmoFolio — Architecture Portfolio Generator',
@@ -71,6 +78,22 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "CosmoFolio",
+              "url": "https://thecosmofolio.com",
+              "logo": "https://thecosmofolio.com/logo.png",
+              "sameAs": [
+                "https://www.instagram.com/thecosmofolio",
+                "https://www.linkedin.com/company/cosmofolio"
+              ]
+            })
+          }}
+        />
       </head>
       <body className="min-h-screen bg-white text-charcoal font-sans antialiased flex flex-col">
         <ContentProtector />

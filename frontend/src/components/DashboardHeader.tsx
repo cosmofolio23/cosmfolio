@@ -37,23 +37,28 @@ export default function DashboardHeader() {
 
   return (
     <header className="glass-nav shadow-elevation-1 sticky top-0 z-40">
-      <div className="container-centered py-6 md:py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="container-centered py-4 md:py-8 flex flex-row justify-between items-center gap-2 md:gap-4">
         
         {/* Left side: Logo & Title */}
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="flex items-center gap-4 hover:opacity-90 transition-opacity">
-            <Logo size="lg" variant="gold" />
-            <div>
-              <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          <Link href="/dashboard" className="flex items-center gap-2 md:gap-4 hover:opacity-90 transition-opacity min-w-0">
+            <div className="hidden sm:block shrink-0">
+              <Logo size="lg" variant="gold" />
+            </div>
+            <div className="block sm:hidden shrink-0">
+              <Logo size="md" variant="gold" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-4xl font-bold text-text-primary dark:text-dark-text-primary truncate">
                 Cosmo<span className="text-gold-gradient">Folio</span>
               </h1>
-              <div className="flex items-center gap-3 mt-2">
-                <p className="text-text-secondary dark:text-dark-text-secondary">
+              <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-2">
+                <p className="hidden md:block text-text-secondary dark:text-dark-text-secondary truncate">
                   Welcome back, <span className="font-semibold text-text-primary dark:text-dark-text-primary">{user?.name || user?.email}</span>
                 </p>
                 {loaded && (
-                  <>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold tracking-wider uppercase whitespace-nowrap ${
                       has('is_pro')
                         ? 'bg-gold-gradient text-white border-transparent'
                         : 'bg-surface-secondary dark:bg-dark-surface-secondary text-text-secondary dark:text-dark-text-secondary border border-divider dark:border-dark-divider'
@@ -63,12 +68,13 @@ export default function DashboardHeader() {
                     {!has('is_pro') && (
                       <button
                         onClick={(e) => { e.preventDefault(); router.push('/pricing') }}
-                        className="px-3 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-accent-gold/20 text-accent-gold hover:bg-accent-gold/30 transition-colors shadow-sm"
+                        className="px-2 md:px-3 py-0.5 rounded text-[9px] md:text-[10px] font-bold tracking-wider uppercase bg-accent-gold/20 text-accent-gold hover:bg-accent-gold/30 transition-colors shadow-sm whitespace-nowrap"
                       >
-                        ⚡ Upgrade to Pro
+                        <span className="hidden sm:inline">⚡ Upgrade to Pro</span>
+                        <span className="sm:hidden">⚡ Upgrade</span>
                       </button>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             </div>
