@@ -26,6 +26,36 @@ class NotificationService:
 
     @staticmethod
     def _do_send_email(subject: str, html_content: str):
+        RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+        
+        if RESEND_API_KEY:
+            try:
+                import requests
+                headers = {
+                    "Authorization": f"Bearer {RESEND_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                # Resend blocks sending from @gmail.com. Fallback to onboarding@resend.dev
+                # if they haven't set a custom domain sender yet.
+                from_addr = SMTP_FROM_EMAIL if not SMTP_FROM_EMAIL.endswith("@gmail.com") else "onboarding@resend.dev"
+                
+                data = {
+                    "from": f"CosmoFolio Alerts <{from_addr}>",
+                    "to": ADMIN_EMAIL,
+                    "subject": subject,
+                    "html": html_content
+                }
+                resp = requests.post("https://api.resend.com/emails", headers=headers, json=data, timeout=10)
+                
+                if resp.status_code >= 400:
+                    print(f"[EMAIL ERROR] Resend API failed: {resp.text}")
+                    return False
+                    
+                return True
+            except Exception as e:
+                print(f"[EMAIL ERROR] Failed to send email via Resend: {str(e)}")
+                return False
+
         if not SMTP_PASSWORD:
             print(f"[MOCK EMAIL] Subject: {subject}\n{html_content}")
             try:
@@ -33,7 +63,7 @@ class NotificationService:
                 supabase.table("error_logs").insert({
                     "user_id": "system",
                     "error_type": "EMAIL_CONFIG_MISSING",
-                    "error_message": "Missing SMTP_PASSWORD",
+                    "error_message": "Missing SMTP_PASSWORD and RESEND_API_KEY",
                     "stack_trace": "NotificationService._send_email",
                     "page_url": "backend"
                 }).execute()
