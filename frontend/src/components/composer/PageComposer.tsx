@@ -370,7 +370,7 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" style={{ transform: `scale(${1 / (block.fontSize || 1)})`, transformOrigin: 'top right' }}>
+        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" >
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
             <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Block Style</div>
             <div className="flex flex-col gap-3">
@@ -427,6 +427,7 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
 
 function BlockTypographySettings({ block, tokens, onChange }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block>) => void }) {
   const [open, setOpen] = useState(false)
+  const [draftFontSize, setDraftFontSize] = useState<number | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleMouseEnter = () => {
@@ -437,6 +438,14 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
     timeoutRef.current = setTimeout(() => {
       setOpen(false)
     }, 300)
+  }
+
+  const currentFontSize = draftFontSize ?? (block.fontSize || 1)
+  const commitFontSize = () => {
+    if (draftFontSize !== null) {
+      onChange({ fontSize: draftFontSize })
+      setDraftFontSize(null)
+    }
   }
 
   return (
@@ -450,13 +459,20 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
       </button>
       
       {open && (
-        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true" style={{ transform: `scale(${1 / (block.fontSize || 1)})`, transformOrigin: 'top right' }}>
+        <div className="absolute right-0 top-full pt-1 z-[10000] print:hidden cursor-default" data-html2canvas-ignore="true">
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-56 text-left">
           <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Typography</div>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round((block.fontSize || 1)*100)}%</span></div>
-              <input type="range" min="0.5" max="2" step="0.1" value={block.fontSize || 1} onChange={e => onChange({ fontSize: parseFloat(e.target.value) })} className="w-full accent-black" />
+              <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round(currentFontSize*100)}%</span></div>
+              <input 
+                type="range" min="0.5" max="2" step="0.1" 
+                value={currentFontSize} 
+                onChange={e => setDraftFontSize(parseFloat(e.target.value))}
+                onPointerUp={commitFontSize}
+                onKeyUp={commitFontSize}
+                className="w-full accent-black" 
+              />
             </div>
             <div className="flex items-center justify-between gap-2">
               <span className="text-[9px] uppercase text-gray-500 font-semibold">Text Color</span>
