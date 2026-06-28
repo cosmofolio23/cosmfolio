@@ -569,13 +569,12 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
 }
 
 function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isActive, pos }: { block: Block, tokens: DesignTokens, onChange: (p: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => void, showTypography?: boolean, isActive?: boolean, pos?: { x: number, y: number } }) {
-  if (!isActive) return null
-
-  const style: React.CSSProperties = pos ? { top: Math.max(0, pos.y - 45), left: pos.x } : {}
-  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-50 print:hidden bg-white/90 backdrop-blur-sm shadow-sm rounded border border-gray-200/50 px-1 py-0.5 pointer-events-auto"
+  const style: React.CSSProperties = isActive && pos ? { top: Math.max(0, pos.y - 45), left: pos.x } : { top: 0, right: 0, transform: 'translateY(-100%)' }
+  const baseClasses = "absolute flex items-center gap-2 transition-opacity z-[110] print:hidden bg-white/95 backdrop-blur-sm shadow-md rounded-md border border-gray-200 px-1.5 py-1 pointer-events-auto"
+  const visibilityClass = isActive ? "opacity-100 visible" : "opacity-0 invisible group-hover/free:opacity-100 group-hover/free:visible"
   
   return (
-    <div className={`${baseClasses} opacity-100`} style={style} onPointerDown={e => e.stopPropagation()} data-html2canvas-ignore="true">
+    <div className={`${baseClasses} ${visibilityClass}`} style={style} onPointerDown={e => e.stopPropagation()} data-html2canvas-ignore="true">
       {showTypography && <BlockTypographySettings block={block} tokens={tokens} onChange={onChange} />}
       {block.freeform && (
         <>
