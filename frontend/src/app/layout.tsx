@@ -9,9 +9,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://thecosmofolio.com'),
-  title: 'CosmoFolio — Architecture Portfolio Generator',
-  description: 'Build a professional architecture portfolio in minutes from preset templates. Free to start.',
-  keywords: ['architecture portfolio', 'portfolio generator', 'architecture students', 'B.Arch portfolio', 'portfolio templates'],
+  title: 'Architecture Portfolio Creator | CosmoFolio',
+  description: 'The best architecture portfolio creator. Build, design, and export professional architecture portfolios in minutes. Free to start.',
+  keywords: ['architecture portfolio creator', 'portfolio creator for architects', 'architecture portfolio', 'portfolio generator', 'online portfolio maker', 'architecture students', 'architecture portfolio builder'],
   alternates: {
     canonical: 'https://thecosmofolio.com',
   },
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
 
   openGraph: {
-    title: 'CosmoFolio — Architecture Portfolio Generator',
-    description: 'Build a professional architecture portfolio in minutes from preset templates. Free to start.',
+    title: 'Architecture Portfolio Creator | CosmoFolio',
+    description: 'The best architecture portfolio creator. Build, design, and export professional architecture portfolios in minutes. Free to start.',
     url: 'https://thecosmofolio.com',
     siteName: 'CosmoFolio',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'CosmoFolio Social Share Card' }],
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CosmoFolio — Architecture Portfolio Generator',
-    description: 'Build a professional architecture portfolio in minutes from preset templates.',
+    title: 'Architecture Portfolio Creator | CosmoFolio',
+    description: 'The best architecture portfolio creator. Build, design, and export professional architecture portfolios in minutes.',
     images: ['/og-image.png'],
   },
   verification: {

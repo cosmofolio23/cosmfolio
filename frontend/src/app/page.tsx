@@ -75,17 +75,32 @@ export default function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "CosmoFolio",
-            "url": "https://thecosmofolio.com",
-            "logo": "https://thecosmofolio.com/logo.png",
-            "sameAs": [
-              "https://www.instagram.com/cosmoatelier.in",
-              "https://www.linkedin.com/company/cosmo-atelier"
-            ]
-          })
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "CosmoFolio",
+              "url": "https://thecosmofolio.com",
+              "logo": "https://thecosmofolio.com/logo.png",
+              "sameAs": [
+                "https://www.instagram.com/cosmoatelier.in",
+                "https://www.linkedin.com/company/cosmo-atelier"
+              ]
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "CosmoFolio Architecture Portfolio Creator",
+              "operatingSystem": "Web",
+              "applicationCategory": "DesignApplication",
+              "url": "https://thecosmofolio.com",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              }
+            }
+          ])
         }}
       />
       {/* Navigation */}
@@ -107,7 +122,7 @@ export default function Home() {
               ✨ Architecture Portfolio Tool — Now Live
             </div>
             <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-              Build Your Architecture Portfolio in Minutes, Not Nights.
+              The Intelligent Architecture Portfolio Creator. Build Your Portfolio in Minutes.
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-blue-100 mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed px-2">
               Create professional architecture portfolios with intelligent templates, sophisticated design systems, and custom layouts. Built specifically for architects.
