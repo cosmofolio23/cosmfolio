@@ -301,21 +301,32 @@ export default function TemplateMarketplace() {
     }
   }
 
-  const fetchTemplates = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/templates/portfolios?limit=500`)
-      if (res.ok) {
-        const data: TemplateListResponse = await res.json()
-        setTemplates(data.templates?.length ? data.templates : DEMO_TEMPLATES)
-      } else {
-        setTemplates(DEMO_TEMPLATES)
+  const fetchTemplates = async (retries = 3) => {
+    const url = `${API_URL}/api/templates/portfolios?limit=500`
+    console.log('[CosmoFolio] Fetching templates from:', url)
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const res = await fetch(url)
+        if (res.ok) {
+          const data: TemplateListResponse = await res.json()
+          if (data.templates?.length) {
+            console.log(`[CosmoFolio] Loaded ${data.templates.length} templates from API`)
+            setTemplates(data.templates)
+            setIsLoading(false)
+            return
+          }
+        } else {
+          console.warn(`[CosmoFolio] Templates fetch attempt ${attempt} failed: ${res.status} ${res.statusText}`)
+        }
+      } catch (e) {
+        console.warn(`[CosmoFolio] Templates fetch attempt ${attempt} error:`, e)
       }
-    } catch (e) {
-      console.error('Error fetching templates:', e)
-      setTemplates(DEMO_TEMPLATES)
-    } finally {
-      setIsLoading(false)
+      // Wait before retrying (500ms, 1s, 2s)
+      if (attempt < retries) await new Promise(r => setTimeout(r, 500 * attempt))
     }
+    console.warn('[CosmoFolio] All template fetch attempts failed, using demo templates. API_URL was:', API_URL)
+    setTemplates(DEMO_TEMPLATES)
+    setIsLoading(false)
   }
 
   const fetchPortfolios = async () => {
