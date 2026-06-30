@@ -58,12 +58,12 @@ class NotificationService:
                 
                 if resp.status_code >= 400:
                     print(f"[EMAIL ERROR] Resend API failed: {resp.text}")
-                    return False
-                    
-                return True
+                    print("[INFO] Falling back to SMTP...")
+                else:
+                    return True
             except Exception as e:
                 print(f"[EMAIL ERROR] Failed to send email via Resend: {str(e)}")
-                return False
+                print("[INFO] Falling back to SMTP...")
 
         if not SMTP_PASSWORD:
             print(f"[MOCK EMAIL] Subject: {subject}\n{html_content}")
@@ -90,16 +90,15 @@ class NotificationService:
             part = MIMEText(html_content, "html")
             msg.attach(part)
             
-            try:
-                if SMTP_PORT == 465:
-                    server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
-                else:
-                    server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-                    server.starttls()
-                    
-                with server:
-                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                    server.send_message(msg)
+            if SMTP_PORT == 465:
+                server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+            else:
+                server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+                server.starttls()
+                
+            with server:
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.send_message(msg)
             
             return True
         except Exception as e:
