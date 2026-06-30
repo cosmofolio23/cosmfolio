@@ -54,7 +54,7 @@ export default function AdminDashboard() {
 
   const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
   
-  const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+  const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
 
   useEffect(() => {
     if (!isAuthenticated) {

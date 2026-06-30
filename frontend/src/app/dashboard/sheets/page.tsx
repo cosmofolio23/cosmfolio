@@ -9,7 +9,7 @@ import TemplateMockup from '@/components/templates/TemplateMockup'
 import { buildEmptySheetSet } from '@/lib/buildSheetSet'
 import { SHEET_SET_TEMPLATES } from '@/components/sheetSet/sheetSetTemplates'
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
 
 interface SheetTemplate {
   id: string

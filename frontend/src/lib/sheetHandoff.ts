@@ -45,7 +45,7 @@ export function clearSheetImage() {
  */
 export async function createSheetProject(title?: string): Promise<string | null> {
   try {
-    const API = ((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')).replace(/[^\x20-\x7E]/g, '').trim()
+    const API = ((process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')).replace(/[^\x20-\x7E]/g, '').trim()
     const res = await fetch(`${API}/api/projects`, {
       method: 'POST',
       headers: {

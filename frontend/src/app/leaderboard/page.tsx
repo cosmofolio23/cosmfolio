@@ -12,7 +12,7 @@ export default function LeaderboardPage() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+        const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
           
         const res = await fetch(`${API_URL}/api/ambassadors/leaderboard`)
         if (res.ok) {

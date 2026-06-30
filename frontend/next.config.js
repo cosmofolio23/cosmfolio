@@ -25,7 +25,7 @@ const nextConfig = {
     ],
   },
   env: {
-    NEXT_PUBLIC_API_URL: clean(process.env.NEXT_PUBLIC_API_URL, 'http://localhost:8000'),
+    NEXT_PUBLIC_API_URL: clean(process.env.NEXT_PUBLIC_API_URL, 'https://cosmfolio-production.up.railway.app'),
     NEXT_PUBLIC_SUPABASE_URL: clean(process.env.NEXT_PUBLIC_SUPABASE_URL),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: clean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
   },

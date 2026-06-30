@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 import Navbar from '@/components/Navbar'
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
 
 function SignUpInner() {
   const [name, setName] = useState('')

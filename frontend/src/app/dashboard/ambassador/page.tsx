@@ -32,7 +32,7 @@ export default function AmbassadorPage() {
 
   const fetchProfile = async () => {
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/ambassadors/me`, {
@@ -66,7 +66,7 @@ export default function AmbassadorPage() {
     }
     
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/ambassadors/join`, {
@@ -101,7 +101,7 @@ export default function AmbassadorPage() {
     setWithdrawLoading(true)
     
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/ambassadors/withdraw`, {

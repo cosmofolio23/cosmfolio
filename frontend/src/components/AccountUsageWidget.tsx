@@ -11,7 +11,7 @@ export default function AccountUsageWidget() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+        const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
         const token = localStorage.getItem('auth_token')
         if (!token) return
 

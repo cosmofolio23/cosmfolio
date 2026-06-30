@@ -9,7 +9,7 @@ import PageComposer from '@/components/composer/PageComposer'
 import SpreadComposer from '@/components/composer/SpreadComposer'
 import { trackEvent, trackError } from '@/lib/tracking'
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
 
 interface PortfolioData {
   document: {

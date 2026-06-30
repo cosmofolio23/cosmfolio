@@ -1,5 +1,5 @@
 export const getApiUrl = () => {
-  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+  return (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
 }
 
 export const trackEvent = async (eventName: string, metadata: Record<string, any> = {}) => {

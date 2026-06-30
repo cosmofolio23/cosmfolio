@@ -50,7 +50,7 @@ export function StylePackGenerator({ portfolioId, onClose, onGenerated }: Props)
     setGeneratedPack(null)
 
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
       const token = localStorage.getItem('auth_token')
 
       const res = await fetch(
