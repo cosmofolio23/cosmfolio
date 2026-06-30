@@ -110,8 +110,13 @@ export default function PortfolioBookPage() {
         printContainer.classList.remove('print:block')
       }
 
-      // Wait for all images to load properly and layout to settle
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Wait for layout to settle, images, and custom fonts to load properly
+      await new Promise(resolve => setTimeout(resolve, 500))
+      if ('fonts' in window.document) {
+        await window.document.fonts.ready
+      }
+      await new Promise(resolve => setTimeout(resolve, 500))
+
 
       const elements = window.document.querySelectorAll('.pf-print-page')
       if (elements.length === 0) throw new Error('No pages found')
