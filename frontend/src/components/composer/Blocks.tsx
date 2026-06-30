@@ -480,7 +480,7 @@ export function ImageBlock({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className={`w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50/40 text-blue-500' : 'border-gray-300'}`}
+            className={`absolute inset-0 flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50/40 text-blue-500' : 'border-gray-300'}`}
             style={{ borderColor: isDragging ? undefined : 'rgba(0,0,0,0.15)' }}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}

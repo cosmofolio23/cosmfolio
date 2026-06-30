@@ -244,7 +244,7 @@ export function FreeCanvas({ elements, onChange, tokens, editable = false, onApp
 function ElementBody({ el, tokens }: { el: FreeElement; tokens: DesignTokens }) {
   if (el.kind === 'text') {
     return (
-      <div className="w-full h-full flex overflow-hidden" style={{
+      <div className="w-full h-full flex overflow-visible" style={{
         color: el.color || tokens.text, 
         fontFamily: el.fontFamily || tokens.bodyFont,
         fontSize: el.fontSize || 14, 

@@ -738,7 +738,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
       </div>
       <div className={`flex-1 overflow-hidden pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-hidden break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : ''}`}>
+          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : ''}`}>
             {variant === 'timeline' && (
               <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             )}
@@ -747,7 +747,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
               <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.accent }} />
             </div>
             
-            <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-hidden min-h-0 shrink">
+            <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-visible min-h-0 shrink pt-0.5">
               <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalPrimary, fontFamily: tokens.headingFont }} />
               <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               <textarea 
@@ -1038,7 +1038,7 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
       </div>
       <div className={`flex-1 overflow-hidden pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-hidden break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : 'pl-3'}`}>
+          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : 'pl-3'}`}>
             {variant === 'timeline' ? (
                <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             ) : (
