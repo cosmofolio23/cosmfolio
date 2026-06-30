@@ -163,7 +163,7 @@ export function EditableText({
             ref.current?.blur()
           }
         }}
-        className={`outline-none rounded px-1 -mx-1 transition ${
+        className={`outline-none rounded px-1 -mx-1 pb-[0.1em] transition ${
           isEditing ? 'cursor-text outline outline-1 outline-blue-400' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : 'group-hover/canvas:outline group-hover/canvas:outline-1 group-hover/canvas:outline-dashed group-hover/canvas:outline-gray-500/70 hover:bg-blue-50/40 hover:outline-blue-400/60'
         } ${multiline ? 'whitespace-pre-line' : ''} ${className || ''}`}
         style={style}
