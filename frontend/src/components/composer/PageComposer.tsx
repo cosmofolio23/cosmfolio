@@ -1384,13 +1384,14 @@ function RegionView({
   }
 
   const isFree = !!block?.freeform
+  const isTextRole = ['title', 'subtitle', 'text', 'meta', 'legend', 'contents'].includes(region.role) || isFree
   const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
 
   return (
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${region.role === 'contents' || activeBlock?.id === block.id ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
+      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()
