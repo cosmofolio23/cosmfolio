@@ -303,9 +303,7 @@ export default function TemplateMarketplace() {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/templates/portfolios?limit=100`, {
-        headers: { 'Authorization': `Bearer ${token || localStorage.getItem('auth_token')}` }
-      })
+      const res = await fetch(`${API_URL}/api/templates/portfolios?limit=500`)
       if (res.ok) {
         const data: TemplateListResponse = await res.json()
         setTemplates(data.templates?.length ? data.templates : DEMO_TEMPLATES)
