@@ -216,7 +216,7 @@ export default function EntourageStudioPage() {
   const createSheetFromEntourage = async () => {
     setBusy('Creating sheet…')
     try {
-      const res = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')}/api/projects`, {
+      const res = await fetch(`${(typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))}/api/projects`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: `Entourage Sheet ${new Date().toLocaleDateString()}`, project_type: 'sheet' }),

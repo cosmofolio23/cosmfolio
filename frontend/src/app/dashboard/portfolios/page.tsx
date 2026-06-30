@@ -45,7 +45,7 @@ export default function PortfoliosPage() {
       setError(null)
       const savedToken = token || localStorage.getItem('auth_token')
 
-      const res = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')}/api/portfolios`, {
+      const res = await fetch(`${(typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))}/api/portfolios`, {
         headers: { 'Authorization': `Bearer ${savedToken}` }
       })
 
@@ -75,7 +75,7 @@ export default function PortfoliosPage() {
       setCreating(true)
       const savedToken = token || localStorage.getItem('auth_token')
 
-      const res = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')}/api/portfolios`, {
+      const res = await fetch(`${(typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))}/api/portfolios`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ export default function PortfoliosPage() {
       const savedToken = token || localStorage.getItem('auth_token')
 
       const res = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')}/api/portfolios/${id}`,
+        `${(typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))}/api/portfolios/${id}`,
         {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${savedToken}` }

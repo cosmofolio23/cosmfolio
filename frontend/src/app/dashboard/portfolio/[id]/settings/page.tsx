@@ -58,7 +58,7 @@ export default function PortfolioSettingsPage() {
       const savedToken = token || localStorage.getItem('auth_token')
 
       const res = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')}/api/portfolios/${portfolioId}/settings`,
+        `${(typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))}/api/portfolios/${portfolioId}/settings`,
         {
           headers: { 'Authorization': `Bearer ${savedToken}` }
         }
@@ -104,7 +104,7 @@ export default function PortfolioSettingsPage() {
       const savedToken = token || localStorage.getItem('auth_token')
 
       const res = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')}/api/portfolios/${portfolioId}/settings`,
+        `${(typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))}/api/portfolios/${portfolioId}/settings`,
         {
           method: 'PUT',
           headers: {

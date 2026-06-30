@@ -22,7 +22,7 @@ const LIBRARY_TABS: Array<{ id: LibTab; label: string; icon: string }> = [
   { id: 'mytemplates', label: 'My Templates', icon: '⭐' },
 ]
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
 
 const DEMO_TEMPLATES: Template[] = [
   { id: 'demo-minimal-1', name: 'Minimal Studio', description: 'Clean white space with generous margins. Perfect for residential and cultural projects where the work speaks for itself.', category: 'minimalist', colors: { primary: '#1A1A1A', secondary: '#888888', accent: '#9CA3AF', background: '#FFFFFF' }, fonts: { heading: 'Montserrat', body: 'Inter' }, page_count_range: '16-24', style_notes: 'Generous white space, single-weight typography, restrained palette.', source: 'downloaded' },

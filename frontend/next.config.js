@@ -12,6 +12,14 @@ const clean = (value, fallback = '') => {
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  async rewrites() {
+    return [
+      {
+        source: '/backend-proxy/:path*',
+        destination: 'https://cosmfolio-production.up.railway.app/:path*',
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

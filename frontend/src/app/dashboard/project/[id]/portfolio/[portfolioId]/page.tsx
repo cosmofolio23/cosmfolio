@@ -18,7 +18,7 @@ import { ProfessionalPublishingSettings } from '@/components/composer/Profession
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
 import { PAGE_SIZES, type Portfolio as PublishingPortfolio } from '@/components/composer/publishingTypes'
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
 
 const DEFAULT_TOKENS: DesignTokens = {
   background: '#ffffff', text: '#1a1a1a', primary: '#1a1a1a',

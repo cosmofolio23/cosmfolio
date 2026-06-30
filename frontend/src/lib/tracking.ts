@@ -1,5 +1,5 @@
 export const getApiUrl = () => {
-  return (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+  return (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
 }
 
 export const trackEvent = async (eventName: string, metadata: Record<string, any> = {}) => {

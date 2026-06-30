@@ -85,7 +85,7 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
     setError(null)
 
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
 
       const formData = new FormData()
@@ -121,7 +121,7 @@ export function PortfolioWizard({ projectId, onComplete }: Props) {
     setSubmitting(true)
 
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
 
       const wizardConfig = {
@@ -600,7 +600,7 @@ function ProjectCoverUpload({ project, index, builder, projectId }: { project: D
     setUploading(true)
 
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
       const formData = new FormData()
       formData.append('files', file)
@@ -666,7 +666,7 @@ function ProfilePhotoUpload({ builder, projectId }: { builder: any; projectId: s
     setUploadError(null)
 
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
       if (!token) {
         setUploadError('Not logged in — refresh and log in')
@@ -745,7 +745,7 @@ function QuickUpload({ label, cat, project, idx, builder, projectId }: { label: 
     setUploading(true)
 
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
       const formData = new FormData()
       Array.from(files).forEach(f => formData.append('files', f))

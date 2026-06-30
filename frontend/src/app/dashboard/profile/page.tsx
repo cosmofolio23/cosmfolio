@@ -53,7 +53,7 @@ export default function ProfilePage() {
 
   const fetchDetails = async () => {
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/auth/me`, {
@@ -82,7 +82,7 @@ export default function ProfilePage() {
     setDetailsSuccess('')
     
     try {
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/auth/profile`, {
@@ -127,7 +127,7 @@ export default function ProfilePage() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app')
+      const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
       
       const res = await fetch(`${API_URL}/api/auth/avatar`, {
