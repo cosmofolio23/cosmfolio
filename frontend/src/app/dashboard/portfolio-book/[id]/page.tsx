@@ -135,8 +135,11 @@ export default function PortfolioBookPage() {
         const el = elements[i] as HTMLElement
         const isSpread = el.dataset.spread === '1'
 
-        // html2canvas struggles with aspect-ratio CSS, so we force explicit pixel dimensions
-        const targetWidth = isSpread ? (el.offsetWidth > 1600 ? el.offsetWidth : 2400) : (el.offsetWidth > 800 ? el.offsetWidth : 1200)
+        // The editor always uses a strict 760px base width for single pages (1520px for spreads).
+        // To ensure font sizes (which are absolute px) and layouts match the editor perfectly,
+        // we MUST render the print container at the exact same base width.
+        // html2canvas `scale: 4` handles the high-resolution upscaling for the final PDF.
+        const targetWidth = isSpread ? 1520 : 760
         const aspectRatio = isSpread ? (pdfWidth * 2) / pdfHeight : pdfWidth / pdfHeight
         const targetHeight = Math.round(targetWidth / aspectRatio)
 
