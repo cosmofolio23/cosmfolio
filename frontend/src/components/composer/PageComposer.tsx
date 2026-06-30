@@ -1384,7 +1384,7 @@ function RegionView({
   }
 
   const isFree = !!block?.freeform
-  const isTextRole = ['title', 'subtitle', 'text', 'meta', 'legend', 'contents'].includes(region.role) || isFree
+  const isTextRole = ['title', 'subtitle', 'text', 'meta', 'legend', 'contents', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) || isFree
   const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
 
   return (
