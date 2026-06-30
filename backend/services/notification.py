@@ -2,6 +2,7 @@ import os
 import threading
 import json
 import urllib.request
+import socket
 from datetime import datetime
 
 import smtplib
@@ -15,6 +16,14 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "thecosmofolio@gmail.com")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "thecosmofolio@gmail.com")
+
+# Force IPv4 for SMTP to fix Railway "Network is unreachable" IPv6 issues globally
+_orig_getaddrinfo = socket.getaddrinfo
+def _ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    if host == SMTP_SERVER:
+        family = socket.AF_INET
+    return _orig_getaddrinfo(host, port, family, type, proto, flags)
+socket.getaddrinfo = _ipv4_getaddrinfo
 
 class NotificationService:
     @staticmethod
@@ -81,18 +90,6 @@ class NotificationService:
             part = MIMEText(html_content, "html")
             msg.attach(part)
             
-            # Force IPv4 for SMTP to fix Railway "Network is unreachable" IPv6 issues
-            import socket
-            import smtplib
-            
-            _orig_getaddrinfo = socket.getaddrinfo
-            def _ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-                if host == SMTP_SERVER:
-                    family = socket.AF_INET
-                return _orig_getaddrinfo(host, port, family, type, proto, flags)
-            
-            socket.getaddrinfo = _ipv4_getaddrinfo
-            
             try:
                 if SMTP_PORT == 465:
                     server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
@@ -103,9 +100,6 @@ class NotificationService:
                 with server:
                     server.login(SMTP_USERNAME, SMTP_PASSWORD)
                     server.send_message(msg)
-            finally:
-                # Restore original getaddrinfo
-                socket.getaddrinfo = _orig_getaddrinfo
             
             return True
         except Exception as e:
