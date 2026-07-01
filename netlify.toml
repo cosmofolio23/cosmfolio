@@ -7,10 +7,10 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  NEXT_PUBLIC_API_URL = "https://cosmfolio-backend.onrender.com"
-  NEXT_PUBLIC_FIREBASE_API_KEY = "AIzaSyCbGyeuz0EXzh7FIblBeaPkqQEmeYS0Un4"
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "cosmo-folio-62c7f.firebaseapp.com"
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID = "cosmo-folio-62c7f"
+  NEXT_PUBLIC_API_URL = ""
+  NEXT_PUBLIC_FIREBASE_API_KEY = ""
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = ""
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID = ""
 
 # Official Netlify Next.js plugin - handles routing, SSR, ISR, etc.
 [[plugins]]
