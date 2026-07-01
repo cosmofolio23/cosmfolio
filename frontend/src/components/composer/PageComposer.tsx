@@ -736,7 +736,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>}
       </div>
-      <div className={`flex-1 overflow-hidden pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
+      <div className={`flex-1 overflow-visible pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
           <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : ''}`}>
             {variant === 'timeline' && (
@@ -955,7 +955,7 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
         </div>}
       </div>
       
-      <div className={`flex-1 overflow-hidden pr-1 content-start mt-1 ${gridClass}`} style={{ gap: gap + 'px' }}>
+      <div className={`flex-1 overflow-visible pr-1 content-start mt-1 ${gridClass}`} style={{ gap: gap + 'px' }}>
         {items.map((s, i) => (
           <div key={i} className={`group flex flex-col gap-1.5 break-inside-avoid ${dividerClass}`}>
             <div className="flex items-center justify-between gap-2">
@@ -1036,7 +1036,7 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
           <button onClick={() => (onChange as any)({ isDeleted: true })} className="text-[9px] font-bold text-red-500/40 hover:text-red-500 uppercase transition-colors" title="Remove Block">✕ DEL</button>
         </div>}
       </div>
-      <div className={`flex-1 overflow-hidden pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
+      <div className={`flex-1 overflow-visible pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
           <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : 'pl-3'}`}>
             {variant === 'timeline' ? (
