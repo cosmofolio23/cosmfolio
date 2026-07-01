@@ -32,11 +32,16 @@ async def track_activity(
     try:
         user_id = user.id if user else None
         
+        # Merge session_id into metadata if provided
+        metadata_dict = activity.metadata or {}
+        if activity.session_id:
+            metadata_dict['session_id'] = activity.session_id
+            
         # Save to database
         db.table("activity_logs").insert({
             "user_id": user_id,
             "event_name": activity.event_name,
-            "metadata": activity.model_dump_json(include={'metadata'})
+            "metadata": metadata_dict
         }).execute()
         return {"status": "ok"}
     except Exception as e:
@@ -97,7 +102,11 @@ async def get_dashboard_stats(
         "portfolios_count": 0,
         "exports": 0,
         "error_count": 0,
-        "active_users": 0
+        "active_users": 0,
+        "live_visitors": 0,
+        "total_page_views": 0,
+        "today_page_views": 0,
+        "top_pages": []
     }
     
     try:
@@ -126,5 +135,34 @@ async def get_dashboard_stats(
         active_logs = db.table("activity_logs").select("user_id").gte("created_at", seven_days_ago).execute().data
         stats["active_users"] = len(set(log["user_id"] for log in active_logs if log.get("user_id")))
     except Exception as e: print(f"active_users error: {e}")
+
+    try:
+        five_mins_ago = (dt.datetime.utcnow() - dt.timedelta(minutes=5)).isoformat()
+        live_logs = db.table("activity_logs").select("metadata").gte("created_at", five_mins_ago).eq("event_name", "page_view").execute().data
+        stats["live_visitors"] = len(set(log.get("metadata", {}).get("session_id") for log in live_logs if log.get("metadata") and log.get("metadata").get("session_id")))
+    except Exception as e: print(f"live_visitors error: {e}")
+
+    try:
+        stats["total_page_views"] = db.table("activity_logs").select("id", count="exact").eq("event_name", "page_view").execute().count or 0
+    except Exception as e: print(f"total_page_views error: {e}")
+
+    try:
+        midnight = dt.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        stats["today_page_views"] = db.table("activity_logs").select("id", count="exact").gte("created_at", midnight).eq("event_name", "page_view").execute().count or 0
+    except Exception as e: print(f"today_page_views error: {e}")
+
+    try:
+        thirty_days_ago = (dt.datetime.utcnow() - dt.timedelta(days=30)).isoformat()
+        recent_views = db.table("activity_logs").select("metadata").gte("created_at", thirty_days_ago).eq("event_name", "page_view").execute().data
+        
+        url_counts = {}
+        for log in recent_views:
+            url = log.get("metadata", {}).get("url")
+            if url:
+                url_counts[url] = url_counts.get(url, 0) + 1
+                
+        sorted_pages = sorted(url_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+        stats["top_pages"] = [{"url": k, "views": v} for k, v in sorted_pages]
+    except Exception as e: print(f"top_pages error: {e}")
 
     return stats

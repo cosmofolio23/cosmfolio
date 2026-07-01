@@ -317,38 +317,80 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-bold mb-4">Founder Monitoring Overview</h2>
             {monitoringStats ? (
               <>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-blue-500/10">
-                    <div>
-                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Signups</h3>
-                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.today_signups}</div>
+                <div className="grid md:grid-cols-4 gap-6">
+                  {/* Real-time Analytics */}
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center relative overflow-hidden bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Live</span>
                     </div>
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Active Visitors (Now)</h3>
+                    <div className="text-4xl font-bold mt-2 text-text-primary dark:text-dark-text-primary">{monitoringStats.live_visitors || 0}</div>
                   </div>
-                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-emerald-500/10">
-                    <div>
-                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Active Users (7 Days)</h3>
-                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.active_users}</div>
-                    </div>
+
+                  {/* Web Traffic */}
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Page Views</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.today_page_views || 0}</div>
                   </div>
-                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4 bg-red-500/10">
-                    <div>
-                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Unresolved Errors</h3>
-                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.error_count}</div>
-                    </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Page Views</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.total_page_views || 0}</div>
                   </div>
-                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
-                    <div>
-                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Portfolios</h3>
-                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.portfolios_count}</div>
-                    </div>
+
+                  {/* Users & Signups */}
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center bg-blue-500/10">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Today's Signups</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.today_signups || 0}</div>
                   </div>
-                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex items-center gap-4">
-                    <div>
-                      <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Successful Exports</h3>
-                      <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.exports}</div>
-                    </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center bg-emerald-500/10">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Active Users (7d)</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.active_users || 0}</div>
+                  </div>
+
+                  {/* App Stats */}
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Total Portfolios</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.portfolios_count || 0}</div>
+                  </div>
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">PDF Exports</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.exports || 0}</div>
+                  </div>
+                  
+                  {/* Errors */}
+                  <div className="glass-card p-6 rounded-2xl border border-white/20 dark:border-white/5 shadow-md flex flex-col justify-center bg-red-500/10">
+                    <h3 className="text-xs font-semibold text-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Unresolved Errors</h3>
+                    <div className="text-3xl font-bold mt-1 text-text-primary dark:text-dark-text-primary">{monitoringStats.error_count || 0}</div>
                   </div>
                 </div>
+
+                {monitoringStats.top_pages && monitoringStats.top_pages.length > 0 && (
+                  <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
+                    <h3 className="text-lg font-bold mb-4">Trending Pages (30 Days)</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-sm border-collapse">
+                        <thead>
+                          <tr className="border-b border-gray-200 dark:border-white/10 text-text-secondary dark:text-dark-text-secondary">
+                            <th className="py-3 px-2 font-semibold">URL Path</th>
+                            <th className="py-3 px-2 font-semibold text-right">Total Views</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                          {monitoringStats.top_pages.map((page: any, idx: number) => (
+                            <tr key={idx} className="hover:bg-white/5 transition-colors">
+                              <td className="py-3 px-2 font-mono text-xs">{page.url}</td>
+                              <td className="py-3 px-2 text-right font-bold text-accent-primary dark:text-accent-gold">{page.views}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="glass-card rounded-3xl p-6 md:p-8 border border-white/20 dark:border-white/5 shadow-xl mt-8">
                   <h3 className="text-lg font-bold mb-2">Note to Founder</h3>

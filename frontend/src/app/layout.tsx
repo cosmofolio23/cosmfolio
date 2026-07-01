@@ -6,6 +6,7 @@ import AuthInit from '@/components/AuthInit'
 import ContentProtector from '@/components/ContentProtector'
 import MobileWarningBanner from '@/components/MobileWarningBanner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import AnalyticsTracker from '@/components/AnalyticsTracker'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://thecosmofolio.com'),
@@ -98,6 +99,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-white text-charcoal font-sans antialiased flex flex-col">
+        <AnalyticsTracker />
         <ContentProtector />
         <MobileWarningBanner />
         <AuthInit />
