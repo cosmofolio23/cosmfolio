@@ -387,7 +387,7 @@ export default function PortfolioBookPage() {
                   onApplyScope={() => {}}
                   pages={pages}
                   onUpdateGlobalPages={() => {}}
-                  overflowVisible={false}
+                  overflowVisible={true}
                   onUpdateMasterElement={() => {}}
                   pageSize={pageSize}
                   showWatermark={isFreeTier}
