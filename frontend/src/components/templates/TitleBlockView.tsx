@@ -38,7 +38,7 @@ export function TitleBlockView({
   // number element
   const numberEl = () => {
     if (style.numberStyle === 'none') return null
-    const base: React.CSSProperties = { fontFamily: fonts.body, color: style.fill === 'none' || style.fill === 'tint' ? p.accent : fg, lineHeight: 1 }
+    const base: React.CSSProperties = { fontFamily: fonts.body, color: style.fill === 'none' || style.fill === 'tint' ? p.accent : fg, lineHeight: 1, paddingBottom: '0.1em' }
     switch (style.numberStyle) {
       case 'big': return <div style={{ ...base, fontFamily: fonts.heading, fontSize: '3.4em', fontWeight: 800, color: `${p.accent}`, opacity: 0.9 }}>{num.replace(/\D/g, '') || '01'}</div>
       case 'chip': return <span style={{ ...base, background: p.accent, color: '#fff', padding: '0.15em 0.5em', fontSize: '0.62em', fontWeight: 700, letterSpacing: '0.12em', borderRadius: 2 }}>{num}</span>
@@ -60,6 +60,7 @@ export function TitleBlockView({
     fontWeight: style.weight,
     letterSpacing: `${style.tracking}em`, textTransform: style.caps ? 'uppercase' : 'none',
     fontSize: `${1.6 * (override?.scale || 1)}em`, lineHeight: 1.04,
+    paddingBottom: '0.1em', // Prevent html2canvas clipping
   }
 
   return (
@@ -90,6 +91,7 @@ export function TitleBlockView({
             letterSpacing: style.subline === 'spaced' ? '0.22em' : style.subline === 'caps' ? '0.14em' : '0.02em',
             textTransform: style.subline === 'caps' || style.subline === 'spaced' ? 'uppercase' : 'none',
             fontWeight: 600, marginTop: '0.1em',
+            paddingBottom: '0.15em', // Prevent html2canvas clipping
             display: 'flex', gap: '0.5em', alignItems: 'center',
             justifyContent: align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start',
           }}>

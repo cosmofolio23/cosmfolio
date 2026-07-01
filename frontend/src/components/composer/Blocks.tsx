@@ -493,7 +493,7 @@ export function ImageBlock({
         )}
         {/* type badge */}
         <span
-          className="absolute top-2 left-2 text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-sm"
+          className="absolute top-2 left-2 text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 pb-[0.2em] rounded-sm"
           style={{ background: tokens.accent, color: pickContrast(tokens.accent) }}
         >
           {typeBadge[block.type] || 'IMG'}
