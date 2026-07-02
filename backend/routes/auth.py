@@ -380,6 +380,28 @@ async def signin(body: SignInRequest):
                     "created_at": datetime.utcnow().isoformat(),
                     "updated_at": datetime.utcnow().isoformat(),
                 }).execute()
+
+                # [Monitoring] Track event and alert founder
+                try:
+                    if database.engine is not None:
+                        with database.engine.begin() as conn:
+                            conn.execute(
+                                text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
+                                {"u": user_id, "e": "user_registered"}
+                            )
+                except Exception as e:
+                    print(f"[Monitoring Error] {e}")
+
+                try:
+                    NotificationService.sendSignupAlert({
+                        "name": "Unknown (Created on Signin)",
+                        "email": email,
+                        "country": "Unknown",
+                        "device": "Unknown",
+                        "login_method": "Server Proxy (Signin recovery)"
+                    })
+                except Exception as e:
+                    print(f"[EMAIL ERROR] {e}")
         except Exception as e:
             print(f"[WARN] signin user sync failed (non-fatal): {e}")
 
@@ -436,6 +458,28 @@ async def verify_token(token: str, display_name: str = None):
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat()
             }).execute()
+
+            # [Monitoring] Track event and alert founder
+            try:
+                if database.engine is not None:
+                    with database.engine.begin() as conn:
+                        conn.execute(
+                            text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"),
+                            {"u": user_id, "e": "user_registered"}
+                        )
+            except Exception as e:
+                print(f"[Monitoring Error] {e}")
+
+            try:
+                NotificationService.sendSignupAlert({
+                    "name": token_name or "Google User",
+                    "email": email,
+                    "country": "Unknown",
+                    "device": "Unknown",
+                    "login_method": "Google Sign-In"
+                })
+            except Exception as e:
+                print(f"[EMAIL ERROR] {e}")
 
         return {
             "success": True,
