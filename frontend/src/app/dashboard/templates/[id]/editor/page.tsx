@@ -2649,18 +2649,6 @@ export default function TemplateEditor() {
                   <p className="text-[10px] text-gray-400 mt-1">Applies to this page's title. Edit the title/subtitle text below.</p>
                 </div>
 
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Add element</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {ADD_BLOCKS.map(b => (
-                      <button key={b.type} onClick={() => addBlock(b.type)}
-                        className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
-                        <span className="text-lg">{b.icon}</span>
-                        <span className="text-[10px] font-medium capitalize">{blockLabel(b.type)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Elements on this page ({currentPage.blocks.length})</h4>
