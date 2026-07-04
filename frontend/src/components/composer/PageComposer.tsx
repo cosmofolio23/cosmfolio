@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Move, Maximize2 } from 'lucide-react'
 import type { Block, Page, DesignTokens, BlockType, ResumeEntry, SkillItem } from './types'
 import { allImages, createBlock } from './types'
@@ -46,6 +46,7 @@ interface Props {
   showWatermark?: boolean
   /** Readonly mode - hides all editing UI and empty states */
   readonly?: boolean
+  isSpread?: boolean
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
@@ -54,8 +55,39 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   software: 'software', achievement: 'achievement', interest: 'interest', experience: 'experience',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true, readonly = false }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true, readonly = false, isSpread = false }: Props) {
   const [activeBlock, setActiveBlock] = useState<{ id: string, x: number, y: number } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+  const baseWidth = isSpread ? 1520 : 760
+  const aspectRatio = pageSize ? (pageSize.width / pageSize.height) : (210 / 297)
+  const baseHeight = Math.round(baseWidth / aspectRatio)
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.getBoundingClientRect().width
+        if (width > 0) {
+          setScale(width / baseWidth)
+        }
+      }
+    }
+
+    handleResize()
+
+    if (typeof window !== 'undefined') {
+      if (typeof ResizeObserver !== 'undefined') {
+        const observer = new ResizeObserver(handleResize)
+        if (containerRef.current) {
+          observer.observe(containerRef.current)
+        }
+        return () => observer.disconnect()
+      } else {
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+      }
+    }
+  }, [baseWidth])
   
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
@@ -63,7 +95,17 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
   const patchBlock = (id: string, patch: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => {
     if (patch.isDeleted) {
-      onChange({ ...page, blocks: page.blocks.filter(b => b.id !== id) })
+      const blockToDelete = page.blocks.find(b => b.id === id)
+      const role = blockToDelete?.type
+      const updatedDeletedRoles = [...(page.deletedRoles || [])]
+      if (role && !updatedDeletedRoles.includes(role)) {
+        updatedDeletedRoles.push(role)
+      }
+      onChange({ 
+        ...page, 
+        blocks: page.blocks.filter(b => b.id !== id),
+        deletedRoles: updatedDeletedRoles
+      })
       return
     }
     const newPatch = { ...patch }
@@ -88,7 +130,12 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
   const addBlock = (type: BlockType): Block => {
     const block = createBlock(type)
-    onChange({ ...page, blocks: [...page.blocks, block] })
+    const updatedDeletedRoles = (page.deletedRoles || []).filter(r => r !== type)
+    onChange({ 
+      ...page, 
+      blocks: [...page.blocks, block],
+      deletedRoles: updatedDeletedRoles
+    })
     return block
   }
 
@@ -98,16 +145,24 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
   return (
     <div
-      className={`relative w-full mx-auto shadow-2xl ${overflowVisible ? '' : 'overflow-hidden'}`}
+      ref={containerRef}
+      className={`relative w-full mx-auto ${overflowVisible ? '' : 'overflow-hidden'}`}
       style={{
-        background: tokens.background,
-        color: tokens.text,
-        fontFamily: tokens.bodyFont,
         aspectRatio: pageSize ? `${pageSize.width} / ${pageSize.height}` : '210 / 297',
-        width: '100%'
       }}
-      onDragOver={e => e.preventDefault()}
-      onDrop={async e => {
+    >
+      <div
+        className="absolute top-0 left-0 origin-top-left shadow-2xl"
+        style={{
+          width: baseWidth,
+          height: baseHeight,
+          transform: `scale(${scale})`,
+          background: tokens.background,
+          color: tokens.text,
+          fontFamily: tokens.bodyFont,
+        }}
+        onDragOver={e => e.preventDefault()}
+        onDrop={async e => {
         e.preventDefault()
         if (!onFreeChange || !onUploadImage) return
         const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
@@ -172,6 +227,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             activeBlock={activeBlock}
             setActiveBlock={setActiveBlock}
             readonly={readonly}
+            deletedRoles={page.deletedRoles}
             onInsertImage={url => {
               // Exact placeholder slot replacement logic (BUG 1)
               const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
@@ -258,6 +314,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -1193,7 +1250,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly, deletedRoles
 }: {
   region: Region
   spec: LayoutSpec
@@ -1213,6 +1270,7 @@ function RegionView({
   activeBlock?: { id: string, x: number, y: number } | null
   setActiveBlock?: (v: { id: string, x: number, y: number } | null) => void
   readonly?: boolean
+  deletedRoles?: string[]
 }) {
   const style = { ...gridStyle(region) }
 
@@ -1266,6 +1324,9 @@ function RegionView({
 
   /* ---- text-type regions ---- */
   const type = ROLE_TO_TYPE[region.role]
+  if (deletedRoles?.includes(type)) {
+    return null
+  }
   const block = firstOfType(type)
   const onColor = overlay ? '#ffffff' : undefined
   const z = overlay ? 'relative z-10' : ''

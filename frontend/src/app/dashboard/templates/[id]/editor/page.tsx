@@ -1532,14 +1532,29 @@ export default function TemplateEditor() {
     if (!currentPage) return
     const block = createBlock(type)
     block.freeform = { x: 10, y: 10, w: 40, h: 40, pinned: false }
-    const next = { ...currentPage, blocks: [...currentPage.blocks, block] }
+    const updatedDeletedRoles = (currentPage.deletedRoles || []).filter(r => r !== type)
+    const next = { 
+      ...currentPage, 
+      blocks: [...currentPage.blocks, block],
+      deletedRoles: updatedDeletedRoles
+    }
     updatePage(next)
     setTimeout(() => recordHistorySnapshot(), 10)
   }
 
   const removeBlock = (blockId: string) => {
     if (!currentPage) return
-    const next = { ...currentPage, blocks: currentPage.blocks.filter(b => b.id !== blockId) }
+    const blockToDelete = currentPage.blocks.find(b => b.id === blockId)
+    const role = blockToDelete?.type
+    const updatedDeletedRoles = [...(currentPage.deletedRoles || [])]
+    if (role && !updatedDeletedRoles.includes(role)) {
+      updatedDeletedRoles.push(role)
+    }
+    const next = { 
+      ...currentPage, 
+      blocks: currentPage.blocks.filter(b => b.id !== blockId),
+      deletedRoles: updatedDeletedRoles
+    }
     updatePage(next)
     setTimeout(() => recordHistorySnapshot(), 10)
   }

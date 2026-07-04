@@ -134,6 +134,7 @@ export interface Page {
   drawingMeta?: import('./publishingTypes').DrawingMetadata   // architectural scale + scale bar / north
   /** True spread: this page is a single 1520px-wide canvas that exports as TWO PDF pages. */
   isSpread?: boolean
+  deletedRoles?: string[]
 }
 
 export interface DesignTokens {
