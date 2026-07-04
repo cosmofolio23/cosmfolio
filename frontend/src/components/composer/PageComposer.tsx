@@ -1436,75 +1436,86 @@ function RegionView({
               </div>
               
               {editingTitleBlock && (
-                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 text-white z-[10000] p-3 rounded-lg shadow-2xl border border-slate-700/80 text-[11px] space-y-2.5 cursor-default min-w-[240px]" onClick={e => e.stopPropagation()} data-html2canvas-ignore="true">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                    <span className="font-bold text-blue-400 uppercase tracking-widest text-[9px]">Edit Title Block</span>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setEditingTitleBlock(false) }} className="text-slate-400 hover:text-white text-xs">✕</button>
+                <div 
+                  className="absolute left-0 right-0 top-full mt-2 z-[10000] p-3 rounded-lg shadow-2xl border text-[11px] space-y-2.5 cursor-default min-w-[240px]" 
+                  style={{ backgroundColor: '#0f172a', color: '#ffffff', borderColor: '#334155' }}
+                  onClick={e => e.stopPropagation()} 
+                  data-html2canvas-ignore="true"
+                >
+                  <div className="flex items-center justify-between pb-1.5" style={{ borderBottom: '1px solid #334155' }}>
+                    <span className="font-bold uppercase tracking-widest text-[9px]" style={{ color: '#60a5fa' }}>Edit Title Block</span>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setEditingTitleBlock(false) }} className="hover:text-white text-xs" style={{ color: '#94a3b8' }}>✕</button>
                   </div>
                   
                   <div className="flex flex-col gap-0.5">
-                    <label className="text-[8px] text-slate-400 uppercase">Project Title</label>
+                    <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Project Title</label>
                     <input 
                       type="text" 
                       value={draftTitle} 
                       onChange={e => setDraftTitle(e.target.value)}
-                      className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                      className="border rounded px-1.5 py-0.5 text-[10px]"
+                      style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5">
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-slate-400 uppercase">Number</label>
+                      <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Number</label>
                       <input 
                         type="text" 
                         value={draftNumber} 
                         onChange={e => setDraftNumber(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                        className="border rounded px-1.5 py-0.5 text-[10px]"
+                        style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
                       />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-slate-400 uppercase">Year</label>
+                      <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Year</label>
                       <input 
                         type="text" 
                         value={draftYear} 
                         onChange={e => setDraftYear(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                        className="border rounded px-1.5 py-0.5 text-[10px]"
+                        style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5">
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-slate-400 uppercase">Typology</label>
+                      <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Typology</label>
                       <input 
                         type="text" 
                         value={draftTypo} 
                         onChange={e => setDraftTypo(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                        className="border rounded px-1.5 py-0.5 text-[10px]"
+                        style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
                       />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-slate-400 uppercase">Location</label>
+                      <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Location</label>
                       <input 
                         type="text" 
                         value={draftLoc} 
                         onChange={e => setDraftLoc(e.target.value)}
-                        className="bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-white text-[10px]"
+                        className="border rounded px-1.5 py-0.5 text-[10px]"
+                        style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
                       />
                     </div>
                   </div>
 
                   {/* Text formatting: colour / font / size */}
-                  <div className="pt-1.5 border-t border-slate-800 space-y-1.5">
-                    <span className="text-[8px] text-slate-400 uppercase block">Text Style</span>
+                  <div className="pt-1.5 space-y-1.5" style={{ borderTop: '1px solid #334155' }}>
+                    <span className="text-[8px] uppercase block" style={{ color: '#94a3b8' }}>Text Style</span>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
-                        <label className="text-[8px] text-slate-400 uppercase">Colour</label>
+                        <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Colour</label>
                         <input type="color" value={draftColor || '#ffffff'} onChange={e => setDraftColor(e.target.value)}
-                          className="w-6 h-6 rounded cursor-pointer border border-slate-700 bg-transparent" />
+                          className="w-6 h-6 rounded cursor-pointer border bg-transparent p-0" style={{ borderColor: '#334155' }} />
                       </div>
                       <select value={draftFont} onChange={e => setDraftFont(e.target.value)}
-                        className="flex-1 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white text-[10px]">
+                        className="flex-1 border rounded px-1 py-0.5 text-[10px]"
+                        style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}>
                         <option value="">Template font</option>
                         <option value="Playfair Display">Playfair Display</option>
                         <option value="Montserrat">Montserrat</option>
@@ -1516,35 +1527,38 @@ function RegionView({
                       </select>
                     </div>
                     <div className="flex items-center gap-2">
-                      <label className="text-[8px] text-slate-400 uppercase">Size</label>
+                      <label className="text-[8px] uppercase" style={{ color: '#94a3b8' }}>Size</label>
                       <input type="range" min="0.5" max="2.5" step="0.1" value={draftScale}
                         onChange={e => setDraftScale(parseFloat(e.target.value))}
                         className="flex-1 h-1 accent-blue-500" />
-                      <span className="text-[9px] font-mono w-8 text-right">{Math.round(draftScale * 100)}%</span>
+                      <span className="text-[9px] font-mono w-8 text-right" style={{ color: '#ffffff' }}>{Math.round(draftScale * 100)}%</span>
                     </div>
                   </div>
 
-                  <div className="pt-1.5 border-t border-slate-800">
-                    <span className="text-[8px] text-slate-400 uppercase block mb-1">Apply Updates To:</span>
+                  <div className="pt-1.5" style={{ borderTop: '1px solid #334155' }}>
+                    <span className="text-[8px] uppercase block mb-1" style={{ color: '#94a3b8' }}>Apply Updates To:</span>
                     <div className="flex gap-1">
                       <button 
                         type="button"
                         onClick={() => handleSaveTitleBlock('page')}
-                        className="flex-1 py-1 bg-slate-850 hover:bg-slate-800 rounded text-[9px] text-center border border-slate-700 font-semibold"
+                        className="flex-1 py-1 rounded text-[9px] text-center border font-semibold"
+                        style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
                       >
                         This Page
                       </button>
                       <button 
                         type="button"
                         onClick={() => handleSaveTitleBlock('project')}
-                        className="flex-1 py-1 bg-blue-900/60 hover:bg-blue-800 rounded text-[9px] text-center border border-blue-800/80 font-semibold"
+                        className="flex-1 py-1 rounded text-[9px] text-center border font-semibold"
+                        style={{ backgroundColor: '#1e3a8a', color: '#ffffff', borderColor: '#2563eb' }}
                       >
                         This Project
                       </button>
                       <button 
                         type="button"
                         onClick={() => handleSaveTitleBlock('all')}
-                        className="flex-1 py-1 bg-purple-900/60 hover:bg-purple-800 rounded text-[9px] text-center border border-purple-800/80 font-semibold"
+                        className="flex-1 py-1 rounded text-[9px] text-center border font-semibold"
+                        style={{ backgroundColor: '#581c87', color: '#ffffff', borderColor: '#7c3aed' }}
                       >
                         Entire Portfolio
                       </button>
