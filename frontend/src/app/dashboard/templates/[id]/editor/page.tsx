@@ -2714,6 +2714,96 @@ export default function TemplateEditor() {
                   </div>
                 </div>
 
+                {/* Canvas Layers */}
+                <div className="pt-2 border-t border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Canvas Layers ({currentPage.freeElements?.length || 0})</h4>
+                  {(!currentPage.freeElements || currentPage.freeElements.length === 0) ? (
+                    <p className="text-[10px] text-gray-400 italic">No canvas elements on this page yet.</p>
+                  ) : (
+                    <div className="space-y-1 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                      {[...(currentPage.freeElements || [])].reverse().map((el) => {
+                        const isSelected = selectedFreeEl?.id === el.id;
+                        let kindIcon = '📄';
+                        let label: string = el.kind;
+                        if (el.kind === 'text') {
+                          kindIcon = 'T';
+                          label = el.text ? `"${el.text.substring(0, 15)}${el.text.length > 15 ? '...' : ''}"` : 'Text';
+                        } else if (el.kind === 'image') {
+                          kindIcon = '🖼';
+                          label = el.src ? el.src.split('/').pop()?.substring(0, 15) || 'Image' : 'Image';
+                        } else if (el.kind === 'rect') {
+                          kindIcon = '▭';
+                          label = 'Box';
+                        } else if (el.kind === 'ellipse') {
+                          kindIcon = '◯';
+                          label = 'Ellipse';
+                        } else if (el.kind === 'line') {
+                          kindIcon = '—';
+                          label = 'Line';
+                        } else if (el.kind === 'graphic') {
+                          kindIcon = '✦';
+                          label = el.graphicType ? `${el.graphicType}` : 'Graphic';
+                        }
+
+                        return (
+                          <div
+                            key={el.id}
+                            onClick={() => setSelectedFreeEl(el)}
+                            className={`flex items-center justify-between p-1.5 rounded border text-xs cursor-pointer transition ${
+                              isSelected
+                                ? 'bg-blue-50 border-blue-400 text-blue-800 font-semibold shadow-sm'
+                                : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-600'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-5 h-5 flex items-center justify-center bg-white border border-gray-100 rounded text-xs shrink-0">
+                                {kindIcon}
+                              </span>
+                              <span className="truncate text-[11px]">
+                                {label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const updated = (currentPage.freeElements || []).map(item =>
+                                    item.id === el.id ? { ...item, locked: !item.locked } : item
+                                  );
+                                  updatePage({ ...currentPage, freeElements: updated });
+                                  if (selectedFreeEl?.id === el.id) {
+                                    setSelectedFreeEl({ ...selectedFreeEl, locked: !selectedFreeEl.locked });
+                                  }
+                                  markDirty();
+                                }}
+                                className="text-gray-400 hover:text-gray-600 text-xs p-0.5"
+                                title={el.locked ? 'Unlock element' : 'Lock element'}
+                              >
+                                {el.locked ? '🔒' : '🔓'}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const updated = (currentPage.freeElements || []).filter(item => item.id !== el.id);
+                                  updatePage({ ...currentPage, freeElements: updated });
+                                  if (selectedFreeEl?.id === el.id) {
+                                    setSelectedFreeEl(null);
+                                  }
+                                  markDirty();
+                                }}
+                                className="text-gray-400 hover:text-red-500 text-xs p-0.5"
+                                title="Delete element"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 {/* Selected element properties */}
                 {selectedFreeEl ? (() => {
                   const sel = selectedFreeEl
