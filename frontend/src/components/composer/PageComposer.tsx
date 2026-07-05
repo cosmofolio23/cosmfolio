@@ -66,7 +66,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current) {
-        const width = containerRef.current.getBoundingClientRect().width
+        const width = containerRef.current.offsetWidth
         if (width > 0) {
           setScale(width / baseWidth)
         }
