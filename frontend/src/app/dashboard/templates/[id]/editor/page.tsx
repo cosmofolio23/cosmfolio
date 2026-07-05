@@ -2568,7 +2568,7 @@ export default function TemplateEditor() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="flex flex-wrap gap-1">
-                      {(['All', ...LAYOUT_CATEGORIES.filter(c => c !== 'Spread' && c !== 'Resume')] as const).map(cat => (
+                      {(['All', ...LAYOUT_CATEGORIES.filter(c => c !== 'Spread' && c !== 'Resume' && c !== 'Project Spread' && c !== 'Content Spread' && c !== 'About Spread')] as const).map(cat => (
                         <button
                           key={cat}
                           onClick={() => setLayoutCat(cat as any)}
