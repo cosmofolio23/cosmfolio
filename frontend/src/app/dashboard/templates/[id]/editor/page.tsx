@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
 import SpreadComposer from '@/components/composer/SpreadComposer'
@@ -360,6 +361,7 @@ export default function TemplateEditor() {
   const [generateInput, setGenerateInput] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [inspectorOpen, setInspectorOpen] = useState(true)
   const [draggedPageIdx, setDraggedPageIdx] = useState<number | null>(null)
   const [documentVersion, setDocumentVersion] = useState<number>(0)
@@ -2047,6 +2049,14 @@ export default function TemplateEditor() {
         <div className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard/my-portfolios" className="text-gray-500 hover:text-gray-900 text-sm">← Back</Link>
+            <button
+              onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+              className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 transition-colors shadow-sm bg-white"
+              title={isSidebarExpanded ? "Hide pages panel" : "Show pages panel"}
+            >
+              {isSidebarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+              <span>Pages</span>
+            </button>
             <div className="flex flex-col relative group">
               <input value={portfolioTitle} onChange={e => { markDirty(); setPortfolioTitle(e.target.value) }} onBlur={saveDocument} className="text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-0.5 rounded transition" placeholder="Untitled" />
               <span className="absolute -bottom-4 left-2 text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Change name to save your work</span>
@@ -2122,18 +2132,25 @@ export default function TemplateEditor() {
 
       <div className={`flex flex-1 min-h-0 ${isMobile ? 'flex-col' : ''}`}>
         {/* Left: pages */}
-        <aside className={`${isMobile ? 'w-full h-24 border-b' : 'w-56 border-r'} bg-white overflow-y-auto flex-shrink-0`} id="tour-pages-panel">
+        <aside className={`${isSidebarExpanded ? (isMobile ? 'w-full h-24 border-b' : 'w-56 border-r') : 'hidden'} bg-white overflow-y-auto flex-shrink-0`} id="tour-pages-panel">
           <div className="p-3">
-            {/* ADD PAGE — top of panel */}
+            {/* ADD SINGLE PAGE */}
             <div className="mb-3 pb-3 border-b">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1.5">Add page</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">📄 Add Single Page</p>
               <div className="grid grid-cols-2 gap-1.5">
                 {(['project', 'about', 'cover', 'contact', 'resume', 'contents'] as const).map(t => (
-                  <button key={t} onClick={() => addPage(t)} className="px-2 py-1.5 text-[11px] border border-gray-300 rounded hover:bg-gray-50 capitalize">+ {t}</button>
+                  <button key={t} onClick={() => addPage(t)} className="px-2 py-1.5 text-[11px] border border-gray-300 rounded hover:bg-gray-50 transition text-gray-700 font-medium">+ {t}</button>
                 ))}
-                <button onClick={addSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-blue-300 rounded hover:bg-blue-50 text-blue-700 font-medium">📐 + Project Spread</button>
-                <button onClick={addContentSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-orange-300 rounded hover:bg-orange-50 text-orange-700 font-medium">📑 + Content Spread</button>
-                <button onClick={addResumeSpreadPage} className="col-span-2 px-2 py-1.5 text-[11px] border border-purple-300 rounded hover:bg-purple-50 text-purple-700 font-medium">🎓 + Resume Spread</button>
+              </div>
+            </div>
+
+            {/* ADD SPREAD */}
+            <div className="mb-3 pb-3 border-b">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">📖 Add Double Spread</p>
+              <div className="flex flex-col gap-1.5">
+                <button onClick={addSpreadPage} className="w-full text-left px-2 py-1.5 text-[11px] border border-blue-300 rounded hover:bg-blue-50 text-blue-700 font-semibold transition flex items-center gap-1">📐 + Project Spread</button>
+                <button onClick={addContentSpreadPage} className="w-full text-left px-2 py-1.5 text-[11px] border border-orange-300 rounded hover:bg-orange-50 text-orange-700 font-semibold transition flex items-center gap-1">📑 + Content Spread</button>
+                <button onClick={addResumeSpreadPage} className="w-full text-left px-2 py-1.5 text-[11px] border border-purple-300 rounded hover:bg-purple-50 text-purple-700 font-semibold transition flex items-center gap-1">🎓 + Resume Spread</button>
               </div>
             </div>
 
@@ -2173,6 +2190,16 @@ export default function TemplateEditor() {
 
         {/* Center: canvas */}
         <div className="relative flex-1 flex flex-col min-w-0 bg-gray-300/40">
+          {/* Floating toggle button on left edge when collapsed */}
+          {!isSidebarExpanded && (
+            <button
+              onClick={() => setIsSidebarExpanded(true)}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-6 h-14 bg-white hover:bg-gray-50 border border-l-0 border-gray-300 shadow-md rounded-r-lg flex items-center justify-center transition-all cursor-pointer group"
+              title="Expand Pages Panel"
+            >
+              <ChevronRight size={16} className="text-gray-500 group-hover:text-gray-800 transition" />
+            </button>
+          )}
           {/* Zoom controls — floating above the canvas */}
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex justify-center pointer-events-none">
             <div id="tour-canvas-zoom" className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1.5 py-1">

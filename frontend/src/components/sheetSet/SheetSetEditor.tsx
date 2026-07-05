@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { Save, Download, FileJson, AlertCircle } from 'lucide-react'
+import { Save, Download, FileJson, AlertCircle, ChevronRight } from 'lucide-react'
 import type { SheetSet, Sheet, SheetElement, DrawingMetadata, SheetSetTemplate, DrawingType, ArchScale } from './sheetSetTypes'
 import { SHEET_SIZES, mmToPx } from './sheetSetTypes'
 import { SheetSetNavigator } from './SheetSetNavigator'
@@ -49,6 +49,7 @@ export function SheetSetEditor({
   const [aiProcessing, setAiProcessing] = useState(false)
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
   const [spreadMode, setSpreadMode] = useState(false)
+  const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(false)
   
   // File upload state
   const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
@@ -370,34 +371,45 @@ export function SheetSetEditor({
       )}
 
       {/* Left Sidebar: Navigator */}
-      <SheetSetNavigator
-        sheetSet={sheetSet}
-        selectedSheetId={selectedSheetId}
-        onSelectSheet={setSelectedSheetId}
-        onAddSheet={handleAddSheet}
-        onDeleteSheet={handleDeleteSheet}
-        onReorderSheets={handleReorderSheets}
-        onToggleVisibility={id => {
-          if (currentSheet?.id === id) {
-            updateSheet(id, {
-              elements: currentSheet.elements.map(e => ({
-                ...e,
-                visible: !e.visible,
-              })),
-            })
-          }
-        }}
-        onToggleLock={id => {
-          if (currentSheet?.id === id) {
-            updateSheet(id, {
-              elements: currentSheet.elements.map(e => ({
-                ...e,
-                locked: !e.locked,
-              })),
-            })
-          }
-        }}
-      />
+      {isLeftSidebarExpanded ? (
+        <SheetSetNavigator
+          sheetSet={sheetSet}
+          selectedSheetId={selectedSheetId}
+          onSelectSheet={setSelectedSheetId}
+          onAddSheet={handleAddSheet}
+          onDeleteSheet={handleDeleteSheet}
+          onReorderSheets={handleReorderSheets}
+          onToggleVisibility={id => {
+            if (currentSheet?.id === id) {
+              updateSheet(id, {
+                elements: currentSheet.elements.map(e => ({
+                  ...e,
+                  visible: !e.visible,
+                })),
+              })
+            }
+          }}
+          onToggleLock={id => {
+            if (currentSheet?.id === id) {
+              updateSheet(id, {
+                elements: currentSheet.elements.map(e => ({
+                  ...e,
+                  locked: !e.locked,
+                })),
+              })
+            }
+          }}
+          onCollapse={() => setIsLeftSidebarExpanded(false)}
+        />
+      ) : (
+        <button
+          onClick={() => setIsLeftSidebarExpanded(true)}
+          className="absolute left-0 top-4 z-50 bg-white hover:bg-gray-50 border border-l-0 border-gray-300 shadow-md rounded-r-lg p-2.5 flex items-center justify-center transition-all duration-200 cursor-pointer group"
+          title="Expand Navigator"
+        >
+          <ChevronRight size={20} className="text-gray-550 group-hover:text-gray-850 transition" />
+        </button>
+      )}
 
       {/* Project Assets Library */}
       <SheetSetAssetLibrary 

@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react'
-import { Plus, Trash2, Eye, EyeOff, Lock, LockOpen } from 'lucide-react'
+import { Plus, Trash2, Eye, EyeOff, Lock, LockOpen, ChevronLeft } from 'lucide-react'
 import type { Sheet, SheetSet } from './sheetSetTypes'
 
 interface SheetSetNavigatorProps {
@@ -18,6 +18,7 @@ interface SheetSetNavigatorProps {
   onReorderSheets: (sheets: Sheet[]) => void
   onToggleVisibility: (id: string) => void
   onToggleLock: (id: string) => void
+  onCollapse?: () => void
 }
 
 export function SheetSetNavigator({
@@ -29,6 +30,7 @@ export function SheetSetNavigator({
   onReorderSheets,
   onToggleVisibility,
   onToggleLock,
+  onCollapse,
 }: SheetSetNavigatorProps) {
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [expandedSheet, setExpandedSheet] = useState<string | null>(null)
@@ -61,11 +63,22 @@ export function SheetSetNavigator({
   return (
     <div className="w-64 bg-white border-r border-gray-200 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-bold text-gray-900">{sheetSet.projectName}</h2>
-        <p className="text-xs text-gray-500 mt-1">
-          {sheetSet.sheets.length} sheets • {sheetSet.sheetSize} {sheetSet.orientation}
-        </p>
+      <div className="p-4 border-b border-gray-200 flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-bold text-gray-900 truncate">{sheetSet.projectName}</h2>
+          <p className="text-xs text-gray-500 mt-1">
+            {sheetSet.sheets.length} sheets • {sheetSet.sheetSize} {sheetSet.orientation}
+          </p>
+        </div>
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 transition flex-shrink-0"
+            title="Collapse navigator"
+          >
+            <ChevronLeft size={16} />
+          </button>
+        )}
       </div>
 
       {/* Sheet List */}
