@@ -372,9 +372,10 @@ export function ImageBlock({
     if (!dragStart || !panActive) return
     const dx = e.clientX - dragStart.x
     const dy = e.clientY - dragStart.y
+    // Store offsets as raw pixel deltas — rendering divides by zoom to keep pan in screen-space
     onChange({
-      xOffset: dragStart.ox + dx / 4,
-      yOffset: dragStart.oy + dy / 4,
+      xOffset: dragStart.ox + dx,
+      yOffset: dragStart.oy + dy,
     })
   }
   const onMouseUp = () => {
@@ -428,26 +429,25 @@ export function ImageBlock({
             <div
               className="w-full h-full pointer-events-none select-none relative overflow-hidden"
             >
+              {/* 
+                Strategy: image is always w-full h-full object-cover, filling the frame.
+                Zoom uses scale() from center — this visually enlarges without changing layout box.
+                Pan uses translate() BEFORE scale() in the transform chain:
+                  transform: translate(px, py) scale(z)
+                Because translate is listed first, it operates in the parent coordinate space
+                (screen pixels), making pan speed feel consistent regardless of zoom level.
+                The container has overflow:hidden so nothing leaks outside the frame.
+              */}
               <img
                 src={block.imageUrl}
                 alt={block.label || block.type}
-                className="absolute"
+                className="absolute inset-0 w-full h-full"
                 style={{
-                  width: `${(block.zoom || 1) * 100}%`,
-                  height: `${(block.zoom || 1) * 100}%`,
-                  maxWidth: 'none',
-                  maxHeight: 'none',
-                  top: `${(1 - (block.zoom || 1)) * 50}%`,
-                  left: `${(1 - (block.zoom || 1)) * 50}%`,
                   objectFit: block.fit === 'contain' ? 'contain' : 'cover',
-                  objectPosition: block.zoom && block.zoom > 1 
-                    ? 'center' 
-                    : `${50 - (block.xOffset || 0)}% ${50 - (block.yOffset || 0)}%`,
-                  transform: block.zoom && block.zoom > 1 
-                    ? `translate(${block.xOffset || 0}%, ${block.yOffset || 0}%)` 
-                    : 'none',
+                  objectPosition: 'center',
+                  transform: `translate(${block.xOffset || 0}px, ${block.yOffset || 0}px) scale(${block.zoom || 1})`,
                   transformOrigin: 'center center',
-                  transition: dragStart ? 'none' : 'transform 0.1s ease, object-position 0.1s ease',
+                  transition: dragStart ? 'none' : 'transform 0.15s ease',
                   filter: block.cssFilter || 'none',
                 }}
               />
