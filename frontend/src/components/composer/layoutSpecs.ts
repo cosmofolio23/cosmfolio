@@ -12,6 +12,7 @@ import {
   type Block, type Page, type PageType,
   uid, createBlock, clamp, planLabel,
 } from './types'
+import { getPlaceholderImage, getPlaceholderText } from './themePlaceholders'
 
 export type RegionRole = 'image' | 'title' | 'subtitle' | 'text' | 'legend' | 'meta' | 'contents'
   | 'headshot' | 'bio' | 'education' | 'skills' | 'software' | 'achievement' | 'interest' | 'experience'
@@ -2200,6 +2201,8 @@ export const LAYOUT_COUNT = LAYOUT_CATALOG.length
 
 interface TemplateLike {
   name?: string
+  category?: string
+  colors?: Record<string, string>
   layouts?: Record<string, { structure?: string; grid?: string; image_ratio?: string | null }>
   placeholders?: {
     renders?: number; plans?: number; sections?: number; diagrams?: number
@@ -2271,15 +2274,18 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
   const projectTitles = ec.project_titles || []
   const pages: Page[] = []
 
+  const category = template.category || 'contemporary'
+  const colors = template.colors || {}
+
   // Use explicit layout_ids when provided (e.g. Cosmo Special templates), else derive from structure hints
   const coverId = (ids.cover && SPEC_BY_ID.has(ids.cover)) ? ids.cover : pickCoverSpec(template)
   const coverHasImage = getSpec(coverId).imageCount > 0
   pages.push({
     id: uid('p'), type: 'cover', layoutId: coverId,
     blocks: [
-      { ...createBlock('title'), text: ec.title || template.name || 'Portfolio' },
-      { ...createBlock('subtitle'), text: ec.author || 'Architecture & Design — 2026' },
-      ...(coverHasImage ? [{ ...createBlock('render'), label: 'Cover Image' }] : []),
+      { ...createBlock('title'), text: ec.title || template.name || getPlaceholderText('title', category) },
+      { ...createBlock('subtitle'), text: ec.author || getPlaceholderText('subtitle', category) },
+      ...(coverHasImage ? [{ ...createBlock('render'), imageUrl: getPlaceholderImage('render', colors, 1), label: 'Cover Image' }] : []),
     ],
   })
 
@@ -2288,20 +2294,56 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
     id: uid('p'), type: 'about', layoutId: aboutId,
     blocks: [
       { ...createBlock('title'), text: 'About' },
-      ...(ec.about ? [{ ...createBlock('description'), text: ec.about }] : [createBlock('description')]),
+      ...(ec.about 
+        ? [{ ...createBlock('description'), text: ec.about }] 
+        : [{ ...createBlock('description'), text: getPlaceholderText('bio', category) }]),
     ],
   })
 
   const projectSpec = (ids.project && SPEC_BY_ID.has(ids.project)) ? ids.project : pickProjectSpec(grid, { renders, plans, sections, diagrams })
   for (let i = 1; i <= 2; i++) {
     const realTitle = projectTitles[i - 1]
-    const blocks: Block[] = [{ ...createBlock('title'), text: realTitle || `Project 0${i}` }]
-    blocks.push(createBlock('meta'))
-    blocks.push(createBlock('description'))
-    for (let r = 0; r < Math.min(renders, 4); r++) blocks.push({ ...createBlock('render'), label: `Render — View 0${r + 1}` })
-    for (let p = 0; p < Math.min(plans, 4); p++) blocks.push({ ...createBlock('plan'), label: planLabel(p) })
-    for (let s = 0; s < Math.min(sections, 4); s++) blocks.push({ ...createBlock('section'), label: `Section ${String.fromCharCode(65 + s)}–${String.fromCharCode(65 + s)}` })
-    for (let d = 0; d < Math.min(diagrams, 3); d++) blocks.push({ ...createBlock('diagram'), label: `Diagram 0${d + 1}` })
+    const blocks: Block[] = [{ ...createBlock('title'), text: realTitle || `${getPlaceholderText('title', category)} 0${i}` }]
+    blocks.push({
+      ...createBlock('meta'),
+      fields: [
+        { label: 'Year', value: '2026' },
+        { label: 'Location', value: 'New Delhi, India' },
+        { label: 'Program', value: 'Mixed-Use' },
+        { label: 'Area', value: '1,250 m²' },
+      ]
+    })
+    blocks.push({ ...createBlock('description'), text: getPlaceholderText('description', category) })
+    
+    let seedIndex = i * 17
+    for (let r = 0; r < Math.min(renders, 4); r++) {
+      blocks.push({ 
+        ...createBlock('render'), 
+        imageUrl: getPlaceholderImage('render', colors, seedIndex + r * 7), 
+        label: `Render — View 0${r + 1}` 
+      })
+    }
+    for (let p = 0; p < Math.min(plans, 4); p++) {
+      blocks.push({ 
+        ...createBlock('plan'), 
+        imageUrl: getPlaceholderImage('plan', colors, seedIndex + p * 3), 
+        label: planLabel(p) 
+      })
+    }
+    for (let s = 0; s < Math.min(sections, 4); s++) {
+      blocks.push({ 
+        ...createBlock('section'), 
+        imageUrl: getPlaceholderImage('section', colors, seedIndex + s * 9), 
+        label: `Section ${String.fromCharCode(65 + s)}–${String.fromCharCode(65 + s)}` 
+      })
+    }
+    for (let d = 0; d < Math.min(diagrams, 3); d++) {
+      blocks.push({ 
+        ...createBlock('diagram'), 
+        imageUrl: getPlaceholderImage('diagram', colors, seedIndex + d * 5), 
+        label: `Diagram 0${d + 1}` 
+      })
+    }
     if (hasLegend) blocks.push(createBlock('legend'))
     pages.push({ id: uid('p'), type: 'project', layoutId: projectSpec, blocks })
   }
@@ -2321,7 +2363,7 @@ export function seedPagesFromTemplate(template: TemplateLike): Page[] {
     id: uid('p'), type: 'contact', layoutId: 'contact.center',
     blocks: [
       { ...createBlock('title'), text: 'Get in Touch' },
-      { ...createBlock('description'), text: ec.contact || 'hello@yourstudio.com\n+1 (555) 123-4567\nyourstudio.com' },
+      { ...createBlock('description'), text: ec.contact || 'hello@cosmofolio.design\n+91 98765 43210\ncosmofolio.design/profile' },
     ],
   })
 

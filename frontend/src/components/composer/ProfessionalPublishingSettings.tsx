@@ -8,6 +8,7 @@
 import React, { useState } from 'react'
 import { PAGE_SIZES, type Portfolio, type PageSize, type MasterPage, type BackgroundLayer, type GridSettings, type ArchScale } from './publishingTypes'
 import { MasterPageEditor } from './MasterPageEditor'
+import { SHEET_LAYOUT_PRESETS } from './sheetLayoutPresets'
 import { BackgroundLayerEditor } from './BackgroundLayerEditor'
 import { GridEditor } from './GridEditor'
 import { ArchitecturalScaleEditor } from './ArchitecturalScaleEditor'
@@ -106,13 +107,44 @@ export function ProfessionalPublishingSettings({ portfolio, onUpdate, drawingMet
 
         {/* Master Pages */}
         {activeTab === 'masters' && (
-          <div className="space-y-2">
+          <div className="space-y-4">
+            {/* Sheet Presets Selector */}
+            {portfolio && onUpdate && (
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Apply Background Sheet Layout</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {SHEET_LAYOUT_PRESETS.map(preset => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => {
+                        if (!portfolio.masterPages || portfolio.masterPages.length === 0) return
+                        const updatedMasters = portfolio.masterPages.map(m => ({
+                          ...m,
+                          marginTop: preset.marginTop,
+                          marginBottom: preset.marginBottom,
+                          marginLeft: preset.marginLeft,
+                          marginRight: preset.marginRight,
+                          elements: preset.elements.map(e => ({ ...e, id: `${e.id}-${Date.now()}` }))
+                        }))
+                        onUpdate({ ...portfolio, masterPages: updatedMasters })
+                      }}
+                      className="flex flex-col items-start p-2 border border-slate-200 rounded text-left hover:border-blue-400 bg-white hover:bg-blue-50/30 transition focus:outline-none"
+                    >
+                      <span className="text-xs font-bold text-slate-800">{preset.name}</span>
+                      <span className="text-[9px] text-slate-500 mt-0.5 leading-tight">{preset.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {portfolio.masterPages?.map(m => (
               <MasterPageEditor
                 key={m.id}
                 master={m}
-                onUpdate={m => onUpdate({ ...portfolio, masterPages: portfolio.masterPages?.map(x => (x.id === m.id ? m : x)) })}
-                onDelete={() => onUpdate({ ...portfolio, masterPages: portfolio.masterPages?.filter(x => x.id !== m.id) })}
+                onUpdate={m => onUpdate && onUpdate({ ...portfolio, masterPages: portfolio.masterPages?.map(x => (x.id === m.id ? m : x)) })}
+                onDelete={() => onUpdate && onUpdate({ ...portfolio, masterPages: portfolio.masterPages?.filter(x => x.id !== m.id) })}
               />
             ))}
 

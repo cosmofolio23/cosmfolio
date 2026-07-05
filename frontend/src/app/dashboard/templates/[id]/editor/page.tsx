@@ -18,6 +18,7 @@ import { SPREAD_TEMPLATES, type SpreadTemplate } from '@/components/composer/spr
 import { analyzeTemplate, autoFillTemplate, summaryLine } from '@/components/composer/templateDNA'
 import { STYLE_DNA } from '@/components/composer/styleDNA'
 import { ProfessionalPublishingSettings } from '@/components/composer/ProfessionalPublishingSettings'
+import { getPlaceholderImage, getPlaceholderText } from '@/components/composer/themePlaceholders'
 import { TITLE_BLOCKS, TITLE_BLOCK_CATEGORIES } from '@/components/templates/titleBlocks'
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { BackgroundLayers, MasterElements } from '@/components/composer/PublishingLayers'
@@ -87,15 +88,19 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   const useId = (id: string | undefined, fallback: string) =>
     (id && LAYOUT_CATALOG.some(s => s.id === id)) ? id : fallback
 
+  const category = data.category || 'contemporary'
+  const colors = data.colors || {}
+
   // 1. Cover Page
   list.push({
     id: uid('p'),
     type: 'cover',
     layoutId: useId(ids.cover, 'cover.fullBleed.center'),
     blocks: [
-      { id: uid(), type: 'title', text: ec.title || data.name || 'Architecture Portfolio' },
-      { id: uid(), type: 'subtitle', text: ec.author || `${purpose.toUpperCase()} PORTFOLIO` },
-      { id: uid(), type: 'meta', fields: [{ label: 'Name', value: 'Student Name' }, { label: 'Year', value: '2026' }] }
+      { id: uid(), type: 'title', text: ec.title || data.name || getPlaceholderText('title', category) },
+      { id: uid(), type: 'subtitle', text: ec.author || getPlaceholderText('subtitle', category) },
+      { id: uid(), type: 'meta', fields: [{ label: 'Name', value: 'Architect Portfolio' }, { label: 'Year', value: '2026' }] },
+      { id: uid(), type: 'render', imageUrl: getPlaceholderImage('render', colors, 1), label: 'Cover Image' }
     ]
   })
 
@@ -117,7 +122,8 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
     layoutId: useId(ids.about, 'about.portraitFull'),
     blocks: [
       { id: uid(), type: 'title', text: 'About Me' },
-      { id: uid(), type: 'description', text: ec.about || 'Architect and designer. Passionate about sustainable urban spaces.' }
+      { id: uid(), type: 'description', text: ec.about || getPlaceholderText('bio', category) },
+      { id: uid(), type: 'headshot', imageUrl: getPlaceholderImage('portrait', colors, 5), label: 'Bio Image' }
     ]
   })
   list.push({
@@ -131,7 +137,10 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
         ]
       : [
           { id: uid(), type: 'title', text: 'Curriculum Vitae' },
-          { id: uid(), type: 'legend', label: 'EDUCATION', legendItems: [{ key: '2022-26', label: 'B.Arch Graduate' }] }
+          { id: uid(), type: 'legend', label: 'EDUCATION & WORK', legendItems: [
+            { key: '2022-26', label: 'B.Arch Graduate' },
+            { key: '2025', label: 'Architectural Intern' }
+          ] }
         ]
   })
 
@@ -141,7 +150,8 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   
   for (let pIdx = 0; pIdx < targetProjects; pIdx++) {
     const pNum = String(pIdx + 1).padStart(2, '0')
-    const pTitle = projTitles[pIdx] || `Project ${pNum}`
+    const pTitle = projTitles[pIdx] || `${getPlaceholderText('title', category)} ${pNum}`
+    let seedIndex = pIdx * 29
 
     list.push({
       id: uid('p'),
@@ -149,9 +159,10 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
       layoutId: useId(ids.project, 'single.titleTopText'),
       blocks: [
         { id: uid(), type: 'title', text: pTitle },
-        { id: uid(), type: 'subtitle', text: 'Project Description Subtitle' },
-        { id: uid(), type: 'meta', fields: [{ label: 'Year', value: '2026' }, { label: 'Location', value: 'Location' }] },
-        { id: uid(), type: 'render', imageUrl: '', label: 'Hero Render' }
+        { id: uid(), type: 'subtitle', text: getPlaceholderText('subtitle', category) },
+        { id: uid(), type: 'meta', fields: [{ label: 'Year', value: '2026' }, { label: 'Location', value: 'Project Site' }] },
+        { id: uid(), type: 'description', text: getPlaceholderText('description', category) },
+        { id: uid(), type: 'render', imageUrl: getPlaceholderImage('render', colors, seedIndex + 1), label: 'Hero Render' }
       ]
     })
 
@@ -162,8 +173,8 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
         type: 'project',
         layoutId: pg % 2 === 1 ? 'duoH.bare' : 'heroSideRight.titleLegendSide',
         blocks: [
-          { id: uid(), type: 'render', imageUrl: '', label: 'Visual View' },
-          { id: uid(), type: 'plan', imageUrl: '', label: 'Ground Floor Plan' }
+          { id: uid(), type: 'render', imageUrl: getPlaceholderImage('render', colors, seedIndex + pg * 3), label: 'Visual View' },
+          { id: uid(), type: 'plan', imageUrl: getPlaceholderImage('plan', colors, seedIndex + pg * 7), label: 'Ground Floor Plan' }
         ]
       })
     }
@@ -175,7 +186,7 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
       id: uid('p'),
       type: 'project',
       layoutId: 'single.bare',
-      blocks: [{ id: uid(), type: 'render', imageUrl: '', label: 'Project View' }]
+      blocks: [{ id: uid(), type: 'render', imageUrl: getPlaceholderImage('render', colors, 99), label: 'Project View' }]
     })
   }
 
@@ -183,10 +194,10 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   list.push({
     id: uid('p'),
     type: 'contact',
-    layoutId: 'contact.minimalGrid',
+    layoutId: 'contact.left',
     blocks: [
       { id: uid(), type: 'title', text: 'Thank You' },
-      { id: uid(), type: 'description', text: 'For inquiries or collaborations, get in touch.' }
+      { id: uid(), type: 'description', text: ec.contact || 'hello@cosmofolio.design\n+91 98765 43210\ncosmofolio.design/profile' }
     ]
   })
 

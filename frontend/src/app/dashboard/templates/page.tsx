@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import Logo from '@/components/Logo'
 import TemplateSpread from '@/components/templates/TemplateSpread'
+import TemplateBookPreview from '@/components/templates/TemplateBookPreview'
 import LibraryBrowser, { type LibraryView } from '@/components/templates/LibraryBrowser'
 import MyTemplatesGrid from '@/components/templates/MyTemplatesGrid'
 import SetupModal from '@/components/composer/SetupModal'
@@ -707,16 +708,7 @@ export default function TemplateMarketplace() {
               <button onClick={() => setShowPreview(false)} className="text-2xl text-text-secondary hover:text-text-primary">✕</button>
             </div>
             <div className="p-6 space-y-6">
-              <div className="h-64 rounded-lg overflow-hidden border border-border-light">
-                <TemplateSpread template={selectedTemplate} />
-              </div>
-              {selectedTemplate.preview_image && selectedTemplate.preview_image.startsWith('http') && (
-                <img
-                  src={selectedTemplate.preview_image}
-                  alt={selectedTemplate.name}
-                  className="w-full rounded-lg border border-border-light object-cover max-h-48"
-                />
-              )}
+              <TemplateBookPreview template={selectedTemplate} />
               <p className="text-body text-text-secondary dark:text-dark-text-secondary">{selectedTemplate.description}</p>
               {selectedTemplate.style_notes && (
                 <div>
