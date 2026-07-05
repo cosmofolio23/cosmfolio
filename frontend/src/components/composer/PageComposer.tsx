@@ -1452,7 +1452,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
+      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()
@@ -1501,6 +1501,8 @@ function RegionView({
                   className="absolute left-0 right-0 top-full mt-2 z-[10000] p-3 rounded-lg shadow-2xl border text-[11px] space-y-2.5 cursor-default min-w-[240px]" 
                   style={{ backgroundColor: '#0f172a', color: '#ffffff', borderColor: '#334155' }}
                   onClick={e => e.stopPropagation()} 
+                  onPointerDown={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
                   data-html2canvas-ignore="true"
                 >
                   <div className="flex items-center justify-between pb-1.5" style={{ borderBottom: '1px solid #334155' }}>
