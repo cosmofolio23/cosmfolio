@@ -435,6 +435,8 @@ export function ImageBlock({
                 style={{
                   width: `${(block.zoom || 1) * 100}%`,
                   height: `${(block.zoom || 1) * 100}%`,
+                  maxWidth: 'none',
+                  maxHeight: 'none',
                   top: `${(1 - (block.zoom || 1)) * 50}%`,
                   left: `${(1 - (block.zoom || 1)) * 50}%`,
                   objectFit: block.fit === 'contain' ? 'contain' : 'cover',
