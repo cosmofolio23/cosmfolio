@@ -4,6 +4,9 @@ import { TableOfContentsRenderer } from './TableOfContentsRenderer'
 import { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { Block, DesignTokens, LegendItem, MetaField } from './types'
+import ProcessFlowchartRenderer from './ProcessFlowchartRenderer'
+import FlowchartModalEditor from './FlowchartModalEditor'
+import { PROCESS_PRESETS } from './processPresets'
 
 function hexToRgba(hex: string | undefined, opacity: number): string {
   if (!hex) return `rgba(255, 255, 255, ${opacity})`
@@ -306,6 +309,7 @@ export function ImageBlock({
   const [isDragging, setIsDragging] = useState(false)
   const [panActive, setPanActive] = useState(false)
   const [dragStart, setDragStart] = useState<{ x: number; y: number; ox: number; oy: number } | null>(null)
+  const [editorOpen, setEditorOpen] = useState(false)
 
   const uploadFile = async (file: File) => {
     const valid = file.type.startsWith('image/') || file.type === 'application/pdf'
@@ -389,7 +393,30 @@ export function ImageBlock({
         </div>
       )}
       <div className={`relative w-full overflow-hidden tour-image-block ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
-        {block.imageUrl ? (
+        {block.isFlowchart ? (
+          <div className="relative w-full h-full group/fc">
+            <ProcessFlowchartRenderer block={block} onChange={onChange} />
+            
+            {/* Flowchart Floating Contextual Toolbar */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/fc:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px]">
+              <button
+                type="button"
+                onClick={() => setEditorOpen(true)}
+                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-yellow-400 font-bold"
+              >
+                ⚙️ Edit Flowchart
+              </button>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                onClick={() => onChange({ isFlowchart: false })}
+                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-red-400 font-medium"
+              >
+                🖼️ Reset Block
+              </button>
+            </div>
+          </div>
+        ) : block.imageUrl ? (
           <div
             className="relative w-full h-full overflow-hidden select-none"
             onMouseDown={onMouseDown}
@@ -475,6 +502,21 @@ export function ImageBlock({
               <span className="text-white/20">|</span>
               <button
                 type="button"
+                onClick={() => {
+                  const defaultPreset = PROCESS_PRESETS[0].config
+                  onChange({
+                    isFlowchart: true,
+                    flowchartConfig: defaultPreset
+                  })
+                }}
+                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-green-400 font-bold"
+                title="Convert this block into a serpentine flowchart diagram"
+              >
+                🌿 Flowchart
+              </button>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
                 onClick={() => onChange({ imageUrl: '' })}
                 className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-red-400 font-medium"
               >
@@ -483,19 +525,36 @@ export function ImageBlock({
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
+          <div
             className={`absolute inset-0 flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50/40 text-blue-500' : 'border-gray-300'}`}
             style={{ borderColor: isDragging ? undefined : 'rgba(0,0,0,0.15)' }}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
           >
-            <span className="text-3xl mb-1">＋</span>
-            <span className="text-[10px] uppercase tracking-widest font-semibold">{typeBadge[block.type] || 'IMAGE'}</span>
-            <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="flex flex-col items-center justify-center w-full h-full pt-4 focus:outline-none"
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+            >
+              <span className="text-3xl mb-1">＋</span>
+              <span className="text-[10px] uppercase tracking-widest font-semibold">{typeBadge[block.type] || 'IMAGE'}</span>
+              <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const defaultPreset = PROCESS_PRESETS[0].config
+                onChange({
+                  isFlowchart: true,
+                  flowchartConfig: defaultPreset
+                })
+              }}
+              className="absolute bottom-3 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] tracking-wide uppercase transition shadow-sm z-30"
+            >
+              🌿 Convert to Flowchart
+            </button>
+          </div>
         )}
         {/* type badge */}
         <span
@@ -525,6 +584,14 @@ export function ImageBlock({
           )}
         </div>
       )}
+
+      <FlowchartModalEditor
+        isOpen={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        block={block}
+        onChange={onChange}
+        onUploadImage={onUpload}
+      />
 
       <input type="file" ref={inputRef} onChange={handleFile} accept="image/*,application/pdf" className="hidden" />
     </div>

@@ -89,6 +89,10 @@ export interface Block {
   resumeStyle?: any
   // Unlocked Mode styling
   freeform?: { x: number, y: number, w: number, h: number, pinned?: boolean, z?: number }
+
+  // Flowchart Builder integration
+  isFlowchart?: boolean
+  flowchartConfig?: FlowchartConfig
 }
 
 export type PageType = 'cover' | 'about' | 'project' | 'contact' | 'resume' | 'contents'
@@ -247,3 +251,26 @@ export function planLabel(i: number): string {
   const names = ['Ground Floor Plan', 'First Floor Plan', 'Second Floor Plan', 'Roof Plan', 'Site Plan']
   return names[i] || `Floor Plan ${i + 1}`
 }
+
+/* ======================== FLOWCHART CONFIG ======================== */
+
+export interface FlowchartStep {
+  id: string
+  title: string
+  description: string
+  imageUrl?: string
+}
+
+export interface FlowchartConfig {
+  presetId: string
+  pathStyle: 'serpentine' | 'zigzag' | 'linear-h' | 'linear-v' | 'circular' | 'radial'
+  nodeStyle: 'image' | 'number' | 'icon' | 'hexagon' | 'minimal-dot'
+  connectorStyle: 'curved' | 'sharp' | 'dashed' | 'double'
+  lineColor: string
+  nodeBorderColor: string
+  nodeBgColor: string
+  textColor: string
+  lineWidth: number
+  steps: FlowchartStep[]
+}
+
