@@ -404,15 +404,21 @@ export function ImageBlock({
               <img
                 src={block.imageUrl}
                 alt={block.label || block.type}
-                className="absolute w-full h-full"
+                className="absolute"
                 style={{
-                  top: 0,
-                  left: 0,
+                  width: `${(block.zoom || 1) * 100}%`,
+                  height: `${(block.zoom || 1) * 100}%`,
+                  top: `${(1 - (block.zoom || 1)) * 50}%`,
+                  left: `${(1 - (block.zoom || 1)) * 50}%`,
                   objectFit: block.fit === 'contain' ? 'contain' : 'cover',
-                  objectPosition: `${50 - (block.xOffset || 0)}% ${50 - (block.yOffset || 0)}%`,
-                  transform: `scale(${block.zoom || 1})`,
+                  objectPosition: block.zoom && block.zoom > 1 
+                    ? 'center' 
+                    : `${50 - (block.xOffset || 0)}% ${50 - (block.yOffset || 0)}%`,
+                  transform: block.zoom && block.zoom > 1 
+                    ? `translate(${block.xOffset || 0}%, ${block.yOffset || 0}%)` 
+                    : 'none',
                   transformOrigin: 'center center',
-                  transition: dragStart ? 'none' : 'transform 0.1s ease',
+                  transition: dragStart ? 'none' : 'transform 0.1s ease, object-position 0.1s ease',
                   filter: block.cssFilter || 'none',
                 }}
               />
