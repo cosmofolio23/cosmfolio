@@ -58,7 +58,7 @@ export function FlowchartBlockRenderer({
 
   return (
     <div className="group/fc relative w-full h-full flex flex-col min-h-0">
-      <ProcessFlowchartRenderer block={block} onChange={onChange} />
+      <ProcessFlowchartRenderer block={block} tokens={tokens} onChange={onChange} />
       
       {!readonly && (
         <div 
