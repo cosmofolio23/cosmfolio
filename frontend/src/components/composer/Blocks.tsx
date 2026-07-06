@@ -394,30 +394,7 @@ export function ImageBlock({
         </div>
       )}
       <div className={`relative w-full overflow-hidden tour-image-block ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
-        {block.isFlowchart ? (
-          <div className="relative w-full h-full group/fc">
-            <ProcessFlowchartRenderer block={block} onChange={onChange} />
-            
-            {/* Flowchart Floating Contextual Toolbar */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/fc:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px]">
-              <button
-                type="button"
-                onClick={() => setEditorOpen(true)}
-                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-yellow-400 font-bold"
-              >
-                ⚙️ Edit Flowchart
-              </button>
-              <span className="text-white/20">|</span>
-              <button
-                type="button"
-                onClick={() => onChange({ isFlowchart: false })}
-                className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-red-400 font-medium"
-              >
-                🖼️ Reset Block
-              </button>
-            </div>
-          </div>
-        ) : block.imageUrl ? (
+        {block.imageUrl ? (
           <div
             className="relative w-full h-full overflow-hidden select-none"
             onMouseDown={onMouseDown}
@@ -936,5 +913,265 @@ export function ContentsBlock({
   layoutId: string
   onUploadImage?: (file: File) => Promise<string>
 }) {
+      ]
+    } else if (blockType === 'skills') {
+      newFields = [
+        { label: 'Skill', value: 'CAD' },
+        { label: 'Level', value: 'Advanced' }
+      ]
+    } else if (blockType === 'software') {
+      newFields = [
+        { label: 'Software', value: 'Rhino' },
+        { label: 'Level', value: 'Advanced' }
+      ]
+    } else if (blockType === 'competitions') {
+      newFields = [
+        { label: 'Competition', value: 'Competition Name' },
+        { label: 'Rank', value: '1st Place' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else if (blockType === 'awards') {
+      newFields = [
+        { label: 'Award', value: 'Design Excellence' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else if (blockType === 'projects') {
+      newFields = [
+        { label: 'Project', value: 'New Project' },
+        { label: 'Typology', value: 'Residential' },
+        { label: 'Year', value: '2026' }
+      ]
+    } else {
+      newFields = [{ label: 'Label', value: 'Value' }]
+    }
+    onChange({ fields: [...fields, ...newFields] })
+  }
+
+  const remove = (idx: number) => onChange({ fields: fields.filter((_, i) => i !== idx) })
+
+  const getButtonText = () => {
+    switch (blockType) {
+      case 'education': return '+ Add Education'
+      case 'experience': return '+ Add Experience'
+      case 'skills': return '+ Add Skill'
+      case 'software': return '+ Add Software'
+      case 'competitions': return '+ Add Competition'
+      case 'awards': return '+ Add Award'
+      case 'projects': return '+ Add Project'
+      default: return '+ Field'
+    }
+  }
+
+  return (
+    <div className={layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
+      <EditableText
+        value={label}
+        onChange={v => onChange({ label: v })}
+        className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b block w-full"
+        style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
+      />
+      <div className={`flex-1 overflow-hidden ${layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'}`} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
+        {fields.map((f, idx) => (
+          <div key={idx} className="group/meta">
+            <EditableText
+              value={f.label}
+              onChange={v => update(idx, { label: v })}
+              className="text-[9px] font-bold uppercase tracking-[0.15em]"
+              style={{ color: tokens.muted, fontFamily: tokens.bodyFont }}
+            />
+            <div className="flex items-center gap-1">
+              <EditableText
+                value={f.value}
+                onChange={v => update(idx, { value: v })}
+                className="text-[13px] font-medium"
+                style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
+              />
+              <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 text-xs z-10 cursor-pointer">✕</button>
+            </div>
+          </div>
+        ))}
+        <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider block w-full text-left mt-1" style={{ color: tokens.accent }}>{getButtonText()}</button>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------ Text Blocks ------------------------------- */
+
+export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; size?: 'sm' | 'lg' | 'xl', onAiPolish?: (t: string) => Promise<string> }) {
+  const sizes = { sm: 'text-2xl', lg: 'text-4xl', xl: 'text-6xl' }
+  return (
+    <EditableText
+      value={block.text || ''}
+      onAiPolish={onAiPolish}
+      onChange={v => onChange({ text: v })}
+      className={`leading-tight ${sizes[size]}`}
+      fontFamily={block.fontFamily || tokens.headingFont}
+      fontSize={block.fontSize}
+      color={block.color || tokens.primary}
+      align={block.align || 'left'}
+      bold={block.bold !== undefined ? block.bold : true}
+      onFormatChange={patch => onChange(patch)}
+      style={{ 
+        color: block.color || tokens.primary, 
+        fontFamily: block.fontFamily || tokens.headingFont,
+        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        textAlign: block.align || 'left',
+        fontWeight: block.bold !== false ? 'bold' : 'normal'
+      }}
+    />
+  )
+}
+
+export function SubtitleBlock({ block, tokens, onChange, onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string> }) {
+  return (
+    <EditableText
+      value={block.text || ''}
+      onAiPolish={onAiPolish}
+      onChange={v => onChange({ text: v })}
+      className="text-lg"
+      fontFamily={block.fontFamily || tokens.bodyFont}
+      fontSize={block.fontSize}
+      color={block.color || tokens.accent}
+      align={block.align || 'left'}
+      bold={block.bold}
+      onFormatChange={patch => onChange(patch)}
+      style={{ 
+        color: block.color || tokens.accent, 
+        fontFamily: block.fontFamily || tokens.bodyFont,
+        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        textAlign: block.align || 'left',
+        fontWeight: block.bold ? 'bold' : 'normal'
+      }}
+    />
+  )
+}
+
+export function DescriptionBlock({ block, tokens, onChange, onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string> }) {
+  return (
+    <EditableText
+      value={block.text || ''}
+      onAiPolish={onAiPolish}
+      onChange={v => onChange({ text: v })}
+      multiline
+      className="text-sm leading-relaxed"
+      fontFamily={block.fontFamily || tokens.bodyFont}
+      fontSize={block.fontSize}
+      color={block.color || tokens.text}
+      align={block.align || 'left'}
+      bold={block.bold}
+      onFormatChange={patch => onChange(patch)}
+      style={{ 
+        color: block.color || tokens.text, 
+        fontFamily: block.fontFamily || tokens.bodyFont,
+        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        textAlign: block.align || 'left',
+        fontWeight: block.bold ? 'bold' : 'normal'
+      }}
+    />
+  )
+}
+
+/* -------------------------------- helpers --------------------------------- */
+
+export function pickContrast(hex?: string): string {
+  if (!hex) return '#fff'
+  try {
+    const c = hex.replace('#', '')
+    const full = c.length === 3 ? c.split('').map(x => x + x).join('') : c
+    const r = parseInt(full.slice(0, 2), 16)
+    const g = parseInt(full.slice(2, 4), 16)
+    const b = parseInt(full.slice(4, 6), 16)
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.55 ? '#ffffff' : '#111111'
+  } catch { return '#ffffff' }
+}
+
+/* ------------------------------- Contents Block --------------------------- */
+
+interface ProjectIndexItem {
+  num: string
+  title: string
+  year: string
+  typology: string
+  location: string
+  thumbnail: string
+  pageNumber: string
+}
+
+export function ContentsBlock({
+  block, tokens, onChange, pages, layoutId, onUploadImage
+}: {
+  block: Block
+  tokens: DesignTokens
+  onChange: (patch: Partial<Block>) => void
+  pages: any[]
+  layoutId: string
+  onUploadImage?: (file: File) => Promise<string>
+}) {
   return <TableOfContentsRenderer block={block} tokens={tokens} onChange={onChange} pages={pages} layoutId={layoutId} onUploadImage={onUploadImage} />
+}
+
+/* ------------------------------- Flowchart Block --------------------------- */
+
+export function FlowchartBlock({
+  block, tokens, onChange, readonly, onUploadImage
+}: {
+  block: Block
+  tokens: DesignTokens
+  onChange: (patch: Partial<Block>) => void
+  readonly?: boolean
+  onUploadImage?: (file: File) => Promise<string>
+}) {
+  const [editorOpen, setEditorOpen] = useState(false)
+
+  return (
+    <div className="group/fc relative w-full h-full flex flex-col min-h-0">
+      <ProcessFlowchartRenderer block={block} onChange={onChange} />
+      
+      {!readonly && (
+        <div className="absolute top-2 right-2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-sm shadow-md rounded-md border border-gray-200 px-1.5 py-1 opacity-0 group-hover/fc:opacity-100 transition-opacity pointer-events-auto" data-html2canvas-ignore="true">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setEditorOpen(true) }}
+            className="text-[9px] font-bold text-blue-600 hover:text-blue-800 uppercase px-1"
+            title="Edit Flowchart Settings"
+          >
+            ⚙️ Edit Flowchart
+          </button>
+
+          <div className="w-px h-3 bg-gray-300 mx-1"></div>
+          
+          {block.freeform && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'front' as any }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Bring to Front">⇈</button>
+              <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'forward' as any }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Bring Forward">⇧</button>
+              <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'backward' as any }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Send Backward">⇩</button>
+              <button onClick={(e) => { e.stopPropagation(); onChange({ zOp: 'back' as any }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Send to Back">⇊</button>
+              
+              <div className="w-px h-3 bg-gray-300 mx-1"></div>
+              
+              <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } }) }} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
+                {block.freeform.pinned ? '📍 Unpin' : '📌 Pin'}
+              </button>
+            </>
+          )}
+
+          <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="text-[9px] font-bold text-red-500 hover:text-red-700 uppercase ml-1" title="Delete Block">
+            ✕ DEL
+          </button>
+        </div>
+      )}
+
+      <FlowchartModalEditor
+        isOpen={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        block={block}
+        onChange={onChange}
+        onUploadImage={onUploadImage}
+      />
+    </div>
+  )
 }

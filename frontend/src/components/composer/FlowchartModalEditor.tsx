@@ -309,6 +309,50 @@ export default function FlowchartModalEditor({
                       </div>
                     </div>
                   </div>
+
+                  {/* Background Overlay */}
+                  <div className="border-t border-slate-100 pt-4">
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3">Background Overlay</span>
+                    <div className="flex items-center gap-4 mb-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.bgEnabled || false}
+                          onChange={e => updateConfig({ bgEnabled: e.target.checked })}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                        />
+                        <span className="text-xs font-semibold text-slate-700">Enable Background</span>
+                      </label>
+                    </div>
+                    {config.bgEnabled && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Color</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={config.bgColor || '#ffffff'}
+                              onChange={e => updateConfig({ bgColor: e.target.value })}
+                              className="w-8 h-8 p-0 border border-slate-200 rounded cursor-pointer bg-white"
+                            />
+                            <span className="text-xs font-mono">{config.bgColor || '#ffffff'}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Opacity: {Math.round((config.bgOpacity ?? 1) * 100)}%</label>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={config.bgOpacity ?? 1}
+                            onChange={e => updateConfig({ bgOpacity: parseFloat(e.target.value) })}
+                            className="w-full accent-blue-600"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

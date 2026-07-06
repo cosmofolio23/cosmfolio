@@ -448,5 +448,71 @@ export const PROCESS_PRESETS: FlowchartPreset[] = [
         { id: '4', title: 'Final Boot', description: 'Activating facade smart panel rotation scripts.' }
       ]
     }
+  },
+  {
+    id: 'chronological-timeline',
+    name: 'Chronological Timeline',
+    description: 'A vertical timeline ideal for showing project phases over time.',
+    config: {
+      presetId: 'chronological-timeline',
+      pathStyle: 'linear-v',
+      nodeStyle: 'number',
+      connectorStyle: 'curved',
+      lineColor: '#64748B',
+      nodeBorderColor: '#64748B',
+      nodeBgColor: '#F8FAFC',
+      textColor: '#334155',
+      lineWidth: 2,
+      steps: [
+        { id: '1', title: 'Phase 1: Conceptualization', description: 'Initial sketches and massing studies.' },
+        { id: '2', title: 'Phase 2: Schematic Design', description: 'Developing the floor plans and spatial relationships.' },
+        { id: '3', title: 'Phase 3: Design Development', description: 'Refining materials, structure, and details.' },
+        { id: '4', title: 'Phase 4: Construction', description: 'Site execution and project management.' }
+      ]
+    }
+  },
+  {
+    id: 'image-text-design',
+    name: 'Image & Text Design Process',
+    description: 'Ideal for showing images with accompanying descriptive text.',
+    config: {
+      presetId: 'image-text-design',
+      pathStyle: 'zigzag',
+      nodeStyle: 'image',
+      connectorStyle: 'dashed',
+      lineColor: '#CBD5E1',
+      nodeBorderColor: '#94A3B8',
+      nodeBgColor: '#FFFFFF',
+      textColor: '#1E293B',
+      lineWidth: 1.5,
+      steps: [
+        { id: '1', title: 'Context Analysis', description: 'Mapping site conditions and urban grain.' },
+        { id: '2', title: 'Form Generation', description: 'Extruding the block to maximize views.' },
+        { id: '3', title: 'Facade Iteration', description: 'Testing sun-shading louver configurations.' }
+      ]
+    }
+  },
+  {
+    id: 'rd-conceptual',
+    name: 'R&D Conceptual Matrix',
+    description: 'A complex web for research, development, and data-driven design.',
+    config: {
+      presetId: 'rd-conceptual',
+      pathStyle: 'radial',
+      nodeStyle: 'hexagon',
+      connectorStyle: 'sharp',
+      lineColor: '#4338CA',
+      nodeBorderColor: '#4F46E5',
+      nodeBgColor: '#EEF2FF',
+      textColor: '#312E81',
+      lineWidth: 1.5,
+      steps: [
+        { id: '1', title: 'Core Hypothesis', description: 'Central research question driving the design.' },
+        { id: '2', title: 'Material Testing', description: 'Stress-testing recycled composites.' },
+        { id: '3', title: 'Energy Modeling', description: 'Simulating passive cooling strategies.' },
+        { id: '4', title: 'User Feedback', description: 'Post-occupancy evaluation metrics.' },
+        { id: '5', title: 'Iteration', description: 'Refining the prototype based on data.' }
+      ]
+    }
   }
 ]

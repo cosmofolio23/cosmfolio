@@ -7,7 +7,7 @@ import { allImages, createBlock } from './types'
 import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layoutSpecs'
 import { getVariantClasses, getDividerClasses } from './StyleOptions'
 import {
-  ImageBlock, LegendBlock, MetaBlock, TitleBlock, SubtitleBlock, DescriptionBlock, pickContrast, ContentsBlock,
+  ImageBlock, LegendBlock, MetaBlock, TitleBlock, SubtitleBlock, DescriptionBlock, pickContrast, ContentsBlock, FlowchartBlock,
 } from './Blocks'
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { TITLE_BLOCKS } from '@/components/templates/titleBlocks'
@@ -1305,7 +1305,11 @@ function RegionView({
     if (block) {
       return (
         <div style={style} className={`transition-all duration-200 ${overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
-          <ImageBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} fill showLabel={!overlay} onUpload={onUploadImage} />
+          {block.isFlowchart ? (
+            <FlowchartBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} onUploadImage={onUploadImage} />
+          ) : (
+            <ImageBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} fill showLabel={!overlay} onUpload={onUploadImage} />
+          )}
         </div>
       )
     }
@@ -1468,7 +1472,7 @@ function RegionView({
         })
       }}
     >
-      {!readonly && !['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) && !(region.role === 'title' && !!titleBlock) && (
+      {!readonly && !['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) && (
         <BlockHoverToolbar 
           block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} 
           showTypography={!['render', 'plan', 'section', 'diagram', 'headshot', 'toc', 'index', 'contents', 'title'].includes(block.type)}

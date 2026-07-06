@@ -2272,7 +2272,7 @@ export default function TemplateEditor() {
                       onApplyScope={applyElementScopeFromPage}
                       onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
                       pages={pages}
-                      onUpdateGlobalPages={(updater) => { markDirty(); setPages(updater(pages)) }}
+                      onUpdateGlobalPages={(updater) => { markDirty(); setPages(prev => updater(prev)) }}
                       onUpdateMasterElement={updateMasterElement}
                       pageSize={publishingPortfolio.pageSize}
                       editMode
@@ -2314,7 +2314,7 @@ export default function TemplateEditor() {
                       pages={pages}
                       onUpdateGlobalPages={(updater) => {
                         markDirty()
-                        setPages(updater(pages))
+                        setPages(prev => updater(prev))
                       }}
                       overflowVisible
                       onUpdateMasterElement={updateMasterElement}
@@ -2350,7 +2350,7 @@ export default function TemplateEditor() {
                       pages={pages}
                       onUpdateGlobalPages={(updater) => {
                         markDirty()
-                        setPages(updater(pages))
+                        setPages(prev => updater(prev))
                       }}
                       overflowVisible
                       onUpdateMasterElement={updateMasterElement}
@@ -2385,7 +2385,7 @@ export default function TemplateEditor() {
                   pages={pages}
                   onUpdateGlobalPages={(updater) => {
                     markDirty()
-                    setPages(updater(pages))
+                    setPages(prev => updater(prev))
                   }}
                   onUpdateMasterElement={updateMasterElement}
                   pageSize={publishingPortfolio.pageSize}

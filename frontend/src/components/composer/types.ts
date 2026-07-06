@@ -272,5 +272,8 @@ export interface FlowchartConfig {
   textColor: string
   lineWidth: number
   steps: FlowchartStep[]
+  bgEnabled?: boolean
+  bgColor?: string
+  bgOpacity?: number
 }
 

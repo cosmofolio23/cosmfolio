@@ -207,8 +207,13 @@ export default function ProcessFlowchartRenderer({ block, onChange }: ProcessFlo
     }
   }
 
+  const bgStyle: React.CSSProperties = {
+    backgroundColor: config?.bgEnabled ? (config.bgColor || '#ffffff') : 'transparent',
+    opacity: config?.bgEnabled ? (config.bgOpacity ?? 1) : 1
+  }
+
   return (
-    <div className="w-full h-full relative flex items-center justify-center p-2 bg-white rounded-lg">
+    <div className="w-full h-full relative flex items-center justify-center rounded-lg" style={bgStyle}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-full object-contain"
