@@ -5,8 +5,9 @@ import { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { Block, DesignTokens, LegendItem, MetaField } from './types'
 import ProcessFlowchartRenderer from './ProcessFlowchartRenderer'
-import FlowchartModalEditor from './FlowchartModalEditor'
 import { PROCESS_PRESETS } from './processPresets'
+import { FlowchartBlockRenderer as FlowchartBlock } from './FlowchartBlockRenderer'
+export { FlowchartBlock }
 
 function hexToRgba(hex: string | undefined, opacity: number): string {
   if (!hex) return `rgba(255, 255, 255, ${opacity})`
@@ -591,13 +592,7 @@ export function ImageBlock({
         </div>
       )}
 
-      <FlowchartModalEditor
-        isOpen={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        block={block}
-        onChange={onChange}
-        onUploadImage={onUpload}
-      />
+
 
       <input type="file" ref={inputRef} onChange={handleFile} accept="image/*,application/pdf" className="hidden" />
     </div>
@@ -937,68 +932,4 @@ export function ContentsBlock({
   onUploadImage?: (file: File) => Promise<string>
 }) {
   return <TableOfContentsRenderer block={block} tokens={tokens} onChange={onChange} pages={pages} layoutId={layoutId} onUploadImage={onUploadImage} />
-}
-/* ------------------------------- Flowchart Block --------------------------- */
-
-export function FlowchartBlock({
-  block, tokens, onChange, readonly, onUploadImage
-}: {
-  block: Block
-  tokens: DesignTokens
-  onChange: (patch: Partial<Block>) => void
-  readonly?: boolean
-  onUploadImage?: (file: File) => Promise<string>
-}) {
-  const [editorOpen, setEditorOpen] = useState(false)
-
-  return (
-    <div className="group/fc relative w-full h-full flex flex-col min-h-0">
-      <ProcessFlowchartRenderer block={block} onChange={onChange} />
-      
-      {!readonly && (
-        <div className="absolute top-2 right-2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-sm shadow-md rounded-md border border-gray-200 px-1.5 py-1 opacity-0 group-hover/fc:opacity-100 transition-opacity pointer-events-auto" data-html2canvas-ignore="true">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setEditorOpen(true) }}
-            className="text-[9px] font-bold text-blue-600 hover:text-blue-800 uppercase px-1"
-            title="Edit Flowchart Settings"
-          >
-            ⚙️ Edit Flowchart
-          </button>
-
-          <div className="w-px h-3 bg-gray-300 mx-1"></div>
-          
-          {block.freeform && (
-            <>
-              <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ zOp: 'front' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Bring to Front">⇈</button>
-              <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ zOp: 'forward' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Bring Forward">⇧</button>
-              <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ zOp: 'backward' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Send Backward">⇩</button>
-              <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ zOp: 'back' }) }} className="text-[9px] font-bold text-gray-500 hover:text-gray-800" title="Send to Back">⇊</button>
-              
-              <div className="w-px h-3 bg-gray-300 mx-1"></div>
-              
-              <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: { ...block.freeform!, pinned: !block.freeform!.pinned } }) }} className={`text-[9px] font-bold uppercase ${block.freeform.pinned ? 'text-green-600' : 'text-gray-400 hover:text-gray-700'}`} title={block.freeform.pinned ? "Unpin block" : "Pin block in place"}>
-                {block.freeform.pinned ? '📌 Unpin' : '📍 Pin'}
-              </button>
-            </>
-          )}
-
-          <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
-            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="text-[9px] font-bold text-red-500 hover:text-red-700 uppercase ml-1" title="Delete Block">
-            ✕ DEL
-          </button>
-        </div>
-      )}
-
-      <FlowchartModalEditor
-        isOpen={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        block={block}
-        onChange={onChange}
-        onUploadImage={onUploadImage}
-      />
-    </div>
-  )
 }
