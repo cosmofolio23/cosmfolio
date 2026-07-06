@@ -1303,8 +1303,11 @@ function RegionView({
     const idx = region.imageIndex ?? 0
     const block = images[idx]
     if (block) {
-      return (
-        <div style={style} className={`transition-all duration-200 ${overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
+      const isFree = !!block.freeform;
+      const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style;
+
+      const content = (
+        <div style={finalStyle} className={`transition-all duration-200 ${isFree ? '' : overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
           {block.isFlowchart ? (
             <FlowchartBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} onUploadImage={onUploadImage} />
           ) : (
@@ -1312,6 +1315,10 @@ function RegionView({
           )}
         </div>
       )
+      if (isFree) {
+        return <FreeformWrapper block={block} patchBlock={patchBlock} zClass="z-30" tokens={tokens} readonly={readonly}>{content}</FreeformWrapper>
+      }
+      return content
     }
     return (
       <ImageUploadPlaceholder
