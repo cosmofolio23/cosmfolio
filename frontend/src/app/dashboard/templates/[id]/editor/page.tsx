@@ -380,7 +380,6 @@ export default function TemplateEditor() {
   const [spreadStyle, setSpreadStyle] = useState<'all' | 'minimal' | 'luxury' | 'competition' | 'academic' | 'experimental' | 'parametric'>('all')
   const [flipDirection, setFlipDirection] = useState<'next' | 'prev' | null>(null)
 
-  // 150+ spreads selection preview & page list grouping helper
   const previewSpreads = useMemo(() => {
     const list: Page[][] = []
     if (pages.length === 0) return list
@@ -389,12 +388,25 @@ export default function TemplateEditor() {
     list.push([pages[0]])
     
     // Spreads
-    for (let i = 1; i < pages.length - 1; i += 2) {
-      const pair = [pages[i]]
-      if (i + 1 < pages.length - 1) {
-        pair.push(pages[i + 1])
+    let i = 1
+    while (i < pages.length - 1) {
+      const page = pages[i]
+      if (page.isSpread) {
+        list.push([page])
+        i += 1
+      } else {
+        const next = pages[i + 1]
+        if (next && next.isSpread) {
+          list.push([page])
+          i += 1
+        } else if (next && i + 1 < pages.length - 1) {
+          list.push([page, next])
+          i += 2
+        } else {
+          list.push([page])
+          i += 1
+        }
       }
-      list.push(pair)
     }
 
     // Back Cover
@@ -1948,7 +1960,17 @@ export default function TemplateEditor() {
             <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
               {pages.map((page) => (
                 <div key={page.id}>
-                  <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} />
+                  {page.isSpread ? (
+                    <SpreadComposer
+                      page={page}
+                      tokens={tokens}
+                      onChange={() => {}}
+                      pageSize={publishingPortfolio.pageSize}
+                      editMode={false}
+                    />
+                  ) : (
+                    <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} />
+                  )}
                   <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
                 </div>
               ))}
@@ -1981,41 +2003,62 @@ export default function TemplateEditor() {
                       transformStyle: 'preserve-3d', 
                       borderRadius: 4, 
                       overflow: 'visible',
-                      maxWidth: (previewSpreads[previewSpreadIdx] || []).length === 2 ? 1040 : 520,
+                      maxWidth: ((previewSpreads[previewSpreadIdx] || []).length === 2 || (previewSpreads[previewSpreadIdx] || []).some(p => p.isSpread)) ? 1040 : 520,
                       width: '100%'
                     }}
                   >
                     {(previewSpreads[previewSpreadIdx] || []).map((page, pi) => {
                       const isLeft = (previewSpreads[previewSpreadIdx] || []).length === 2 && pi === 0
                       const isRight = (previewSpreads[previewSpreadIdx] || []).length === 2 && pi === 1
+                      const isSpread = page.isSpread
+                      
                       return (
                         <div 
                           key={page.id} 
                           className="relative flex-1 overflow-hidden" 
                           style={{
-                            aspectRatio: `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}`,
-                            boxShadow: isLeft 
-                              ? 'inset -12px 0 20px rgba(0,0,0,0.15), -10px 10px 20px rgba(0,0,0,0.1)' 
-                              : isRight 
-                                ? 'inset 12px 0 20px rgba(0,0,0,0.15), 10px 10px 20px rgba(0,0,0,0.1)' 
-                                : '0 15px 35px rgba(0,0,0,0.2)'
+                            aspectRatio: isSpread 
+                              ? `${publishingPortfolio.pageSize.width * 2}/${publishingPortfolio.pageSize.height}`
+                              : `${publishingPortfolio.pageSize.width}/${publishingPortfolio.pageSize.height}`,
+                            boxShadow: isSpread
+                              ? '0 15px 35px rgba(0,0,0,0.2)'
+                              : isLeft 
+                                ? 'inset -12px 0 20px rgba(0,0,0,0.15), -10px 10px 20px rgba(0,0,0,0.1)' 
+                                : isRight 
+                                  ? 'inset 12px 0 20px rgba(0,0,0,0.15), 10px 10px 20px rgba(0,0,0,0.1)' 
+                                  : '0 15px 35px rgba(0,0,0,0.2)'
                           }}
                         >
-                          <PageComposer 
-                            page={page} 
-                            tokens={tokens} 
-                            onChange={() => {}}
-                            backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === page.id)}
-                            masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
-                            pageContext={{ pageNumber: pages.indexOf(page) + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(pages.indexOf(page) + 1).padStart(2, '0') }}
-                            grid={publishingPortfolio.grid}
-                            pageSize={publishingPortfolio.pageSize}
-                          />
+                          {isSpread ? (
+                            <SpreadComposer
+                              page={page}
+                              tokens={tokens}
+                              onChange={() => {}}
+                              onUploadImage={uploadImage}
+                              backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === page.id)}
+                              masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                              pageContext={{ pageNumber: pages.indexOf(page) + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(pages.indexOf(page) + 1).padStart(2, '0') }}
+                              grid={publishingPortfolio.grid}
+                              pageSize={publishingPortfolio.pageSize}
+                              editMode={false}
+                            />
+                          ) : (
+                            <PageComposer 
+                              page={page} 
+                              tokens={tokens} 
+                              onChange={() => {}}
+                              backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === page.id)}
+                              masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                              pageContext={{ pageNumber: pages.indexOf(page) + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(pages.indexOf(page) + 1).padStart(2, '0') }}
+                              grid={publishingPortfolio.grid}
+                              pageSize={publishingPortfolio.pageSize}
+                            />
+                          )}
                         </div>
                       )
                     })}
-                    {/* Center Spine Line (only when it is a spread of 2 pages) */}
-                    {(previewSpreads[previewSpreadIdx] || []).length === 2 && (
+                    {/* Center Spine Line (only when it is a spread of 2 normal pages) */}
+                    {(previewSpreads[previewSpreadIdx] || []).length === 2 && !(previewSpreads[previewSpreadIdx] || []).some(p => p.isSpread) && (
                       <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-2 bg-slate-900 shadow-[inset_0_0_8px_rgba(0,0,0,0.9)] z-20 pointer-events-none" />
                     )}
                   </div>

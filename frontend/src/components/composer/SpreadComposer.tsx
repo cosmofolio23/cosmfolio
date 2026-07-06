@@ -40,11 +40,13 @@ interface Props {
   showWatermark?: boolean
   /** Show edit annotations (gutter line, page labels) */
   editMode?: boolean
+  scale?: number
 }
 
 export default function SpreadComposer({
   pageSize,
   editMode = true,
+  scale,
   ...rest
 }: Props) {
   // Double the width so PageComposer's aspect-ratio covers 2 pages side-by-side
@@ -76,6 +78,7 @@ export default function SpreadComposer({
         pageSize={spreadSize}
         readonly={!editMode}
         isSpread={true}
+        scale={scale}
       />
     </div>
   )

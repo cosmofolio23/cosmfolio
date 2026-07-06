@@ -21,9 +21,9 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
   const steps = config?.steps || []
 
   // Design Tokens integration
-  const accentColor = tokens?.colors?.accent || config?.nodeBorderColor || '#D4A574'
-  const cardBg = config?.nodeBgColor || tokens?.colors?.background || '#FFFFFF'
-  const cardText = config?.textColor || tokens?.colors?.primary || '#1A1A1A'
+  const accentColor = tokens?.accent || config?.nodeBorderColor || '#D4A574'
+  const cardBg = config?.nodeBgColor || tokens?.background || '#FFFFFF'
+  const cardText = config?.textColor || tokens?.primary || '#1A1A1A'
   
   const N = steps.length
   if (N === 0) {

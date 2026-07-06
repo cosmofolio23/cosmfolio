@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import type { Page, DesignTokens } from '@/components/composer/types'
 import PageComposer from '@/components/composer/PageComposer'
+import SpreadComposer from '@/components/composer/SpreadComposer'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
 const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
@@ -164,16 +165,26 @@ function ParallaxPage({ page, tokens, pageSize, index, totalPages }: { page: Pag
           whileHover={{ scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         >
-          <PageComposer
-            page={page}
-            tokens={tokens}
-            pageSize={pageSize}
-            onChange={() => {}}
-            editableFree={false}
-            overflowVisible={false}
-            grid={undefined}
-            readonly={true}
-          />
+          {page.isSpread ? (
+            <SpreadComposer
+              page={page}
+              tokens={tokens}
+              pageSize={pageSize}
+              onChange={() => {}}
+              editMode={false}
+            />
+          ) : (
+            <PageComposer
+              page={page}
+              tokens={tokens}
+              pageSize={pageSize}
+              onChange={() => {}}
+              editableFree={false}
+              overflowVisible={false}
+              grid={undefined}
+              readonly={true}
+            />
+          )}
         </motion.div>
       </div>
     </motion.section>

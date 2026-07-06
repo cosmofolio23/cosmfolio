@@ -47,6 +47,7 @@ interface Props {
   /** Readonly mode - hides all editing UI and empty states */
   readonly?: boolean
   isSpread?: boolean
+  scale?: number
 }
 
 const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
@@ -55,15 +56,23 @@ const ROLE_TO_TYPE: Record<Exclude<RegionRole, 'image'>, BlockType> = {
   software: 'software', achievement: 'achievement', interest: 'interest', experience: 'experience',
 }
 
-export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true, readonly = false, isSpread = false }: Props) {
+export default function PageComposer({ page, tokens, onChange, onUploadImage, backgrounds, masterElements, pageContext, grid, onFreeChange, editableFree, onApplyScope, onFreeSelectionChange, pages, onUpdateGlobalPages, overflowVisible, onUpdateMasterElement, pageSize, showWatermark = true, readonly = false, isSpread = false, scale: initialScale }: Props) {
   const [activeBlock, setActiveBlock] = useState<{ id: string, x: number, y: number } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(1)
+  const [scale, setScale] = useState(initialScale ?? 1)
   const baseWidth = isSpread ? 1520 : 760
   const aspectRatio = pageSize ? (pageSize.width / pageSize.height) : (210 / 297)
   const baseHeight = Math.round(baseWidth / aspectRatio)
 
   useEffect(() => {
+    if (initialScale !== undefined) {
+      setScale(initialScale)
+    }
+  }, [initialScale])
+
+  useEffect(() => {
+    if (initialScale !== undefined) return
+
     const handleResize = () => {
       if (containerRef.current) {
         const width = containerRef.current.offsetWidth
@@ -87,7 +96,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
         return () => window.removeEventListener('resize', handleResize)
       }
     }
-  }, [baseWidth])
+  }, [baseWidth, initialScale])
   
   const spec = getSpec(page.layoutId)
   const images = allImages(page.blocks)
@@ -301,7 +310,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
                 className="flex justify-around whitespace-nowrap font-black uppercase tracking-[0.35em]"
                 style={{
                   fontFamily: 'Montserrat, sans-serif',
-                  fontSize: '1.5rem',
+                  fontSize: '24px',
                   color: 'rgba(140,140,140,0.32)',
                   textShadow: '0 1px 1px rgba(255,255,255,0.18), 0 -1px 1px rgba(0,0,0,0.18)',
                 }}
@@ -1038,7 +1047,7 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
                     )}
                   </div>
                 ) : null}
-                <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none truncate" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
+                <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               </div>
               {!readonly && <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
             </div>
@@ -1469,7 +1478,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
+      className={`min-h-0 ${readonly || isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()

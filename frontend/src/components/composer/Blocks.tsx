@@ -669,7 +669,7 @@ export function LegendBlock({
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
       />
-      <div className="flex flex-col flex-1 overflow-hidden mt-1" style={{ gap: Math.max(2, 12 - items.length * 1.5) + 'px' }}>
+      <div className="flex flex-col flex-1 overflow-visible mt-1" style={{ gap: Math.max(2, 12 - items.length * 1.5) + 'px' }}>
         {items.map((it, idx) => (
           <div key={idx} className="group/leg flex items-center gap-2 text-[11px]" style={{ fontFamily: tokens.bodyFont }}>
             <span
@@ -793,7 +793,7 @@ export function MetaBlock({
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b block w-full"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
       />
-      <div className={`flex-1 overflow-hidden ${layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'}`} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
+      <div className={`flex-1 overflow-visible ${layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'}`} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
         {fields.map((f, idx) => (
           <div key={idx} className="group/meta">
             <EditableText

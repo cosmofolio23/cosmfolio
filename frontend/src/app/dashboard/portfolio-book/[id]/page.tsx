@@ -111,11 +111,11 @@ export default function PortfolioBookPage() {
       }
 
       // Wait for layout to settle, images, and custom fonts to load properly
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       if ('fonts' in window.document) {
         await window.document.fonts.ready
       }
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
 
       const elements = window.document.querySelectorAll('.pf-print-page')
@@ -159,7 +159,39 @@ export default function PortfolioBookPage() {
         const canvas = await html2canvas(el, {
           scale: 4,
           useCORS: true,
-          logging: false
+          allowTaint: false,
+          logging: false,
+          windowWidth: targetWidth,
+          windowHeight: targetHeight,
+          // Convert CSS `zoom` to `transform: scale()` before capture.
+          // html2canvas does NOT support CSS zoom — it silently ignores it,
+          // causing text in zoomed containers to render at wrong size.
+          onclone: (_doc: Document, clonedEl: HTMLElement) => {
+            clonedEl.querySelectorAll('*').forEach((node) => {
+              const el = node as HTMLElement
+              if (!el.style) return
+              const z = el.style.zoom
+              if (z && z !== '1' && z !== 'normal' && z !== '') {
+                const zoomVal = parseFloat(z)
+                if (!isNaN(zoomVal) && zoomVal !== 1) {
+                  el.style.zoom = '1'
+                  el.style.transform = `scale(${zoomVal})`
+                  el.style.transformOrigin = 'top left'
+                  // Compensate layout: scale changes visual size but not box size,
+                  // so expand the box so scaled content fits the same visual area.
+                  el.style.width = `${100 / zoomVal}%`
+                  el.style.height = `${100 / zoomVal}%`
+                }
+              }
+            })
+            // Also strip all overflow-hidden from text containers in the clone
+            clonedEl.querySelectorAll('.overflow-hidden').forEach((node) => {
+              const el = node as HTMLElement
+              // Keep overflow-hidden on image containers (they need cropping)
+              if (el.querySelector('img') && !el.querySelector('input, textarea, [contenteditable]')) return
+              el.style.overflow = 'visible'
+            })
+          }
         })
 
         // Restore styles
@@ -325,26 +357,48 @@ export default function PortfolioBookPage() {
         {/* Screen View (Single Page) */}
         {currentPage && (
           <div className="w-full max-w-4xl print:hidden flex justify-center">
-            <PageComposer
-              page={currentPage}
-              tokens={tokens}
-              onChange={() => {}}
-              onUploadImage={() => Promise.resolve('')}
-              backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
-              masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
-              pageContext={{ pageNumber: currentPageIdx + 1, totalPages, projectTitle: project.title, projectNumber: String(currentPageIdx + 1).padStart(2, '0') }}
-              grid={publishing.grid}
-              editableFree={false}
-              onFreeChange={() => {}}
-              onApplyScope={() => {}}
-              pages={pages}
-              onUpdateGlobalPages={() => {}}
-              overflowVisible={true}
-              onUpdateMasterElement={() => {}}
-              pageSize={pageSize}
-              showWatermark={isFreeTier}
-              readonly={true}
-            />
+            {currentPage.isSpread ? (
+              <SpreadComposer
+                page={currentPage}
+                tokens={tokens}
+                onChange={() => {}}
+                onUploadImage={() => Promise.resolve('')}
+                backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
+                masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                pageContext={{ pageNumber: currentPageIdx + 1, totalPages, projectTitle: project.title, projectNumber: String(currentPageIdx + 1).padStart(2, '0') }}
+                grid={publishing.grid}
+                editableFree={false}
+                onFreeChange={() => {}}
+                onApplyScope={() => {}}
+                pages={pages}
+                onUpdateGlobalPages={() => {}}
+                onUpdateMasterElement={() => {}}
+                pageSize={pageSize}
+                editMode={false}
+                showWatermark={isFreeTier}
+              />
+            ) : (
+              <PageComposer
+                page={currentPage}
+                tokens={tokens}
+                onChange={() => {}}
+                onUploadImage={() => Promise.resolve('')}
+                backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === currentPage.id)}
+                masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                pageContext={{ pageNumber: currentPageIdx + 1, totalPages, projectTitle: project.title, projectNumber: String(currentPageIdx + 1).padStart(2, '0') }}
+                grid={publishing.grid}
+                editableFree={false}
+                onFreeChange={() => {}}
+                onApplyScope={() => {}}
+                pages={pages}
+                onUpdateGlobalPages={() => {}}
+                overflowVisible={true}
+                onUpdateMasterElement={() => {}}
+                pageSize={pageSize}
+                showWatermark={isFreeTier}
+                readonly={true}
+              />
+            )}
           </div>
         )}
 
@@ -371,6 +425,7 @@ export default function PortfolioBookPage() {
                   pageSize={pageSize}
                   editMode={false}
                   showWatermark={isFreeTier}
+                  scale={1}
                 />
               ) : (
                 <PageComposer
@@ -392,6 +447,7 @@ export default function PortfolioBookPage() {
                   pageSize={pageSize}
                   showWatermark={isFreeTier}
                   readonly={true}
+                  scale={1}
                 />
               )}
             </div>

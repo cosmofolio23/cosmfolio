@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth'
 import UpgradeModal from '@/components/modals/UpgradeModal'
 import Logo from '@/components/Logo'
 import PageComposer, { LayoutThumb } from '@/components/composer/PageComposer'
+import SpreadComposer from '@/components/composer/SpreadComposer'
 import {
   seedPagesFromTemplate, LAYOUT_CATALOG, LAYOUT_CATEGORIES, getSpec,
   type LayoutCategory,
@@ -466,7 +467,18 @@ export default function PortfolioEditorPage() {
           <div className="max-w-[680px] mx-auto space-y-6" style={{ pointerEvents: 'none' }}>
             {pages.map((page) => (
               <div key={page.id}>
-                <PageComposer page={page} tokens={tokens} onChange={() => {}} showWatermark={!isPro} readonly={true} />
+                {page.isSpread ? (
+                  <SpreadComposer
+                    page={page}
+                    tokens={tokens}
+                    onChange={() => {}}
+                    pageSize={publishingPortfolio.pageSize}
+                    editMode={false}
+                    showWatermark={!isPro}
+                  />
+                ) : (
+                  <PageComposer page={page} tokens={tokens} onChange={() => {}} showWatermark={!isPro} readonly={true} />
+                )}
                 <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
               </div>
             ))}
