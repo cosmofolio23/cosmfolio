@@ -1736,11 +1736,6 @@ export default function TemplateEditor() {
     flashUpload('info', 'Saving and preparing your PDF…', 0)
     try {
       const pid = await ensureProject()
-      try {
-        await saveDocument()
-      } catch (saveErr: any) {
-        flashUpload('info', `Note: Could not save latest changes. Exporting last saved version.`, 5000)
-      }
 
       // Free-tier export limit — use server-synced count
       if (exportUsed >= exportLimit && !exportBypass) {
@@ -1754,7 +1749,19 @@ export default function TemplateEditor() {
         return
       }
 
-      // Increment client-side counter (skip for pro/bypass users)
+      try {
+        await saveDocument()
+      } catch (saveErr: any) {
+        flashUpload('info', `Note: Could not save latest changes. Exporting last saved version.`, 5000)
+      }
+
+      // Navigate to the portfolio-book page for PDF generation.
+      // Use router.push instead of window.open to avoid popup blockers —
+      // window.open gets blocked when called after async operations (await)
+      // because the browser no longer considers it a direct user gesture.
+      router.push(`/dashboard/portfolio-book/${pid}?download=1`)
+
+      // Increment export count AFTER navigation succeeds (not before)
       if (!exportBypass) {
         const newCount = exportUsed + 1
         setExportUsed(newCount)
@@ -1774,19 +1781,6 @@ export default function TemplateEditor() {
         }
       } catch { /* silent */ }
 
-      // Open print window after increment is registered
-      const win = window.open(`/dashboard/portfolio-book/${pid}?download=1`, '_blank')
-      if (!win) {
-        flashUpload('err', 'Pop-up blocked. Allow pop-ups for this site, then click PDF again.', 8000)
-        return
-      }
-
-      if (!exportBypass) {
-        const remaining = exportLimit - (exportUsed + 1)
-        flashUpload('ok', `✓ Generating your PDF. Please wait... ${remaining > 0 ? `(${remaining} free export${remaining === 1 ? '' : 's'} remaining)` : '(Last free export used)'}`, 6000)
-      } else {
-        flashUpload('ok', '✓ Generating your PDF. Please wait...', 6000)
-      }
     } catch (e: any) {
       flashUpload('err', `Export failed: ${e?.message || 'network error'}. Try again in a moment.`, 8000)
     } finally {
