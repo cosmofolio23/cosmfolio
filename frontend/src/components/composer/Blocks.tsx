@@ -984,10 +984,10 @@ export function FlowchartBlock({
           )}
 
           <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
-            {block.freeform ? 'â†© Grid' : 'ðŸ”“ Unlock'}
+            {block.freeform ? '↩ Grid' : '🔓 Unlock'}
           </button>
           <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="text-[9px] font-bold text-red-500 hover:text-red-700 uppercase ml-1" title="Delete Block">
-            âœ• DEL
+            ✕ DEL
           </button>
         </div>
       )}

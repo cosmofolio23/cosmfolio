@@ -1421,7 +1421,13 @@ function RegionView({
         if (targets.includes(idx)) {
           const nextBlocks = p.blocks.map(b => {
             if (b.type === 'title') {
-              return { ...b, text: draftTitle }
+              return { 
+                ...b, 
+                text: draftTitle,
+                color: draftColor || undefined,
+                fontFamily: draftFont || undefined,
+                fontSize: draftScale
+              }
             }
             if (b.type === 'meta') {
               const nextFields = (b.fields || []).map(f => {
