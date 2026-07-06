@@ -24,6 +24,7 @@ import { TITLE_BLOCKS, TITLE_BLOCK_CATEGORIES } from '@/components/templates/tit
 import { TitleBlockView } from '@/components/templates/TitleBlockView'
 import { BackgroundLayers, MasterElements } from '@/components/composer/PublishingLayers'
 import { SpreadManager } from '@/components/composer/SpreadManager'
+import { PROCESS_PRESETS } from '@/components/composer/processPresets'
 import { newFreeElement } from '@/components/composer/FreeCanvas'
 import type { FreeElement } from '@/components/composer/types'
 import { AIDesignAssistant } from '@/components/composer/AIDesignAssistant'
@@ -1555,6 +1556,20 @@ export default function TemplateEditor() {
     setTimeout(() => recordHistorySnapshot(), 10)
   }
 
+  const addFlowchartBlock = () => {
+    if (!currentPage) return
+    const block = createBlock('diagram')
+    block.freeform = { x: 10, y: 10, w: 40, h: 40, pinned: false }
+    block.isFlowchart = true
+    block.flowchartConfig = PROCESS_PRESETS[0].config
+    const next = { 
+      ...currentPage, 
+      blocks: [...currentPage.blocks, block]
+    }
+    updatePage(next)
+    setTimeout(() => recordHistorySnapshot(), 10)
+  }
+
   const removeBlock = (blockId: string) => {
     if (!currentPage) return
     const blockToDelete = currentPage.blocks.find(b => b.id === blockId)
@@ -2764,6 +2779,11 @@ export default function TemplateEditor() {
                         <span className="text-[10px] font-medium capitalize text-center leading-tight">{blockLabel(b.type)}</span>
                       </button>
                     ))}
+                    <button onClick={addFlowchartBlock}
+                      className="flex flex-col items-center gap-1 p-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition">
+                      <span className="text-lg leading-none">🌿</span>
+                      <span className="text-[10px] font-medium capitalize text-center leading-tight">Flowchart</span>
+                    </button>
                   </div>
                 </div>
 
