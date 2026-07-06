@@ -224,13 +224,38 @@ function PricingPageInner() {
 
       const orderData = await res.json()
 
-      const options = {
+      const options: any = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderData.key,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "CosmoFolio",
         description: productType === 'pro_upgrade' ? "Pro Upgrade" : "Boost Pack",
         order_id: orderData.order_id,
+        display: {
+          blocks: {
+            paypal: {
+              name: "Pay with PayPal",
+              instruments: [
+                {
+                  method: "wallet",
+                  wallets: ["paypal"]
+                }
+              ]
+            },
+            other: {
+              name: "Other Payment Methods",
+              instruments: [
+                {
+                  method: "card"
+                }
+              ]
+            }
+          },
+          sequence: ["block.paypal", "block.other"],
+          preferences: {
+            show_default_blocks: false
+          }
+        },
         handler: async function (response: any) {
           try {
             const verifyRes = await fetch(`${API_URL}/api/payments/verify-payment`, {
