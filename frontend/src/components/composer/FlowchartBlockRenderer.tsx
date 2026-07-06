@@ -137,6 +137,13 @@ export function FlowchartBlockRenderer({
                 </div>
               </div>
               <div className="space-y-2 pt-3 mt-3 border-t border-black/10">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Scale</span>
+                  <span className="text-[9px] font-mono text-gray-500">{Math.round((config.scale || 1) * 100)}%</span>
+                </div>
+                <input type="range" min="0.25" max="3.0" step="0.05" value={config.scale || 1} onChange={e => updateConfig({ scale: parseFloat(e.target.value) })} className="w-full accent-blue-600" />
+              </div>
+              <div className="space-y-2 pt-3 mt-3 border-t border-black/10">
                 <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Colors</div>
                 {[
                   { label: 'Line Color', key: 'lineColor' },

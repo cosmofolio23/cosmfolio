@@ -275,5 +275,6 @@ export interface FlowchartConfig {
   bgEnabled?: boolean
   bgColor?: string
   bgOpacity?: number
+  scale?: number
 }
 

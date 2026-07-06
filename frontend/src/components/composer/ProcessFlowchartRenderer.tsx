@@ -33,6 +33,13 @@ export default function ProcessFlowchartRenderer({ block, onChange }: ProcessFlo
 
   const W = 800
   const H = 600
+  
+  const scale = config?.scale || 1
+  const vw = W / scale
+  const vh = H / scale
+  const vx = (W - vw) / 2
+  const vy = (H - vh) / 2
+  const viewBoxStr = `${vx} ${vy} ${vw} ${vh}`
 
   // Calculate Node Coordinates based on pathStyle
   const coords: { x: number; y: number }[] = []
@@ -215,7 +222,7 @@ export default function ProcessFlowchartRenderer({ block, onChange }: ProcessFlo
   return (
     <div className="w-full h-full relative flex items-center justify-center rounded-lg" style={bgStyle}>
       <svg
-        viewBox={`0 0 ${W} ${H}`}
+        viewBox={viewBoxStr}
         className="w-full h-full object-contain"
         xmlns="http://www.w3.org/2000/svg"
       >
