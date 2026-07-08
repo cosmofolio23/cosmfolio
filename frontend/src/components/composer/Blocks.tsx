@@ -400,7 +400,7 @@ export function ImageBlock({
             <ProcessFlowchartRenderer block={block} onChange={onChange} />
             
             {/* Flowchart Floating Contextual Toolbar */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/fc:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px]">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/fc:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px] print:hidden" data-html2canvas-ignore="true">
               <button
                 type="button"
                 onClick={() => setEditorOpen(true)}
@@ -466,7 +466,7 @@ export function ImageBlock({
             )}
             
             {/* Floating Contextual Toolbar */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px]">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px] print:hidden" data-html2canvas-ignore="true">
               <button
                 type="button"
                 onClick={() => onChange({ fit: block.fit === 'contain' ? 'cover' : 'contain' })}
@@ -533,8 +533,9 @@ export function ImageBlock({
           </div>
         ) : (
           <div
-            className={`absolute inset-0 flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50/40 text-blue-500' : 'border-gray-300'}`}
+            className={`absolute inset-0 flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 transition border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50/40 text-blue-500' : 'border-gray-300'} print:hidden`}
             style={{ borderColor: isDragging ? undefined : 'rgba(0,0,0,0.15)' }}
+            data-html2canvas-ignore="true"
           >
             <button
               type="button"
@@ -684,10 +685,10 @@ export function LegendBlock({
               className="flex-1"
               style={{ color: tokens.text }}
             />
-            <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer">✕</button>
+            <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
           </div>
         ))}
-        <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: tokens.accent }}>
+        <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left print:hidden" style={{ color: tokens.accent }} data-html2canvas-ignore="true">
           {getButtonText()}
         </button>
       </div>
