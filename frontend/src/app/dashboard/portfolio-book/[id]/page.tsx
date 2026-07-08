@@ -227,7 +227,7 @@ export default function PortfolioBookPage() {
           }
 
           const canvas = await html2canvas(el, {
-            scale: 4,
+            scale: 2,
             useCORS: true,
             allowTaint: false,
             logging: false,
@@ -272,15 +272,15 @@ export default function PortfolioBookPage() {
               halfCanvas.height = h
               const ctx = halfCanvas.getContext('2d')!
               ctx.drawImage(canvas, half * halfW, 0, halfW, h, 0, 0, halfW, h)
-              const imgData = halfCanvas.toDataURL('image/png')
+              const imgData = halfCanvas.toDataURL('image/jpeg', 0.92)
               if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], orientation)
-              pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+              pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
               pdfPageIndex++
             }
           } else {
-            const imgData = canvas.toDataURL('image/png')
+            const imgData = canvas.toDataURL('image/jpeg', 0.92)
             if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
             pdfPageIndex++
           }
         }
