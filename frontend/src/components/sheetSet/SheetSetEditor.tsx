@@ -293,6 +293,75 @@ export function SheetSetEditor({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDraggingOver(false)
+    
+    // Check if it's an internal asset drag
+    const assetJson = e.dataTransfer.getData('application/json')
+    if (assetJson) {
+      try {
+        const asset = JSON.parse(assetJson)
+        
+        // Find which slot was hovered, or just drop it at sheet center
+        const canvasEl = document.getElementById(`sheet-canvas-${selectedSheetId}`)
+        if (canvasEl && currentSheet) {
+          const rect = canvasEl.getBoundingClientRect()
+          const mouseX = e.clientX - rect.left
+          const mouseY = e.clientY - rect.top
+          
+          // Convert to percentage
+          const pctX = (mouseX / rect.width) * 100
+          const pctY = (mouseY / rect.height) * 100
+          
+          // Check if we dropped it directly onto a placeholder element
+          const targetSlot = currentSheet.elements.find(el => {
+            const isPlaceholder = el.kind === 'text' && (el.content || '').startsWith('+ ')
+            if (!isPlaceholder) return false
+            return (
+              pctX >= el.x && pctX <= (el.x + el.w) &&
+              pctY >= el.y && pctY <= (el.y + el.h)
+            )
+          })
+          
+          if (targetSlot) {
+            // Replace the placeholder slot with the drawing!
+            updateElement(targetSlot.id, {
+              kind: 'drawing',
+              content: undefined,
+              drawing: {
+                drawingName: asset.name,
+                drawingType: asset.type,
+                originalScale: asset.originalScale || '1:100',
+                sheetScale: asset.originalScale || '1:100',
+                url: asset.url,
+                vector: asset.url.endsWith('.svg') || asset.url.endsWith('.pdf'),
+              }
+            })
+            return
+          }
+        }
+        
+        // Fallback: place at center
+        const wPct = 40
+        const hPct = 40
+        addElement({
+          id: `elem-${Date.now()}`,
+          kind: 'drawing',
+          x: 30, y: 30, w: wPct, h: hPct, z: 100,
+          locked: false, visible: true,
+          drawing: {
+            drawingName: asset.name,
+            drawingType: asset.type,
+            originalScale: asset.originalScale || '1:100',
+            sheetScale: asset.originalScale || '1:100',
+            url: asset.url,
+            vector: asset.url.endsWith('.svg') || asset.url.endsWith('.pdf'),
+          }
+        })
+      } catch (err) {
+        console.error('Failed to parse dropped asset:', err)
+      }
+      return
+    }
+
     const file = e.dataTransfer.files?.[0]
     if (file && file.type.startsWith('image/')) {
       const url = URL.createObjectURL(file)
@@ -513,6 +582,7 @@ export function SheetSetEditor({
               },
             })
           }}
+          onAICommand={handleAICommand}
         />
 
         <div className="border-t border-gray-200" />

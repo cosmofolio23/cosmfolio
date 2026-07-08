@@ -17,6 +17,7 @@ interface SheetPropertiesProps {
   sheetSet: SheetSet
   onUpdateSheet: (update: Partial<Sheet>) => void
   onUpdateSheetSet: (update: Partial<SheetSet>) => void
+  onAICommand?: (cmd: string) => Promise<any>
 }
 
 export function SheetProperties({
@@ -27,6 +28,7 @@ export function SheetProperties({
   onUploadDrawing,
   onUpdateSheet,
   onUpdateSheetSet,
+  onAICommand,
 }: SheetPropertiesProps) {
   const [uploadingElement, setUploadingElement] = useState<string | null>(null)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['position', 'style']))
@@ -87,6 +89,19 @@ export function SheetProperties({
                   </button>
                 </div>
               </label>
+
+              {onAICommand && (
+                <button
+                  onClick={() => {
+                    if (confirm("Auto-flow will scan your project assets and automatically place matching plans, sections, and renders into their respective sheet templates. Proceed?")) {
+                      onAICommand('auto-fill-assets')
+                    }
+                  }}
+                  className="w-full mt-4 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-amber-500 to-[#D4AF37] hover:brightness-105 text-white font-bold rounded-lg text-xs transition shadow-sm"
+                >
+                  <span>🪄 Auto-Flow Drawings</span>
+                </button>
+              )}
             </div>
           </section>
 

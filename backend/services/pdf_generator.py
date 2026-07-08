@@ -25,7 +25,6 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 "--no-sandbox", 
                 "--disable-setuid-sandbox", 
                 "--disable-dev-shm-usage",
-                "--single-process",
                 "--disable-gpu",
                 "--no-zygote"
             ]
@@ -35,6 +34,7 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
             device_scale_factor=2  # High res rendering
         )
         page = await context.new_page()
+        page.on("console", lambda msg: print(f"[BROWSER] {msg.text}"))
         
         try:
             # Navigate to the portfolio print page

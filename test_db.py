@@ -1,17 +1,12 @@
 import os
-import sys
-import jwt
-import time
-from dotenv import load_dotenv
-
-# Load env vars
-load_dotenv('backend/.env')
-
 from supabase import create_client
 
-supabase = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_ROLE_KEY'])
+url = "https://rjobifgysmovmcvhdlnd.supabase.co"
+key = "sb_publishable_IsZjamlpYF9KrkJ07-Cikg_Lgl_UFoB"
+supabase = create_client(url, key)
 
-# Generate a fake token or just test the logic directly in auth.py
-import requests
-import json
-print("Let's look at the logic...")
+res = supabase.table("projects").select("id").limit(1).execute()
+if res.data:
+    print(res.data[0]['id'])
+else:
+    print("No projects found")

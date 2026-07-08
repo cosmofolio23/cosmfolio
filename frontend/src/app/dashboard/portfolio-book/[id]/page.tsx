@@ -126,9 +126,7 @@ export default function PortfolioBookPage() {
           checkReady()
         }
         
-        if (search.get('print') === '1') {
-          window.setTimeout(() => window.print(), 1000)
-        } else if (search.get('download') === '1') {
+        if (search.get('download') === '1') {
           window.setTimeout(() => executeDownloadPdf(data.document.publishing?.pageSize, project.title), 1500)
         }
       }
@@ -293,8 +291,7 @@ export default function PortfolioBookPage() {
     } catch (e: any) {
       console.error('Failed to generate PDF:', e)
       trackError('pdf_export_failed', e, { project_id: projectId, title: projectTitle })
-      alert('Failed to generate PDF directly. Falling back to print dialog.')
-      window.print()
+      alert('Failed to generate PDF.')
     } finally {
       const printContainer = window.document.getElementById('pf-print-container')
       if (printContainer) {
@@ -403,12 +400,8 @@ export default function PortfolioBookPage() {
             >
               PDF
             </button>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-            >
-              Print
-            </button>
+
+
           </div>
         </div>
       </header>
