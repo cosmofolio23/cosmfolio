@@ -130,14 +130,13 @@ def get_current_user(authorization: str = Header(None)):
         unverified_header = jwt.get_unverified_header(token)
         if unverified_header.get('alg') == 'HS256':
             HEADLESS_SECRET = os.environ.get("HEADLESS_SECRET", "super-secret-headless-key")
+            # PyJWT automatically validates 'exp' during decode
             payload = jwt.decode(token, HEADLESS_SECRET, algorithms=["HS256"])
-            exp = payload.get("exp")
-            if exp and time.time() < exp:
-                return {
-                    "user_id": str(payload.get("user_id")),
-                    "email": "headless@internal",
-                    "auth": "headless_bypass"
-                }
+            return {
+                "user_id": str(payload.get("user_id")),
+                "email": "headless@internal",
+                "auth": "headless_bypass"
+            }
     except Exception:
         pass
 

@@ -9,8 +9,6 @@ import jwt
 from models import ProjectCreate, ProjectUpdate, ProjectResponse
 from .deps import get_current_user
 from database import supabase
-from services.pdf_generator import generate_portfolio_pdf
-
 router = APIRouter()
 HEADLESS_SECRET = os.environ.get("HEADLESS_SECRET", "super-secret-headless-key")
 
@@ -31,6 +29,7 @@ async def export_pdf(project_id: str, authorization: str = Header(None)):
     )
     
     try:
+        from services.pdf_generator import generate_portfolio_pdf
         pdf_bytes = await generate_portfolio_pdf(project_id, headless_token)
         return Response(content=pdf_bytes, media_type="application/pdf", headers={
             "Content-Disposition": f'attachment; filename="portfolio-{project_id}.pdf"'

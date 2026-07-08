@@ -1,7 +1,6 @@
 import os
 import asyncio
 from typing import Optional
-from playwright.async_api import async_playwright
 
 async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
     """
@@ -12,8 +11,12 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
     """
     frontend_url = os.environ.get("FRONTEND_URL", "https://thecosmofolio.com")
     
+    from playwright.async_api import async_playwright
+    
     # Construct the print URL with the headless token
-    print_url = f"{frontend_url}/dashboard/portfolio-book/{project_id}?print=true&headless_token={headless_token}"
+    # NOTE: Do NOT use print=true here — that triggers window.print() on the frontend.
+    # The headless_token param alone is sufficient for the frontend to enter headless mode.
+    print_url = f"{frontend_url}/dashboard/portfolio-book/{project_id}?headless_token={headless_token}"
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(

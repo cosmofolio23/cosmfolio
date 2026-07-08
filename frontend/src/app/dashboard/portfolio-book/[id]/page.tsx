@@ -95,10 +95,29 @@ export default function PortfolioBookPage() {
         // Signal for Playwright backend PDF generation
         if (search.get('headless_token')) {
           const checkReady = async () => {
-            await new Promise(resolve => setTimeout(resolve, 1500))
+            // Unhide the print container so Playwright can see all pages
+            const printContainer = window.document.getElementById('pf-print-container')
+            if (printContainer) {
+              printContainer.classList.remove('hidden')
+              printContainer.style.display = 'block'
+            }
+            // Hide the single-page interactive view and navigation
+            const mainView = window.document.querySelector('[class*="print:hidden"]')
+            if (mainView && mainView instanceof HTMLElement) mainView.style.display = 'none'
+
+            await new Promise(resolve => setTimeout(resolve, 2000))
             if ('fonts' in window.document) {
               await window.document.fonts.ready
             }
+            // Wait for all images to load
+            const images = window.document.querySelectorAll('img')
+            await Promise.all(Array.from(images).map(img => {
+              if (img.complete) return Promise.resolve()
+              return new Promise(resolve => {
+                img.onload = resolve
+                img.onerror = resolve
+              })
+            }))
             await new Promise(resolve => setTimeout(resolve, 1000))
             const div = window.document.createElement('div')
             div.id = 'render-complete'
