@@ -1288,7 +1288,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly, deletedRoles
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly, deletedRoles, forceBlock
 }: {
   region: Region
   spec: LayoutSpec
