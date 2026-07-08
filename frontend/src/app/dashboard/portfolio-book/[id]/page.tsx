@@ -182,7 +182,7 @@ export default function PortfolioBookPage() {
       // --- Strategy 2: Fallback to Browser Native Print (True Vector PDF) ---
       if (!backendSuccess) {
         console.log('Backend unavailable. Using native browser print for vector PDF.')
-        alert('We will use your browser\\'s native print engine to generate a high-quality Vector PDF.\n\nPlease select "Save as PDF" in the destination dropdown.')
+        alert("We will use your browser's native print engine to generate a high-quality Vector PDF.\n\nPlease select 'Save as PDF' in the destination dropdown.")
         window.print()
       }
       
