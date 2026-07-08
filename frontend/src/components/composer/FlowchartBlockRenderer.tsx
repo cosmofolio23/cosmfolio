@@ -58,7 +58,7 @@ export function FlowchartBlockRenderer({
 
   const handleRandomize = () => {
     const pathStyles = ['serpentine', 'zigzag', 'linear-h', 'linear-v', 'circular', 'radial']
-    const nodeStyles = ['image', 'number', 'hexagon', 'minimal-dot']
+    const nodeStyles = ['image', 'large-image', 'number', 'hexagon', 'minimal-dot']
     const connectorStyles = ['curved', 'sharp', 'dashed', 'double']
     const palettes = [
       { lineColor: '#D4A574', nodeBorderColor: '#D4A574', nodeBgColor: '#F5E6D3', textColor: '#1A1A1A' },
@@ -147,7 +147,7 @@ export function FlowchartBlockRenderer({
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] uppercase text-gray-500 font-semibold">Node Style</label>
                     <select value={config.nodeStyle} onChange={e => updateConfig({ nodeStyle: e.target.value as any })} className="w-full text-[10px] border border-slate-200 rounded p-1 bg-white">
-                      <option value="image">Image</option><option value="number">Number</option><option value="hexagon">Hexagon</option><option value="minimal-dot">Dot</option>
+                      <option value="image">Small Image</option><option value="large-image">Large Image</option><option value="number">Number</option><option value="hexagon">Hexagon</option><option value="minimal-dot">Dot</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-1">

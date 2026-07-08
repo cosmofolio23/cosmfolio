@@ -34,19 +34,14 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     )
   }
 
+  // Base canvas dims for initial coordinate generation
   const W = 1100
   const H = 700
-  
-  const scale = config?.scale || 1
-  const vw = W / scale
-  const vh = H / scale
-  const vx = (W - vw) / 2
-  const vy = (H - vh) / 2
-  const viewBoxStr = `${vx} ${vy} ${vw} ${vh}`
 
   // Card Dimensions
-  const cardW = 230
-  const cardH = 130
+  const isLargeImg = nodeStyle === 'large-image'
+  const cardW = isLargeImg ? 300 : 230
+  const cardH = isLargeImg ? 320 : 130
 
   // Calculate Node Coordinates based on pathStyle
   const coords: { x: number; y: number }[] = []
@@ -78,13 +73,13 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     for (let i = 0; i < N; i++) {
       coords.push({
         x: startX + i * spacing,
-        y: i % 2 === 0 ? H / 2 - 130 : H / 2 + 130
+        y: i % 2 === 0 ? H / 2 - (cardH / 2 + 60) : H / 2 + (cardH / 2 + 60)
       })
     }
   } else if (pathStyle === 'circular') {
     const cx = W / 2
     const cy = H / 2
-    const R = 230
+    const R = Math.max(230, cardW)
     for (let i = 0; i < N; i++) {
       const angle = -Math.PI / 2 + (i * (2 * Math.PI)) / N
       coords.push({
@@ -97,7 +92,7 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     const outerCount = N - 1
     const cx = W / 2
     const cy = H / 2
-    const R = 260
+    const R = Math.max(260, cardW + 30)
     for (let i = 0; i < outerCount; i++) {
       const angle = -Math.PI / 2 + (i * (2 * Math.PI)) / outerCount
       coords.push({
@@ -107,9 +102,9 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     }
   } else {
     // DEFAULT: serpentine S-curve (2 rows max, up to 8 steps)
-    const row0Y = H / 2 - 140
-    const row1Y = H / 2 + 140
-    const colWidth = 270
+    const row0Y = H / 2 - (cardH / 2 + 60)
+    const row1Y = H / 2 + (cardH / 2 + 60)
+    const colWidth = cardW + 40
     const startX = 140
 
     for (let i = 0; i < N; i++) {
@@ -128,31 +123,41 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     }
   }
 
-  // Center coords in the viewBox so zooming works correctly
-  if (N > 0) {
-    let minX = Infinity, maxX = -Infinity
-    let minY = Infinity, maxY = -Infinity
-    coords.forEach(c => {
-      if (c.x < minX) minX = c.x
-      if (c.x > maxX) maxX = c.x
-      if (c.y < minY) minY = c.y
-      if (c.y > maxY) maxY = c.y
-    })
-    
-    // Add card dimensions to bounding box
-    minX -= cardW / 2
-    maxX += cardW / 2
-    minY -= cardH / 2
-    maxY += cardH / 2
+  // Calculate perfect bounding box for viewBox
+  let minX = Infinity, maxX = -Infinity
+  let minY = Infinity, maxY = -Infinity
+  coords.forEach(c => {
+    if (c.x < minX) minX = c.x
+    if (c.x > maxX) maxX = c.x
+    if (c.y < minY) minY = c.y
+    if (c.y > maxY) maxY = c.y
+  })
+  
+  // Add card dimensions to bounding box
+  minX -= cardW / 2
+  maxX += cardW / 2
+  minY -= cardH / 2
+  maxY += cardH / 2
 
-    const dx = W / 2 - (minX + maxX) / 2
-    const dy = H / 2 - (minY + maxY) / 2
+  // Apply padding so edges aren't clipped
+  const pad = 60
+  minX -= pad
+  minY -= pad
+  maxX += pad
+  maxY += pad
 
-    coords.forEach(c => {
-      c.x += dx
-      c.y += dy
-    })
-  }
+  const boxW = maxX - minX
+  const boxH = maxY - minY
+  
+  // Scale / Zoom logic
+  const scale = config?.scale || 1
+  const scaledW = boxW / scale
+  const scaledH = boxH / scale
+  const scaledX = minX + (boxW - scaledW) / 2
+  const scaledY = minY + (boxH - scaledH) / 2
+  
+  // Auto-fit viewBox string
+  const viewBoxStr = `${scaledX} ${scaledY} ${scaledW} ${scaledH}`
 
   const isDashed = connectorStyle === 'dashed'
   const isDouble = connectorStyle === 'double'
@@ -173,7 +178,7 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     } else if (pathStyle === 'circular') {
       const cx = W / 2
       const cy = H / 2
-      const R = 230
+      const R = Math.max(230, cardW)
       segments.push(`M ${cx + R} ${cy} A ${R} ${R} 0 1 1 ${cx + R - 0.01} ${cy}`)
     } else {
       for (let i = 1; i < N; i++) {
@@ -192,9 +197,8 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
             seg += `C ${midX} ${prev.y}, ${midX} ${curr.y}, ${curr.x} ${curr.y}`
           }
         } else if (pathStyle === 'serpentine') {
-          // If we transition from row 0 to row 1
           if (i === 4) {
-             const endX = prev.x + 135
+             const endX = prev.x + cardW / 2 + 40
              if (connectorStyle === 'sharp') {
                seg += `L ${endX} ${prev.y} L ${endX} ${curr.y} L ${curr.x} ${curr.y}`
              } else {
@@ -214,15 +218,12 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     return 0.6 + (0.4 * (idx / (N - 1)))
   }
 
-  // Fallback arrow marker End. We can't use markerMid on just a simple `C` or `L` curve easily for an arrow, 
-  // so we'll just put it at markerEnd, slightly offset. Wait, we can use `markerEnd`.
-  // To avoid arrowhead overlapping the card, we could shorten the paths, but markerEnd is fine for now as it will hide under the card or point directly at the card's edge.
-
   return (
     <div className="w-full h-full relative flex items-center justify-center rounded-lg" style={bgStyle}>
       <svg
         viewBox={viewBoxStr}
-        className="w-full h-full object-contain"
+        className="w-full h-full"
+        preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
@@ -264,8 +265,6 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
                 strokeLinejoin="round"
               />
             )}
-            
-            {/* Draw arrowhead at the end (or we can just put a circle in the middle) */}
           </g>
         ))}
 
@@ -287,55 +286,86 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
               style={{ overflow: 'visible' }}
             >
               <div
-                className="relative w-full h-full rounded-xl shadow-lg border transition-all flex flex-col p-5 bg-white"
+                className={`relative w-full h-full rounded-xl shadow-lg border transition-all flex flex-col bg-white ${isLargeImg ? 'overflow-hidden' : 'p-5'}`}
                 style={{
                   backgroundColor: cardBg,
                   borderColor: `${accentColor}30`,
                   boxShadow: `0 10px 25px -5px ${accentColor}20`,
                 }}
               >
-                {/* Step Number Badge */}
-                <div 
-                  className="absolute -top-4 -left-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md text-xl font-mono border-2 border-white"
-                  style={{ 
-                    backgroundColor: accentColor, 
-                    opacity: getOp(idx) 
-                  }}
-                >
-                  {String(idx + 1).padStart(2, '0')}
-                </div>
-
-                {/* Optional Icon/Image */}
-                {nodeStyle === 'image' && step.imageUrl && (
-                  <div className="absolute -top-4 -right-2 w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white">
-                    <img src={step.imageUrl} className="w-full h-full object-cover" alt="" />
-                  </div>
-                )}
                 
-                {nodeStyle === 'image' && !step.imageUrl && (
-                  <div className="absolute -top-4 -right-2 w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-50 flex items-center justify-center" style={{ color: accentColor }}>
-                    <svg className="w-5 h-5 opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2L2 22h20L12 2zm0 4.236l6.882 13.764H5.118L12 6.236z" />
-                    </svg>
-                  </div>
-                )}
+                {/* LARGE IMAGE STYLE */}
+                {isLargeImg ? (
+                  <>
+                    <div className="h-[200px] w-full bg-slate-100 flex-shrink-0 relative border-b border-black/5">
+                      {step.imageUrl ? (
+                        <img src={step.imageUrl} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-30 text-slate-400">
+                          <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                          </svg>
+                        </div>
+                      )}
+                      
+                      {/* Badge overlay on top left of image */}
+                      <div 
+                        className="absolute top-4 left-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md text-xl font-mono border-2 border-white backdrop-blur-sm"
+                        style={{ 
+                          backgroundColor: accentColor, 
+                          opacity: Math.max(0.7, getOp(idx)) 
+                        }}
+                      >
+                        {String(idx + 1).padStart(2, '0')}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 flex-1 flex flex-col overflow-hidden">
+                      <h3 className="font-bold text-lg mb-1 truncate" style={{ color: cardText }}>
+                        {step.title}
+                      </h3>
+                      <p className="text-[13px] leading-relaxed overflow-hidden text-ellipsis line-clamp-2" style={{ color: `${cardText}99` }}>
+                        {step.description}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  /* STANDARD CARD STYLE */
+                  <>
+                    <div 
+                      className="absolute -top-4 -left-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md text-xl font-mono border-2 border-white"
+                      style={{ 
+                        backgroundColor: accentColor, 
+                        opacity: getOp(idx) 
+                      }}
+                    >
+                      {String(idx + 1).padStart(2, '0')}
+                    </div>
 
-                {/* Content */}
-                <div className="mt-1 flex-1 flex flex-col overflow-hidden">
-                  <h3 
-                    className="font-bold text-lg mb-1 truncate"
-                    style={{ color: cardText }}
-                  >
-                    {step.title}
-                  </h3>
-                  
-                  <p 
-                    className="text-[13px] leading-relaxed overflow-hidden text-ellipsis line-clamp-3 text-slate-500"
-                    style={{ color: `${cardText}99` }}
-                  >
-                    {step.description}
-                  </p>
-                </div>
+                    {nodeStyle === 'image' && step.imageUrl && (
+                      <div className="absolute -top-4 -right-2 w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white">
+                        <img src={step.imageUrl} className="w-full h-full object-cover" alt="" />
+                      </div>
+                    )}
+                    
+                    {nodeStyle === 'image' && !step.imageUrl && (
+                      <div className="absolute -top-4 -right-2 w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-50 flex items-center justify-center" style={{ color: accentColor }}>
+                        <svg className="w-5 h-5 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2L2 22h20L12 2zm0 4.236l6.882 13.764H5.118L12 6.236z" />
+                        </svg>
+                      </div>
+                    )}
+
+                    <div className="mt-1 flex-1 flex flex-col overflow-hidden">
+                      <h3 className="font-bold text-lg mb-1 truncate" style={{ color: cardText }}>
+                        {step.title}
+                      </h3>
+                      <p className="text-[13px] leading-relaxed overflow-hidden text-ellipsis line-clamp-3 text-slate-500" style={{ color: `${cardText}99` }}>
+                        {step.description}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </foreignObject>
           )

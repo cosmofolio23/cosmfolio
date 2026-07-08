@@ -9,6 +9,29 @@ export interface FlowchartPreset {
 
 export const PROCESS_PRESETS: FlowchartPreset[] = [
   {
+    id: 'large-image-storyboard',
+    name: 'Large Image Storyboard',
+    description: 'Highly visual flowchart with large image cards and clear step numbering.',
+    config: {
+      presetId: 'large-image-storyboard',
+      pathStyle: 'zigzag',
+      nodeStyle: 'large-image',
+      connectorStyle: 'curved',
+      lineColor: '#6366F1',
+      nodeBorderColor: '#6366F1',
+      nodeBgColor: '#FFFFFF',
+      textColor: '#1E1B4B',
+      lineWidth: 2,
+      scale: 1,
+      steps: [
+        { id: '1', title: '01 Site Briefing', description: 'Understanding local typography, sun paths, and architectural history.' },
+        { id: '2', title: '02 Massing & Void', description: 'Carving out negative spaces to allow light and natural ventilation.' },
+        { id: '3', title: '03 Timber Detailing', description: 'Curating local pine, joining details, and sustainable structural members.' },
+        { id: '4', title: '04 Delivery', description: 'Final construction of the pavilion sitting lightly on the forest floor.' }
+      ]
+    }
+  },
+  {
     id: 'nordic-serpentine',
     name: 'Serpentine Scandinavian',
     description: 'Soft wood tones, S-curve flow, and circular images. Calm and sustainable.',
