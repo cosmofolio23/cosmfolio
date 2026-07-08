@@ -100,9 +100,9 @@ export default function PortfolioBookPage() {
               await window.document.fonts.ready
             }
             await new Promise(resolve => setTimeout(resolve, 1000))
-            const div = document.createElement('div')
+            const div = window.document.createElement('div')
             div.id = 'render-complete'
-            document.body.appendChild(div)
+            window.document.body.appendChild(div)
           }
           checkReady()
         }
@@ -141,13 +141,13 @@ export default function PortfolioBookPage() {
       
       const blob = await res.blob()
       const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
+      const a = window.document.createElement('a')
       a.href = url
       a.download = `${projectTitle || 'Portfolio'}.pdf`
-      document.body.appendChild(a)
+      window.document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      window.document.body.removeChild(a)
       
       trackEvent('pdf_export_success', { project_id: projectId, title: projectTitle })
       setTimeout(() => window.close(), 1000)
