@@ -73,6 +73,9 @@ export interface Block {
   fit?: 'cover' | 'contain' | 'fill'
   zoom?: number
   xOffset?: number
+  
+  // Freeform mode flag
+  freeform?: boolean
   yOffset?: number
   cssFilter?: string // Added for Global Filters feature
 
