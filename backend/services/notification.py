@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # Configure in .env
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "boseraj001@gmail.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "thecosmofolio@gmail.com")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "thecosmofolio@gmail.com")
