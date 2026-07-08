@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # Configure in .env
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "thecosmofolio@gmail.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "boseraj001@gmail.com")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "thecosmofolio@gmail.com")
@@ -70,11 +70,11 @@ class NotificationService:
             try:
                 from database import supabase
                 supabase.table("error_logs").insert({
-                    "user_id": "system",
+                    "user_id": None,
                     "error_type": "EMAIL_CONFIG_MISSING",
-                    "error_message": "Missing SMTP_PASSWORD and RESEND_API_KEY",
+                    "message": "Missing SMTP_PASSWORD and RESEND_API_KEY",
                     "stack_trace": "NotificationService._send_email",
-                    "page_url": "backend"
+                    "page": "backend"
                 }).execute()
             except Exception:
                 pass
@@ -107,11 +107,11 @@ class NotificationService:
             try:
                 from database import supabase
                 supabase.table("error_logs").insert({
-                    "user_id": "system",
+                    "user_id": None,
                     "error_type": "SMTP_SEND_FAILED",
-                    "error_message": error_msg,
+                    "message": error_msg,
                     "stack_trace": "NotificationService._send_email",
-                    "page_url": "backend"
+                    "page": "backend"
                 }).execute()
             except:
                 pass

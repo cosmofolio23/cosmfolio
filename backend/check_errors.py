@@ -20,6 +20,6 @@ try:
     res = supabase.table("error_logs").select("*").order("created_at", desc=True).limit(10).execute()
     print("Latest 10 Error Logs:")
     for row in res.data:
-        print(f"[{row.get('created_at')}] Type: {row.get('error_type')} | Msg: {row.get('error_message')}")
+        print(f"[{row.get('created_at')}] Type: {row.get('error_type')} | Msg: {row.get('message')}")
 except Exception as e:
     print(f"Error querying Supabase: {e}")
