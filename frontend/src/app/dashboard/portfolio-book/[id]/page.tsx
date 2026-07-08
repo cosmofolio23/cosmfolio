@@ -179,113 +179,11 @@ export default function PortfolioBookPage() {
         console.warn('Backend PDF generation unavailable, falling back to client-side:', backendErr)
       }
 
-      // --- Strategy 2: Fallback to client-side html2canvas ---
+      // --- Strategy 2: Fallback to Browser Native Print (True Vector PDF) ---
       if (!backendSuccess) {
-        console.log('Using client-side html2canvas fallback for PDF generation')
-        const { jsPDF } = await import('jspdf')
-        const html2canvas = (await import('html2canvas')).default
-
-        // Wait for layout to settle, images, and custom fonts to load properly
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        if ('fonts' in window.document) {
-          await window.document.fonts.ready
-        }
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        const elements = window.document.querySelectorAll('.pf-print-page')
-        if (elements.length === 0) throw new Error('No pages found')
-
-        const pdf = new jsPDF({
-          orientation: sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait',
-          unit: 'mm',
-          format: sizeSettings ? [sizeSettings.width, sizeSettings.height] : 'a4'
-        })
-
-        const pdfWidth = pdf.internal.pageSize.getWidth()
-        const pdfHeight = pdf.internal.pageSize.getHeight()
-
-        let pdfPageIndex = 0
-        for (let i = 0; i < elements.length; i++) {
-          const el = elements[i] as HTMLElement
-          const isSpread = el.dataset.spread === '1'
-
-          const targetWidth = isSpread ? 1520 : 760
-          const aspectRatio = isSpread ? (pdfWidth * 2) / pdfHeight : pdfWidth / pdfHeight
-          const targetHeight = Math.round(targetWidth / aspectRatio)
-
-          const oldStyleText = el.style.cssText
-          el.style.width = `${targetWidth}px`
-          el.style.height = `${targetHeight}px`
-
-          const child = el.firstElementChild as HTMLElement
-          let oldChildStyle = ''
-          if (child) {
-            oldChildStyle = child.style.cssText
-            child.style.width = `${targetWidth}px`
-            child.style.height = `${targetHeight}px`
-            child.style.aspectRatio = 'auto'
-          }
-
-          const canvas = await html2canvas(el, {
-            scale: 3,
-            useCORS: true,
-            allowTaint: false,
-            logging: false,
-            windowWidth: targetWidth,
-            windowHeight: targetHeight,
-            onclone: (_doc: Document, clonedEl: HTMLElement) => {
-              clonedEl.querySelectorAll('*').forEach((node) => {
-                const el = node as HTMLElement
-                if (!el.style) return
-                const z = el.style.zoom
-                if (z && z !== '1' && z !== 'normal' && z !== '') {
-                  const zoomVal = parseFloat(z)
-                  if (!isNaN(zoomVal) && zoomVal !== 1) {
-                    el.style.zoom = '1'
-                    el.style.transform = `scale(${zoomVal})`
-                    el.style.transformOrigin = 'top left'
-                    el.style.width = `${100 / zoomVal}%`
-                    el.style.height = `${100 / zoomVal}%`
-                  }
-                }
-              })
-              clonedEl.querySelectorAll('.overflow-hidden').forEach((node) => {
-                const el = node as HTMLElement
-                if (el.querySelector('img') && !el.querySelector('input, textarea, [contenteditable]')) return
-                el.style.overflow = 'visible'
-              })
-            }
-          })
-
-          // Restore styles
-          el.style.cssText = oldStyleText
-          if (child) child.style.cssText = oldChildStyle
-
-          if (isSpread) {
-            const halfW = Math.floor(canvas.width / 2)
-            const h = canvas.height
-            const orientation = sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait'
-
-            for (const half of [0, 1] as const) {
-              const halfCanvas = window.document.createElement('canvas')
-              halfCanvas.width = halfW
-              halfCanvas.height = h
-              const ctx = halfCanvas.getContext('2d')!
-              ctx.drawImage(canvas, half * halfW, 0, halfW, h, 0, 0, halfW, h)
-              const imgData = halfCanvas.toDataURL('image/jpeg', 0.92)
-              if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], orientation)
-              pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-              pdfPageIndex++
-            }
-          } else {
-            const imgData = canvas.toDataURL('image/jpeg', 0.92)
-            if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-            pdfPageIndex++
-          }
-        }
-
-        pdf.save(`${projectTitle || 'Portfolio'}.pdf`)
+        console.log('Backend unavailable. Using native browser print for vector PDF.')
+        alert('We will use your browser\\'s native print engine to generate a high-quality Vector PDF.\n\nPlease select "Save as PDF" in the destination dropdown.')
+        window.print()
       }
       
       trackEvent('pdf_export_success', { project_id: projectId, title: projectTitle })
