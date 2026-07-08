@@ -128,6 +128,32 @@ export default function ProcessFlowchartRenderer({ block, tokens, onChange }: Pr
     }
   }
 
+  // Center coords in the viewBox so zooming works correctly
+  if (N > 0) {
+    let minX = Infinity, maxX = -Infinity
+    let minY = Infinity, maxY = -Infinity
+    coords.forEach(c => {
+      if (c.x < minX) minX = c.x
+      if (c.x > maxX) maxX = c.x
+      if (c.y < minY) minY = c.y
+      if (c.y > maxY) maxY = c.y
+    })
+    
+    // Add card dimensions to bounding box
+    minX -= cardW / 2
+    maxX += cardW / 2
+    minY -= cardH / 2
+    maxY += cardH / 2
+
+    const dx = W / 2 - (minX + maxX) / 2
+    const dy = H / 2 - (minY + maxY) / 2
+
+    coords.forEach(c => {
+      c.x += dx
+      c.y += dy
+    })
+  }
+
   const isDashed = connectorStyle === 'dashed'
   const isDouble = connectorStyle === 'double'
 

@@ -5,7 +5,7 @@ import type { Block, FlowchartStep, FlowchartConfig, DesignTokens } from './type
 import { PROCESS_PRESETS } from './processPresets'
 import ProcessFlowchartRenderer from './ProcessFlowchartRenderer'
 
-type TabType = 'layout' | 'steps' | 'card' | null
+type TabType = 'layout' | 'steps' | 'card' | 'scale' | 'colors' | null
 
 export function FlowchartBlockRenderer({
   block, tokens, onChange, readonly, onUploadImage
@@ -56,6 +56,29 @@ export function FlowchartBlockRenderer({
     }
   }
 
+  const handleRandomize = () => {
+    const pathStyles = ['serpentine', 'zigzag', 'linear-h', 'linear-v', 'circular', 'radial']
+    const nodeStyles = ['image', 'number', 'hexagon', 'minimal-dot']
+    const connectorStyles = ['curved', 'sharp', 'dashed', 'double']
+    const palettes = [
+      { lineColor: '#D4A574', nodeBorderColor: '#D4A574', nodeBgColor: '#F5E6D3', textColor: '#1A1A1A' },
+      { lineColor: '#475569', nodeBorderColor: '#334155', nodeBgColor: '#F8FAFC', textColor: '#0F172A' },
+      { lineColor: '#6366F1', nodeBorderColor: '#4F46E5', nodeBgColor: '#EEF2FF', textColor: '#1E1B4B' },
+      { lineColor: '#10B981', nodeBorderColor: '#059669', nodeBgColor: '#ECFDF5', textColor: '#064E3B' },
+      { lineColor: '#F43F5E', nodeBorderColor: '#E11D48', nodeBgColor: '#FFF1F2', textColor: '#4C0519' },
+      { lineColor: '#EAB308', nodeBorderColor: '#CA8A04', nodeBgColor: '#FEFCE8', textColor: '#713F12' }
+    ]
+    const pick = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)]
+    
+    updateConfig({
+      pathStyle: pick(pathStyles),
+      nodeStyle: pick(nodeStyles),
+      connectorStyle: pick(connectorStyles),
+      ...pick(palettes),
+      lineWidth: Math.floor(Math.random() * 4) + 1
+    })
+  }
+
   return (
     <div className="group/fc relative w-full h-full flex flex-col min-h-0">
       <ProcessFlowchartRenderer block={block} tokens={tokens} onChange={onChange} />
@@ -79,7 +102,10 @@ export function FlowchartBlockRenderer({
           <div className={`flex items-center gap-1 bg-white/95 backdrop-blur-md shadow-lg border border-black/10 rounded-md p-1 transition-opacity duration-200 ${isEditorOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <button onClick={() => setActiveTab(t => t === 'layout' ? null : 'layout')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'layout' ? 'bg-black/5' : ''}`} title="Layout Style">📐</button>
             <button onClick={() => setActiveTab(t => t === 'steps' ? null : 'steps')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'steps' ? 'bg-black/5' : ''}`} title="Edit Steps">📝</button>
-            <button onClick={() => setActiveTab(t => t === 'card' ? null : 'card')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'card' ? 'bg-black/5' : ''}`} title="Background Settings">🎨</button>
+            <button onClick={() => setActiveTab(t => t === 'colors' ? null : 'colors')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'colors' ? 'bg-black/5' : ''}`} title="Colors">🎨</button>
+            <button onClick={() => setActiveTab(t => t === 'scale' ? null : 'scale')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'scale' ? 'bg-black/5' : ''}`} title="Scale/Zoom">🔍</button>
+            <button onClick={() => setActiveTab(t => t === 'card' ? null : 'card')} className={`p-1.5 rounded hover:bg-black/5 transition-colors ${activeTab === 'card' ? 'bg-black/5' : ''}`} title="Background Settings">🖼️</button>
+            <button onClick={handleRandomize} className="p-1.5 rounded hover:bg-black/5 transition-colors" title="Randomize Style">🎲</button>
             <div className="w-px h-4 bg-black/10 mx-1" />
             
             {block.freeform && (
@@ -136,15 +162,23 @@ export function FlowchartBlockRenderer({
                   </div>
                 </div>
               </div>
-              <div className="space-y-2 pt-3 mt-3 border-t border-black/10">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Scale</span>
-                  <span className="text-[9px] font-mono text-gray-500">{Math.round((config.scale || 1) * 100)}%</span>
-                </div>
-                <input type="range" min="0.25" max="3.0" step="0.05" value={config.scale || 1} onChange={e => updateConfig({ scale: parseFloat(e.target.value) })} className="w-full accent-blue-600" />
+            </div>
+          )}
+
+          {activeTab === 'scale' && (
+            <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Scale / Zoom</span>
+                <span className="text-[9px] font-mono text-gray-500">{Math.round((config.scale || 1) * 100)}%</span>
               </div>
-              <div className="space-y-2 pt-3 mt-3 border-t border-black/10">
-                <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Colors</div>
+              <input type="range" min="0.25" max="3.0" step="0.05" value={config.scale || 1} onChange={e => updateConfig({ scale: parseFloat(e.target.value) })} className="w-full accent-blue-600" />
+            </div>
+          )}
+
+          {activeTab === 'colors' && (
+            <div className="bg-white/95 backdrop-blur-md p-3 rounded-lg shadow-xl border border-black/10 w-64 text-left">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Colors</div>
+              <div className="space-y-2">
                 {[
                   { label: 'Line Color', key: 'lineColor' },
                   { label: 'Node Border', key: 'nodeBorderColor' },
