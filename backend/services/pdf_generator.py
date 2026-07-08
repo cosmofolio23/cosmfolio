@@ -21,7 +21,14 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
-            args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+            args=[
+                "--no-sandbox", 
+                "--disable-setuid-sandbox", 
+                "--disable-dev-shm-usage",
+                "--single-process",
+                "--disable-gpu",
+                "--no-zygote"
+            ]
         )
         context = await browser.new_context(
             viewport={"width": 1920, "height": 1080},
