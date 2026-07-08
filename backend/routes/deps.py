@@ -125,6 +125,22 @@ def get_current_user(authorization: str = Header(None)):
             detail="Empty token"
         )
 
+    # METHOD 0: Headless Token Bypass (Internal PDF export)
+    try:
+        unverified_header = jwt.get_unverified_header(token)
+        if unverified_header.get('alg') == 'HS256':
+            HEADLESS_SECRET = os.environ.get("HEADLESS_SECRET", "super-secret-headless-key")
+            payload = jwt.decode(token, HEADLESS_SECRET, algorithms=["HS256"])
+            exp = payload.get("exp")
+            if exp and time.time() < exp:
+                return {
+                    "user_id": str(payload.get("user_id")),
+                    "email": "headless@internal",
+                    "auth": "headless_bypass"
+                }
+    except Exception:
+        pass
+
     # METHOD 1: Firebase verification (if Firebase is initialized)
     try:
         from firebase_config import firebase_app

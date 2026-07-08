@@ -1,13 +1,43 @@
 from fastapi import APIRouter, HTTPException, status, Header
+from fastapi.responses import Response
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import re
+import os
+import jwt
 from models import ProjectCreate, ProjectUpdate, ProjectResponse
 from .deps import get_current_user
 from database import supabase
+from services.pdf_generator import generate_portfolio_pdf
 
 router = APIRouter()
+HEADLESS_SECRET = os.environ.get("HEADLESS_SECRET", "super-secret-headless-key")
+
+@router.post("/{project_id}/export-pdf")
+async def export_pdf(project_id: str, authorization: str = Header(None)):
+    current_user = get_current_user(authorization)
+    
+    # Verify ownership
+    response = supabase.table("projects").select("id").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
+    if not response.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        
+    # Generate a short-lived token to bypass frontend auth for headless browser
+    headless_token = jwt.encode(
+        {"project_id": project_id, "user_id": current_user["user_id"], "exp": datetime.utcnow() + timedelta(minutes=5)},
+        HEADLESS_SECRET,
+        algorithm="HS256"
+    )
+    
+    try:
+        pdf_bytes = await generate_portfolio_pdf(project_id, headless_token)
+        return Response(content=pdf_bytes, media_type="application/pdf", headers={
+            "Content-Disposition": f'attachment; filename="portfolio-{project_id}.pdf"'
+        })
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 
 # ==================== Routes ====================
 

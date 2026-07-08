@@ -30,6 +30,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# Install Playwright browser and its OS dependencies
+RUN playwright install chromium && \
+    playwright install-deps chromium
+
 # Copy app code
 COPY . .
 

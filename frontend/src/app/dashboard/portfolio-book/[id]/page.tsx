@@ -38,10 +38,18 @@ export default function PortfolioBookPage() {
   const [isBypass, setIsBypass] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
 
-  const authToken = () => token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
+  const authToken = () => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search)
+      const headlessToken = searchParams.get('headless_token')
+      if (headlessToken) return headlessToken
+    }
+    return token || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)
+  }
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    const isHeadless = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('headless_token')
+    if (!isAuthenticated && !isHeadless) {
       router.push('/signin')
       return
     }
@@ -81,9 +89,24 @@ export default function PortfolioBookPage() {
         document: data.document,
         project,
       })
-      // Auto-open the print dialog when opened as a PDF fallback (?print=1)
       if (typeof window !== 'undefined') {
         const search = new URLSearchParams(window.location.search)
+        
+        // Signal for Playwright backend PDF generation
+        if (search.get('headless_token')) {
+          const checkReady = async () => {
+            await new Promise(resolve => setTimeout(resolve, 1500))
+            if ('fonts' in window.document) {
+              await window.document.fonts.ready
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            const div = document.createElement('div')
+            div.id = 'render-complete'
+            document.body.appendChild(div)
+          }
+          checkReady()
+        }
+        
         if (search.get('print') === '1') {
           window.setTimeout(() => window.print(), 1000)
         } else if (search.get('download') === '1') {
@@ -101,133 +124,32 @@ export default function PortfolioBookPage() {
     setIsDownloading(true)
     trackEvent('pdf_export_started', { project_id: projectId, title: projectTitle })
     try {
-      const { jsPDF } = await import('jspdf')
-      const html2canvas = (await import('html2canvas')).default
-      
       const printContainer = window.document.getElementById('pf-print-container')
       if (printContainer) {
         printContainer.classList.remove('hidden')
         printContainer.classList.remove('print:block')
       }
 
-      // Wait for layout to settle, images, and custom fonts to load properly
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      if ('fonts' in window.document) {
-        await window.document.fonts.ready
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-
-      const elements = window.document.querySelectorAll('.pf-print-page')
-      if (elements.length === 0) throw new Error('No pages found')
-
-      const pdf = new jsPDF({
-        orientation: sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: sizeSettings ? [sizeSettings.width, sizeSettings.height] : 'a4'
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/export-pdf`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` },
       })
-
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
-
-      let pdfPageIndex = 0
-      for (let i = 0; i < elements.length; i++) {
-        const el = elements[i] as HTMLElement
-        const isSpread = el.dataset.spread === '1'
-
-        // The editor always uses a strict 760px base width for single pages (1520px for spreads).
-        // To ensure font sizes (which are absolute px) and layouts match the editor perfectly,
-        // we MUST render the print container at the exact same base width.
-        // html2canvas `scale: 4` handles the high-resolution upscaling for the final PDF.
-        const targetWidth = isSpread ? 1520 : 760
-        const aspectRatio = isSpread ? (pdfWidth * 2) / pdfHeight : pdfWidth / pdfHeight
-        const targetHeight = Math.round(targetWidth / aspectRatio)
-
-        const oldStyleText = el.style.cssText
-        el.style.width = `${targetWidth}px`
-        el.style.height = `${targetHeight}px`
-
-        const child = el.firstElementChild as HTMLElement
-        let oldChildStyle = ''
-        if (child) {
-          oldChildStyle = child.style.cssText
-          child.style.width = `${targetWidth}px`
-          child.style.height = `${targetHeight}px`
-          child.style.aspectRatio = 'auto'
-        }
-
-        const canvas = await html2canvas(el, {
-          scale: 4,
-          useCORS: true,
-          allowTaint: false,
-          logging: false,
-          windowWidth: targetWidth,
-          windowHeight: targetHeight,
-          // Convert CSS `zoom` to `transform: scale()` before capture.
-          // html2canvas does NOT support CSS zoom — it silently ignores it,
-          // causing text in zoomed containers to render at wrong size.
-          onclone: (_doc: Document, clonedEl: HTMLElement) => {
-            clonedEl.querySelectorAll('*').forEach((node) => {
-              const el = node as HTMLElement
-              if (!el.style) return
-              const z = el.style.zoom
-              if (z && z !== '1' && z !== 'normal' && z !== '') {
-                const zoomVal = parseFloat(z)
-                if (!isNaN(zoomVal) && zoomVal !== 1) {
-                  el.style.zoom = '1'
-                  el.style.transform = `scale(${zoomVal})`
-                  el.style.transformOrigin = 'top left'
-                  // Compensate layout: scale changes visual size but not box size,
-                  // so expand the box so scaled content fits the same visual area.
-                  el.style.width = `${100 / zoomVal}%`
-                  el.style.height = `${100 / zoomVal}%`
-                }
-              }
-            })
-            // Also strip all overflow-hidden from text containers in the clone
-            clonedEl.querySelectorAll('.overflow-hidden').forEach((node) => {
-              const el = node as HTMLElement
-              // Keep overflow-hidden on image containers (they need cropping)
-              if (el.querySelector('img') && !el.querySelector('input, textarea, [contenteditable]')) return
-              el.style.overflow = 'visible'
-            })
-          }
-        })
-
-        // Restore styles
-        el.style.cssText = oldStyleText
-        if (child) child.style.cssText = oldChildStyle
-
-        if (isSpread) {
-          // Split 2× width canvas into two PDF pages at the midpoint
-          const halfW = Math.floor(canvas.width / 2)
-          const h = canvas.height
-          const orientation = sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait'
-
-          for (const half of [0, 1] as const) {
-            const halfCanvas = window.document.createElement('canvas')
-            halfCanvas.width = halfW
-            halfCanvas.height = h
-            const ctx = halfCanvas.getContext('2d')!
-            ctx.drawImage(canvas, half * halfW, 0, halfW, h, 0, 0, halfW, h)
-            const imgData = halfCanvas.toDataURL('image/jpeg', 1.0)
-            if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], orientation)
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-            pdfPageIndex++
-          }
-        } else {
-          const imgData = canvas.toDataURL('image/jpeg', 1.0)
-          if (pdfPageIndex > 0) pdf.addPage([pdfWidth, pdfHeight], sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait')
-          pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-          pdfPageIndex++
-        }
-      }
-
-      pdf.save(`${projectTitle || 'Portfolio'}.pdf`)
       
-      trackEvent('pdf_export_success', { project_id: projectId, title: projectTitle, pages: elements.length })
-
-      // Optionally close the window after a short delay since it was opened specifically for downloading
+      if (!res.ok) {
+        throw new Error('Backend PDF generation failed')
+      }
+      
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${projectTitle || 'Portfolio'}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      trackEvent('pdf_export_success', { project_id: projectId, title: projectTitle })
       setTimeout(() => window.close(), 1000)
     } catch (e: any) {
       console.error('Failed to generate PDF:', e)
