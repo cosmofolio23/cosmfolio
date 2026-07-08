@@ -264,7 +264,7 @@ export interface FlowchartStep {
 export interface FlowchartConfig {
   presetId: string
   pathStyle: 'serpentine' | 'zigzag' | 'linear-h' | 'linear-v' | 'circular' | 'radial'
-  nodeStyle: 'image' | 'number' | 'icon' | 'hexagon' | 'minimal-dot'
+  nodeStyle: 'image' | 'large-image' | 'number' | 'icon' | 'hexagon' | 'minimal-dot'
   connectorStyle: 'curved' | 'sharp' | 'dashed' | 'double'
   lineColor: string
   nodeBorderColor: string
