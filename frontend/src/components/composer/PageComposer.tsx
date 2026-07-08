@@ -99,7 +99,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
   }, [baseWidth, initialScale])
   
   const spec = getSpec(page.layoutId)
-  const images = allImages(page.blocks)
+  const images = allImages(page.blocks).filter(b => !b.freeform)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
 
   const patchBlock = (id: string, patch: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => {
@@ -148,7 +148,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
     return block
   }
 
-  const firstOfType = (type: BlockType) => page.blocks.find(b => b.type === type)
+  const firstOfType = (type: BlockType) => page.blocks.find(b => b.type === type && !b.freeform)
 
   const overlay = spec.kind === 'overlay'
 
@@ -267,6 +267,35 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             }}
           />
         ))}
+        {page.blocks.filter(b => b.freeform).map((block, i) => {
+          const isImg = ['render', 'plan', 'section', 'diagram'].includes(block.type)
+          const role = isImg ? 'image' : block.type as any
+          const dummyRegion: Region = { role, r0: 0, c0: 0, rs: 1, cs: 1 }
+          return (
+            <RegionView
+              key={`freeform-${block.id}`}
+              region={dummyRegion}
+              forceBlock={block}
+              spec={spec}
+              tokens={tokens}
+              overlay={overlay}
+              images={images}
+              patchBlock={patchBlock}
+              addBlock={addBlock}
+              firstOfType={firstOfType}
+              onUploadImage={onUploadImage}
+              titleBlock={titleBlock}
+              pages={pages || []}
+              pageContext={pageContext}
+              onUpdateGlobalPages={onUpdateGlobalPages}
+              masterElements={masterElements}
+              activeBlock={activeBlock}
+              setActiveBlock={setActiveBlock}
+              readonly={readonly}
+              deletedRoles={page.deletedRoles}
+            />
+          )
+        })}
       </div>
 
       {/* gradient scrim for overlay covers */}
@@ -1280,6 +1309,7 @@ function RegionView({
   setActiveBlock?: (v: { id: string, x: number, y: number } | null) => void
   readonly?: boolean
   deletedRoles?: string[]
+  forceBlock?: Block
 }) {
   const style = { ...gridStyle(region) }
 
@@ -1310,7 +1340,7 @@ function RegionView({
   /* ---- image region ---- */
   if (region.role === 'image') {
     const idx = region.imageIndex ?? 0
-    const block = images[idx]
+    const block = forceBlock || images[idx]
     if (block) {
       const isFree = !!block.freeform;
       const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style;
@@ -1343,11 +1373,11 @@ function RegionView({
   }
 
   /* ---- text-type regions ---- */
-  const type = ROLE_TO_TYPE[region.role]
+  const type = ROLE_TO_TYPE[region.role as Exclude<RegionRole, 'image'>]
   if (deletedRoles?.includes(type)) {
     return null
   }
-  const block = firstOfType(type)
+  const block = forceBlock || firstOfType(type)
   const onColor = overlay ? '#ffffff' : undefined
   const z = overlay ? 'relative z-10' : ''
 
