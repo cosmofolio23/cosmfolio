@@ -27,10 +27,12 @@ socket.getaddrinfo = _ipv4_getaddrinfo
 
 class NotificationService:
     @staticmethod
-    def _send_email(subject: str, html_content: str):
-        # Run in background thread so it doesn't block the request
-        thread = threading.Thread(target=NotificationService._do_send_email, args=(subject, html_content), daemon=True)
-        thread.start()
+    def _send_email(subject: str, html_content: str, background_tasks = None):
+        if background_tasks is not None:
+            background_tasks.add_task(NotificationService._do_send_email, subject, html_content)
+        else:
+            thread = threading.Thread(target=NotificationService._do_send_email, args=(subject, html_content), daemon=True)
+            thread.start()
         return True
 
     @staticmethod
@@ -118,7 +120,7 @@ class NotificationService:
             return False
 
     @staticmethod
-    def sendSignupAlert(user_data: dict):
+    def sendSignupAlert(user_data: dict, background_tasks = None):
         subject = "🎉 New CosmoFolio User Registered"
         now = datetime.now().strftime("%d %B %Y - %I:%M %p")
         
@@ -137,10 +139,10 @@ class NotificationService:
         <p><strong>Login Method:</strong> {login_method}</p>
         <p><strong>Device/Browser:</strong> {device}</p>
         """
-        return NotificationService._send_email(subject, html)
+        return NotificationService._send_email(subject, html, background_tasks)
 
     @staticmethod
-    def sendSupportEmail(support_data: dict):
+    def sendSupportEmail(support_data: dict, background_tasks = None):
         subject = f"📬 New Support Request from {support_data.get('name', 'Unknown')}"
         now = datetime.now().strftime("%d %B %Y - %I:%M %p")
         
@@ -159,10 +161,10 @@ class NotificationService:
         <br/>
         <p><em>Reply directly to {email} to answer this user.</em></p>
         """
-        return NotificationService._send_email(subject, html)
+        return NotificationService._send_email(subject, html, background_tasks)
 
     @staticmethod
-    def sendPaymentAlert(payment_data: dict):
+    def sendPaymentAlert(payment_data: dict, background_tasks = None):
         subject = "💰 CosmoFolio Pro Purchase"
         now = datetime.now().strftime("%d %B %Y - %I:%M %p")
         
@@ -185,7 +187,7 @@ class NotificationService:
         <p><strong>Payment ID:</strong> {payment_id}</p>
         <p><strong>Date:</strong> {now}</p>
         """
-        return NotificationService._send_email(subject, html)
+        return NotificationService._send_email(subject, html, background_tasks)
 
     @staticmethod
     def sendWeeklyReport(stats: dict):
@@ -233,7 +235,7 @@ class NotificationService:
         return NotificationService._send_email(subject, html)
 
     @staticmethod
-    def sendBoostPackAlert(payment_data: dict):
+    def sendBoostPackAlert(payment_data: dict, background_tasks = None):
         subject = "🚀 Boost Pack Purchased"
         
         name = payment_data.get('name', 'Unknown')
@@ -251,10 +253,10 @@ class NotificationService:
         <p><strong>New Page Limit:</strong> {pages}</p>
         <p><strong>New Download Limit:</strong> {downloads}</p>
         """
-        return NotificationService._send_email(subject, html)
+        return NotificationService._send_email(subject, html, background_tasks)
 
     @staticmethod
-    def sendPaymentFailedAlert(error_data: dict):
+    def sendPaymentFailedAlert(error_data: dict, background_tasks = None):
         subject = "⚠️ Payment Failed"
         
         email = error_data.get('email', 'Unknown')
@@ -271,10 +273,10 @@ class NotificationService:
         <p><strong>Reason:</strong> {reason}</p>
         <p><strong>Gateway Response:</strong> {gateway}</p>
         """
-        return NotificationService._send_email(subject, html)
+        return NotificationService._send_email(subject, html, background_tasks)
 
     @staticmethod
-    def sendErrorAlert(error_data: dict):
+    def sendErrorAlert(error_data: dict, background_tasks = None):
         subject = "🚨 CosmoFolio Error Detected"
         now = datetime.now().strftime("%d %B %Y - %I:%M %p")
 
@@ -297,7 +299,7 @@ class NotificationService:
         <h3>Stack Trace:</h3>
         <pre style="background: #f4f4f4; padding: 10px; overflow-x: auto;">{stack}</pre>
         """
-        return NotificationService._send_email(subject, html)
+        return NotificationService._send_email(subject, html, background_tasks)
 
     @staticmethod
     def sendDailyReport(stats: dict):

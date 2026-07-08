@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, BackgroundTasks
 from pydantic import BaseModel
 import razorpay
 import os
@@ -106,7 +106,7 @@ async def create_checkout_session(req: CheckoutRequest, current_user: dict = Dep
     }
 
 @router.post("/webhook")
-async def razorpay_webhook(request: Request):
+async def razorpay_webhook(request: Request, background_tasks: BackgroundTasks):
     payload = await request.body()
     signature = request.headers.get("x-razorpay-signature")
     
@@ -155,11 +155,11 @@ async def razorpay_webhook(request: Request):
             current_boosts = user_data.data[0].get("boost_pack_count", 0) if user_data.data else 0
             database.supabase.table("users").update({"boost_pack_count": current_boosts + 1}).eq("id", user_id).execute()
             
-        process_ambassador_reward(user_id, product_type, payment.get("amount", 0), order_id, payment_id)
+        process_ambassador_reward(user_id, product_type, payment.get("amount", 0), order_id, payment_id, background_tasks)
             
     return {"status": "ok"}
 
-def process_ambassador_reward(user_id: str, product_type: str, amount_paid: float, gateway_order_id: str, payment_id: str):
+def process_ambassador_reward(user_id: str, product_type: str, amount_paid: float, gateway_order_id: str, payment_id: str, background_tasks = None):
     if product_type != "pro_upgrade":
         return
         
@@ -209,7 +209,7 @@ def process_ambassador_reward(user_id: str, product_type: str, amount_paid: floa
             new_tier = "creator"
             new_discount = 25
             new_commission = 30
-            NotificationService.sendAmbassadorUpgraded(ambassador_id, new_tier)
+            NotificationService.sendAmbassadorUpgraded(ambassador_id, new_tier, background_tasks)
         elif new_sales >= 21 and new_tier == "starter":
             new_tier = "campus"
             new_discount = 20
@@ -225,13 +225,13 @@ def process_ambassador_reward(user_id: str, product_type: str, amount_paid: floa
         }).eq("user_id", ambassador_id).execute()
         
         # Notify
-        NotificationService.sendAmbassadorSale(ambassador_id, commission_amount)
+        NotificationService.sendAmbassadorSale(ambassador_id, commission_amount, background_tasks)
         
     except Exception as e:
         print(f"Ambassador reward failed: {e}")
 
 @router.post("/verify-payment")
-async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends(get_current_user)):
+async def verify_payment(req: VerifyPaymentRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     try:
         # Algorithm: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
         # Compare generated signature with razorpay_signature
@@ -247,7 +247,7 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "method": "Razorpay",
             "reason": "Invalid signature",
             "gateway_response": "SignatureVerificationError"
-        })
+        }, background_tasks)
         try:
             with engine.begin() as conn:
                 conn.execute(text("INSERT INTO activity_logs (user_id, event_name) VALUES (:u, :e)"), {"u": current_user.get("user_id"), "e": "payment_failed"})
@@ -309,7 +309,7 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "currency": tx["currency"],
             "provider": "Razorpay",
             "payment_id": req.razorpay_payment_id
-        })
+        }, background_tasks)
     elif product_type == "boost_pack":
         NotificationService.sendBoostPackAlert({
             "name": "User",
@@ -318,10 +318,10 @@ async def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends
             "total_packs": current_count + 1,
             "new_page_limit": 10 + ((current_count + 1) * 5),
             "new_download_limit": 3 + ((current_count + 1) * 5)
-        })
+        }, background_tasks)
         
     # Process Ambassador Reward
-    process_ambassador_reward(user_id, product_type, tx["amount"], req.razorpay_order_id, req.razorpay_payment_id)
+    process_ambassador_reward(user_id, product_type, tx["amount"], req.razorpay_order_id, req.razorpay_payment_id, background_tasks)
 
     return {"success": True, "message": "Payment verified and entitlements granted"}
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Header, Depends
+from fastapi import APIRouter, HTTPException, status, Header, Depends, BackgroundTasks
 from .deps import get_current_user as get_current_user_from_deps
 from pydantic import BaseModel
 from datetime import datetime
@@ -125,6 +125,7 @@ def get_current_user_from_token(authorization: str = None):
 async def signup(
     email: str,
     password: str,
+    background_tasks: BackgroundTasks,
     name: str = None,
     college_name: str = None,
     state: str = None,
@@ -175,7 +176,7 @@ async def signup(
                 "country": "Unknown",
                 "device": "Unknown",
                 "login_method": "Client SDK"
-            })
+            }, background_tasks)
         except Exception as e:
             print(f"[EMAIL ERROR] {e}")
 
@@ -198,7 +199,7 @@ async def signup(
         )
 
 @router.post("/register")
-async def register(body: SignUpRequest):
+async def register(body: SignUpRequest, background_tasks: BackgroundTasks):
     """
     Server-side email/password registration (Firebase Identity Toolkit proxy).
 
@@ -290,7 +291,7 @@ async def register(body: SignUpRequest):
                 "country": "Unknown",
                 "device": "Unknown",
                 "login_method": "Server Proxy"
-            })
+            }, background_tasks)
         except Exception as e:
             print(f"[EMAIL ERROR] {e}")
 
@@ -305,7 +306,7 @@ async def register(body: SignUpRequest):
 
 
 @router.post("/signin")
-async def signin(body: SignInRequest):
+async def signin(body: SignInRequest, background_tasks: BackgroundTasks):
     """
     Server-side email/password sign-in (Firebase Identity Toolkit proxy).
 
@@ -399,7 +400,7 @@ async def signin(body: SignInRequest):
                         "country": "Unknown",
                         "device": "Unknown",
                         "login_method": "Server Proxy (Signin recovery)"
-                    })
+                    }, background_tasks)
                 except Exception as e:
                     print(f"[EMAIL ERROR] {e}")
         except Exception as e:
@@ -416,7 +417,7 @@ async def signin(body: SignInRequest):
 
 
 @router.post("/verify-token")
-async def verify_token(token: str, display_name: str = None):
+async def verify_token(token: str, background_tasks: BackgroundTasks, display_name: str = None):
     """
     Verify Firebase token and upsert user.
     Accepts optional display_name (from Google profile) so Google sign-in
@@ -477,7 +478,7 @@ async def verify_token(token: str, display_name: str = None):
                     "country": "Unknown",
                     "device": "Unknown",
                     "login_method": "Google Sign-In"
-                })
+                }, background_tasks)
             except Exception as e:
                 print(f"[EMAIL ERROR] {e}")
 
