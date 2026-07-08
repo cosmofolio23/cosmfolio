@@ -74,6 +74,44 @@ export function SheetSetSymbolsPanel({ onAddElement }: SheetSetSymbolsPanelProps
     })
   }
 
+  const addCustomWidget = (type: 'keyplan' | 'section-line' | 'elevation-bubble' | 'room-tag' | 'detail-callout' | 'scalebar') => {
+    if (type === 'keyplan') {
+      onAddElement({
+        id: `kp-${Date.now()}`,
+        kind: 'keyplan',
+        x: 5, y: 70, w: 20, h: 20, z: 90,
+        locked: false, visible: true,
+        highlightZone: { x: 20, y: 20, w: 30, h: 30 }
+      })
+    } else if (type === 'scalebar') {
+      onAddElement({
+        id: `sb-${Date.now()}`,
+        kind: 'scalebar',
+        scalebarLengthMeters: 10,
+        scalebarStyle: 'metric-blocks',
+        x: 10, y: 85, w: 25, h: 7, z: 90,
+        locked: false, visible: true
+      })
+    } else {
+      // Annotations
+      let w = 15, h = 15
+      let primary = 'A', secondary = '01', extra = ''
+      if (type === 'section-line') { w = 80; h = 8 }
+      if (type === 'elevation-bubble') { w = 10; h = 10; primary = '1' }
+      if (type === 'room-tag') { w = 18; h = 6; primary = 'ROOM NAME'; extra = '15.0 sq.m' }
+      if (type === 'detail-callout') { w = 15; h = 15; primary = '1'; secondary = '05' }
+      
+      onAddElement({
+        id: `annot-${Date.now()}`,
+        kind: 'annotation',
+        annotationType: type as any,
+        annotationLabels: { primary, secondary, extra },
+        x: 50 - w / 2, y: 50 - h / 2, w, h, z: 95,
+        locked: false, visible: true
+      })
+    }
+  }
+
   if (collapsed) {
     return (
       <div className="w-10 bg-white border-r border-gray-200 flex flex-col items-center pt-3 shrink-0">
@@ -116,11 +154,74 @@ export function SheetSetSymbolsPanel({ onAddElement }: SheetSetSymbolsPanelProps
   return (
     <div className="w-[230px] shrink-0 flex flex-col bg-white border-r border-gray-200">
       <div className="px-3 py-2.5 border-b border-gray-200 flex items-center justify-between bg-[#FBE7A1]/10">
-        <span className="text-xs font-bold text-[#9C7416]">🧭 Symbols</span>
+        <span className="text-xs font-bold text-[#9C7416]">🧭 Symbols & Tools</span>
         <button onClick={() => setCollapsed(true)} className="text-gray-400 text-xs hover:text-gray-600" title="Collapse">◀</button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        {/* Architectural Widgets & Tools Group */}
+        <div>
+          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Smart Layout Widgets</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => addCustomWidget('keyplan')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-amber-50 text-left transition"
+            >
+              <span className="text-lg">🗺️</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Key Plan</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Footprint reference</p>
+            </button>
+            <button
+              onClick={() => addCustomWidget('scalebar')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-amber-50 text-left transition"
+            >
+              <span className="text-lg">📏</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Scale Bar</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Metric graphical bar</p>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Drafting Callouts</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => addCustomWidget('section-line')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-blue-50 text-left transition"
+            >
+              <span className="text-lg">✂️</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Section Line</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Interactive cuts</p>
+            </button>
+            <button
+              onClick={() => addCustomWidget('elevation-bubble')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-blue-50 text-left transition"
+            >
+              <span className="text-lg">🧭</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Elevation Mark</p>
+              <p className="text-[7px] text-gray-500 leading-tight">4-way indicators</p>
+            </button>
+            <button
+              onClick={() => addCustomWidget('room-tag')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-blue-50 text-left transition"
+            >
+              <span className="text-lg">🏷️</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Room Tag</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Name + area label</p>
+            </button>
+            <button
+              onClick={() => addCustomWidget('detail-callout')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-blue-50 text-left transition"
+            >
+              <span className="text-lg">🫧</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Detail Ring</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Zoom callout box</p>
+            </button>
+          </div>
+        </div>
+
+        <hr className="border-gray-200" />
+
         {renderGroup('North Arrows', northArrows)}
         {renderGroup('Graphic Scales', graphicScales)}
       </div>

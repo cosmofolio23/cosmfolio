@@ -44,7 +44,7 @@ const CATEGORIES = [
 
 export default function SheetComposer() {
   const router = useRouter()
-  const { isAuthenticated, token } = useAuthStore()
+  const { isAuthenticated, token, user } = useAuthStore()
   const [templates, setTemplates] = useState<SheetTemplate[]>([])
   const [filteredTemplates, setFilteredTemplates] = useState<SheetTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -54,6 +54,8 @@ export default function SheetComposer() {
   const [showPreview, setShowPreview] = useState(false)
   const [creatingSheet, setCreatingSheet] = useState(false)
   const [sheetTitle, setSheetTitle] = useState('')
+
+  const isComposerAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -167,6 +169,30 @@ export default function SheetComposer() {
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-border-light border-t-primary rounded-full animate-spin mb-4 mx-auto"></div>
           <p className="text-text-secondary dark:text-dark-text-secondary">Loading sheet templates...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isComposerAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-6 text-center">
+        <div className="bg-gray-800 p-8 rounded-2xl max-w-md border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-in fade-in duration-200">
+          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-gray-300 mb-6 text-sm">
+            The Sheet Composer is restricted to authorized administrative users only.
+          </p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="w-full bg-[#D4AF37] hover:bg-[#b8952d] text-gray-950 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+          >
+            Back to Dashboard
+          </button>
         </div>
       </div>
     )

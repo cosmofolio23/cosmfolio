@@ -26,12 +26,21 @@ def _summary(row: dict) -> dict:
     return {"id": row["id"]}
 
 
+def check_admin_access(current_user: dict):
+    if current_user.get("email", "").strip().lower() != "boseraj001@gmail.com":
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: Sheet Composer is restricted to authorized admins."
+        )
+
+
 @router.get("/api/sheet-sets")
 async def list_all_sheet_sets(current_user: dict = Depends(get_current_user), library_project_id: str = None):
     """List all sheet sets owned by the user, optionally filtered by library_project_id.
 
     Used by the Library project page to show outputs generated from a specific library project.
     """
+    check_admin_access(current_user)
     query = supabase.table("sheet_sets").select("*").eq("user_id", current_user["user_id"])
     if library_project_id:
         query = query.eq("library_project_id", library_project_id)
@@ -41,6 +50,7 @@ async def list_all_sheet_sets(current_user: dict = Depends(get_current_user), li
 
 @router.get("/api/projects/{project_id}/sheet-sets")
 async def list_sheet_sets(project_id: str, current_user: dict = Depends(get_current_user)):
+    check_admin_access(current_user)
     rows = (
         supabase.table("sheet_sets").select("*")
         .eq("project_id", project_id).eq("user_id", current_user["user_id"])
@@ -51,6 +61,7 @@ async def list_sheet_sets(project_id: str, current_user: dict = Depends(get_curr
 
 @router.get("/api/projects/{project_id}/sheet-sets/{set_id}")
 async def get_sheet_set(project_id: str, set_id: str, current_user: dict = Depends(get_current_user)):
+    check_admin_access(current_user)
     rows = (
         supabase.table("sheet_sets").select("*")
         .eq("id", set_id).eq("user_id", current_user["user_id"]).execute()
@@ -63,6 +74,7 @@ async def get_sheet_set(project_id: str, set_id: str, current_user: dict = Depen
 @router.post("/api/projects/{project_id}/sheet-sets", status_code=201)
 async def create_sheet_set(project_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
     """Body: { name?, data (full SheetSet), library_project_id?, submission_type? }."""
+    check_admin_access(current_user)
     now = datetime.utcnow().isoformat()
     data = payload.get("data") or payload  # tolerate the whole body being the SheetSet
     sheets = data.get("sheets") if isinstance(data, dict) else None
@@ -87,6 +99,7 @@ async def create_sheet_set(project_id: str, payload: dict, current_user: dict = 
 @router.put("/api/projects/{project_id}/sheet-sets/{set_id}")
 async def update_sheet_set(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
     """Body is the full SheetSet object (the editor PUTs the whole thing)."""
+    check_admin_access(current_user)
     existing = (
         supabase.table("sheet_sets").select("id")
         .eq("id", set_id).eq("user_id", current_user["user_id"]).execute()
@@ -108,6 +121,7 @@ async def update_sheet_set(project_id: str, set_id: str, payload: dict, current_
 
 @router.delete("/api/projects/{project_id}/sheet-sets/{set_id}", status_code=204)
 async def delete_sheet_set(project_id: str, set_id: str, current_user: dict = Depends(get_current_user)):
+    check_admin_access(current_user)
     existing = (
         supabase.table("sheet_sets").select("id")
         .eq("id", set_id).eq("user_id", current_user["user_id"]).execute()
@@ -116,9 +130,11 @@ async def delete_sheet_set(project_id: str, set_id: str, current_user: dict = De
         raise HTTPException(status_code=404, detail="Sheet set not found")
     supabase.table("sheet_sets").delete().eq("id", set_id).execute()
 
+
 @router.post("/api/projects/{project_id}/sheet-sets/{set_id}/export")
 async def export_sheet_set(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
     """Export a sheet layout as a PDF."""
+    check_admin_access(current_user)
     html = payload.get("html", "")
     page_size = payload.get("page_size", "A2")
     orientation = payload.get("orientation", "landscape")
@@ -137,9 +153,11 @@ async def export_sheet_set(project_id: str, set_id: str, payload: dict, current_
         headers={"Content-Disposition": f"attachment; filename={result['filename']}"}
     )
 
+
 @router.post("/api/projects/{project_id}/sheet-sets/{set_id}/ai-compose")
 async def ai_compose_sheet(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
     """Apply architectural layout heuristic rules to a sheet."""
+    check_admin_access(current_user)
     command = payload.get("command")
     sheet = payload.get("sheet", {})
     
@@ -170,9 +188,11 @@ async def ai_compose_sheet(project_id: str, set_id: str, payload: dict, current_
     sheet["elements"] = elements
     return sheet
 
+
 @router.post("/api/projects/{project_id}/sheet-sets/{set_id}/auto-fill")
 async def auto_fill_sheet_set(project_id: str, set_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
     """AI Auto-fill: Matches project assets to sheet template slots."""
+    check_admin_access(current_user)
     sheet_set = payload.get("sheetSet", {})
     
     # 1. Fetch available assets for this project

@@ -12,6 +12,14 @@ import { SHEET_SIZES, mmToPx } from './sheetSetTypes'
 import { generateScaleLabel } from './drawingScaleEngine'
 import { TitleBlockRenderer } from './TitleBlockEngine'
 
+const getClipPath = (shape?: string) => {
+  if (shape === 'circle') return 'circle(50% at 50% 50%)'
+  if (shape === 'hexagon') return 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)'
+  if (shape === 'slanted-left') return 'polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)'
+  if (shape === 'slanted-right') return 'polygon(0% 0%, 85% 0%, 100% 100%, 15% 100%)'
+  return undefined
+}
+
 interface SheetSetCanvasProps {
   sheet: Sheet
   nextSheet?: Sheet
@@ -62,6 +70,31 @@ export function SheetSetCanvas({
       if (e.code === 'Space' && !e.repeat && e.target === document.body) {
         e.preventDefault()
         setIsSpaceDown(true)
+        return
+      }
+
+      if (selectedElementId && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+          return
+        }
+        e.preventDefault()
+        
+        const activeSheet = [sheet, nextSheet].find(s => s?.elements.some(el => el.id === selectedElementId))
+        if (!activeSheet) return
+        
+        const element = activeSheet.elements.find(el => el.id === selectedElementId)
+        if (!element || element.locked) return
+        
+        const nudgeAmt = e.shiftKey ? 2.0 : 0.5
+        let newX = element.x
+        let newY = element.y
+        
+        if (e.key === 'ArrowLeft') newX = Math.max(0, element.x - nudgeAmt)
+        if (e.key === 'ArrowRight') newX = Math.min(100 - element.w, element.x + nudgeAmt)
+        if (e.key === 'ArrowUp') newY = Math.max(0, element.y - nudgeAmt)
+        if (e.key === 'ArrowDown') newY = Math.min(100 - element.h, element.y + nudgeAmt)
+        
+        onUpdateElement(element.id, { x: newX, y: newY })
       }
     }
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -76,7 +109,7 @@ export function SheetSetCanvas({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [])
+  }, [selectedElementId, sheet, nextSheet, onUpdateElement])
   const pageSize = SHEET_SIZES[sheetSet.sheetSize as keyof typeof SHEET_SIZES]
   const isPortrait = sheetSet.orientation === 'portrait'
   const sheetWidth = isPortrait ? pageSize.width : pageSize.height
@@ -298,6 +331,7 @@ export function SheetSetCanvas({
                         element.imageEffects?.contrast !== undefined ? `contrast(${element.imageEffects.contrast}%)` : '',
                       ].filter(Boolean).join(' ') || 'none',
                       mixBlendMode: element.imageEffects?.multiply ? 'multiply' : 'normal',
+                      clipPath: getClipPath(element.maskShape),
                     }}
                   />
                   {/* Scale Label */}
@@ -324,7 +358,156 @@ export function SheetSetCanvas({
 
               {/* Image */}
               {element.kind === 'image' && element.src && (
-                <img src={element.src} alt="element" className="w-full h-full object-cover" />
+                <img
+                  src={element.src}
+                  alt="element"
+                  className="w-full h-full object-cover"
+                  style={{ clipPath: getClipPath(element.maskShape) }}
+                />
+              )}
+
+              {/* Key Plan (Feature 2) */}
+              {element.kind === 'keyplan' && (
+                <div className="w-full h-full relative border border-gray-300 bg-gray-50 flex items-center justify-center p-2 overflow-hidden">
+                  <div 
+                    className="w-full h-full text-gray-500 relative flex items-center justify-center"
+                    dangerouslySetInnerHTML={{ __html: element.keyplanOutlineSvg || `
+                      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                        <path d="M 10 10 L 90 10 L 90 90 L 70 90 L 70 40 L 30 40 L 30 90 L 10 90 Z" fill="currentColor" fill-opacity="0.05" stroke-dasharray="2,2"/>
+                      </svg>
+                    ` }}
+                  />
+                  {element.highlightZone && (
+                    <div 
+                      className="absolute border-2 border-red-500 bg-red-500/20 pointer-events-none"
+                      style={{
+                        left: `${element.highlightZone.x}%`,
+                        top: `${element.highlightZone.y}%`,
+                        width: `${element.highlightZone.w}%`,
+                        height: `${element.highlightZone.h}%`,
+                      }}
+                    />
+                  )}
+                  <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold pointer-events-none select-none">
+                    Key Plan
+                  </div>
+                </div>
+              )}
+
+              {/* Drafting Annotations (Feature 3) */}
+              {element.kind === 'annotation' && element.annotationType === 'section-line' && (
+                <div className="w-full h-full relative flex items-center justify-center select-none pointer-events-none">
+                  <div className="w-full border-t-2 border-dashed border-gray-800 absolute top-1/2 -translate-y-1/2" />
+                  <div className="absolute top-1/2 -translate-y-1/2 left-6 flex flex-col items-center">
+                    <span className="text-gray-800 text-[10px] leading-none mb-1">▲</span>
+                  </div>
+                  <div className="absolute top-1/2 -translate-y-1/2 right-6 flex flex-col items-center">
+                    <span className="text-gray-800 text-[10px] leading-none mb-1">▲</span>
+                  </div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-gray-800 bg-white flex flex-col items-center justify-center text-[8px] font-bold">
+                    <div className="border-b border-gray-800 w-full text-center leading-tight">{element.annotationLabels?.primary || 'A'}</div>
+                    <div className="w-full text-center leading-tight">{element.annotationLabels?.secondary || '01'}</div>
+                  </div>
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-gray-800 bg-white flex flex-col items-center justify-center text-[8px] font-bold">
+                    <div className="border-b border-gray-800 w-full text-center leading-tight">{element.annotationLabels?.primary || 'A'}</div>
+                    <div className="w-full text-center leading-tight">{element.annotationLabels?.secondary || '01'}</div>
+                  </div>
+                </div>
+              )}
+
+              {element.kind === 'annotation' && element.annotationType === 'elevation-bubble' && (
+                <div className="w-full h-full flex items-center justify-center relative select-none pointer-events-none">
+                  <div className="w-10 h-10 rounded-full border-2 border-gray-800 bg-white flex items-center justify-center text-xs font-bold shadow-sm z-10 text-gray-800">
+                    {element.annotationLabels?.primary || '1'}
+                  </div>
+                  <div className="absolute top-0 text-[10px] font-bold text-gray-800 flex flex-col items-center">
+                    <span>▲</span>
+                    <span className="text-[7px] -mt-1 font-mono">{element.annotationLabels?.secondary || 'A'}</span>
+                  </div>
+                  <div className="absolute bottom-0 text-[10px] font-bold text-gray-800 flex flex-col items-center">
+                    <span className="text-[7px] mb-1 font-mono">B</span>
+                    <span>▼</span>
+                  </div>
+                  <div className="absolute left-0 text-[10px] font-bold text-gray-800 flex items-center">
+                    <span>◀</span>
+                    <span className="text-[7px] ml-0.5 font-mono">C</span>
+                  </div>
+                  <div className="absolute right-0 text-[10px] font-bold text-gray-800 flex items-center">
+                    <span className="text-[7px] mr-0.5 font-mono">D</span>
+                    <span>▶</span>
+                  </div>
+                </div>
+              )}
+
+              {element.kind === 'annotation' && element.annotationType === 'room-tag' && (
+                <div className="w-full h-full flex flex-col items-center justify-center border border-dashed border-gray-400 bg-white/80 p-2 text-center select-none pointer-events-none">
+                  <span className="font-bold text-[10px] text-gray-800 uppercase tracking-widest leading-none">
+                    {element.annotationLabels?.primary || 'ROOM NAME'}
+                  </span>
+                  <div className="w-12 h-px bg-gray-600 my-1" />
+                  <span className="text-[8px] font-mono text-gray-600">
+                    {element.annotationLabels?.extra || '15.0 sq.m'}
+                  </span>
+                </div>
+              )}
+
+              {element.kind === 'annotation' && element.annotationType === 'detail-callout' && (
+                <div className="w-full h-full relative select-none pointer-events-none">
+                  <div className="absolute inset-0 border-2 border-dashed border-[#D4AF37] rounded-lg" />
+                  <svg className="absolute inset-0 w-full h-full">
+                    <line x1="100%" y1="100%" x2="115%" y2="115%" stroke="#D4AF37" strokeWidth="1.5" strokeDasharray="2,2" />
+                  </svg>
+                  <div className="absolute -bottom-9 -right-9 w-8 h-8 rounded-full border-2 border-[#D4AF37] bg-white flex flex-col items-center justify-center text-[7px] font-bold shadow-md z-10 text-gray-800">
+                    <div className="border-b border-[#D4AF37] w-full text-center leading-tight">{element.annotationLabels?.primary || '1'}</div>
+                    <div className="w-full text-center leading-tight">{element.annotationLabels?.secondary || '05'}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Graphical Scale Bar (Feature 4) */}
+              {element.kind === 'scalebar' && (
+                (() => {
+                  const firstDrawing = sheet.elements.find(el => el.kind === 'drawing' && el.drawing?.sheetScale)
+                  const activeScale = firstDrawing?.drawing?.sheetScale || '1:100'
+                  const scaleDen = parseInt(activeScale.split(':')[1]) || 100
+                  const lengthMeters = element.scalebarLengthMeters || 10
+                  
+                  return (
+                    <div className="w-full h-full flex flex-col justify-end select-none bg-white/80 p-1.5 border border-gray-300 rounded shadow-sm">
+                      <div className="flex justify-between text-[7px] font-mono text-gray-800 px-0.5 mb-0.5">
+                        <span>0</span>
+                        <span>{lengthMeters / 2}m</span>
+                        <span>{lengthMeters}m</span>
+                      </div>
+                      <svg className="w-full h-2.5 border border-gray-800" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        {element.scalebarStyle === 'tick-marks' ? (
+                          <>
+                            <line x1="0" y1="5" x2="100" y2="5" stroke="black" strokeWidth="1" />
+                            <line x1="0" y1="0" x2="0" y2="10" stroke="black" strokeWidth="1" />
+                            <line x1="50" y1="0" x2="50" y2="10" stroke="black" strokeWidth="1" />
+                            <line x1="100" y1="0" x2="100" y2="10" stroke="black" strokeWidth="1" />
+                          </>
+                        ) : element.scalebarStyle === 'minimal-line' ? (
+                          <>
+                            <line x1="0" y1="8" x2="100" y2="8" stroke="black" strokeWidth="1.5" />
+                            <line x1="0" y1="4" x2="0" y2="8" stroke="black" strokeWidth="1.5" />
+                            <line x1="100" y1="4" x2="100" y2="8" stroke="black" strokeWidth="1.5" />
+                          </>
+                        ) : (
+                          <>
+                            <rect x="0" y="0" width="25" height="10" fill="black" />
+                            <rect x="25" y="0" width="25" height="10" fill="white" />
+                            <rect x="50" y="0" width="25" height="10" fill="black" />
+                            <rect x="75" y="0" width="25" height="10" fill="white" />
+                          </>
+                        )}
+                      </svg>
+                      <div className="text-[6px] text-gray-500 text-center font-mono mt-1 uppercase tracking-wider">
+                        Scale {activeScale}
+                      </div>
+                    </div>
+                  )
+                })()
               )}
 
               {/* Diagram/Render (visual placeholder) */}

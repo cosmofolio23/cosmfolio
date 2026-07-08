@@ -28,7 +28,7 @@ export type SheetType =
   | 'hero-board' | 'technical-board' | 'experience-board'
   | 'process' | 'renders' | 'generic'
 
-export type ElementKind = 'drawing' | 'text' | 'title' | 'diagram' | 'image' | 'shape'
+export type ElementKind = 'drawing' | 'text' | 'title' | 'diagram' | 'image' | 'shape' | 'keyplan' | 'annotation' | 'scalebar'
 
 export type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten'
 
@@ -86,6 +86,26 @@ export interface SheetElement {
   // Style
   opacity?: number
   blendMode?: BlendMode
+
+  // Material Swatch Shape (Feature 1)
+  maskShape?: 'circle' | 'hexagon' | 'slanted-left' | 'slanted-right' | 'rect'
+  extractedPalette?: string[]
+
+  // Key Plan footprints & zone selection (Feature 2)
+  keyplanOutlineSvg?: string
+  highlightZone?: { x: number; y: number; w: number; h: number }
+
+  // Drafting Annotations (Feature 3)
+  annotationType?: 'section-line' | 'elevation-bubble' | 'room-tag' | 'detail-callout'
+  annotationLabels?: {
+    primary?: string     // e.g. "A"
+    secondary?: string   // e.g. "05"
+    extra?: string       // e.g. "12.5 sq.m"
+  }
+
+  // Dynamic Scale Bars (Feature 4)
+  scalebarLengthMeters?: number
+  scalebarStyle?: 'metric-blocks' | 'tick-marks' | 'minimal-line'
 }
 
 // ─────────────────────────────────────────────────────────────

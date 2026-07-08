@@ -216,6 +216,249 @@ export function SheetProperties({
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Material Swatch Shape (Feature 1) */}
+        {(selectedElement.kind === 'image' || selectedElement.kind === 'drawing') && (
+          <div className="space-y-3 p-3 bg-stone-50 rounded border border-stone-200">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">🎭 Material Swatch Shape</h4>
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Mask Shape</span>
+              <select
+                value={selectedElement.maskShape || 'rect'}
+                onChange={e => onUpdateElement({ maskShape: e.target.value as any })}
+                className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+              >
+                <option value="rect">Rectangle (Default)</option>
+                <option value="circle">Circular Swatch</option>
+                <option value="hexagon">Hexagonal Swatch</option>
+                <option value="slanted-left">Slanted Left Cut</option>
+                <option value="slanted-right">Slanted Right Cut</option>
+              </select>
+            </label>
+          </div>
+        )}
+
+        {/* Key Plan Settings (Feature 2) */}
+        {selectedElement.kind === 'keyplan' && (
+          <div className="space-y-3 p-3 bg-[#FBE7A1]/10 rounded border border-[#D4AF37]/30">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">🗺️ Key Plan Settings</h4>
+            
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Building Footprint Footprint</span>
+              <select
+                value={selectedElement.keyplanOutlineSvg ? 'custom' : 'u-shape'}
+                onChange={e => {
+                  if (e.target.value === 'u-shape') {
+                    onUpdateElement({ keyplanOutlineSvg: undefined })
+                  } else if (e.target.value === 'l-shape') {
+                    onUpdateElement({ keyplanOutlineSvg: `
+                      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                        <path d="M 10 10 L 90 10 L 90 40 L 40 40 L 40 90 L 10 90 Z" fill="currentColor" fill-opacity="0.05" stroke-dasharray="2,2"/>
+                      </svg>
+                    ` })
+                  } else if (e.target.value === 'courtyard') {
+                    onUpdateElement({ keyplanOutlineSvg: `
+                      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                        <rect x="10" y="10" width="80" height="80" fill="currentColor" fill-opacity="0.05" />
+                        <rect x="35" y="35" width="30" height="30" fill="white" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                    ` })
+                  }
+                }}
+                className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+              >
+                <option value="u-shape">U-Shaped Courtyard</option>
+                <option value="l-shape">L-Shaped Wing</option>
+                <option value="courtyard">Rectangular Courtyard</option>
+              </select>
+            </label>
+
+            <div>
+              <span className="text-[10px] text-gray-500 font-medium block mb-1">Highlight Zone (% position)</span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <label>
+                  <span>Left (X)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={selectedElement.highlightZone?.x ?? 20}
+                    onChange={e => onUpdateElement({
+                      highlightZone: {
+                        x: parseInt(e.target.value) || 0,
+                        y: selectedElement.highlightZone?.y ?? 20,
+                        w: selectedElement.highlightZone?.w ?? 30,
+                        h: selectedElement.highlightZone?.h ?? 30,
+                      }
+                    })}
+                    className="w-full px-1.5 py-1 border border-gray-300 rounded mt-0.5"
+                  />
+                </label>
+                <label>
+                  <span>Top (Y)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={selectedElement.highlightZone?.y ?? 20}
+                    onChange={e => onUpdateElement({
+                      highlightZone: {
+                        x: selectedElement.highlightZone?.x ?? 20,
+                        y: parseInt(e.target.value) || 0,
+                        w: selectedElement.highlightZone?.w ?? 30,
+                        h: selectedElement.highlightZone?.h ?? 30,
+                      }
+                    })}
+                    className="w-full px-1.5 py-1 border border-gray-300 rounded mt-0.5"
+                  />
+                </label>
+                <label>
+                  <span>Width (W)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={selectedElement.highlightZone?.w ?? 30}
+                    onChange={e => onUpdateElement({
+                      highlightZone: {
+                        x: selectedElement.highlightZone?.x ?? 20,
+                        y: selectedElement.highlightZone?.y ?? 20,
+                        w: parseInt(e.target.value) || 10,
+                        h: selectedElement.highlightZone?.h ?? 30,
+                      }
+                    })}
+                    className="w-full px-1.5 py-1 border border-gray-300 rounded mt-0.5"
+                  />
+                </label>
+                <label>
+                  <span>Height (H)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={selectedElement.highlightZone?.h ?? 30}
+                    onChange={e => onUpdateElement({
+                      highlightZone: {
+                        x: selectedElement.highlightZone?.x ?? 20,
+                        y: selectedElement.highlightZone?.y ?? 20,
+                        w: selectedElement.highlightZone?.w ?? 30,
+                        h: parseInt(e.target.value) || 10,
+                      }
+                    })}
+                    className="w-full px-1.5 py-1 border border-gray-300 rounded mt-0.5"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Drafting Callouts & Annotations (Feature 3) */}
+        {selectedElement.kind === 'annotation' && (
+          <div className="space-y-3 p-3 bg-blue-50/50 rounded border border-blue-200">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">🫧 Drafting Annotations</h4>
+            
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Annotation Type</span>
+              <select
+                value={selectedElement.annotationType || 'section-line'}
+                onChange={e => onUpdateElement({ annotationType: e.target.value as any })}
+                className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+              >
+                <option value="section-line">Section Cut Line</option>
+                <option value="elevation-bubble">Elevation Bubble</option>
+                <option value="room-tag">Room Name Tag</option>
+                <option value="detail-callout">Detail Callout Circle</option>
+              </select>
+            </label>
+
+            <div className="space-y-2">
+              <label className="block">
+                <span className="text-[10px] text-gray-500 font-medium">Primary Label (Room/Section Name)</span>
+                <input
+                  type="text"
+                  value={selectedElement.annotationLabels?.primary || ''}
+                  placeholder={selectedElement.annotationType === 'room-tag' ? 'Living Room' : 'A'}
+                  onChange={e => onUpdateElement({
+                    annotationLabels: {
+                      ...selectedElement.annotationLabels,
+                      primary: e.target.value
+                    }
+                  })}
+                  className="w-full mt-0.5 px-2 py-1 border border-gray-300 rounded text-xs"
+                />
+              </label>
+
+              {selectedElement.annotationType !== 'room-tag' && (
+                <label className="block">
+                  <span className="text-[10px] text-gray-500 font-medium">Secondary Label (Sheet Reference)</span>
+                  <input
+                    type="text"
+                    value={selectedElement.annotationLabels?.secondary || ''}
+                    placeholder="05"
+                    onChange={e => onUpdateElement({
+                      annotationLabels: {
+                        ...selectedElement.annotationLabels,
+                        secondary: e.target.value
+                      }
+                    })}
+                    className="w-full mt-0.5 px-2 py-1 border border-gray-300 rounded text-xs"
+                  />
+                </label>
+              )}
+
+              {selectedElement.annotationType === 'room-tag' && (
+                <label className="block">
+                  <span className="text-[10px] text-gray-500 font-medium">Area Label (sq.m / sq.ft)</span>
+                  <input
+                    type="text"
+                    value={selectedElement.annotationLabels?.extra || ''}
+                    placeholder="15.2 sq.m"
+                    onChange={e => onUpdateElement({
+                      annotationLabels: {
+                        ...selectedElement.annotationLabels,
+                        extra: e.target.value
+                      }
+                    })}
+                    className="w-full mt-0.5 px-2 py-1 border border-gray-300 rounded text-xs"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Dynamic Scale Bar Settings (Feature 4) */}
+        {selectedElement.kind === 'scalebar' && (
+          <div className="space-y-3 p-3 bg-stone-50 rounded border border-stone-200">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">📏 Graphical Scale Bar</h4>
+
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Total Length (Meters)</span>
+              <input
+                type="number"
+                min="1"
+                max="5000"
+                value={selectedElement.scalebarLengthMeters || 10}
+                onChange={e => onUpdateElement({ scalebarLengthMeters: parseInt(e.target.value) || 10 })}
+                className="w-full mt-0.5 px-2 py-1 border border-gray-300 rounded text-xs"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Scale Bar Style</span>
+              <select
+                value={selectedElement.scalebarStyle || 'metric-blocks'}
+                onChange={e => onUpdateElement({ scalebarStyle: e.target.value as any })}
+                className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+              >
+                <option value="metric-blocks">Alternating Metric Blocks</option>
+                <option value="tick-marks">Tick Marks Bar</option>
+                <option value="minimal-line">Minimal Line Endcaps</option>
+              </select>
+            </label>
+          </div>
+        )}
+
         {/* Drawing Upload (if drawing element) */}
         {selectedElement.kind === 'drawing' && (
           <div className="space-y-2">
