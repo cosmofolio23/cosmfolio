@@ -305,7 +305,8 @@ export default function PortfolioBookPage() {
     }
   }
 
-  if (!isAuthenticated) return null
+  const isHeadless = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('headless_token')
+  if (!isAuthenticated && !isHeadless) return null
 
   if (isLoading) {
     return (
