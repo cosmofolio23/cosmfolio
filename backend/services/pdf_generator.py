@@ -31,7 +31,7 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
         
         try:
             # Navigate to the portfolio print page
-            await page.goto(print_url, wait_until="networkidle", timeout=60000)
+            await page.goto(print_url, wait_until="domcontentloaded", timeout=60000)
             
             # Wait for the explicit signal that React has finished rendering everything
             # (including fonts, images, and layout calculations).
