@@ -227,7 +227,7 @@ export default function PortfolioBookPage() {
           }
 
           const canvas = await html2canvas(el, {
-            scale: 2,
+            scale: 3,
             useCORS: true,
             allowTaint: false,
             logging: false,
