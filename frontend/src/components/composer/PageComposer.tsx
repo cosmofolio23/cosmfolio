@@ -703,6 +703,9 @@ function ResumeHeadshot({ block, tokens, onChange, onUpload, readonly }: { block
     try { const url = onUpload ? await onUpload(file) : URL.createObjectURL(file); onChange({ imageUrl: url }) }
     finally { setUploading(false) }
   }
+  
+  const monogramText = block.label || 'AA'
+
   if (block.imageUrl) {
     return (
       <div className="relative w-full h-full group overflow-hidden rounded-lg">
@@ -715,16 +718,57 @@ function ResumeHeadshot({ block, tokens, onChange, onUpload, readonly }: { block
       </div>
     )
   }
+  
+  if (readonly) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center relative bg-gray-50 border border-black/10 rounded-lg">
+        <svg viewBox="0 0 100 100" className="w-20 h-20 text-black">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
+          <line x1="50" y1="5" x2="50" y2="95" stroke="currentColor" strokeWidth="0.5" opacity="0.15" />
+          <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="0.5" opacity="0.15" />
+          <text x="50" y="56" fontSize="24" fontWeight="bold" fill="currentColor" textAnchor="middle" fontFamily="monospace" letterSpacing="1">{monogramText}</text>
+          <text x="50" y="80" fontSize="6" opacity="0.5" fill="currentColor" textAnchor="middle" fontFamily="monospace">ARCHITECTURAL MONOGRAM</text>
+        </svg>
+      </div>
+    )
+  }
+
   return (
-    <div className="relative w-full h-full group">
-      <div className="w-full h-full flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition" onClick={() => fileRef.current?.click()}>
-        {uploading ? <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" /> : <>
-          <span className="text-3xl opacity-50">👤</span>
-          <span className="text-[9px] uppercase tracking-widest font-semibold text-gray-400">Add Photo</span>
-        </>}
+    <div className="relative w-full h-full group/monogram">
+      <div className="w-full h-full flex flex-col items-center justify-center relative bg-gray-50 border border-black/10 rounded-lg">
+        {uploading ? (
+          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+        ) : (
+          <svg viewBox="0 0 100 100" className="w-20 h-20 text-black">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
+            <line x1="50" y1="5" x2="50" y2="95" stroke="currentColor" strokeWidth="0.5" opacity="0.15" />
+            <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="0.5" opacity="0.15" />
+            <text x="50" y="56" fontSize="24" fontWeight="bold" fill="currentColor" textAnchor="middle" fontFamily="monospace" letterSpacing="1">{monogramText}</text>
+            <text x="50" y="80" fontSize="6" opacity="0.5" fill="currentColor" textAnchor="middle" fontFamily="monospace">ARCHITECTURAL MONOGRAM</text>
+          </svg>
+        )}
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f) }} />
       </div>
-      <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="absolute top-2 right-2 text-[10px] bg-red-500 hover:bg-red-600 text-white w-5 h-5 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 print:hidden shadow-sm" title="Remove Block">✕</button>
+      
+      {!readonly && !uploading && (
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/monogram:opacity-100 transition flex flex-col items-center justify-center gap-2 text-white p-2 rounded-lg backdrop-blur-xs select-none print:hidden">
+          <button onClick={() => fileRef.current?.click()} className="bg-white text-black text-[9px] font-bold px-3 py-1.5 rounded hover:bg-gray-100 transition uppercase tracking-wider">📷 Upload Photo</button>
+          <div className="flex flex-col gap-1 items-center w-full px-2">
+            <span className="text-[7px] text-white/70 uppercase">Monogram Initials</span>
+            <input 
+              type="text" 
+              maxLength={3} 
+              value={monogramText} 
+              onChange={e => onChange({ label: e.target.value.toUpperCase() })} 
+              className="bg-white/20 text-white text-center text-xs font-mono font-bold w-12 rounded border border-white/20 outline-none"
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+      <button onClick={(e) => { e.stopPropagation(); (onChange as any)({ isDeleted: true }) }} className="absolute top-2 right-2 text-[10px] bg-red-500 hover:bg-red-600 text-white w-5 h-5 flex items-center justify-center rounded-full opacity-0 group-hover/monogram:opacity-100 transition-opacity z-10 print:hidden shadow-sm" title="Remove Block">✕</button>
     </div>
   )
 }
@@ -785,7 +829,7 @@ function ResumeBio({ block, tokens, onChange, readonly }: { block: Block; tokens
 function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean }) {
   const entries: ResumeEntry[] = block.resumeEntries || []
   const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
-  const add = () => patch([...entries, { title: 'Degree / School', org: 'Institution', year: '2026', detail: '' }])
+  const add = () => patch([...entries, { title: 'Degree / School', org: 'Institution', year: '2026', detail: '', coordinates: '' }])
   const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
   
@@ -806,6 +850,8 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
                     isTimeline ? 'flex flex-col pl-4 border-l border-black/10' : 
                     isMasonry ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : 
                     variant === 'grid-3' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6' : 
+                    variant === 'swiss-grid' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6 pt-4 border-t-2 border-black' :
+                    variant === 'architect-editorial' ? 'flex flex-col pl-4 border-l border-black' :
                     'grid grid-cols-1 @xs:grid-cols-2 gap-6'
 
   const itemClass = getVariantClasses(variant)
@@ -844,7 +890,18 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
             
             <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-visible min-h-0 shrink pt-0.5">
               <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalPrimary, fontFamily: tokens.headingFont }} />
-              <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block w-full text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
+              <div className="flex flex-wrap gap-2 items-baseline shrink-0">
+                {readonly ? (
+                  e.org && <span className="text-[9px] uppercase tracking-wider font-semibold opacity-80" style={{ color: finalText, fontFamily: tokens.bodyFont }}>{e.org}</span>
+                ) : (
+                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
+                )}
+                {readonly ? (
+                  e.coordinates && <span className="text-[8px] font-mono opacity-50" style={{ color: finalText }}>{e.coordinates}</span>
+                ) : (
+                  <input value={e.coordinates || ''} onChange={ev => upd(i, 'coordinates', ev.target.value)} placeholder="Coordinates (e.g. 40.7128° N, 74.0060° W)" className="block text-[8px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText }} />
+                )}
+              </div>
               <textarea 
                 value={e.detail || ''} 
                 onChange={ev => upd(i, 'detail', ev.target.value)} 
@@ -1093,10 +1150,10 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
 function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean; label: string; icon: string }) {
   const entries: ResumeEntry[] = block.resumeEntries || []
   const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
-  const add = () => patch([...entries, { title: 'New Entry', org: '', year: '', detail: '' }])
+  const add = () => patch([...entries, { title: 'New Entry', org: '', year: '', detail: '', coordinates: '' }])
   const upd = (i: number, k: keyof ResumeEntry, v: string) => patch(entries.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
   const del = (i: number) => patch(entries.filter((_, idx) => idx !== i))
-  const isAchievement = label === 'Achievements'
+  const isAchievement = label === 'Achievements' || label === 'Work Experience'
   
   const finalPrimary = block.tocStyle?.titleColor || tokens.primary
   const finalText = block.color || tokens.text
@@ -1107,9 +1164,16 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
   const divider = styleConfig.divider || 'none'
   const gap = styleConfig.gap ?? 14
 
-  const gridClass = variant === 'list' ? 'flex flex-col' : variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 'grid grid-cols-1 @xs:grid-cols-2 gap-6'
-  const itemClass = variant === 'bento' ? 'bg-black/5 p-4 rounded-xl border border-black/5' : ''
-  const dividerClass = divider === 'solid' ? 'border-b border-black/10 pb-4' : divider === 'dashed' ? 'border-b border-dashed border-black/15 pb-4' : divider === 'dotted' ? 'border-b border-dotted border-black/20 pb-4' : ''
+  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' ? 'flex flex-col' : 
+                    variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : 
+                    variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : 
+                    variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 
+                    variant === 'swiss-grid' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6 pt-4 border-t-2 border-black' :
+                    variant === 'architect-editorial' ? 'flex flex-col pl-4 border-l border-black' :
+                    'grid grid-cols-1 @xs:grid-cols-2 gap-6'
+  
+  const itemClass = getVariantClasses(variant)
+  const dividerClass = getDividerClasses(divider)
 
   return (
     <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
@@ -1142,9 +1206,22 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
             <div className="flex-1 min-w-0 flex flex-col min-h-0 shrink">
               <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
-                <div className="flex gap-2 items-center mt-0.5 shrink-0">
-                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
-                  <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: finalText }} />
+                <div className="flex gap-2 items-center mt-0.5 shrink-0 flex-wrap">
+                  {readonly ? (
+                    e.org && <span className="text-[9px] uppercase tracking-wider font-semibold opacity-70" style={{ color: finalText }}>{e.org}</span>
+                  ) : (
+                    <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
+                  )}
+                  {readonly ? (
+                    e.coordinates && <span className="text-[8px] font-mono opacity-50" style={{ color: finalText }}>{e.coordinates}</span>
+                  ) : (
+                    <input value={e.coordinates || ''} onChange={ev => upd(i, 'coordinates', ev.target.value)} placeholder="Coordinates" className="w-20 text-[8px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
+                  )}
+                  {readonly ? (
+                    e.year && <span className="text-[9px] font-mono opacity-50" style={{ color: finalText }}>{e.year}</span>
+                  ) : (
+                    <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: finalText }} />
+                  )}
                 </div>
               )}
               <textarea 

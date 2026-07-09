@@ -566,6 +566,55 @@ export function SheetProperties({
               />
             </label>
 
+            {/* Premium Enhancer Presets (Feature 2) */}
+            <div className="mt-3 border-t border-gray-100 pt-3">
+              <span className="text-xs font-semibold text-gray-700 block mb-2">🪄 Premium Enhancers</span>
+              <div className="grid grid-cols-3 gap-1 text-[9px] font-bold">
+                <button
+                  onClick={() => onUpdateElement({
+                    imageEffects: {
+                      ...selectedElement.imageEffects,
+                      whiteOut: !selectedElement.imageEffects?.whiteOut,
+                      blueprintMode: false,
+                      charcoalMode: false
+                    }
+                  })}
+                  className={`py-1.5 rounded border transition ${selectedElement.imageEffects?.whiteOut ? 'bg-amber-100 text-amber-900 border-amber-300 font-extrabold' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
+                  title="Remove yellow/grey paper scanning backgrounds and boost line weights"
+                >
+                  ⚡ Ink Clean
+                </button>
+                <button
+                  onClick={() => onUpdateElement({
+                    imageEffects: {
+                      ...selectedElement.imageEffects,
+                      blueprintMode: !selectedElement.imageEffects?.blueprintMode,
+                      whiteOut: false,
+                      charcoalMode: false
+                    }
+                  })}
+                  className={`py-1.5 rounded border transition ${selectedElement.imageEffects?.blueprintMode ? 'bg-blue-600 text-white border-blue-700 font-extrabold' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
+                  title="Convert drawing to classic white lines on deep blue blueprint background"
+                >
+                  📘 Blueprint
+                </button>
+                <button
+                  onClick={() => onUpdateElement({
+                    imageEffects: {
+                      ...selectedElement.imageEffects,
+                      charcoalMode: !selectedElement.imageEffects?.charcoalMode,
+                      whiteOut: false,
+                      blueprintMode: false
+                    }
+                  })}
+                  className={`py-1.5 rounded border transition ${selectedElement.imageEffects?.charcoalMode ? 'bg-stone-800 text-stone-100 border-stone-900 font-extrabold' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
+                  title="Make scan look like organic charcoal sketches on textured board"
+                >
+                  ✏️ Charcoal
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
 

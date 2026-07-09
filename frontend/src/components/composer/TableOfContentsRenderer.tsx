@@ -13,17 +13,23 @@ export function hexToRgba(hex: string, opacity: number) {
 }
 
 export interface TocStyleParams {
-  variant: 'vertical-stripes' | 'minimal-accent' | 'modern-cutout' | 'handdrawn-timeline' | 'generative' | 'magazine' | 'timeline' | 'grid' | 'luxury' | 'research' | 'parametric' | 'competition' | 'academic' | 'minimal'
+  variant: 'vertical-stripes' | 'minimal-accent' | 'modern-cutout' | 'handdrawn-timeline' | 'generative' | 'magazine' | 'timeline' | 'grid' | 'luxury' | 'research' | 'parametric' | 'competition' | 'academic' | 'minimal' | 'el-croquis' | 'swiss-grid' | 'asymmetric-timeline'
   // Generative properties (to enable 100+ iterations)
   structure?: 'list' | 'grid' | 'zigzag' | 'masonry' | 'scroll' | 'mosaic' | 'bento-box' | 'carousel' | 'filmstrip'
   imageShape?: 'pill' | 'square' | 'tall' | 'circle' | 'none' | 'arch' | 'diamond' | 'hexagon' | 'fluid'
-  numbering?: 'outline' | 'asterisk' | 'serif' | 'minimal' | 'circled' | 'roman-numerals' | 'oversized-watermark' | 'minimal-slash'
+  numbering?: 'outline' | 'asterisk' | 'serif' | 'minimal' | 'circled' | 'roman-numerals' | 'oversized-watermark' | 'minimal-slash' | 'drawing-label'
   lines?: 'dotted' | 'solid' | 'none'
   // Local overlay properties
   overlayEnabled?: boolean
   overlayColor?: string
   overlayOpacity?: number
   overlayPadding?: number
+  // Architectural details
+  showDraftingGrid?: boolean
+  showNorthArrow?: boolean
+  showScaleBar?: boolean
+  scaleText?: string
+  customNumberingFormat?: 'standard' | 'drawing-label'
   // Typography overrides
   textColor?: string
   titleColor?: string
@@ -140,7 +146,7 @@ export function TableOfContentsRenderer({
   }
 
   const styleConfig = block.tocStyle || getDefaultStyle(layoutId)
-  const { variant, structure, imageShape, numbering, lines } = styleConfig
+  const { variant, structure, imageShape, numbering, lines, showDraftingGrid, showNorthArrow, showScaleBar, scaleText, customNumberingFormat } = styleConfig
 
   const tokens = {
     ...baseTokens,
@@ -202,17 +208,19 @@ export function TableOfContentsRenderer({
     }
 
     const getNumberingUI = (num: string) => {
+      const displayNum = customNumberingFormat === 'drawing-label' ? `A-${num}` : num
       switch (numbering) {
-        case 'outline': return <span className="text-4xl font-bold text-transparent" style={{ WebkitTextStroke: `1px ${tokens.text}` }}>{num}</span>
-        case 'asterisk': return <span className="text-lg font-bold" style={{ color: tokens.accent }}>*{num}</span>
-        case 'serif': return <span className="text-2xl font-serif italic text-gray-400">{num}.</span>
-        case 'circled': return <span className="w-8 h-8 rounded-full border border-current flex items-center justify-center text-xs font-bold">{num}</span>
+        case 'outline': return <span className="text-4xl font-bold text-transparent" style={{ WebkitTextStroke: `1px ${tokens.text}` }}>{displayNum}</span>
+        case 'asterisk': return <span className="text-lg font-bold" style={{ color: tokens.accent }}>*{displayNum}</span>
+        case 'serif': return <span className="text-2xl font-serif italic text-gray-400">{displayNum}.</span>
+        case 'circled': return <span className="w-8 h-8 rounded-full border border-current flex items-center justify-center text-xs font-bold">{displayNum}</span>
         case 'roman-numerals': 
           const romanMap: Record<string, string> = { '01': 'I', '02': 'II', '03': 'III', '04': 'IV', '05': 'V', '06': 'VI', '07': 'VII', '08': 'VIII', '09': 'IX', '10': 'X', '11': 'XI', '12': 'XII' }
-          return <span className="font-serif italic text-lg opacity-70">{romanMap[num] || num}</span>
-        case 'oversized-watermark': return <span className="absolute -left-4 -top-6 text-[80px] font-black opacity-5 pointer-events-none z-0 tracking-tighter">{num}</span>
-        case 'minimal-slash': return <span className="text-xs font-mono opacity-50">/{num}</span>
-        default: return <span className="text-sm font-bold opacity-60">{num}</span>
+          return <span className="font-serif italic text-lg opacity-70">{romanMap[num] || displayNum}</span>
+        case 'oversized-watermark': return <span className="absolute -left-4 -top-6 text-[80px] font-black opacity-5 pointer-events-none z-0 tracking-tighter">{displayNum}</span>
+        case 'minimal-slash': return <span className="text-xs font-mono opacity-50">/{displayNum}</span>
+        case 'drawing-label': return <span className="text-xs font-mono font-bold tracking-widest" style={{ color: tokens.accent }}>A-{num}</span>
+        default: return <span className="text-sm font-bold opacity-60">{displayNum}</span>
       }
     }
 
@@ -637,6 +645,182 @@ export function TableOfContentsRenderer({
     )
   }
 
+  const getDisplayNumber = (num: string) => {
+    if (customNumberingFormat === 'drawing-label') {
+      return `A-${num}`
+    }
+    return num
+  }
+
+  const renderDraftingAccents = () => {
+    return (
+      <>
+        {/* Drafting Grid Overlay */}
+        {showDraftingGrid && (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.04] z-0">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="drafting-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="black" strokeWidth="1" />
+                  <circle cx="0" cy="0" r="1.5" fill="black" />
+                  <circle cx="40" cy="0" r="1.5" fill="black" />
+                  <circle cx="0" cy="40" r="1.5" fill="black" />
+                  <circle cx="40" cy="40" r="1.5" fill="black" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#drafting-grid)" />
+            </svg>
+          </div>
+        )}
+        
+        {/* North Arrow Stamp */}
+        {showNorthArrow && (
+          <div className="absolute top-4 right-4 pointer-events-none opacity-20 z-10 w-10 h-10 select-none">
+            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" className="w-full h-full text-black">
+              <circle cx="50" cy="50" r="40" strokeWidth="2" strokeDasharray="3 3" />
+              <circle cx="50" cy="50" r="30" strokeWidth="1" />
+              <path d="M50 15 L50 85 M15 50 L85 50" strokeWidth="1" />
+              <path d="M50 15 L58 40 L50 33 L42 40 Z" fill="currentColor" />
+              <text x="46" y="10" fontSize="12" fontWeight="bold" fill="currentColor" fontFamily="monospace">N</text>
+            </svg>
+          </div>
+        )}
+        
+        {/* Scale Bar */}
+        {showScaleBar && (
+          <div className="absolute bottom-3 right-6 pointer-events-none opacity-30 z-10 flex items-center gap-2 select-none text-[8px] font-mono text-black font-semibold">
+            <span className="uppercase tracking-widest">{scaleText || 'SCALE 1 : 500'}</span>
+            <svg width="60" height="6" viewBox="0 0 60 6" fill="none" stroke="currentColor" strokeWidth="1">
+              <rect x="0" y="0" width="60" height="6" fill="none" />
+              <rect x="0" y="0" width="15" height="6" fill="currentColor" />
+              <rect x="30" y="0" width="15" height="6" fill="currentColor" />
+            </svg>
+          </div>
+        )}
+      </>
+    )
+  }
+
+  const renderElCroquis = () => {
+    const featuredItem = items[0]
+    return (
+      <div className={`w-full h-full flex flex-col md:flex-row relative gap-8 p-8 overflow-hidden ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        {renderDraftingAccents()}
+        {/* Left Column: Big Image Feature */}
+        <div className="flex-1 md:flex-[1.2] h-full relative overflow-hidden border border-black/5 rounded-sm bg-gray-50 flex flex-col justify-end p-6">
+          {featuredItem && featuredItem.thumbnail ? (
+            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700" style={{ backgroundImage: `url(${featuredItem.thumbnail})` }} />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-mono text-xs">NO FEATURED IMAGE</div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="relative z-10 text-white">
+            <span className="text-xs font-mono tracking-widest text-white/70 uppercase">FEATURED PROJECT // {getDisplayNumber(featuredItem?.num || '01')}</span>
+            <h3 className="text-2xl font-bold uppercase tracking-wider mt-1" style={{ fontFamily: tokens.headingFont }}>{featuredItem?.title || "No Projects"}</h3>
+            <p className="text-xs mt-2 text-white/80">{featuredItem?.typology} — {featuredItem?.location}</p>
+          </div>
+        </div>
+        {/* Right Column: Clean Editorial Index List */}
+        <div className="flex-1 h-full overflow-y-auto flex flex-col justify-between pr-2 border-l border-black/10 pl-6">
+          <div className="flex flex-col gap-1 mb-6">
+            <h2 className="text-3xl font-light uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>INDEX</h2>
+            <span className="text-[9px] uppercase tracking-widest font-mono text-gray-400">SELECTED WORKS & PROJECTS</span>
+          </div>
+          <div className="flex-1 flex flex-col justify-center divide-y divide-black/10">
+            {items.map((it, idx) => (
+              <div key={idx} className="py-3 flex items-center justify-between group hover:bg-black/5 px-2 transition-colors duration-200">
+                <div className="flex items-baseline gap-4 min-w-0">
+                  <span className="font-mono text-xs opacity-50">{getDisplayNumber(it.num)}</span>
+                  <div className="truncate">
+                    <h4 className="font-bold text-xs uppercase tracking-wider truncate" style={{ color: tokens.text }}>{it.title}</h4>
+                    <span className="text-[9px] uppercase text-gray-500 font-mono tracking-wide">{it.typology}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold font-mono tracking-widest" style={{ color: tokens.accent }}>P. {it.pageNumber}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderSwissGridTOC = () => {
+    return (
+      <div className={`w-full h-full flex flex-col pt-10 px-10 relative overflow-hidden ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        {renderDraftingAccents()}
+        <div className="border-b-4 border-black pb-4 mb-8 shrink-0 flex items-baseline justify-between">
+          <h2 className="text-4xl font-black uppercase tracking-tighter" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>T.O.C.</h2>
+          <span className="text-xs font-mono font-bold tracking-widest opacity-60">EDITION // 2026 // COSMO FOLIO</span>
+        </div>
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-12 overflow-y-auto pb-6">
+          {items.map((it, idx) => (
+            <div key={idx} className="border-t-2 border-black pt-4 flex flex-col justify-between group relative">
+              <div>
+                <span className="text-[60px] font-black leading-none block -mt-4 mb-2 tracking-tighter" style={{ color: tokens.accent }}>
+                  {getDisplayNumber(it.num)}
+                </span>
+                <h4 className="text-sm font-black uppercase tracking-wider" style={{ color: tokens.text, fontFamily: tokens.headingFont }}>
+                  {it.title}
+                </h4>
+                <p className="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">{it.typology}</p>
+                <p className="text-[9px] text-gray-400 font-mono uppercase tracking-widest">{it.location}</p>
+              </div>
+              <div className="mt-8 flex justify-between items-baseline border-t border-black/10 pt-2 font-mono text-[10px] font-bold">
+                <span>PROJECT INDEX // {it.num}</span>
+                <span className="text-xs text-black tracking-widest">P. {it.pageNumber}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderAsymmetricTimeline = () => {
+    return (
+      <div className={`w-full h-full flex flex-col pt-10 px-10 relative overflow-hidden ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        {renderDraftingAccents()}
+        <div className="mb-10 shrink-0">
+          <h2 className="text-2xl font-bold uppercase tracking-[0.2em]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>CHRONOLOGICAL INDEX</h2>
+          <span className="text-[9px] font-mono tracking-widest text-gray-400 uppercase">PROJECT TIMELINE</span>
+        </div>
+        <div className="flex-1 relative overflow-y-auto pl-10 md:pl-0">
+          {/* Vertical Timeline Bar */}
+          <div className="absolute left-4 md:left-1/2 top-0 bottom-4 w-[1px] bg-black/20" />
+          
+          <div className="flex flex-col gap-12 pb-6">
+            {items.map((it, idx) => {
+              const isEven = idx % 2 === 0
+              return (
+                <div key={idx} className={`relative flex flex-col md:flex-row w-full ${isEven ? 'md:flex-row-reverse' : ''}`}>
+                  {/* Timeline Node */}
+                  <div className="absolute left-[-30px] md:left-1/2 md:-translate-x-1/2 top-1.5 w-3 h-3 rounded-full border border-black bg-white flex items-center justify-center z-10 shadow-sm transition-transform duration-200">
+                    <div className="w-1.5 h-1.5 rounded-full bg-black" />
+                  </div>
+                  
+                  {/* Content Container */}
+                  <div className={`w-full md:w-[45%] ${isEven ? 'md:text-right md:pr-8' : 'md:pl-8'}`}>
+                    <span className="text-xs font-mono font-bold tracking-widest" style={{ color: tokens.accent }}>{it.year} // P.{it.pageNumber}</span>
+                    <h4 className="text-base font-bold uppercase tracking-wider mt-1" style={{ color: tokens.text, fontFamily: tokens.headingFont }}>{it.title}</h4>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{it.typology} // {it.location}</p>
+                    
+                    {it.thumbnail && (
+                      <div className={`mt-3 w-32 h-20 bg-cover bg-center border border-black/5 rounded-sm grayscale hover:grayscale-0 transition-all duration-300 ${isEven ? 'md:ml-auto' : ''}`} style={{ backgroundImage: `url(${it.thumbnail})` }} />
+                    )}
+                  </div>
+                  <div className="hidden md:block w-[10%]" />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const renderMinimal = () => {
     return (
     <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
@@ -676,6 +860,9 @@ export function TableOfContentsRenderer({
       case 'competition': return renderCompetition()
       case 'academic': return renderAcademic()
       case 'minimal': return renderMinimal()
+      case 'el-croquis': return renderElCroquis()
+      case 'swiss-grid': return renderSwissGridTOC()
+      case 'asymmetric-timeline': return renderAsymmetricTimeline()
       case 'generative':
       default:
         return renderGenerative()
@@ -747,6 +934,11 @@ export function TableOfContentsRenderer({
               onChange={(e) => updateStyle({ variant: e.target.value as any })}
             >
               <option value="generative">Organic Generative</option>
+              <optgroup label="Architectural Editorial (New)">
+                <option value="el-croquis">El Croquis Monograph</option>
+                <option value="swiss-grid">Swiss International Grid</option>
+                <option value="asymmetric-timeline">Asymmetric Chrono Timeline</option>
+              </optgroup>
               <optgroup label="Modern Styles">
                 <option value="vertical-stripes">Vertical Stripes</option>
                 <option value="minimal-accent">Minimal Accent</option>
@@ -787,6 +979,41 @@ export function TableOfContentsRenderer({
               <div className="flex flex-col gap-1">
                 <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Padding</span><span className="text-[9px] font-mono">{styleConfig.overlayPadding ?? 20}px</span></div>
                 <input type="range" min="0" max="60" step="2" value={styleConfig.overlayPadding ?? 20} onChange={e => updateStyle({ overlayPadding: parseInt(e.target.value) })} className="w-full accent-black" />
+              </div>
+            </div>
+            
+            <div className="w-full h-px bg-black/10 my-3" />
+            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Architectural Details</div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-[10px] uppercase font-bold cursor-pointer hover:bg-black/5 p-1 -mx-1 rounded">
+                <input type="checkbox" checked={!!showDraftingGrid} onChange={e => updateStyle({ showDraftingGrid: e.target.checked })} className="rounded" />
+                Drafting Grid
+              </label>
+              
+              <label className="flex items-center gap-2 text-[10px] uppercase font-bold cursor-pointer hover:bg-black/5 p-1 -mx-1 rounded">
+                <input type="checkbox" checked={!!showNorthArrow} onChange={e => updateStyle({ showNorthArrow: e.target.checked })} className="rounded" />
+                North Arrow
+              </label>
+              
+              <label className="flex items-center gap-2 text-[10px] uppercase font-bold cursor-pointer hover:bg-black/5 p-1 -mx-1 rounded">
+                <input type="checkbox" checked={!!showScaleBar} onChange={e => updateStyle({ showScaleBar: e.target.checked })} className="rounded" />
+                Scale Bar
+              </label>
+              
+              {showScaleBar && (
+                <div className="flex flex-col gap-1 mt-1">
+                  <span className="text-[8px] uppercase text-gray-500 font-semibold">Scale Text</span>
+                  <input type="text" value={scaleText || 'SCALE 1 : 500'} onChange={e => updateStyle({ scaleText: e.target.value })} className="bg-black/5 text-[10px] p-1.5 rounded outline-none border border-black/10 w-full" />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1 mt-1">
+                <span className="text-[8px] uppercase text-gray-500 font-semibold">Project Numbering</span>
+                <select value={customNumberingFormat || 'standard'} onChange={e => updateStyle({ customNumberingFormat: e.target.value as any })} className="bg-black/5 text-[10px] p-1.5 rounded outline-none border border-black/10 w-full font-bold">
+                  <option value="standard">Standard (01)</option>
+                  <option value="drawing-label">Drawing label (A-01)</option>
+                </select>
               </div>
             </div>
           </div>

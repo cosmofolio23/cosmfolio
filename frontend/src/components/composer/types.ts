@@ -42,6 +42,7 @@ export interface ResumeEntry {
   org?: string      // school / institution
   year?: string     // graduation year / award year
   detail?: string   // specialization / description
+  coordinates?: string // geographical coordinates e.g. 40.7128° N, 74.0060° W
 }
 
 export interface SkillItem {
@@ -74,8 +75,6 @@ export interface Block {
   zoom?: number
   xOffset?: number
   
-  // Freeform mode flag
-  freeform?: boolean
   yOffset?: number
   cssFilter?: string // Added for Global Filters feature
 

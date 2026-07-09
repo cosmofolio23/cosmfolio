@@ -313,6 +313,7 @@ export function SheetSetCanvas({
                 height: `${element.h}%`,
                 zIndex: element.z,
                 opacity: element.opacity ?? 1,
+                backgroundColor: element.imageEffects?.blueprintMode ? '#0B2A66' : undefined,
               }}
               title={element.drawing?.drawingName || element.content}
             >
@@ -329,8 +330,11 @@ export function SheetSetCanvas({
                         element.imageEffects?.grayscale ? 'grayscale(100%)' : '',
                         element.imageEffects?.invert ? 'invert(100%)' : '',
                         element.imageEffects?.contrast !== undefined ? `contrast(${element.imageEffects.contrast}%)` : '',
+                        element.imageEffects?.whiteOut ? 'contrast(300%) grayscale(100%)' : '',
+                        element.imageEffects?.blueprintMode ? 'invert(100%) contrast(150%) brightness(120%)' : '',
+                        element.imageEffects?.charcoalMode ? 'grayscale(100%) sepia(25%) contrast(110%) brightness(95%)' : '',
                       ].filter(Boolean).join(' ') || 'none',
-                      mixBlendMode: element.imageEffects?.multiply ? 'multiply' : 'normal',
+                      mixBlendMode: element.imageEffects?.multiply || element.imageEffects?.whiteOut ? 'multiply' : element.imageEffects?.blueprintMode ? 'screen' : 'normal',
                       clipPath: getClipPath(element.maskShape),
                     }}
                   />
@@ -362,7 +366,18 @@ export function SheetSetCanvas({
                   src={element.src}
                   alt="element"
                   className="w-full h-full object-cover"
-                  style={{ clipPath: getClipPath(element.maskShape) }}
+                  style={{
+                    clipPath: getClipPath(element.maskShape),
+                    filter: [
+                      element.imageEffects?.grayscale ? 'grayscale(100%)' : '',
+                      element.imageEffects?.invert ? 'invert(100%)' : '',
+                      element.imageEffects?.contrast !== undefined ? `contrast(${element.imageEffects.contrast}%)` : '',
+                      element.imageEffects?.whiteOut ? 'contrast(300%) grayscale(100%)' : '',
+                      element.imageEffects?.blueprintMode ? 'invert(100%) contrast(150%) brightness(120%)' : '',
+                      element.imageEffects?.charcoalMode ? 'grayscale(100%) sepia(25%) contrast(110%) brightness(95%)' : '',
+                    ].filter(Boolean).join(' ') || 'none',
+                    mixBlendMode: element.imageEffects?.multiply || element.imageEffects?.whiteOut ? 'multiply' : element.imageEffects?.blueprintMode ? 'screen' : 'normal',
+                  }}
                 />
               )}
 
@@ -508,6 +523,139 @@ export function SheetSetCanvas({
                     </div>
                   )
                 })()
+              )}
+
+              {/* Site Analysis Widgets (Feature 1) */}
+              {element.kind === 'sitewidget' && (
+                <div className="w-full h-full flex flex-col items-center justify-between select-none bg-white p-2 border border-gray-300 rounded shadow-sm relative overflow-hidden font-sans">
+                  {element.siteAnalysisType === 'sunpath' && (
+                    <div className="w-full h-full flex flex-col justify-between">
+                      {/* Sun path solar graph */}
+                      <div className="relative flex-1 flex items-center justify-center min-h-0">
+                        <svg className="w-4/5 h-4/5 text-gray-400" viewBox="0 0 100 100">
+                          {/* Compass rings */}
+                          <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1,1" />
+                          <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1,1" />
+                          <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1,1" />
+                          
+                          {/* Crosshairs */}
+                          <line x1="50" y1="5" x2="50" y2="95" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2,2" />
+                          <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2,2" />
+                          
+                          {/* Solstice tracks */}
+                          {/* Summer Solstice Arc */}
+                          <path d="M 18.3 31.7 A 40 40 0 0 1 81.7 31.7" fill="none" stroke="#F59E0B" strokeWidth="1" />
+                          {/* Winter Solstice Arc */}
+                          <path d="M 31.7 68.3 A 40 40 0 0 1 68.3 68.3" fill="none" stroke="#3B82F6" strokeWidth="1" />
+                          {/* Equinox Line */}
+                          <line x1="10" y1="50" x2="90" y2="50" stroke="#10B981" strokeWidth="1" />
+                          
+                          {/* Golden Sun */}
+                          <circle cx="65" cy="33" r="3.5" fill="#F59E0B" stroke="#B45309" strokeWidth="0.5" />
+                          <line x1="50" y1="50" x2="65" y2="33" stroke="#F59E0B" strokeWidth="0.75" />
+                          
+                          {/* Labels */}
+                          <text x="50" y="11" textAnchor="middle" fontSize="6" fontWeight="bold" fill="currentColor">N</text>
+                          <text x="50" y="93" textAnchor="middle" fontSize="6" fontWeight="bold" fill="currentColor">S</text>
+                          <text x="91" y="52" textAnchor="start" fontSize="6" fontWeight="bold" fill="currentColor">E</text>
+                          <text x="9" y="52" textAnchor="end" fontSize="6" fontWeight="bold" fill="currentColor">W</text>
+                          
+                          <text x="20" y="27" fontSize="4" fill="#F59E0B">June 21</text>
+                          <text x="26" y="73" fontSize="4" fill="#3B82F6">Dec 21</text>
+                        </svg>
+                      </div>
+                      <div className="border-t border-gray-100 pt-1 text-center bg-gray-50 -mx-2 -mb-2 p-1.5 shrink-0">
+                        <div className="text-[8px] font-bold text-gray-800 uppercase tracking-wider truncate">☀️ Sun Path Diagram</div>
+                        <div className="text-[6px] text-gray-500 font-mono mt-0.5 truncate">{element.locationName || 'Latitude 13.08° N (Chennai)'}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {element.siteAnalysisType === 'windrose' && (
+                    <div className="w-full h-full flex flex-col justify-between">
+                      {/* Wind Rose Spoke Chart */}
+                      <div className="relative flex-1 flex items-center justify-center min-h-0">
+                        <svg className="w-4/5 h-4/5 text-gray-400" viewBox="0 0 100 100">
+                          {/* concentric frequency circles */}
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          <circle cx="50" cy="50" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          
+                          {/* Spokes */}
+                          {[0, 45, 90, 135, 180, 225, 270, 315].map(deg => (
+                            <line 
+                              key={deg}
+                              x1="50" y1="50"
+                              x2={50 + 40 * Math.cos((deg * Math.PI) / 180)}
+                              y2={50 + 40 * Math.sin((deg * Math.PI) / 180)}
+                              stroke="currentColor" strokeWidth="0.3"
+                            />
+                          ))}
+
+                          {/* Wind direction distribution polygon */}
+                          <polygon 
+                            points="50,22 68,38 78,50 58,52 50,75 38,55 24,50 32,32"
+                            fill="#3B82F6" fillOpacity="0.25"
+                            stroke="#2563EB" strokeWidth="1"
+                          />
+                          <polygon 
+                            points="50,30 60,42 66,50 54,51 50,62 44,52 35,50 38,40"
+                            fill="#F59E0B" fillOpacity="0.3"
+                            stroke="#D97706" strokeWidth="0.75"
+                          />
+
+                          {/* Labels */}
+                          <text x="50" y="8" textAnchor="middle" fontSize="6" fill="currentColor">N</text>
+                          <text x="50" y="96" textAnchor="middle" fontSize="6" fill="currentColor">S</text>
+                          <text x="94" y="52" textAnchor="start" fontSize="6" fill="currentColor">E</text>
+                          <text x="6" y="52" textAnchor="end" fontSize="6" fill="currentColor">W</text>
+
+                          <text x="72" y="24" fontSize="4.5" fill="#2563EB" fontWeight="bold">SW</text>
+                          <text x="72" y="30" fontSize="3.5" fill="currentColor">Prevailing</text>
+                        </svg>
+                      </div>
+                      <div className="border-t border-gray-100 pt-1 text-center bg-gray-50 -mx-2 -mb-2 p-1.5 shrink-0">
+                        <div className="text-[8px] font-bold text-gray-800 uppercase tracking-wider truncate">💨 Wind Rose Analysis</div>
+                        <div className="text-[6px] text-gray-500 font-mono mt-0.5 truncate">{element.locationName || 'Chennai — SW (12.4 m/s avg)'}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {element.siteAnalysisType === 'climatology' && (
+                    <div className="w-full h-full flex flex-col justify-between">
+                      {/* Climate Bar Graph template */}
+                      <div className="relative flex-1 flex flex-col justify-end px-2 pt-4 pb-1 min-h-0">
+                        <div className="flex-1 w-full flex items-end justify-between gap-1 border-b border-gray-300 pb-0.5">
+                          {/* 12 monthly bars for temp/rainfall */}
+                          {[
+                            { h: '60%', r: '20%' }, { h: '65%', r: '22%' }, { h: '75%', r: '30%' },
+                            { h: '85%', r: '40%' }, { h: '95%', r: '50%' }, { h: '80%', r: '65%' },
+                            { h: '70%', r: '75%' }, { h: '72%', r: '70%' }, { h: '75%', r: '60%' },
+                            { h: '78%', r: '45%' }, { h: '70%', r: '35%' }, { h: '62%', r: '22%' }
+                          ].map((m, idx) => (
+                            <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end relative">
+                              {/* Rainfall bar */}
+                              <div className="w-full bg-blue-500/30 rounded-t" style={{ height: m.r }} />
+                              {/* Temp line marker (simplified bar) */}
+                              <div className="w-1.5 bg-gradient-to-t from-orange-400 to-red-500 rounded-full absolute bottom-0" style={{ height: m.h }} />
+                            </div>
+                          ))}
+                        </div>
+                        {/* Month names footer */}
+                        <div className="flex justify-between text-[4.5px] font-mono text-gray-500 mt-1 uppercase">
+                          {['J','F','M','A','M','J','J','A','S','O','N','D'].map((m, i) => (
+                            <span key={i} className="w-full text-center">{m}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border-t border-gray-100 pt-1 text-center bg-gray-50 -mx-2 -mb-2 p-1.5 shrink-0">
+                        <div className="text-[8px] font-bold text-gray-800 uppercase tracking-wider truncate">📊 Monthly Climatology</div>
+                        <div className="text-[6px] text-gray-500 font-mono mt-0.5 truncate">{element.locationName || 'Temp range & Rain (24°C - 38°C)'}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Diagram/Render (visual placeholder) */}

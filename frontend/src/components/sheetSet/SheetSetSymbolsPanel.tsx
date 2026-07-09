@@ -74,7 +74,7 @@ export function SheetSetSymbolsPanel({ onAddElement }: SheetSetSymbolsPanelProps
     })
   }
 
-  const addCustomWidget = (type: 'keyplan' | 'section-line' | 'elevation-bubble' | 'room-tag' | 'detail-callout' | 'scalebar') => {
+  const addCustomWidget = (type: 'keyplan' | 'section-line' | 'elevation-bubble' | 'room-tag' | 'detail-callout' | 'scalebar' | 'sunpath' | 'windrose' | 'climatology') => {
     if (type === 'keyplan') {
       onAddElement({
         id: `kp-${Date.now()}`,
@@ -90,6 +90,15 @@ export function SheetSetSymbolsPanel({ onAddElement }: SheetSetSymbolsPanelProps
         scalebarLengthMeters: 10,
         scalebarStyle: 'metric-blocks',
         x: 10, y: 85, w: 25, h: 7, z: 90,
+        locked: false, visible: true
+      })
+    } else if (type === 'sunpath' || type === 'windrose' || type === 'climatology') {
+      onAddElement({
+        id: `site-${Date.now()}`,
+        kind: 'sitewidget',
+        siteAnalysisType: type,
+        locationName: 'Chennai, TN (Latitude 13.08° N)',
+        x: 35, y: 35, w: 25, h: 25, z: 85,
         locked: false, visible: true
       })
     } else {
@@ -178,6 +187,37 @@ export function SheetSetSymbolsPanel({ onAddElement }: SheetSetSymbolsPanelProps
               <span className="text-lg">📏</span>
               <p className="text-[9px] font-bold mt-1 text-gray-800">Scale Bar</p>
               <p className="text-[7px] text-gray-500 leading-tight">Metric graphical bar</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Site Analysis Widgets (Feature 1) */}
+        <div>
+          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">☀️ Site Analysis Widgets</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => addCustomWidget('sunpath')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-amber-50 text-left transition"
+            >
+              <span className="text-lg">☀️</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Sun Path</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Solar orientation graph</p>
+            </button>
+            <button
+              onClick={() => addCustomWidget('windrose')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-amber-50 text-left transition"
+            >
+              <span className="text-lg">💨</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Wind Rose</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Wind frequency rose</p>
+            </button>
+            <button
+              onClick={() => addCustomWidget('climatology')}
+              className="p-2 border border-gray-200 rounded-lg bg-gray-50 hover:border-[#D4AF37] hover:bg-amber-50 text-left transition col-span-2"
+            >
+              <span className="text-lg">📊</span>
+              <p className="text-[9px] font-bold mt-1 text-gray-800">Climatology Chart</p>
+              <p className="text-[7px] text-gray-500 leading-tight">Precipitation & temp curves</p>
             </button>
           </div>
         </div>

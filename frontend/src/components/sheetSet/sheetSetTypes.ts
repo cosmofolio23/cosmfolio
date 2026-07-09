@@ -28,7 +28,7 @@ export type SheetType =
   | 'hero-board' | 'technical-board' | 'experience-board'
   | 'process' | 'renders' | 'generic'
 
-export type ElementKind = 'drawing' | 'text' | 'title' | 'diagram' | 'image' | 'shape' | 'keyplan' | 'annotation' | 'scalebar'
+export type ElementKind = 'drawing' | 'text' | 'title' | 'diagram' | 'image' | 'shape' | 'keyplan' | 'annotation' | 'scalebar' | 'sitewidget'
 
 export type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten'
 
@@ -68,6 +68,9 @@ export interface SheetElement {
     invert?: boolean
     contrast?: number // 100 is normal
     multiply?: boolean // blend mode multiply
+    whiteOut?: boolean
+    blueprintMode?: boolean
+    charcoalMode?: boolean
   }
 
   // Drawing-specific
@@ -106,6 +109,10 @@ export interface SheetElement {
   // Dynamic Scale Bars (Feature 4)
   scalebarLengthMeters?: number
   scalebarStyle?: 'metric-blocks' | 'tick-marks' | 'minimal-line'
+
+  // Site Analysis Widgets (Feature 1)
+  siteAnalysisType?: 'sunpath' | 'windrose' | 'climatology'
+  locationName?: string
 }
 
 // ─────────────────────────────────────────────────────────────

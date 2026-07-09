@@ -19,6 +19,8 @@ export const LAYOUT_VARIANTS = [
   { value: 'brutal', label: 'Brutalist' },
   { value: 'glass', label: 'Glassmorphism' },
   { value: 'neumorphic', label: 'Neumorphic' },
+  { value: 'swiss-grid', label: 'Swiss Grid (Editorial)' },
+  { value: 'architect-editorial', label: 'Architect Editorial' },
 ];
 
 export const BAR_STYLES = [
@@ -65,6 +67,7 @@ export const DIVIDERS = [
   { value: 'circle-sep', label: 'Circle Center (— ○ —)' },
   { value: 'square-sep', label: 'Square Center (— □ —)' },
   { value: 'plus-sep', label: 'Plus Center (— + —)' },
+  { value: 'architect-dimension', label: 'Drafting Dimension Tick (— ⁄ —)' },
 ];
 
 export function getVariantClasses(variant: string): string {
@@ -84,6 +87,8 @@ export function getVariantClasses(variant: string): string {
     case 'brutal': return 'border-4 border-black p-4 bg-white shadow-[8px_8px_0_0_rgba(0,0,0,1)] font-bold';
     case 'glass': return 'bg-white/30 backdrop-blur-md p-4 rounded-2xl border border-white/50 shadow-xl';
     case 'neumorphic': return 'bg-gray-100 p-4 rounded-2xl shadow-[inset_4px_4px_8px_rgba(0,0,0,0.1),inset_-4px_-4px_8px_rgba(255,255,255,1)]';
+    case 'swiss-grid': return 'font-mono text-xs tracking-wider border-t-2 border-black pt-4';
+    case 'architect-editorial': return 'font-serif tracking-widest text-[13px] leading-relaxed italic border-l border-black pl-4';
     default: return ''; // list, timeline, masonry, grid-2, grid-3 handled structurally
   }
 }
@@ -109,6 +114,7 @@ export function getDividerClasses(divider: string): string {
     case 'circle-sep': return 'pb-4 relative border-b border-black/10 after:content-["○"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
     case 'square-sep': return 'pb-4 relative border-b border-black/10 after:content-["□"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
     case 'plus-sep': return 'pb-4 relative border-b border-black/10 after:content-["+"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
+    case 'architect-dimension': return 'pb-4 relative border-b border-black/10 after:content-["⁄"] after:absolute after:-bottom-[8px] after:left-0 after:text-black/50 after:font-mono after:bg-white after:px-0.5 after:font-bold after:scale-125 before:content-["⁄"] before:absolute before:-bottom-[8px] before:right-0 before:text-black/50 before:bg-white before:px-0.5 before:font-bold before:scale-125';
     default: return '';
   }
 }
