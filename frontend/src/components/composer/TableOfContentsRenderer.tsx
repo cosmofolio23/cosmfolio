@@ -821,6 +821,119 @@ export function TableOfContentsRenderer({
     )
   }
 
+  const renderBrutalistBlueprint = () => {
+    return (
+      <div className={`w-full h-full flex flex-col p-8 bg-sky-950 text-cyan-300 font-mono relative overflow-hidden border-4 border-cyan-500/30 ${baseOverlayCls}`} style={{ padding: overlayPad }}>
+        {renderDraftingAccents()}
+        <div className="border-b-2 border-cyan-400 pb-3 mb-6 shrink-0 flex items-baseline justify-between">
+          <h2 className="text-2xl font-bold uppercase tracking-widest text-white">PROJECT SPECIFICATION INDEX</h2>
+          <span className="text-[9px] text-cyan-400/70">REF // COSMOFOLIO-2026</span>
+        </div>
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto pb-4">
+          {items.map((it, idx) => (
+            <div key={idx} className="border border-cyan-500/20 p-4 bg-sky-900/30 flex flex-col justify-between relative group hover:border-cyan-400 transition-colors duration-200">
+              <div>
+                <div className="flex justify-between items-baseline mb-2">
+                  <span className="text-xs font-bold text-cyan-400">[{getDisplayNumber(it.num)}]</span>
+                  <span className="text-[10px] text-cyan-400/80 bg-sky-800/40 px-2 py-0.5 border border-cyan-500/20 font-bold">SHEET // {it.pageNumber}</span>
+                </div>
+                <h4 className="text-sm font-bold uppercase tracking-wider text-white">
+                  {it.title}
+                </h4>
+                <p className="text-[9px] opacity-75 mt-2">TYPOLOGY: {it.typology}</p>
+                <p className="text-[9px] opacity-75">LOCATION: {it.location}</p>
+              </div>
+              <div className="mt-4 border-t border-cyan-500/10 pt-2 flex justify-between items-center text-[8px] opacity-50">
+                <span>SCALE: N.T.S.</span>
+                <span>ZONE: {it.location.split(',')[1] || 'GLOBAL'}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderEditorialMonograph = () => {
+    return (
+      <div className={`w-full h-full flex flex-col pt-12 px-12 relative overflow-hidden ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        {renderDraftingAccents()}
+        <div className="flex flex-col mb-10 shrink-0">
+          <span className="text-[10px] tracking-[0.3em] font-bold text-gray-400 uppercase">THE ARCHITECTURAL MONOGRAPH</span>
+          <h2 className="text-4xl font-serif font-light italic mt-1" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>Index of Works</h2>
+        </div>
+        <div className="flex-1 overflow-y-auto flex flex-col divide-y divide-black/10 pr-2 pb-6">
+          {items.map((it, idx) => (
+            <div key={idx} className="py-6 flex items-center justify-between group relative min-h-[90px]">
+              <div className="flex-1 flex gap-6 items-baseline min-w-0 pr-6">
+                <span className="font-serif italic text-[14px] text-gray-400">{getDisplayNumber(it.num)}.</span>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-base uppercase tracking-widest font-light transition-colors group-hover:text-black" style={{ color: tokens.text, fontFamily: tokens.headingFont }}>
+                    {it.title}
+                  </h4>
+                  <div className="flex gap-4 items-center text-[10px] text-gray-400 mt-1 uppercase tracking-wider">
+                    <span>{it.typology}</span>
+                    <span>·</span>
+                    <span>{it.location}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 shrink-0 font-serif">
+                {it.thumbnail && (
+                  <div className="w-16 h-12 bg-cover bg-center border border-black/5 opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" style={{ backgroundImage: `url(${it.thumbnail})` }} />
+                )}
+                <span className="text-3xl font-light italic text-gray-300 group-hover:text-black transition-colors" style={{ fontFamily: tokens.headingFont }}>{it.pageNumber}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderDeconstructivist = () => {
+    return (
+      <div className={`w-full h-full flex flex-col p-10 relative overflow-hidden ${baseOverlayCls}`} style={{ backgroundColor: overlayBg, padding: overlayPad }}>
+        {renderDraftingAccents()}
+        <div className="absolute inset-0 pointer-events-none opacity-10">
+          <svg className="w-full h-full" viewBox="0 0 800 800">
+            <line x1="0" y1="0" x2="800" y2="800" stroke="currentColor" strokeWidth="2" />
+            <line x1="800" y1="0" x2="0" y2="800" stroke="currentColor" strokeWidth="2" />
+            <line x1="100" y1="0" x2="100" y2="800" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5 5" />
+            <line x1="0" y1="300" x2="800" y2="300" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5 5" />
+          </svg>
+        </div>
+        <div className="mb-8 shrink-0 relative">
+          <h2 className="text-5xl font-black uppercase tracking-tight skew-x-3 rotate-[-1deg]" style={{ color: tokens.primary, fontFamily: tokens.headingFont }}>DE-CON</h2>
+          <span className="text-[10px] font-mono tracking-widest text-gray-500 uppercase block mt-1">INDEX STRUCTURE // DECONSTRUCTED</span>
+        </div>
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto pb-6 relative z-10">
+          {items.map((it, idx) => {
+            const rot = (idx % 3 === 0) ? '-rotate-[1deg]' : (idx % 3 === 1) ? 'rotate-[1.5deg]' : 'rotate-[-0.5deg]'
+            return (
+              <div key={idx} className={`p-5 bg-white border-2 border-black/80 shadow-[4px_4px_0_0_rgba(0,0,0,0.85)] flex flex-col justify-between transition-transform duration-300 hover:rotate-0 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] ${rot}`}>
+                <div className="flex justify-between items-start mb-4">
+                  <span className="font-mono text-xs font-black uppercase border border-black px-2 py-0.5 bg-black text-white">{getDisplayNumber(it.num)}</span>
+                  <span className="font-serif italic text-base font-bold">P.{it.pageNumber}</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-black uppercase tracking-tight" style={{ color: tokens.text, fontFamily: tokens.headingFont }}>
+                    {it.title}
+                  </h4>
+                  <p className="text-[9px] text-gray-500 mt-2 font-mono uppercase tracking-widest">{it.typology}</p>
+                </div>
+                <div className="mt-4 border-t-2 border-black/10 pt-2 flex items-center justify-between text-[8px] font-mono text-gray-400">
+                  <span>COORD // {it.location.slice(0, 8)}</span>
+                  <span>{it.year}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   const renderMinimal = () => {
     return (
     <div className={`w-full flex flex-col h-full overflow-hidden min-h-0 ${baseOverlayCls} ${overlayEnabled ? 'border border-black/5' : ''}`} style={{ fontFamily: tokens.bodyFont, backgroundColor: overlayBg, padding: overlayPad }}>
@@ -863,6 +976,9 @@ export function TableOfContentsRenderer({
       case 'el-croquis': return renderElCroquis()
       case 'swiss-grid': return renderSwissGridTOC()
       case 'asymmetric-timeline': return renderAsymmetricTimeline()
+      case 'brutalist-blueprint': return renderBrutalistBlueprint()
+      case 'editorial-monograph': return renderEditorialMonograph()
+      case 'deconstructivist': return renderDeconstructivist()
       case 'generative':
       default:
         return renderGenerative()
@@ -938,6 +1054,9 @@ export function TableOfContentsRenderer({
                 <option value="el-croquis">El Croquis Monograph</option>
                 <option value="swiss-grid">Swiss International Grid</option>
                 <option value="asymmetric-timeline">Asymmetric Chrono Timeline</option>
+                <option value="brutalist-blueprint">Brutalist Blueprint</option>
+                <option value="editorial-monograph">Editorial Monograph</option>
+                <option value="deconstructivist">Deconstructivist Node</option>
               </optgroup>
               <optgroup label="Modern Styles">
                 <option value="vertical-stripes">Vertical Stripes</option>

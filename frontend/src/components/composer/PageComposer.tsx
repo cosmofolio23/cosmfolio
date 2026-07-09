@@ -507,6 +507,9 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
                   <optgroup label="Architectural (New)">
                     <option value="swiss-grid">Swiss International Grid</option>
                     <option value="architect-editorial">Architect Editorial</option>
+                    <option value="brutalist-blueprint">Brutalist Blueprint</option>
+                    <option value="editorial-monograph">Editorial Monograph</option>
+                    <option value="deconstructivist">Deconstructivist Node</option>
                   </optgroup>
                   <optgroup label="Standard">
                     <option value="list">Standard List</option>
@@ -857,6 +860,9 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
                     variant === 'grid-3' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6' : 
                     variant === 'swiss-grid' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6 pt-4 border-t-2 border-black' :
                     variant === 'architect-editorial' ? 'flex flex-col pl-4 border-l border-black' :
+                    variant === 'brutalist-blueprint' ? 'grid grid-cols-1 @xs:grid-cols-2 gap-4 bg-sky-950 p-4 border border-cyan-500/20' :
+                    variant === 'editorial-monograph' ? 'flex flex-col pl-6 border-l-2 border-black/30' :
+                    variant === 'deconstructivist' ? 'grid grid-cols-1 @xs:grid-cols-2 gap-8' :
                     'grid grid-cols-1 @xs:grid-cols-2 gap-6'
 
   const itemClass = getVariantClasses(variant)
@@ -890,21 +896,31 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
             )}
             
             <div className="w-16 @sm:w-20 shrink-0">
-              <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: tokens.accent }} />
+              <input 
+                value={e.year || ''} 
+                onChange={ev => upd(i, 'year', ev.target.value)} 
+                placeholder="Year" 
+                className={`w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none ${
+                  variant === 'brutalist-blueprint' ? 'text-cyan-400' : 
+                  variant === 'editorial-monograph' ? 'font-serif italic text-xl font-light tracking-normal border-r border-black/20 pr-2 block w-auto' : 
+                  ''
+                }`} 
+                style={variant === 'brutalist-blueprint' ? { color: '#22d3ee' } : variant === 'editorial-monograph' ? { color: finalPrimary, fontFamily: tokens.headingFont } : { color: tokens.accent }} 
+              />
             </div>
             
             <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-visible min-h-0 shrink pt-0.5">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalPrimary, fontFamily: tokens.headingFont }} />
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: variant === 'brutalist-blueprint' ? '#ffffff' : finalPrimary, fontFamily: tokens.headingFont }} />
               <div className="flex flex-wrap gap-2 items-baseline shrink-0">
                 {readonly ? (
-                  e.org && <span className="text-[9px] uppercase tracking-wider font-semibold opacity-80" style={{ color: finalText, fontFamily: tokens.bodyFont }}>{e.org}</span>
+                  e.org && <span className={`text-[9px] uppercase tracking-wider font-semibold opacity-80 ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText, fontFamily: tokens.bodyFont }}>{e.org}</span>
                 ) : (
-                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className="block text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
+                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className={`block text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText, fontFamily: tokens.bodyFont }} />
                 )}
                 {readonly ? (
-                  e.coordinates && <span className="text-[8px] font-mono opacity-50" style={{ color: finalText }}>{e.coordinates}</span>
+                  e.coordinates && <span className={`text-[8px] font-mono opacity-50 ${variant === 'brutalist-blueprint' ? 'text-cyan-400 bg-sky-900/30 px-1 border border-cyan-500/20' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }}>{variant === 'brutalist-blueprint' ? `COORD: ${e.coordinates}` : e.coordinates}</span>
                 ) : (
-                  <input value={e.coordinates || ''} onChange={ev => upd(i, 'coordinates', ev.target.value)} placeholder="Coordinates (e.g. 40.7128° N, 74.0060° W)" className="block text-[8px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: finalText }} />
+                  <input value={e.coordinates || ''} onChange={ev => upd(i, 'coordinates', ev.target.value)} placeholder="Coordinates (e.g. 40.7128° N, 74.0060° W)" className={`block text-[8px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-400' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }} />
                 )}
               </div>
               <textarea 
@@ -916,8 +932,8 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
                 }}
                 placeholder="Description / Details" 
                 rows={1} 
-                className="w-full mt-1 text-[9.5px] leading-relaxed opacity-70 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0" 
-                style={{ color: finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
+                className={`w-full mt-1 text-[9.5px] leading-relaxed bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-70'}`} 
+                style={{ color: variant === 'brutalist-blueprint' ? '#e0f2fe' : finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
             {!readonly && <button onClick={() => del(i)} type="button" title="Delete Entry" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start p-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
@@ -1175,6 +1191,9 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
                     variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 
                     variant === 'swiss-grid' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6 pt-4 border-t-2 border-black' :
                     variant === 'architect-editorial' ? 'flex flex-col pl-4 border-l border-black' :
+                    variant === 'brutalist-blueprint' ? 'grid grid-cols-1 @xs:grid-cols-2 gap-4 bg-sky-950 p-4 border border-cyan-500/20' :
+                    variant === 'editorial-monograph' ? 'flex flex-col pl-6 border-l-2 border-black/30' :
+                    variant === 'deconstructivist' ? 'grid grid-cols-1 @xs:grid-cols-2 gap-8' :
                     'grid grid-cols-1 @xs:grid-cols-2 gap-6'
   
   const itemClass = getVariantClasses(variant)
@@ -1205,27 +1224,29 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
           <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : 'pl-3'}`}>
             {variant === 'timeline' ? (
                <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
+            ) : variant === 'brutalist-blueprint' ? (
+               <span className="text-[10px] font-mono text-cyan-400 font-bold bg-sky-900/40 px-1 border border-cyan-500/10">[{icon}]</span>
             ) : (
                <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>{icon}</span>
             )}
             <div className="flex-1 min-w-0 flex flex-col min-h-0 shrink">
-              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
+              <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Title" className="block w-full text-[10px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: variant === 'brutalist-blueprint' ? '#ffffff' : finalText, fontFamily: tokens.bodyFont }} />
               {isAchievement && (
                 <div className="flex gap-2 items-center mt-0.5 shrink-0 flex-wrap">
                   {readonly ? (
-                    e.org && <span className="text-[9px] uppercase tracking-wider font-semibold opacity-70" style={{ color: finalText }}>{e.org}</span>
+                    e.org && <span className={`text-[9px] uppercase tracking-wider font-semibold opacity-70 ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText }}>{e.org}</span>
                   ) : (
-                    <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className="flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
+                    <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation" className={`flex-1 text-[9px] uppercase tracking-wider font-semibold opacity-70 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText }} />
                   )}
                   {readonly ? (
-                    e.coordinates && <span className="text-[8px] font-mono opacity-50" style={{ color: finalText }}>{e.coordinates}</span>
+                    e.coordinates && <span className={`text-[8px] font-mono opacity-50 ${variant === 'brutalist-blueprint' ? 'text-cyan-400 bg-sky-900/30 px-1 border border-cyan-500/20' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }}>{variant === 'brutalist-blueprint' ? `COORD: ${e.coordinates}` : e.coordinates}</span>
                   ) : (
-                    <input value={e.coordinates || ''} onChange={ev => upd(i, 'coordinates', ev.target.value)} placeholder="Coordinates" className="w-20 text-[8px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
+                    <input value={e.coordinates || ''} onChange={ev => upd(i, 'coordinates', ev.target.value)} placeholder="Coordinates" className={`w-20 text-[8px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none ${variant === 'brutalist-blueprint' ? 'text-cyan-400' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }} />
                   )}
                   {readonly ? (
-                    e.year && <span className="text-[9px] font-mono opacity-50" style={{ color: finalText }}>{e.year}</span>
+                    e.year && <span className={`text-[9px] font-mono opacity-50 ${variant === 'brutalist-blueprint' ? 'text-cyan-400' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }}>{e.year}</span>
                   ) : (
-                    <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right" style={{ color: finalText }} />
+                    <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className={`w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none text-right ${variant === 'brutalist-blueprint' ? 'text-cyan-400' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }} />
                   )}
                 </div>
               )}
@@ -1238,8 +1259,8 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
                 }}
                 placeholder="Detail" 
                 rows={1} 
-                className="w-full mt-1 text-[9px] leading-relaxed opacity-60 bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0" 
-                style={{ color: finalText, minHeight: '14px' }} 
+                className={`w-full mt-1 text-[9px] leading-relaxed bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-60'}`} 
+                style={{ color: variant === 'brutalist-blueprint' ? '#e0f2fe' : finalText, minHeight: '14px' }} 
               />
             </div>
             {!readonly && <button onClick={() => del(i)} type="button" title="Delete Item" className="absolute right-0 top-0 text-[10px] opacity-40 hover:opacity-100 text-red-500 self-start px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}

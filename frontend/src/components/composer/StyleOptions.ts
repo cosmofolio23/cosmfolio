@@ -21,6 +21,9 @@ export const LAYOUT_VARIANTS = [
   { value: 'neumorphic', label: 'Neumorphic' },
   { value: 'swiss-grid', label: 'Swiss Grid (Editorial)' },
   { value: 'architect-editorial', label: 'Architect Editorial' },
+  { value: 'brutalist-blueprint', label: 'Brutalist Blueprint' },
+  { value: 'editorial-monograph', label: 'Editorial Monograph' },
+  { value: 'deconstructivist', label: 'Deconstructivist Node' },
 ];
 
 export const BAR_STYLES = [
@@ -89,6 +92,9 @@ export function getVariantClasses(variant: string): string {
     case 'neumorphic': return 'bg-gray-100 p-4 rounded-2xl shadow-[inset_4px_4px_8px_rgba(0,0,0,0.1),inset_-4px_-4px_8px_rgba(255,255,255,1)]';
     case 'swiss-grid': return 'font-mono text-xs tracking-wider border-t-2 border-black pt-4';
     case 'architect-editorial': return 'font-serif tracking-widest text-[13px] leading-relaxed italic border-l border-black pl-4';
+    case 'brutalist-blueprint': return 'font-mono text-xs text-cyan-300 bg-sky-950 p-6 border-2 border-cyan-500/30 rounded-none shadow-[4px_4px_0_0_rgba(14,116,144,1)] relative overflow-visible';
+    case 'editorial-monograph': return 'font-serif text-[13px] tracking-wide leading-relaxed pl-6 border-l-2 border-black/30 relative';
+    case 'deconstructivist': return 'relative p-6 border border-black/10 bg-slate-50/50 hover:bg-slate-50 rotate-[0.5deg] hover:rotate-0 transition-transform duration-300';
     default: return ''; // list, timeline, masonry, grid-2, grid-3 handled structurally
   }
 }
