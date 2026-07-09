@@ -1780,6 +1780,73 @@ function generateEndPages100(): LayoutSpec[] {
   ]
 }
 
+function generateArchitecturalCovers50(): LayoutSpec[] {
+  const mk = (id: string, n: string, r: Region[], overlay?: boolean): LayoutSpec => ({
+    id, name: n, category: 'Cover' as LayoutCategory, suits: ['cover'] as PageType[],
+    imageCount: r.filter(x => x.role === 'image').length, regions: r,
+    kind: overlay ? 'overlay' : undefined,
+  })
+  return [
+    // ── MONOLITH SERIES (1-10) ───────────────────────────────────────────
+    mk('arch-cv-01','Cover · Monolith Left Column',[img(0,1,6,1,12),rv('title',8,4,3,3),rv('subtitle',8,4,6,2),rv('meta',8,4,9,3)]),
+    mk('arch-cv-02','Cover · Monolith Right Column',[img(0,7,6,1,12),rv('title',2,4,3,3),rv('subtitle',2,4,6,2),rv('meta',2,4,9,3)]),
+    mk('arch-cv-03','Cover · Monolith Central Column',[img(0,4,6,1,12),rv('title',1,3,4,4),rv('subtitle',10,3,4,4)]),
+    mk('arch-cv-04','Cover · Monolith Off-Center',[img(0,3,4,1,12),rv('title',8,4,2,4),rv('subtitle',8,4,6,2),rv('meta',8,4,9,2)]),
+    mk('arch-cv-05','Cover · Monolith Double Columns',[img(0,2,4,1,12),img(1,8,4,1,12),rv('title',6,2,2,4),rv('subtitle',6,2,7,2),rv('meta',6,2,10,2)]),
+    mk('arch-cv-06','Cover · Monolith Left Asymmetric',[img(0,1,8,1,12),rv('title',10,2,2,4),rv('subtitle',10,2,6,2),rv('meta',10,2,9,2)]),
+    mk('arch-cv-07','Cover · Monolith Right Asymmetric',[img(0,5,8,1,12),rv('title',2,2,2,4),rv('subtitle',2,2,6,2),rv('meta',2,2,9,2)]),
+    mk('arch-cv-08','Cover · Monolith Triple Stripes',[img(0,2,2,1,12),img(1,5,2,1,12),img(2,8,2,1,12),rv('title',11,2,4,4),rv('meta',11,2,9,2)]),
+    mk('arch-cv-09','Cover · Monolith Framed Portrait',[img(0,3,6,2,8),rv('title',2,8,10,2),rv('subtitle',2,8,12,1)]),
+    mk('arch-cv-10','Cover · Monolith Floating Square',[img(0,4,4,4,4),rv('title',2,8,1,2),rv('meta',2,8,9,2)]),
+    // ── TRIPTYCH & GALLERY SERIES (11-20) ────────────────────────────────
+    mk('arch-cv-11','Cover · Gallery Horizontal Triptych',[img(0,2,3,2,6),img(1,5,3,2,6),img(2,8,3,2,6),rv('title',2,9,9,2),rv('meta',2,9,11,1)]),
+    mk('arch-cv-12','Cover · Gallery Asymmetric Duo',[img(0,2,4,3,7),img(1,7,4,2,5),rv('title',2,9,10,2)]),
+    mk('arch-cv-13','Cover · Gallery Stacked Quad',[img(0,2,4,2,4),img(1,7,4,2,4),img(2,2,4,7,4),img(3,7,4,7,4)]),
+    mk('arch-cv-14','Cover · Gallery Filmstrip Top',[img(0,1,2,1,4),img(1,4,2,1,4),img(2,7,2,1,4),img(3,10,2,1,4),rv('title',2,9,7,3),rv('meta',2,9,10,2)]),
+    mk('arch-cv-15','Cover · Gallery Filmstrip Bottom',[img(0,1,2,9,4),img(1,4,2,9,4),img(2,7,2,9,4),img(3,10,2,9,4),rv('title',2,9,2,3),rv('meta',2,9,5,2)]),
+    mk('arch-cv-16','Cover · Gallery Staggered Trio',[img(0,2,3,2,4),img(1,5,3,4,4),img(2,8,3,6,4),rv('title',2,9,11,1)]),
+    mk('arch-cv-17','Cover · Gallery Clean Grid',[img(0,3,3,2,4),img(1,7,3,2,4),img(2,3,3,7,4),img(3,7,3,7,4)]),
+    mk('arch-cv-18','Cover · Gallery Panorama Split',[img(0,1,5,3,6),img(1,7,5,3,6),rv('title',2,9,10,2)]),
+    mk('arch-cv-19','Cover · Gallery Vertical Quad',[img(0,2,2,2,8),img(1,4,2,2,8),img(2,6,2,2,8),img(3,8,2,2,8)]),
+    mk('arch-cv-20','Cover · Gallery 2x2 Accent',[img(0,2,4,3,3),img(1,7,4,3,3),img(2,2,4,7,3),img(3,7,4,7,3),rv('title',2,9,11,1)]),
+    // ── EDITORIAL & INTERIOR DESIGN SERIES (21-30) ─────────────────────────
+    mk('arch-cv-21','Cover · Editorial Digest',[img(0,2,9,3,8),rv('title',2,9,1,2),rv('meta',2,9,12,1)]),
+    mk('arch-cv-22','Cover · Editorial Monocle',[img(0,1,5,1,12),rv('title',7,5,2,3),rv('subtitle',7,5,5,2),rv('text',7,5,7,3),rv('meta',7,5,11,1)]),
+    mk('arch-cv-23','Cover · Editorial Domus Inset',[img(0,3,7,4,6),rv('title',3,7,1,2),rv('meta',3,7,11,1)]),
+    mk('arch-cv-24','Cover · Editorial El Croquis',[img(0,1,8,2,9),rv('title',10,2,2,7),rv('meta',10,2,10,2)]),
+    mk('arch-cv-25','Cover · Editorial Blueprint Inset',[img(0,2,9,5,5),rv('title',2,9,2,2),rv('meta',2,9,11,1)]),
+    mk('arch-cv-26','Cover · Editorial Large Title',[img(0,2,5,4,6),rv('title',8,4,4,4),rv('subtitle',8,4,8,1)]),
+    mk('arch-cv-27','Cover · Editorial Staggered',[img(0,7,5,2,8),rv('title',1,5,2,3),rv('subtitle',1,5,6,2),rv('meta',1,5,9,2)]),
+    mk('arch-cv-28','Cover · Editorial Double Strip',[img(0,4,2,2,8),img(1,7,2,2,8),rv('title',1,10,11,1)]),
+    mk('arch-cv-29','Cover · Editorial Corner Inset',[img(0,9,3,1,4),rv('title',2,6,2,4),rv('subtitle',2,6,7,2),rv('meta',2,6,10,2)]),
+    mk('arch-cv-30','Cover · Editorial Framed Hero',[img(0,3,6,3,6),rv('title',1,12,10,2)]),
+    // ── BRUTALIST & BLUEPRINT SERIES (31-40) ─────────────────────────────
+    mk('arch-cv-31','Cover · Brutalist Heavy Left',[img(0,1,5,1,12),rv('title',7,5,1,3),rv('subtitle',7,5,5,2),rv('meta',7,5,8,3)]),
+    mk('arch-cv-32','Cover · Brutalist Blueprint Header',[img(0,1,12,5,7),rv('title',2,10,1,3),rv('meta',2,10,4,1)]),
+    mk('arch-cv-33','Cover · Brutalist Border TL',[img(0,1,6,1,7),rv('title',8,4,1,4),rv('meta',8,4,6,2)]),
+    mk('arch-cv-34','Cover · Brutalist Border BR',[img(0,7,6,5,7),rv('title',1,5,5,4),rv('meta',1,5,10,2)]),
+    mk('arch-cv-35','Cover · Brutalist Typographic',[rv('title',1,10,2,5),rv('subtitle',1,10,7,2),rv('meta',1,10,10,2)]),
+    mk('arch-cv-36','Cover · Brutalist Industrial Cross',[img(0,1,4,1,12),img(1,9,4,1,12),rv('title',5,4,2,4)]),
+    mk('arch-cv-37','Cover · Brutalist Triple Inset',[img(0,2,2,3,6),img(1,5,2,3,6),img(2,8,2,3,6),rv('title',1,12,10,2)]),
+    mk('arch-cv-38','Cover · Brutalist Outline Hero',[img(0,2,8,2,8),rv('title',1,12,11,1)]),
+    mk('arch-cv-39','Cover · Brutalist Block Duo',[img(0,2,4,2,8),img(1,7,4,2,8),rv('title',2,9,11,1)]),
+    mk('arch-cv-40','Cover · Brutalist Big Label',[img(0,1,12,1,9),rv('title',1,12,10,2)]),
+    // ── DECONSTRUCTIVIST & COLLAGE SERIES (41-52) ─────────────────────────
+    mk('arch-cv-41','Cover · Decon Overlapping Collage',[img(0,1,8,2,8),img(1,6,6,6,6),rv('title',1,5,11,1)]),
+    mk('arch-cv-42','Cover · Decon Offset Split',[img(0,1,5,2,8),img(1,7,5,3,8),rv('title',1,12,11,1)]),
+    mk('arch-cv-43','Cover · Decon Diagonal Overlap',[img(0,2,6,2,6),img(1,6,5,5,5),rv('title',1,12,11,1)]),
+    mk('arch-cv-44','Cover · Decon Column Grid',[img(0,2,3,1,10),img(1,6,2,3,8),img(2,9,2,2,9)]),
+    mk('arch-cv-45','Cover · Decon Offset Blocks',[img(0,1,4,3,6),img(1,5,4,1,8),img(2,9,3,4,7)]),
+    mk('arch-cv-46','Cover · Decon Text Intersection',[img(0,2,9,3,5),rv('title',1,5,9,3),rv('meta',7,5,9,3)]),
+    mk('arch-cv-47','Cover · Decon Scattered Trio',[img(0,1,4,2,5),img(1,5,4,5,5),img(2,9,3,3,5)]),
+    mk('arch-cv-48','Cover · Decon Horizontal Stack',[img(0,2,9,2,3),img(1,2,9,6,3),rv('title',2,9,10,2)]),
+    mk('arch-cv-49','Cover · Decon Split Header',[img(0,1,6,1,9),rv('title',8,4,1,3),img(1,8,4,5,6)]),
+    mk('arch-cv-50','Cover · Decon Landscape Frame',[img(0,2,9,4,5),rv('title',2,9,10,2)]),
+    mk('arch-cv-51','Cover · Decon Asymmetric Collage',[img(0,1,7,2,6),img(1,6,6,5,6)]),
+    mk('arch-cv-52','Cover · Decon Floating Frames',[img(0,3,4,2,4),img(1,6,4,5,5)]),
+  ]
+}
+
 function generateExtraCovers100(): LayoutSpec[] {
   const mk = (id: string, n: string, r: Region[], overlay?: boolean): LayoutSpec => ({
     id, name: n, category: 'Cover' as LayoutCategory, suits: ['cover'] as PageType[],
@@ -1914,6 +1981,7 @@ export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...generateContentSpreads100(),
   ...generateEndPages100(),
   ...generateExtraCovers100(),
+  ...generateArchitecturalCovers50(),
   ...COVER_SPECS,
   ...buildImageSpecs(),
   ...TEXT_SPECS,
