@@ -504,6 +504,10 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
                   value={styleConfig.variant || 'list'}
                   onChange={e => updateStyle({ variant: e.target.value })}
                 >
+                  <optgroup label="Architectural (New)">
+                    <option value="swiss-grid">Swiss International Grid</option>
+                    <option value="architect-editorial">Architect Editorial</option>
+                  </optgroup>
                   <optgroup label="Standard">
                     <option value="list">Standard List</option>
                     <option value="timeline">Timeline</option>
@@ -569,6 +573,7 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
                   onChange={e => updateStyle({ divider: e.target.value })}
                 >
                   <option value="none">None</option>
+                  <option value="architect-dimension">Drafting Dimension Ticks (/)</option>
                   <option value="solid">Solid Line</option>
                   <option value="dashed">Dashed Line</option>
                   <option value="dotted">Dotted Line</option>
