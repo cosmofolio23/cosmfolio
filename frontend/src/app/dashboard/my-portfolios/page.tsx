@@ -29,6 +29,12 @@ export default function MyPortfoliosPage() {
   const [showNewModal, setShowNewModal] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newDescription, setNewDescription] = useState('')
+  const [toastMsg, setToastMsg] = useState('')
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(''), 4000)
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -103,7 +109,9 @@ export default function MyPortfoliosPage() {
               : p
           )
         )
-        alert(`✓ Published! Share URL: /portfolio/${data.slug}`)
+        const url = `${window.location.origin}/portfolio/${projectId}`
+        navigator.clipboard.writeText(url)
+        showToast('✓ Published! Link copied to clipboard')
       }
     } catch (e) {
       alert('Failed to publish')
@@ -248,12 +256,23 @@ export default function MyPortfoliosPage() {
                   </div>
 
                   {/* Share URL */}
-                  {project.is_published && project.slug && (
+                  {project.status === 'published' && (
                     <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
                       <p className="text-xs text-gray-600 mb-1">Share URL:</p>
-                      <code className="text-xs text-blue-700 font-mono break-all">
-                        /portfolio/{project.slug}
-                      </code>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 text-xs text-blue-700 font-mono truncate">
+                          {window.location.origin}/portfolio/{project.id}
+                        </code>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/portfolio/${project.id}`)
+                            showToast('Link copied!')
+                          }}
+                          className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs rounded border border-blue-300 font-medium"
+                        >
+                          Copy
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -284,9 +303,9 @@ export default function MyPortfoliosPage() {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    {project.is_published && project.slug && (
+                    {project.status === 'published' && (
                       <Link
-                        href={`/portfolio/${project.slug}`}
+                        href={`/portfolio/${project.id}`}
                         className="flex-1 px-3 py-2 bg-[#FBE7A1]/40 text-[#9C7416] text-xs font-medium rounded hover:bg-[#FBE7A1]/60 text-center"
                       >
                         👁️ View
@@ -354,6 +373,13 @@ export default function MyPortfoliosPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-3 rounded shadow-xl text-sm font-medium animate-fade-in-up z-50">
+          {toastMsg}
         </div>
       )}
     </div>

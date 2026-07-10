@@ -1063,7 +1063,8 @@ export default function TemplateEditor() {
       })
       if (res.ok) {
         const data = await res.json()
-        flashUpload('ok', `✓ Published! Share URL: /portfolio/${data.slug}`, 6000)
+        navigator.clipboard.writeText(`${window.location.origin}/portfolio/${pid}`)
+        flashUpload('ok', `✓ Published! Link copied to clipboard`, 6000)
       } else {
         const err = await res.text()
         flashUpload('err', `Failed to publish: ${err.slice(0, 100)}`)
@@ -1096,7 +1097,8 @@ export default function TemplateEditor() {
         const projects = await res.json()
         const currentProj = projects.find((p: any) => p.id === pid)
         if (currentProj?.status === 'published') {
-          flashUpload('info', 'This portfolio is already published.')
+          navigator.clipboard.writeText(`${window.location.origin}/portfolio/${pid}`)
+          flashUpload('ok', '✓ Already published! Link copied to clipboard.')
           setIsPublishing(false)
           return
         }
@@ -2220,7 +2222,7 @@ export default function TemplateEditor() {
             <button onClick={toggleOrientation} className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50" title="Reflow page orientations (Portrait <-> Landscape)">🔄 Reflow Format</button>
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
             <button onClick={saveAsMyTemplate} className="px-3 py-2 border rounded-lg text-sm font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30" title="Save this design as a reusable template">⭐ Save Template</button>
-            <button onClick={handlePublish} disabled={isPublishing} className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50" title="Publish this portfolio">{isPublishing ? '⏳' : '🌐 Publish'}</button>
+            <button onClick={handlePublish} disabled={isPublishing} className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50" title="Publish or copy share link">{isPublishing ? '⏳' : '🌐 Share'}</button>
             <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title={`Download as PDF${!exportBypass ? ` — ${exportLimit - exportUsed} of ${exportLimit} free exports remaining` : ''}`}>{isExporting ? '⏳' : `📄 PDF${!exportBypass ? ` ${exportUsed}/${exportLimit}` : ''}`}</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
