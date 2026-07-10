@@ -4,7 +4,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import type { Page, DesignTokens } from '@/components/composer/types'
+import HTMLFlipBookRaw from 'react-pageflip'
+import type { Page, DesignTokens, Block } from '@/components/composer/types'
+import PageComposer from '@/components/composer/PageComposer'
 
 // Error Boundary to catch react-pageflip crashes
 class FlipbookErrorBoundary extends React.Component<{children: React.ReactNode, fallback: React.ReactNode}, {hasError: boolean}> {
@@ -185,18 +187,9 @@ export default function PublicPortfolioPage() {
                   {pages.map((page, idx) => (
                     <div key={page.id} className="w-full bg-white border-b border-gray-100 p-8">
                        <h2 className="text-xl text-black font-bold mb-4 opacity-50">Page {idx + 1}</h2>
-                       <div className="h-full">
-                         {page.blocks.map((block) => (
-                           <div key={block.id} className="mb-6 last:mb-0">
-                             {block.type === 'title' && <h1 className="text-4xl font-bold text-black mb-3">{block.text}</h1>}
-                             {block.type === 'subtitle' && <p className="text-xl text-gray-700 mb-4 font-medium">{block.text}</p>}
-                             {block.type === 'description' && <p className="text-base text-black whitespace-pre-wrap">{block.text}</p>}
-                             {(block.type === 'render' || block.type === 'plan' || block.type === 'section' || block.type === 'diagram') && block.imageUrl && (
-                               <img src={block.imageUrl} className="w-full h-auto max-h-[500px] object-cover rounded-lg" />
-                             )}
-                           </div>
-                         ))}
-                       </div>
+                             <div className="w-full h-full relative pointer-events-none">
+                               <PageComposer page={page} tokens={tokens} readonly={true} />
+                             </div>
                     </div>
                   ))}
                 </div>
@@ -215,9 +208,9 @@ export default function PublicPortfolioPage() {
 
               <HTMLFlipBook
                 ref={bookRef}
-                width={850}
-                height={1100}
-                size="fixed"
+                width={760}
+                height={1080}
+                size="stretch"
                 usePortrait={false}
                 minWidth={315}
                 maxWidth={1000}
@@ -233,96 +226,8 @@ export default function PublicPortfolioPage() {
                   const PageWrapper = (idx === 0 || idx === pages.length - 1) ? PageCover : BookPage;
                   return (
                     <PageWrapper key={page.id}>
-                      <div
-                        className="w-full h-full"
-                        style={{
-                          backgroundColor: tokens.background || '#FFFFFF',
-                          color: tokens.text || '#000000',
-                          fontFamily: `${tokens.bodyFont || 'system-ui'}, sans-serif`,
-                        }}
-                      >
-                        <div className="p-8 md:p-12 h-full overflow-hidden flex flex-col relative">
-                          <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            {page.blocks.map((block) => (
-                              <div key={block.id} className="mb-6 last:mb-0">
-                                {block.type === 'title' && (
-                                  <h1
-                                    className="text-4xl md:text-5xl font-bold mb-3 tracking-tight leading-tight"
-                                    style={{
-                                      fontFamily: `${tokens.headingFont || 'Georgia'}, serif`,
-                                      color: tokens.primary || tokens.text,
-                                    }}
-                                  >
-                                    {block.text}
-                                  </h1>
-                                )}
-                                {block.type === 'subtitle' && (
-                                  <p
-                                    className="text-xl md:text-2xl mb-4 font-medium"
-                                    style={{ color: tokens.accent || tokens.text }}
-                                  >
-                                    {block.text}
-                                  </p>
-                                )}
-                                {block.type === 'description' && (
-                                  <p className="text-base leading-relaxed whitespace-pre-wrap opacity-90">
-                                    {block.text}
-                                  </p>
-                                )}
-                                {block.type === 'meta' && block.fields && (
-                                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 my-6 p-5 bg-black/5 rounded-lg border border-black/5">
-                                    {block.fields.map((field, fIdx) => (
-                                      <div key={fIdx}>
-                                        <div className="text-[10px] font-bold opacity-50 uppercase tracking-widest mb-1">{field.label}</div>
-                                        <div className="text-sm font-medium">{field.value}</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                                {(block.type === 'render' ||
-                                  block.type === 'plan' ||
-                                  block.type === 'section' ||
-                                  block.type === 'diagram') &&
-                                  block.imageUrl && (
-                                    <div className="my-6">
-                                      <img
-                                        src={block.imageUrl}
-                                        alt={block.label || block.type}
-                                        className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-sm"
-                                        draggable="false"
-                                      />
-                                      {block.label && (
-                                        <p className="text-xs opacity-60 mt-3 italic text-center">{block.label}</p>
-                                      )}
-                                    </div>
-                                  )}
-                                {block.type === 'legend' && block.legendItems && (
-                                  <div className="my-6 p-5 bg-black/5 rounded-lg">
-                                    <p className="text-xs font-bold uppercase tracking-wider mb-3 opacity-70">
-                                      {block.label || 'Legend'}
-                                    </p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium">
-                                      {block.legendItems.map((item, iIdx) => (
-                                        <div key={iIdx} className="flex items-center gap-3">
-                                          <span
-                                            className="inline-block w-4 h-4 rounded-full shadow-sm"
-                                            style={{ backgroundColor: tokens.accent || '#999' }}
-                                          />
-                                          <span className="opacity-90">{item.label}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {/* Page indicator at bottom */}
-                          <div className="absolute bottom-6 right-8 text-black/20 text-sm font-bold tracking-[0.2em]">
-                            {idx + 1} / {pages.length}
-                          </div>
-                        </div>
+                      <div className="w-full h-full relative pointer-events-none overflow-hidden bg-white">
+                        <PageComposer page={page} tokens={tokens} readonly={true} />
                       </div>
                     </PageWrapper>
                   )
