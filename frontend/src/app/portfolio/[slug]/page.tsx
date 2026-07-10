@@ -217,7 +217,7 @@ export default function PublicPortfolioPage() {
                 ref={bookRef}
                 width={850}
                 height={1100}
-                size="fit"
+                size="fixed"
                 usePortrait={false}
                 minWidth={315}
                 maxWidth={1000}
