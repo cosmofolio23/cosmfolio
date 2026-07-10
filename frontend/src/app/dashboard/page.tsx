@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [creatingType, setCreatingType] = useState<'portfolio' | 'sheet' | null>(null)
   const router = useRouter()
 
-  const isPro = user?.is_pro || user?.plan_type === 'pro'
+  const isPro = has('is_pro') || user?.is_pro || user?.plan_type === 'pro'
   const isAdmin = user?.email?.trim().toLowerCase() === 'boseraj001@gmail.com'
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-stone-light/20 pb-8 gap-6">
           <div>
             <h1 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary mb-2 font-montserrat">
-              👋 Welcome back, {user?.name?.split(' ')[0] || 'Designer'}
+              👋 Welcome back, {user?.name ? user.name.split(' ')[0] : (user?.email?.split('@')[0] || 'Designer')}
             </h1>
             <p className="text-text-secondary dark:text-dark-text-secondary text-lg">
               Portfolio Workspace
@@ -134,10 +134,10 @@ export default function Dashboard() {
                 <strong className="text-text-primary dark:text-dark-text-primary text-base">{projects.length}</strong> Portfolios
               </span>
               <span className="flex items-center gap-1.5 bg-stone-light/5 px-3 py-1 rounded-full">
-                <strong className="text-text-primary dark:text-dark-text-primary text-base">3</strong> Published
+                <strong className="text-text-primary dark:text-dark-text-primary text-base">{projects.filter(p => p.status === 'published').length}</strong> Published
               </span>
               <span className="flex items-center gap-1.5 bg-stone-light/5 px-3 py-1 rounded-full">
-                <strong className="text-text-primary dark:text-dark-text-primary text-base">{projects.length > 3 ? projects.length - 3 : projects.length}</strong> Drafts
+                <strong className="text-text-primary dark:text-dark-text-primary text-base">{projects.filter(p => p.status !== 'published').length}</strong> Drafts
               </span>
               <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">
                 Last Edited Today
