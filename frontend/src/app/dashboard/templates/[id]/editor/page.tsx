@@ -1065,10 +1065,11 @@ export default function TemplateEditor() {
         const data = await res.json()
         flashUpload('ok', `✓ Published! Share URL: /portfolio/${data.slug}`, 6000)
       } else {
-        flashUpload('err', 'Failed to publish')
+        const err = await res.text()
+        flashUpload('err', `Failed to publish: ${err.slice(0, 100)}`)
       }
-    } catch (e) {
-      flashUpload('err', 'Failed to publish')
+    } catch (e: any) {
+      flashUpload('err', `Failed to publish: ${e?.message || 'Network error'}`)
     }
   }
 
@@ -1080,6 +1081,12 @@ export default function TemplateEditor() {
     
     try {
       setIsPublishing(true)
+      try {
+        await saveDocument()
+      } catch (err) {
+        flashUpload('err', 'Failed to save document before publishing.')
+        return
+      }
       const pid = await ensureProject()
       
       const res = await fetch(`${API_URL}/api/projects`, {
