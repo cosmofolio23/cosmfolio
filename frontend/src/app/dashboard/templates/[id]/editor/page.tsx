@@ -368,6 +368,7 @@ export default function TemplateEditor() {
   const [documentVersion, setDocumentVersion] = useState<number>(0)
   const [uploadMsg, setUploadMsg] = useState<{ kind: 'info' | 'ok' | 'err'; text: string } | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
   const [exportUsed, setExportUsed] = useState(0)
   const [exportLimit, setExportLimit] = useState(2)
   const [exportBypass, setExportBypass] = useState(isAdmin)
@@ -1052,6 +1053,66 @@ export default function TemplateEditor() {
       throw new Error(`Save failed (${res.status}): ${err.slice(0, 100)}`)
     }
     setSaveStatus('saved')
+  }
+
+  const performPublish = async (pid: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${pid}/publish`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        flashUpload('ok', `✓ Published! Share URL: /portfolio/${data.slug}`, 6000)
+      } else {
+        flashUpload('err', 'Failed to publish')
+      }
+    } catch (e) {
+      flashUpload('err', 'Failed to publish')
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!isPro) {
+      setUpgradeModal({ isOpen: true, title: 'Upgrade to Publish', subtitle: 'Freemium users cannot publish portfolios. Upgrade to Pro to publish your work.' })
+      return
+    }
+    
+    try {
+      setIsPublishing(true)
+      const pid = await ensureProject()
+      
+      const res = await fetch(`${API_URL}/api/projects`, {
+        headers: { Authorization: `Bearer ${authToken()}` },
+      })
+      if (res.ok) {
+        const projects = await res.json()
+        const currentProj = projects.find((p: any) => p.id === pid)
+        if (currentProj?.is_published) {
+          flashUpload('info', 'This portfolio is already published.')
+          setIsPublishing(false)
+          return
+        }
+        
+        const publishedProjects = projects.filter((p: any) => p.is_published)
+        if (publishedProjects.length > 0) {
+          if (window.confirm('You can only publish 1 portfolio on your current plan. Do you want to replace your currently published portfolio with this one?\n\n(Click Cancel if you want to upgrade your plan to publish more.)')) {
+            for (const p of publishedProjects) {
+              await fetch(`${API_URL}/api/projects/${p.id}/unpublish`, { method: 'POST', headers: { Authorization: `Bearer ${authToken()}` } })
+            }
+            await performPublish(pid)
+          } else {
+            setUpgradeModal({ isOpen: true, title: 'Upgrade for More Portfolios', subtitle: 'You have reached your published portfolio limit. Upgrade your plan to publish more.' })
+          }
+        } else {
+          await performPublish(pid)
+        }
+      }
+    } catch (e) {
+      flashUpload('err', 'Failed to check publish status')
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   // Debounced autosave — only after the first real edit
@@ -2152,6 +2213,7 @@ export default function TemplateEditor() {
             <button onClick={toggleOrientation} className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50" title="Reflow page orientations (Portrait <-> Landscape)">🔄 Reflow Format</button>
             <button onClick={() => setMode('view')} className="px-3 py-2 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50" title="Preview the finished portfolio">👁 Preview</button>
             <button onClick={saveAsMyTemplate} className="px-3 py-2 border rounded-lg text-sm font-medium text-[#9C7416] hover:bg-[#FBE7A1]/30" title="Save this design as a reusable template">⭐ Save Template</button>
+            <button onClick={handlePublish} disabled={isPublishing} className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50" title="Publish this portfolio">{isPublishing ? '⏳' : '🌐 Publish'}</button>
             <button onClick={exportToPDF} disabled={isExporting} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50" title={`Download as PDF${!exportBypass ? ` — ${exportLimit - exportUsed} of ${exportLimit} free exports remaining` : ''}`}>{isExporting ? '⏳' : `📄 PDF${!exportBypass ? ` ${exportUsed}/${exportLimit}` : ''}`}</button>
             <button onClick={savePortfolio} disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving…' : 'Save & Close'}</button>
           </div>
