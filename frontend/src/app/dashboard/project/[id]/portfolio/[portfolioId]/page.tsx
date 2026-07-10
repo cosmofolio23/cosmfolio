@@ -310,8 +310,14 @@ export default function PortfolioEditorPage() {
 
   // Upload a brand-new image from inside the editor; returns its hosted URL.
   const uploadImage = async (file: File): Promise<string> => {
+    let finalFile = file;
+    if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+      const { compressImageForPrint } = await import('@/utils/imageCompression');
+      finalFile = await compressImageForPrint(file);
+    }
+    
     const fd = new FormData()
-    fd.append('files', file)
+    fd.append('files', finalFile)
     const res = await fetch(`${API_URL}/api/projects/${params.id}/assets/bulk?asset_type=render`, {
       method: 'POST', headers: { Authorization: `Bearer ${authToken()}` }, body: fd,
     })

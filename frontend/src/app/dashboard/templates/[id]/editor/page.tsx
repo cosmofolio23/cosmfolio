@@ -979,8 +979,15 @@ export default function TemplateEditor() {
     flashUpload('info', `Uploading ${file.name}…`, 0)
     try {
       const pid = await ensureProject()
+      
+      let finalFile = file;
+      if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+        const { compressImageForPrint } = await import('@/utils/imageCompression');
+        finalFile = await compressImageForPrint(file);
+      }
+      
       const fd = new FormData()
-      fd.append('file', file)
+      fd.append('file', finalFile)
       fd.append('asset_type', 'render')
       const res = await fetch(`${API_URL}/api/projects/${pid}/assets`, {
         method: 'POST',

@@ -45,9 +45,21 @@ export function LibraryUpload({ projectId, onUploaded }: LibraryUploadProps) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const addFiles = useCallback((files: FileList | File[]) => {
+  const addFiles = useCallback(async (files: FileList | File[]) => {
     const arr = Array.from(files)
-    const next: StagedFile[] = arr.map(file => {
+    
+    // Compress files first
+    const compressedFiles = await Promise.all(
+      arr.map(async (file) => {
+        // Only compress images, skip SVGs or PDFs
+        if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+          return await import('@/utils/imageCompression').then(m => m.compressImageForPrint(file))
+        }
+        return file
+      })
+    )
+
+    const next: StagedFile[] = compressedFiles.map(file => {
       const guess = inferFromFilename(file.name)
       return {
         id: `f${_seq++}`,

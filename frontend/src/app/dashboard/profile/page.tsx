@@ -124,8 +124,14 @@ export default function ProfilePage() {
     setAvatarSuccess('')
     
     try {
+      let finalFile = file;
+      if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+        const { compressImageForPrint } = await import('@/utils/imageCompression');
+        finalFile = await compressImageForPrint(file, { isAvatar: true });
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', finalFile)
       
       const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
       const token = localStorage.getItem('auth_token')
