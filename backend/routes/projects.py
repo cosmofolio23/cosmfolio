@@ -262,7 +262,7 @@ async def set_custom_link(project_id: str, payload: dict, current_user=Depends(g
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="link already taken")
                 
         # Update project
-        supabase.table("projects").update({"custom_domain": custom_link}).eq("id", project_id).eq("user_id", current_user["id"]).execute()
+        supabase.table("projects").update({"custom_domain": custom_link}).eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
         return {"message": "Custom link set successfully", "custom_link": custom_link}
     except HTTPException:
         raise
