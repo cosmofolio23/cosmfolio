@@ -3,11 +3,22 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-// @ts-ignore
-import HTMLFlipBookRaw from 'react-pageflip'
+import dynamic from 'next/dynamic'
 import type { Page, DesignTokens } from '@/components/composer/types'
 
-const HTMLFlipBook = HTMLFlipBookRaw as any
+// Error Boundary to catch react-pageflip crashes
+class FlipbookErrorBoundary extends React.Component<{children: React.ReactNode, fallback: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: any) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any, errorInfo: any) { console.error("Flipbook crashed:", error, errorInfo); }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+// Dynamically import react-pageflip with ssr: false to prevent "window is not defined" errors during server-side rendering
+const HTMLFlipBook = dynamic(() => import('react-pageflip'), { ssr: false }) as any
 
 const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
 
@@ -160,6 +171,30 @@ export default function PublicPortfolioPage() {
         >
           {pages.length > 0 ? (
             <div className="relative shadow-2xl ring-1 ring-white/10 w-full max-w-[1700px]">
+              <FlipbookErrorBoundary fallback={
+                <div className="w-[850px] max-w-full bg-white rounded-xl overflow-hidden shadow-2xl mx-auto flex flex-col h-[1100px] max-h-[80vh] overflow-y-auto">
+                  <div className="p-8 text-center bg-red-50 text-red-600 font-medium">
+                    The 3D flipbook could not be loaded for this portfolio. Displaying standard view.
+                  </div>
+                  {pages.map((page, idx) => (
+                    <div key={page.id} className="w-full bg-white border-b border-gray-100 p-8">
+                       <h2 className="text-xl text-black font-bold mb-4 opacity-50">Page {idx + 1}</h2>
+                       <div className="h-full">
+                         {page.blocks.map((block) => (
+                           <div key={block.id} className="mb-6 last:mb-0">
+                             {block.type === 'title' && <h1 className="text-4xl font-bold text-black mb-3">{block.text}</h1>}
+                             {block.type === 'subtitle' && <p className="text-xl text-gray-700 mb-4 font-medium">{block.text}</p>}
+                             {block.type === 'description' && <p className="text-base text-black whitespace-pre-wrap">{block.text}</p>}
+                             {(block.type === 'render' || block.type === 'plan' || block.type === 'section' || block.type === 'diagram') && block.imageUrl && (
+                               <img src={block.imageUrl} className="w-full h-auto max-h-[500px] object-cover rounded-lg" />
+                             )}
+                           </div>
+                         ))}
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              }>
               
               {/* Left Arrow */}
               <button 
@@ -287,6 +322,7 @@ export default function PublicPortfolioPage() {
                   )
                 })}
               </HTMLFlipBook>
+              </FlipbookErrorBoundary>
 
               {/* Right Arrow */}
               <button 
