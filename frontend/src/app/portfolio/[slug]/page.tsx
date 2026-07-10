@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { getSpec } from '@/components/composer/layoutSpecs'
-import PageComposer from '@/components/composer/PageComposer'
+// @ts-ignore
+import HTMLFlipBook from 'react-pageflip'
 import type { Page, DesignTokens } from '@/components/composer/types'
 
 const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
@@ -27,13 +27,33 @@ interface PortfolioData {
   }
 }
 
+// Separate component for the flipbook page to use forwardRef
+const PageCover = React.forwardRef<HTMLDivElement, any>((props, ref) => {
+  return (
+    <div className="page page-cover bg-white overflow-hidden shadow-sm" ref={ref} data-density="hard">
+      {props.children}
+    </div>
+  )
+})
+PageCover.displayName = 'PageCover'
+
+const BookPage = React.forwardRef<HTMLDivElement, any>((props, ref) => {
+  return (
+    <div className="page bg-white overflow-hidden shadow-sm border-r border-gray-100" ref={ref}>
+      {props.children}
+    </div>
+  )
+})
+BookPage.displayName = 'BookPage'
+
 export default function PublicPortfolioPage() {
   const params = useParams()
   const slug = params.slug as string
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null)
-  const [currentPageIdx, setCurrentPageIdx] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [zoom, setZoom] = useState(1)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -53,10 +73,10 @@ export default function PublicPortfolioPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading portfolio…</p>
+          <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/60">Loading portfolio…</p>
         </div>
       </div>
     )
@@ -64,11 +84,11 @@ export default function PublicPortfolioPage() {
 
   if (error || !portfolio) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Portfolio Not Found</h1>
-          <p className="text-gray-600 mb-4">{error || 'The portfolio you are looking for does not exist.'}</p>
-          <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
+          <h1 className="text-2xl font-bold text-white mb-2">Portfolio Not Found</h1>
+          <p className="text-white/60 mb-4">{error || 'The portfolio you are looking for does not exist.'}</p>
+          <Link href="/dashboard" className="text-blue-400 hover:underline">← Back to Dashboard</Link>
         </div>
       </div>
     )
@@ -77,19 +97,19 @@ export default function PublicPortfolioPage() {
   const { project, document } = portfolio
   const pages = document.pages || []
   const tokens = document.tokens || {}
-  const currentPage = pages[currentPageIdx]
+
+  const handleZoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
+  const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
+  const handleZoomFit = () => setZoom(1)
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-blue-500/30 flex flex-col relative overflow-hidden font-sans">
+    <div className="h-screen bg-[#0A0A0A] text-white selection:bg-blue-500/30 flex flex-col relative overflow-hidden font-sans">
       {/* Ambient Background Glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[128px] pointer-events-none" />
 
-      {/* Toast Notification State */}
-      {/* (We handle toast via alert currently, but we can improve it later if needed, stick to alert or add a simple toast state) */}
-
       {/* Sleek Header */}
-      <header className="sticky top-0 z-40 bg-[#0A0A0A]/70 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
+      <header className="absolute top-0 w-full z-40 bg-[#0A0A0A]/40 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
@@ -121,171 +141,188 @@ export default function PublicPortfolioPage() {
               </svg>
               Share
             </button>
-            <a
-              href={`${API_URL}/api/projects/${project.id}/document/export-pdf`}
-              download={`${project.title || 'portfolio'}.pdf`}
-              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full text-sm font-bold hover:bg-gray-200 hover:scale-105 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Download PDF
-            </a>
+            {/* Download PDF button has been removed based on user request */}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center relative z-10">
-        
-        {/* Sleek Page Navigation Pill */}
-        {pages.length > 1 && (
-          <div className="mb-12 p-1.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full inline-flex items-center shadow-2xl max-w-full overflow-x-auto">
-            {pages.map((page, idx) => (
-              <button
-                key={page.id}
-                onClick={() => setCurrentPageIdx(idx)}
-                className={`relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-                  currentPageIdx === idx
-                    ? 'text-black bg-white shadow-md scale-100'
-                    : 'text-white/60 hover:text-white hover:bg-white/10 scale-95 hover:scale-100'
-                }`}
+      {/* Main Content - Flipbook Canvas */}
+      <main 
+        ref={containerRef}
+        className="flex-1 w-full flex items-center justify-center relative z-10 pt-20 pb-20 overflow-auto custom-scrollbar"
+      >
+        <div 
+          className="transition-transform duration-300 origin-center flex items-center justify-center"
+          style={{ transform: `scale(${zoom})` }}
+        >
+          {pages.length > 0 ? (
+            <div className="shadow-2xl ring-1 ring-white/10">
+              <HTMLFlipBook
+                width={850}
+                height={1100}
+                size="stretch"
+                minWidth={300}
+                maxWidth={1000}
+                minHeight={400}
+                maxHeight={1533}
+                maxShadowOpacity={0.5}
+                showCover={true}
+                mobileScrollSupport={true}
+                className="demo-book"
+                style={{ margin: '0 auto' }}
               >
-                <span className="capitalize">{page.type}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Portfolio Canvas */}
-        {currentPage && (
-          <div className="relative w-full max-w-[850px] mx-auto group">
-            {/* Decorative subtle shadow/glow for the canvas */}
-            <div className="absolute -inset-4 bg-white/5 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-            
-            <div className="relative aspect-[8.5/11] bg-white rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10 transition-transform duration-500 group-hover:-translate-y-1">
-              <div
-                className="w-full h-full bg-white"
-                style={{
-                  backgroundColor: tokens.background || '#FFFFFF',
-                  color: tokens.text || '#000000',
-                  fontFamily: `${tokens.bodyFont || 'system-ui'}, sans-serif`,
-                }}
-              >
-                {/* Render page content */}
-                <div className="p-8 md:p-12 h-full overflow-hidden flex flex-col">
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {currentPage.blocks.map((block) => (
-                      <div key={block.id} className="mb-6 last:mb-0">
-                        {block.type === 'title' && (
-                          <h1
-                            className="text-4xl md:text-5xl font-bold mb-3 tracking-tight leading-tight"
-                            style={{
-                              fontFamily: `${tokens.headingFont || 'Georgia'}, serif`,
-                              color: tokens.primary || tokens.text,
-                            }}
-                          >
-                            {block.text}
-                          </h1>
-                        )}
-                        {block.type === 'subtitle' && (
-                          <p
-                            className="text-xl md:text-2xl mb-4 font-medium"
-                            style={{ color: tokens.accent || tokens.text }}
-                          >
-                            {block.text}
-                          </p>
-                        )}
-                        {block.type === 'description' && (
-                          <p className="text-base leading-relaxed whitespace-pre-wrap opacity-90">
-                            {block.text}
-                          </p>
-                        )}
-                        {block.type === 'meta' && block.fields && (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 my-6 p-5 bg-black/5 rounded-lg border border-black/5">
-                            {block.fields.map((field, idx) => (
-                              <div key={idx}>
-                                <div className="text-[10px] font-bold opacity-50 uppercase tracking-widest mb-1">{field.label}</div>
-                                <div className="text-sm font-medium">{field.value}</div>
+                {pages.map((page, idx) => {
+                  const PageWrapper = (idx === 0 || idx === pages.length - 1) ? PageCover : BookPage;
+                  return (
+                    <PageWrapper key={page.id}>
+                      <div
+                        className="w-full h-full"
+                        style={{
+                          backgroundColor: tokens.background || '#FFFFFF',
+                          color: tokens.text || '#000000',
+                          fontFamily: `${tokens.bodyFont || 'system-ui'}, sans-serif`,
+                        }}
+                      >
+                        <div className="p-8 md:p-12 h-full overflow-hidden flex flex-col relative">
+                          <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            {page.blocks.map((block) => (
+                              <div key={block.id} className="mb-6 last:mb-0">
+                                {block.type === 'title' && (
+                                  <h1
+                                    className="text-4xl md:text-5xl font-bold mb-3 tracking-tight leading-tight"
+                                    style={{
+                                      fontFamily: `${tokens.headingFont || 'Georgia'}, serif`,
+                                      color: tokens.primary || tokens.text,
+                                    }}
+                                  >
+                                    {block.text}
+                                  </h1>
+                                )}
+                                {block.type === 'subtitle' && (
+                                  <p
+                                    className="text-xl md:text-2xl mb-4 font-medium"
+                                    style={{ color: tokens.accent || tokens.text }}
+                                  >
+                                    {block.text}
+                                  </p>
+                                )}
+                                {block.type === 'description' && (
+                                  <p className="text-base leading-relaxed whitespace-pre-wrap opacity-90">
+                                    {block.text}
+                                  </p>
+                                )}
+                                {block.type === 'meta' && block.fields && (
+                                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 my-6 p-5 bg-black/5 rounded-lg border border-black/5">
+                                    {block.fields.map((field, fIdx) => (
+                                      <div key={fIdx}>
+                                        <div className="text-[10px] font-bold opacity-50 uppercase tracking-widest mb-1">{field.label}</div>
+                                        <div className="text-sm font-medium">{field.value}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {(block.type === 'render' ||
+                                  block.type === 'plan' ||
+                                  block.type === 'section' ||
+                                  block.type === 'diagram') &&
+                                  block.imageUrl && (
+                                    <div className="my-6">
+                                      <img
+                                        src={block.imageUrl}
+                                        alt={block.label || block.type}
+                                        className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-sm"
+                                        draggable="false"
+                                      />
+                                      {block.label && (
+                                        <p className="text-xs opacity-60 mt-3 italic text-center">{block.label}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                {block.type === 'legend' && block.legendItems && (
+                                  <div className="my-6 p-5 bg-black/5 rounded-lg">
+                                    <p className="text-xs font-bold uppercase tracking-wider mb-3 opacity-70">
+                                      {block.label || 'Legend'}
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium">
+                                      {block.legendItems.map((item, iIdx) => (
+                                        <div key={iIdx} className="flex items-center gap-3">
+                                          <span
+                                            className="inline-block w-4 h-4 rounded-full shadow-sm"
+                                            style={{ backgroundColor: tokens.accent || '#999' }}
+                                          />
+                                          <span className="opacity-90">{item.label}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
-                        )}
-                        {(block.type === 'render' ||
-                          block.type === 'plan' ||
-                          block.type === 'section' ||
-                          block.type === 'diagram') &&
-                          block.imageUrl && (
-                            <div className="my-6">
-                              <img
-                                src={block.imageUrl}
-                                alt={block.label || block.type}
-                                className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-sm"
-                              />
-                              {block.label && (
-                                <p className="text-xs opacity-60 mt-3 italic text-center">{block.label}</p>
-                              )}
-                            </div>
-                          )}
-                        {block.type === 'legend' && block.legendItems && (
-                          <div className="my-6 p-5 bg-black/5 rounded-lg">
-                            <p className="text-xs font-bold uppercase tracking-wider mb-3 opacity-70">
-                              {block.label || 'Legend'}
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium">
-                              {block.legendItems.map((item, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                  <span
-                                    className="inline-block w-4 h-4 rounded-full shadow-sm"
-                                    style={{ backgroundColor: tokens.accent || '#999' }}
-                                  />
-                                  <span className="opacity-90">{item.label}</span>
-                                </div>
-                              ))}
-                            </div>
+                          
+                          {/* Page indicator at bottom */}
+                          <div className="absolute bottom-6 right-8 text-black/20 text-sm font-bold tracking-[0.2em]">
+                            {idx + 1} / {pages.length}
                           </div>
-                        )}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                    </PageWrapper>
+                  )
+                })}
+              </HTMLFlipBook>
             </div>
-            
-            {/* Page indicator floating at bottom right (visible on large screens) */}
-            <div className="absolute -right-12 bottom-12 text-white/30 text-sm font-bold -rotate-90 origin-bottom-right tracking-[0.3em] hidden xl:block">
-              {String(currentPageIdx + 1).padStart(2, '0')} / {String(pages.length).padStart(2, '0')}
-            </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-white/50">No pages found in this portfolio.</div>
+          )}
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-white/10 bg-white/5 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm font-medium text-white/50">
-            Powered by <a href="/" className="text-white hover:text-blue-400 transition-colors font-bold">CosmoFolio</a>
-          </p>
-          <div className="text-xs text-white/40 font-medium">
-            Published {new Date(project.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-          </div>
-        </div>
-      </footer>
+      {/* Floating Zoom Toolbar */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-1.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+        <button 
+          onClick={handleZoomOut}
+          className="p-2 hover:bg-white/10 text-white rounded-full transition-colors"
+          title="Zoom Out"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+          </svg>
+        </button>
+        
+        <button 
+          onClick={handleZoomFit}
+          className="px-4 py-2 hover:bg-white/10 text-white text-xs font-bold tracking-wider uppercase rounded-full transition-colors"
+          title="Fit to Screen"
+        >
+          {Math.round(zoom * 100)}%
+        </button>
+        
+        <button 
+          onClick={handleZoomIn}
+          className="p-2 hover:bg-white/10 text-white rounded-full transition-colors"
+          title="Zoom In"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+          </svg>
+        </button>
+      </div>
 
-      {/* Add custom scrollbar styling globally for the canvas */}
+      {/* Custom Scrollbar Styles */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
+          height: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(0,0,0,0.1);
+          background-color: rgba(255,255,255,0.2);
           border-radius: 10px;
         }
         .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-          background-color: rgba(0,0,0,0.2);
+          background-color: rgba(255,255,255,0.3);
         }
       `}} />
     </div>
