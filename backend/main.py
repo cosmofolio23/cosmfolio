@@ -122,7 +122,7 @@ for mod_name, prefix, tags in core_modules:
 # Optional: Try to load more routes
 print("[STARTUP] Loading additional routes...")
 try:
-    from routes import layouts, design_system, ai_generation, previews, style_pack, templates, debug
+    from routes import layouts, design_system, ai_generation, previews, style_pack, templates, debug, cloudflare
     app.include_router(layouts.router, prefix="/api/layouts", tags=["layouts"])
     app.include_router(design_system.router, prefix="/api/design", tags=["design"])
     app.include_router(ai_generation.router, prefix="/api/ai", tags=["ai"])
@@ -130,6 +130,7 @@ try:
     app.include_router(style_pack.router, prefix="/api/portfolios", tags=["style-packs"])  # routes: /{portfolio_id}/style-packs
     app.include_router(templates.router, tags=["templates"])  # routes: /api/templates/... (Phase 4)
     app.include_router(debug.router, prefix="/api/debug", tags=["debug"])
+    app.include_router(cloudflare.router, prefix="/api/upload", tags=["upload"])
     print("[OK] Additional routes loaded")
 
     # Library (premium) — routes already carry their own /api/library prefix

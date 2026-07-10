@@ -25,7 +25,14 @@ logger = logging.getLogger(__name__)
 
 class StorageConfig:
     """Storage configuration"""
-    # S3 Configuration
+    # Cloudflare R2 Configuration (Primary File Storage)
+    R2_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+    R2_ACCESS_KEY = os.getenv("CLOUDFLARE_R2_ACCESS_KEY_ID")
+    R2_SECRET_KEY = os.getenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY")
+    R2_BUCKET = os.getenv("CLOUDFLARE_R2_BUCKET_NAME", "cosmofolio-assets")
+    R2_PUBLIC_URL = os.getenv("CLOUDFLARE_R2_PUBLIC_URL", "").rstrip('/')
+
+    # S3 Configuration (Fallback)
     AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
@@ -71,6 +78,7 @@ class StorageClient:
     def __init__(self):
         """Initialize storage client"""
         self.config = StorageConfig()
+        self.r2_client = None
         self.s3_client = None
         self.supabase = None
         self._init_clients()
@@ -78,8 +86,22 @@ class StorageClient:
     def _init_clients(self):
         """Initialize S3 and Supabase clients"""
         try:
-            # S3 Client
-            if self.config.AWS_ACCESS_KEY and self.config.AWS_SECRET_KEY:
+            from botocore.client import Config
+            
+            # Cloudflare R2 Client (Primary)
+            if self.config.R2_ACCOUNT_ID and self.config.R2_ACCESS_KEY:
+                self.r2_client = boto3.client(
+                    "s3",
+                    endpoint_url=f"https://{self.config.R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+                    aws_access_key_id=self.config.R2_ACCESS_KEY,
+                    aws_secret_access_key=self.config.R2_SECRET_KEY,
+                    region_name="auto",
+                    config=Config(signature_version="s3v4"),
+                )
+                logger.info("Cloudflare R2 client initialized")
+
+            # S3 Client (Fallback)
+            elif self.config.AWS_ACCESS_KEY and self.config.AWS_SECRET_KEY:
                 self.s3_client = boto3.client(
                     "s3",
                     aws_access_key_id=self.config.AWS_ACCESS_KEY,
@@ -88,9 +110,9 @@ class StorageClient:
                 )
                 logger.info("S3 client initialized")
             else:
-                logger.warning("AWS credentials not configured, S3 disabled")
+                logger.warning("AWS/R2 credentials not configured, S3 disabled")
 
-            # Supabase Client (alternative)
+            # Supabase Client (Alternative / JSON Store)
             if self.config.SUPABASE_URL and self.config.SUPABASE_KEY:
                 self.supabase = create_client(
                     self.config.SUPABASE_URL,
@@ -245,7 +267,9 @@ class StorageClient:
             preview_path = f"{base_path}/preview-1200.webp"
 
             # Upload original
-            if self.s3_client:
+            if self.r2_client:
+                await self._upload_to_r2(file_data, storage_path, mime_type)
+            elif self.s3_client:
                 await self._upload_to_s3(file_data, storage_path, mime_type)
             elif self.supabase:
                 await self._upload_to_supabase(file_data, storage_path, mime_type)
@@ -255,14 +279,18 @@ class StorageClient:
             # Upload thumbnails
             if "thumb-250" in thumbnails:
                 thumb_250 = thumbnails["thumb-250"]
-                if self.s3_client:
+                if self.r2_client:
+                    await self._upload_to_r2(thumb_250, thumb_path, "image/webp")
+                elif self.s3_client:
                     await self._upload_to_s3(thumb_250, thumb_path, "image/webp")
                 elif self.supabase:
                     await self._upload_to_supabase(thumb_250, thumb_path, "image/webp")
 
             if "preview-1200" in thumbnails:
                 preview = thumbnails["preview-1200"]
-                if self.s3_client:
+                if self.r2_client:
+                    await self._upload_to_r2(preview, preview_path, "image/webp")
+                elif self.s3_client:
                     await self._upload_to_s3(preview, preview_path, "image/webp")
                 elif self.supabase:
                     await self._upload_to_supabase(preview, preview_path, "image/webp")
@@ -277,6 +305,30 @@ class StorageClient:
             logger.error(f"Error uploading asset: {str(e)}")
             # Cleanup on failure
             await self.delete_asset(portfolio_id, asset_id)
+            raise
+
+    async def _upload_to_r2(
+        self,
+        file_data: bytes,
+        file_path: str,
+        mime_type: str
+    ) -> None:
+        """Upload file to Cloudflare R2"""
+        try:
+            cache_control = "max-age=31536000" if "original" in file_path else "max-age=2592000"
+            self.r2_client.put_object(
+                Bucket=self.config.R2_BUCKET,
+                Key=file_path,
+                Body=file_data,
+                ContentType=mime_type,
+                CacheControl=cache_control,
+                Metadata={
+                    "uploaded-at": datetime.utcnow().isoformat(),
+                },
+            )
+            logger.info(f"Uploaded to R2: {file_path}")
+        except ClientError as e:
+            logger.error(f"R2 upload error: {str(e)}")
             raise
 
     async def _upload_to_s3(
@@ -372,7 +424,9 @@ class StorageClient:
         Get signed download URL for asset
         """
         try:
-            if self.s3_client:
+            if self.r2_client:
+                return self._get_r2_url(storage_path, expiration_hours)
+            elif self.s3_client:
                 return self._get_s3_url(storage_path, expiration_hours)
             elif self.supabase:
                 return self._get_supabase_url(storage_path, expiration_hours)
@@ -381,6 +435,22 @@ class StorageClient:
 
         except Exception as e:
             logger.error(f"Error generating URL: {str(e)}")
+            raise
+
+    def _get_r2_url(self, storage_path: str, expiration_hours: int) -> str:
+        """Get presigned R2 URL"""
+        try:
+            url = self.r2_client.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": self.config.R2_BUCKET,
+                    "Key": storage_path,
+                },
+                ExpiresIn=expiration_hours * 3600,
+            )
+            return url
+        except ClientError as e:
+            logger.error(f"Error generating R2 URL: {str(e)}")
             raise
 
     def _get_s3_url(self, storage_path: str, expiration_hours: int) -> str:
@@ -417,6 +487,8 @@ class StorageClient:
         """Get public URL for asset (CDN)
         Always constructs the URL directly - more reliable than SDK methods.
         """
+        if self.r2_client:
+            return f"{self.config.R2_PUBLIC_URL}/{storage_path}"
         if self.s3_client:
             return f"{self.config.S3_CDN_URL}/{storage_path}"
 
@@ -494,7 +566,9 @@ class StorageClient:
             base_path = f"portfolios/{portfolio_id}/assets/{asset_id}"
 
             # List and delete all files in asset directory
-            if self.s3_client:
+            if self.r2_client:
+                await self._delete_from_r2(base_path)
+            elif self.s3_client:
                 await self._delete_from_s3(base_path)
             elif self.supabase:
                 await self._delete_from_supabase(base_path)
@@ -503,6 +577,25 @@ class StorageClient:
 
         except Exception as e:
             logger.error(f"Error deleting asset: {str(e)}")
+            raise
+
+    async def _delete_from_r2(self, prefix: str) -> None:
+        """Delete all files with given prefix from R2"""
+        try:
+            response = self.r2_client.list_objects_v2(
+                Bucket=self.config.R2_BUCKET,
+                Prefix=prefix,
+            )
+            if "Contents" in response:
+                objects = [{"Key": obj["Key"]} for obj in response["Contents"]]
+                if objects:
+                    self.r2_client.delete_objects(
+                        Bucket=self.config.R2_BUCKET,
+                        Delete={"Objects": objects},
+                    )
+                    logger.info(f"Deleted {len(objects)} files from R2")
+        except ClientError as e:
+            logger.error(f"Error deleting from R2: {str(e)}")
             raise
 
     async def _delete_from_s3(self, prefix: str) -> None:
