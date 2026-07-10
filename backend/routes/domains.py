@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 from pydantic import BaseModel
 
 from database import supabase
-from middleware.auth import require_auth
+from .deps import get_current_user
 
 router = APIRouter()
 
@@ -34,7 +34,7 @@ def get_vercel_params():
 async def add_custom_domain(
     project_id: str,
     payload: DomainRequest = Body(...),
-    current_user: dict = Depends(require_auth)
+    current_user: dict = Depends(get_current_user)
 ):
     """Add a custom domain to a project and register it with Vercel"""
     # 1. Verify project ownership
@@ -71,7 +71,7 @@ async def add_custom_domain(
 @router.delete("/api/projects/{project_id}/domain")
 async def remove_custom_domain(
     project_id: str,
-    current_user: dict = Depends(require_auth)
+    current_user: dict = Depends(get_current_user)
 ):
     """Remove custom domain from a project and Vercel"""
     res = supabase.table("projects").select("custom_domain").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
@@ -103,7 +103,7 @@ async def remove_custom_domain(
 @router.get("/api/projects/{project_id}/domain/status")
 async def check_domain_status(
     project_id: str,
-    current_user: dict = Depends(require_auth)
+    current_user: dict = Depends(get_current_user)
 ):
     """Check DNS verification status on Vercel"""
     res = supabase.table("projects").select("custom_domain").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()

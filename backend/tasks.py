@@ -31,6 +31,11 @@ async def weekly_report_loop():
             
             if should_send:
                 print("[TASKS] Compiling weekly report...")
+                if not engine:
+                    print("[TASKS] Skipping report generation: DATABASE_URL not configured")
+                    await asyncio.sleep(86400) # Sleep a day
+                    continue
+                    
                 # Query metrics using SQLAlchemy
                 with engine.connect() as conn:
                     # Freemium Users
