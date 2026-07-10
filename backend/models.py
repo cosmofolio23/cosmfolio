@@ -78,6 +78,7 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     project_type: Optional[ProjectTypeEnum] = None
     status: Optional[str] = None
+    custom_domain: Optional[str] = None
 
 class ProjectResponse(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
@@ -89,6 +90,7 @@ class ProjectResponse(BaseModel):
     status: str = "draft"
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    custom_domain: Optional[str] = None
 
 # ==================== Assets ====================
 

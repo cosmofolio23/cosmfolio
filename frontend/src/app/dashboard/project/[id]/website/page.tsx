@@ -14,6 +14,9 @@ export default function PortfolioWebsiteGenerator() {
   const [primaryColor, setPrimaryColor] = useState('#0F172A')
   const [domain, setDomain] = useState('')
   const [published, setPublished] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [dnsInfo, setDnsInfo] = useState<any>(null)
+  const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
 
   const previewDimensions = {
     desktop: { width: 1440, height: 900 },
@@ -28,8 +31,41 @@ export default function PortfolioWebsiteGenerator() {
       alert('Please enter a custom domain')
       return
     }
-    setPublished(true)
-    // In real app, would call API to publish
+    
+    setIsPublishing(true)
+    try {
+      const token = localStorage.getItem('auth_token')
+      const res = await fetch(`${API_URL}/api/projects/${params.id}/domain`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ domain })
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.detail || 'Failed to add domain')
+      }
+
+      setPublished(true)
+      
+      // Check status to get DNS instructions
+      const statusRes = await fetch(`${API_URL}/api/projects/${params.id}/domain/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (statusRes.ok) {
+        const statusData = await statusRes.json()
+        setDnsInfo(statusData)
+      }
+      
+    } catch (error: any) {
+      alert(error.message)
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   return (
@@ -48,8 +84,9 @@ export default function PortfolioWebsiteGenerator() {
           </div>
           <button
             onClick={handlePublish}
+            disabled={isPublishing}
             className="btn-primary btn-small">
-            {published ? '✓ Published' : 'Publish Website'}
+            {isPublishing ? 'Publishing...' : published ? '✓ Published' : 'Publish Website'}
           </button>
         </div>
       </header>
@@ -195,9 +232,24 @@ export default function PortfolioWebsiteGenerator() {
             {published && (
               <div className="mt-6 p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900 rounded-lg">
                 <p className="text-sm font-semibold text-color-success mb-2">✓ Website Published!</p>
-                <p className="text-caption text-text-secondary dark:text-dark-text-secondary">
-                  Your portfolio is live at <span className="font-mono">{domain}</span>
+                <p className="text-caption text-text-secondary dark:text-dark-text-secondary mb-4">
+                  Your portfolio is configured for <span className="font-mono">{domain}</span>
                 </p>
+                
+                <div className="bg-white dark:bg-dark-bg-secondary p-4 rounded border border-border-subtle mt-2 text-sm">
+                  <h4 className="font-semibold mb-2">Next Step: Configure your DNS</h4>
+                  <p className="mb-2 text-text-secondary">Go to your domain provider (GoDaddy, Namecheap, etc.) and add this record:</p>
+                  
+                  <div className="flex justify-between items-center bg-gray-50 dark:bg-black p-2 rounded mb-2">
+                    <span className="font-mono text-xs">Type: CNAME</span>
+                    <span className="font-mono text-xs">Name: www</span>
+                    <span className="font-mono text-xs">Value: cname.vercel-dns.com</span>
+                  </div>
+                  
+                  <p className="text-xs text-text-secondary mt-3">
+                    If you are using a root domain (without www), you'll need to use an A Record pointing to <code>76.76.21.21</code> instead.
+                  </p>
+                </div>
               </div>
             )}
           </div>
