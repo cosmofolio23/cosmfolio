@@ -99,7 +99,7 @@ export default function MyPortfoliosPage() {
         setProjects(
           projects.map((p) =>
             p.id === projectId
-              ? { ...p, is_published: true, slug: data.slug }
+              ? { ...p, status: 'published', slug: data.slug }
               : p
           )
         )
@@ -120,7 +120,7 @@ export default function MyPortfoliosPage() {
         setProjects(
           projects.map((p) =>
             p.id === projectId
-              ? { ...p, is_published: false, slug: undefined }
+              ? { ...p, status: 'draft', slug: undefined }
               : p
           )
         )
@@ -225,7 +225,7 @@ export default function MyPortfoliosPage() {
                 <div className="p-4 space-y-3">
                   {/* Status Badge */}
                   <div className="flex items-center gap-2">
-                    {project.is_published ? (
+                    {project.status === 'published' ? (
                       <>
                         <span className="inline-block w-2 h-2 bg-green-500 rounded-full" />
                         <span className="text-xs font-medium text-green-700">Published</span>

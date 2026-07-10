@@ -1095,13 +1095,13 @@ export default function TemplateEditor() {
       if (res.ok) {
         const projects = await res.json()
         const currentProj = projects.find((p: any) => p.id === pid)
-        if (currentProj?.is_published) {
+        if (currentProj?.status === 'published') {
           flashUpload('info', 'This portfolio is already published.')
           setIsPublishing(false)
           return
         }
         
-        const publishedProjects = projects.filter((p: any) => p.is_published)
+        const publishedProjects = projects.filter((p: any) => p.status === 'published')
         if (publishedProjects.length > 0) {
           if (window.confirm('You can only publish 1 portfolio on your current plan. Do you want to replace your currently published portfolio with this one?\n\n(Click Cancel if you want to upgrade your plan to publish more.)')) {
             for (const p of publishedProjects) {

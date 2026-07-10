@@ -167,18 +167,15 @@ async def publish_project(project_id: str, authorization: str = Header(None)):
 
         # Update project
         update_data = {
-            "is_published": True,
-            "published_at": datetime.utcnow().isoformat(),
-            "slug": slug,
-            "view_count": 0,
+            "status": "published",
             "updated_at": datetime.utcnow().isoformat(),
         }
         updated = supabase.table("projects").update(update_data).eq("id", project_id).execute()
 
         return {
             "project_id": project_id,
-            "slug": slug,
-            "share_url": f"/portfolio/{slug}",
+            "slug": project_id,
+            "share_url": f"/portfolio/{project_id}",
             "is_published": True,
         }
     except HTTPException:
@@ -198,8 +195,7 @@ async def unpublish_project(project_id: str, authorization: str = Header(None)):
 
         # Update project
         update_data = {
-            "is_published": False,
-            "slug": None,
+            "status": "draft",
             "updated_at": datetime.utcnow().isoformat(),
         }
         supabase.table("projects").update(update_data).eq("id", project_id).execute()
@@ -214,14 +210,13 @@ async def unpublish_project(project_id: str, authorization: str = Header(None)):
 async def get_public_portfolio(slug: str):
     """Get published portfolio by slug (no auth required)"""
     try:
-        response = supabase.table("projects").select("*").eq("slug", slug).eq("is_published", True).execute()
+        response = supabase.table("projects").select("*").eq("id", slug).eq("status", "published").execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio not found")
 
         project = response.data[0]
 
-        # Increment view count
-        supabase.table("projects").update({"view_count": (project.get("view_count", 0) or 0) + 1}).eq("id", project["id"]).execute()
+        # Ignore view_count update as the column doesn't exist on projects
 
         # Load the document
         from services.storage import get_storage_client
