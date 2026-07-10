@@ -109,8 +109,14 @@ export default function PublicPortfolioPage() {
   }
 
   const { project, document } = portfolio
-  const pages = document.pages || []
+  const rawPages = document.pages || []
   const tokens = document.tokens || {}
+
+  // Pad with an empty page if the length is odd to prevent react-pageflip from crashing
+  // A physical book needs an even number of pages to render the cover properly
+  const pages = rawPages.length % 2 !== 0 
+    ? [...rawPages, { id: 'blank-page-pad', type: 'blank', blocks: [] }]
+    : rawPages
 
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
   const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
