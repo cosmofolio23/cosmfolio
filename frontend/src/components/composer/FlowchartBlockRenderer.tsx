@@ -80,23 +80,25 @@ export function FlowchartBlockRenderer({
   }
 
   return (
-    <div className="group/fc relative w-full h-full flex flex-col min-h-0">
+    <div 
+      className="group/fc relative w-full h-full flex flex-col min-h-0"
+      onMouseEnter={() => {
+        if (hideTimeout.current) clearTimeout(hideTimeout.current)
+        setIsEditorOpen(true)
+      }}
+      onMouseLeave={() => {
+        hideTimeout.current = setTimeout(() => {
+          setIsEditorOpen(false)
+          setActiveTab(null)
+        }, 300)
+      }}
+    >
       <ProcessFlowchartRenderer block={block} tokens={tokens} onChange={onChange} />
       
       {!readonly && (
         <div 
           className="absolute top-2 right-2 z-30 flex flex-col items-end gap-2"
           data-html2canvas-ignore="true"
-          onMouseEnter={() => {
-            if (hideTimeout.current) clearTimeout(hideTimeout.current)
-            setIsEditorOpen(true)
-          }}
-          onMouseLeave={() => {
-            hideTimeout.current = setTimeout(() => {
-              setIsEditorOpen(false)
-              setActiveTab(null)
-            }, 300)
-          }}
         >
           {/* Toolbar */}
           <div className={`flex items-center gap-1 bg-white/95 backdrop-blur-md shadow-lg border border-black/10 rounded-md p-1 transition-opacity duration-200 ${isEditorOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
