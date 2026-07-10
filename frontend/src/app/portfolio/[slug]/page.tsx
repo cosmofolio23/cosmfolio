@@ -4,8 +4,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 // @ts-ignore
-import HTMLFlipBook from 'react-pageflip'
+import HTMLFlipBookRaw from 'react-pageflip'
 import type { Page, DesignTokens } from '@/components/composer/types'
+
+const HTMLFlipBook = HTMLFlipBookRaw as any
 
 const API_URL = (typeof window !== 'undefined' && process.env.NODE_ENV === 'production' ? '/backend-proxy' : (process.env.NEXT_PUBLIC_API_URL || 'https://cosmfolio-production.up.railway.app'))
 
