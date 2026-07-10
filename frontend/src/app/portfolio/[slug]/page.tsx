@@ -56,6 +56,7 @@ export default function PublicPortfolioPage() {
   const [error, setError] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
+  const bookRef = useRef<any>(null)
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -151,19 +152,33 @@ export default function PublicPortfolioPage() {
       {/* Main Content - Flipbook Canvas */}
       <main 
         ref={containerRef}
-        className="flex-1 w-full flex items-center justify-center relative z-10 pt-20 pb-20 overflow-auto custom-scrollbar"
+        className="flex-1 w-full max-w-[90vw] mx-auto flex items-center justify-center relative z-10 pt-24 pb-24 overflow-auto custom-scrollbar"
       >
         <div 
-          className="transition-transform duration-300 origin-center flex items-center justify-center"
+          className="transition-transform duration-300 origin-center flex items-center justify-center w-full h-full"
           style={{ transform: `scale(${zoom})` }}
         >
           {pages.length > 0 ? (
-            <div className="shadow-2xl ring-1 ring-white/10">
+            <div className="relative shadow-2xl ring-1 ring-white/10 w-full max-w-[1700px]">
+              
+              {/* Left Arrow */}
+              <button 
+                onClick={() => bookRef.current?.pageFlip().flipPrev()} 
+                className="absolute -left-16 md:-left-24 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
+                title="Previous Page"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
               <HTMLFlipBook
+                ref={bookRef}
                 width={850}
                 height={1100}
-                size="stretch"
-                minWidth={300}
+                size="fit"
+                usePortrait={false}
+                minWidth={315}
                 maxWidth={1000}
                 minHeight={400}
                 maxHeight={1533}
@@ -272,6 +287,18 @@ export default function PublicPortfolioPage() {
                   )
                 })}
               </HTMLFlipBook>
+
+              {/* Right Arrow */}
+              <button 
+                onClick={() => bookRef.current?.pageFlip().flipNext()} 
+                className="absolute -right-16 md:-right-24 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
+                title="Next Page"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
             </div>
           ) : (
             <div className="text-white/50">No pages found in this portfolio.</div>
