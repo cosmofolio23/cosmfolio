@@ -19,6 +19,7 @@ interface Project {
   slug?: string
   view_count?: number
   status?: string
+  custom_domain?: string
 }
 
 export default function MyPortfoliosPage() {
@@ -30,6 +31,11 @@ export default function MyPortfoliosPage() {
   const [newTitle, setNewTitle] = useState('')
   const [newDescription, setNewDescription] = useState('')
   const [toastMsg, setToastMsg] = useState('')
+  
+  // Custom link modal state
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState('')
+  const [customLinkInput, setCustomLinkInput] = useState('')
 
   const showToast = (msg: string) => {
     setToastMsg(msg)
@@ -155,6 +161,35 @@ export default function MyPortfoliosPage() {
     }
   }
 
+  const handleSetCustomLink = async () => {
+    if (!customLinkInput.trim()) {
+      alert('Please enter a valid link name')
+      return
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${selectedProjectId}/custom-link`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ custom_link: customLinkInput }),
+      })
+      
+      if (!res.ok) {
+        const err = await res.json()
+        alert(err.detail || 'Link already taken or invalid')
+        return
+      }
+      
+      setProjects(projects.map(p => p.id === selectedProjectId ? { ...p, custom_domain: customLinkInput } : p))
+      setShowLinkModal(false)
+      showToast('Custom link updated!')
+    } catch (e) {
+      alert('Failed to set custom link')
+    }
+  }
+
   if (!isAuthenticated) {
     return null
   }
@@ -257,18 +292,30 @@ export default function MyPortfoliosPage() {
 
                   {/* Share URL */}
                   {project.status === 'published' && (
-                    <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-                      <p className="text-xs text-gray-600 mb-1">Share URL:</p>
+                    <div className="mt-2 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-xs font-semibold text-gray-700">Share URL</p>
+                        <button
+                          onClick={() => {
+                            setSelectedProjectId(project.id)
+                            setCustomLinkInput(project.custom_domain || '')
+                            setShowLinkModal(true)
+                          }}
+                          className="text-[10px] uppercase font-bold tracking-wider text-blue-600 hover:text-blue-800"
+                        >
+                          Set Custom Link
+                        </button>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <code className="flex-1 text-xs text-blue-700 font-mono truncate">
-                          {window.location.origin}/portfolio/{project.id}
+                        <code className="flex-1 text-xs text-blue-700 font-mono truncate bg-white px-2 py-1.5 rounded border border-blue-200">
+                          {window.location.origin}/portfolio/{project.custom_domain || project.id}
                         </code>
                         <button 
                           onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}/portfolio/${project.id}`)
+                            navigator.clipboard.writeText(`${window.location.origin}/portfolio/${project.custom_domain || project.id}`)
                             showToast('Link copied!')
                           }}
-                          className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs rounded border border-blue-300 font-medium"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md shadow-sm font-medium transition-colors"
                         >
                           Copy
                         </button>
@@ -380,6 +427,48 @@ export default function MyPortfoliosPage() {
       {toastMsg && (
         <div className="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-3 rounded shadow-xl text-sm font-medium animate-fade-in-up z-50">
           {toastMsg}
+        </div>
+      )}
+      {/* Custom Link Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b">
+              <h3 className="text-lg font-bold text-gray-900">Set Custom Link</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Personalize your portfolio URL. If this name is already taken, you'll be asked to pick another.
+              </p>
+            </div>
+            <div className="p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Custom URL Name</label>
+              <div className="flex items-center">
+                <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md px-3 py-2 text-sm">
+                  /portfolio/
+                </span>
+                <input
+                  type="text"
+                  value={customLinkInput}
+                  onChange={(e) => setCustomLinkInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                  className="flex-1 border border-gray-300 rounded-r-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  placeholder="e.g. bose-raj-2026"
+                />
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 border-t flex justify-end gap-3">
+              <button
+                onClick={() => setShowLinkModal(false)}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSetCustomLink}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700"
+              >
+                Save Link
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

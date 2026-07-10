@@ -208,9 +208,15 @@ async def unpublish_project(project_id: str, authorization: str = Header(None)):
 
 @router.get("/public/{slug}")
 async def get_public_portfolio(slug: str):
-    """Get published portfolio by slug (no auth required)"""
+    """Get published portfolio by slug or ID (no auth required)"""
     try:
-        response = supabase.table("projects").select("*").eq("id", slug).eq("status", "published").execute()
+        # Try to find by custom_domain (slug) first
+        response = supabase.table("projects").select("*").eq("custom_domain", slug).eq("status", "published").execute()
+        
+        # If not found, try to find by ID
+        if not response.data:
+            response = supabase.table("projects").select("*").eq("id", slug).eq("status", "published").execute()
+            
         if not response.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio not found")
 
@@ -236,6 +242,28 @@ async def get_public_portfolio(slug: str):
             },
             "document": document,
         }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.post("/{project_id}/custom-link")
+async def set_custom_link(project_id: str, payload: dict, current_user=Depends(get_current_user)):
+    """Set a custom link (custom_domain) for a project"""
+    try:
+        custom_link = payload.get("custom_link")
+        if not custom_link:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Custom link is required")
+            
+        # Check uniqueness
+        existing = supabase.table("projects").select("id").eq("custom_domain", custom_link).execute()
+        if existing.data:
+            if existing.data[0]["id"] != project_id:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="link already taken")
+                
+        # Update project
+        supabase.table("projects").update({"custom_domain": custom_link}).eq("id", project_id).eq("user_id", current_user["id"]).execute()
+        return {"message": "Custom link set successfully", "custom_link": custom_link}
     except HTTPException:
         raise
     except Exception as e:
