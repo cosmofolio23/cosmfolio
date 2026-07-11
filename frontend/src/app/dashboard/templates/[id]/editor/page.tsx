@@ -273,6 +273,67 @@ const reflowFreeElements = (els: FreeElement[], toLandscape: boolean): FreeEleme
   })
 }
 
+function getBookPaginationPair(pages: Page[], currentIdx: number): { leftIdx: number | null, rightIdx: number | null, totalBookPages: number } | null {
+  if (!pages[currentIdx] || pages[currentIdx].isSpread) {
+    // We still want to calculate totalBookPages even if we return null for left/right
+    let count = 1;
+    for (let i = 0; i < pages.length; i++) {
+      if (i === 0) count = 2;
+      else if (pages[i].isSpread) {
+        if (count % 2 !== 0) count += 1;
+        count += 2;
+      } else count += 1;
+    }
+    return { leftIdx: null, rightIdx: null, totalBookPages: count - 1 };
+  }
+  if (currentIdx === 0) {
+    let count = 2;
+    for (let i = 1; i < pages.length; i++) {
+      if (pages[i].isSpread) {
+        if (count % 2 !== 0) count += 1;
+        count += 2;
+      } else count += 1;
+    }
+    return { leftIdx: null, rightIdx: null, totalBookPages: count - 1 };
+  }
+  
+  let virtualPageNum = 1;
+  const pagination: { idx: number; side: 'left' | 'right' | 'spread' | 'cover' }[] = [];
+  
+  for (let i = 0; i < pages.length; i++) {
+    const p = pages[i];
+    if (i === 0) {
+      pagination.push({ idx: i, side: 'cover' });
+      virtualPageNum = 2;
+    } else if (p.isSpread) {
+      if (virtualPageNum % 2 !== 0) {
+        virtualPageNum += 1; // insert blank right page
+      }
+      pagination.push({ idx: i, side: 'spread' });
+      virtualPageNum += 2;
+    } else {
+      const side = virtualPageNum % 2 === 0 ? 'left' : 'right';
+      pagination.push({ idx: i, side });
+      virtualPageNum += 1;
+    }
+  }
+
+  const currentInfo = pagination[currentIdx];
+  const totalBookPages = virtualPageNum - 1;
+  
+  if (!currentInfo || currentInfo.side === 'spread' || currentInfo.side === 'cover') return { leftIdx: null, rightIdx: null, totalBookPages };
+
+  if (currentInfo.side === 'left') {
+    const nextInfo = pagination[currentIdx + 1];
+    const rightIdx = nextInfo && nextInfo.side === 'right' ? currentIdx + 1 : null;
+    return { leftIdx: currentIdx, rightIdx, totalBookPages };
+  } else {
+    const prevInfo = pagination[currentIdx - 1];
+    const leftIdx = prevInfo && prevInfo.side === 'left' ? currentIdx - 1 : null;
+    return { leftIdx, rightIdx: currentIdx, totalBookPages };
+  }
+}
+
 export default function TemplateEditor() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -2284,7 +2345,20 @@ export default function TemplateEditor() {
               </div>
             </div>
 
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length})</h3>
+            {(() => {
+              const totalBookPages = getBookPaginationPair(pages, 0)?.totalBookPages || pages.length;
+              if (totalBookPages % 4 !== 0) {
+                return (
+                  <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded p-2">
+                    <p className="text-[10px] font-medium text-yellow-700 leading-tight">
+                      ⚠️ <strong>Binding Warning:</strong> Your book currently has {totalBookPages} physical pages (counting spreads as 2). For professional saddle-stitch printing, total pages must be a multiple of 4. Add or remove pages to prevent blank pages at the end of your PDF.
+                    </p>
+                  </div>
+                )
+              }
+              return null;
+            })()}
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pages ({pages.length} logical, {getBookPaginationPair(pages, 0)?.totalBookPages || pages.length} physical)</h3>
             <div className="space-y-1.5">
               {pages.map((page, idx) => (
                 <div
@@ -2396,85 +2470,98 @@ export default function TemplateEditor() {
                 </div>
               )
             })()
-          ) : editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 && 
-              !pages[currentIdx % 2 === 1 ? currentIdx : currentIdx - 1]?.isSpread && 
-              !pages[(currentIdx % 2 === 1 ? currentIdx : currentIdx - 1) + 1]?.isSpread ? (
+          ) : editSpreadMode && getBookPaginationPair(pages, currentIdx) && (getBookPaginationPair(pages, currentIdx)!.leftIdx !== null || getBookPaginationPair(pages, currentIdx)!.rightIdx !== null) ? (
             /* Cosmo Book Design Mode: Left and Right Page side-by-side spread */
             (() => {
-              const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
-              const rightIdx = leftIdx + 1
+              const pairInfo = getBookPaginationPair(pages, currentIdx)!
+              const leftIdx = pairInfo.leftIdx
+              const rightIdx = pairInfo.rightIdx
               const editorBaseHeight = publishingPortfolio.pageSize ? Math.round(760 * (publishingPortfolio.pageSize.height / publishingPortfolio.pageSize.width)) : 1075
               return (
                 <div className="mx-auto mt-4 mb-16 select-none shrink-0" style={{ width: 1520 * canvasZoom, height: Math.round(editorBaseHeight * canvasZoom) }}>
                 <div className="flex gap-0 items-stretch justify-center relative overflow-visible py-2 origin-top-left" style={{ width: 1520, transform: `scale(${canvasZoom})`, transformOrigin: 'top left' }}>
                   {/* Left Page */}
-                  <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
-                    <PageComposer
-                      page={pages[leftIdx]}
-                      tokens={tokens}
-                      onChange={(p) => {
-                        markDirty()
-                        setPages(pages.map((x, i) => i === leftIdx ? p : x))
-                      }}
-                      onUploadImage={uploadImage}
-                      backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === pages[leftIdx].id)}
-                      masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
-                      pageContext={{ pageNumber: leftIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(leftIdx + 1).padStart(2, '0') }}
-                      grid={publishingPortfolio.grid}
-                      editableFree={currentIdx === leftIdx}
-                      onFreeChange={els => {
-                        markDirty()
-                        setPages(pages.map((x, i) => i === leftIdx ? { ...x, freeElements: els } : x))
-                      }}
-                      onApplyScope={applyElementScopeFromPage}
-                      onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
-                      pages={pages}
-                      onUpdateGlobalPages={(updater) => {
-                        markDirty()
-                        setPages(prev => updater(prev))
-                      }}
-                      overflowVisible
-                      onUpdateMasterElement={updateMasterElement}
-                      pageSize={publishingPortfolio.pageSize}
-                    />
-                    <div className="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Left Page · Page {leftIdx + 1}</div>
-                  </div>
+                  {leftIdx !== null ? (
+                    <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === leftIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(leftIdx)}>
+                      <PageComposer
+                        page={pages[leftIdx]}
+                        tokens={tokens}
+                        onChange={(p) => {
+                          markDirty()
+                          setPages(pages.map((x, i) => i === leftIdx ? p : x))
+                        }}
+                        onUploadImage={uploadImage}
+                        backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === pages[leftIdx].id)}
+                        masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                        pageContext={{ pageNumber: leftIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(leftIdx + 1).padStart(2, '0') }}
+                        grid={publishingPortfolio.grid}
+                        editableFree={currentIdx === leftIdx}
+                        onFreeChange={els => {
+                          markDirty()
+                          setPages(pages.map((x, i) => i === leftIdx ? { ...x, freeElements: els } : x))
+                        }}
+                        onApplyScope={applyElementScopeFromPage}
+                        onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
+                        pages={pages}
+                        onUpdateGlobalPages={(updater) => {
+                          markDirty()
+                          setPages(prev => updater(prev))
+                        }}
+                        overflowVisible
+                        onUpdateMasterElement={updateMasterElement}
+                        pageSize={publishingPortfolio.pageSize}
+                      />
+                      <div className="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Left Page · Page {leftIdx + 1}</div>
+                    </div>
+                  ) : (
+                    <div className="w-[760px] bg-gray-50 border-r border-gray-200 flex flex-col items-center justify-center opacity-50 relative shrink-0">
+                      <div className="text-4xl mb-2">📄</div>
+                      <span className="text-gray-400 font-medium tracking-wide">Blank Inside Cover / No Left Partner</span>
+                    </div>
+                  )}
 
                   {/* Center Gutter/Spine */}
                   <div className="w-2 bg-slate-950 shadow-[inset_0_0_10px_rgba(0,0,0,0.85)] z-20 pointer-events-none relative flex-shrink-0" />
 
                   {/* Right Page */}
-                  <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === rightIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(rightIdx)}>
-                    <PageComposer
-                      page={pages[rightIdx]}
-                      tokens={tokens}
-                      onChange={(p) => {
-                        markDirty()
-                        setPages(pages.map((x, i) => i === rightIdx ? p : x))
-                      }}
-                      onUploadImage={uploadImage}
-                      backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === pages[rightIdx].id)}
-                      masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
-                      pageContext={{ pageNumber: rightIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(rightIdx + 1).padStart(2, '0') }}
-                      grid={publishingPortfolio.grid}
-                      editableFree={currentIdx === rightIdx}
-                      onFreeChange={els => {
-                        markDirty()
-                        setPages(pages.map((x, i) => i === rightIdx ? { ...x, freeElements: els } : x))
-                      }}
-                      onApplyScope={applyElementScopeFromPage}
-                      onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
-                      pages={pages}
-                      onUpdateGlobalPages={(updater) => {
-                        markDirty()
-                        setPages(prev => updater(prev))
-                      }}
-                      overflowVisible
-                      onUpdateMasterElement={updateMasterElement}
-                      pageSize={publishingPortfolio.pageSize}
-                    />
-                    <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
-                  </div>
+                  {rightIdx !== null ? (
+                    <div className={`w-[760px] relative transition-all duration-200 cursor-pointer ${currentIdx === rightIdx ? 'ring-4 ring-blue-500 shadow-2xl z-10 scale-[1.005]' : 'opacity-85 shadow-lg hover:opacity-95'}`} onClick={() => setCurrentIdx(rightIdx)}>
+                      <PageComposer
+                        page={pages[rightIdx]}
+                        tokens={tokens}
+                        onChange={(p) => {
+                          markDirty()
+                          setPages(pages.map((x, i) => i === rightIdx ? p : x))
+                        }}
+                        onUploadImage={uploadImage}
+                        backgrounds={publishingPortfolio.backgrounds?.filter(b => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === pages[rightIdx].id)}
+                        masterElements={publishingPortfolio.masterPages?.flatMap(m => m.elements)}
+                        pageContext={{ pageNumber: rightIdx + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(rightIdx + 1).padStart(2, '0') }}
+                        grid={publishingPortfolio.grid}
+                        editableFree={currentIdx === rightIdx}
+                        onFreeChange={els => {
+                          markDirty()
+                          setPages(pages.map((x, i) => i === rightIdx ? { ...x, freeElements: els } : x))
+                        }}
+                        onApplyScope={applyElementScopeFromPage}
+                        onFreeSelectionChange={el => { if (el) { setSelectedFreeEl(el); setRightTab('canvas') } }}
+                        pages={pages}
+                        onUpdateGlobalPages={(updater) => {
+                          markDirty()
+                          setPages(prev => updater(prev))
+                        }}
+                        overflowVisible
+                        onUpdateMasterElement={updateMasterElement}
+                        pageSize={publishingPortfolio.pageSize}
+                      />
+                      <div className="absolute top-2 right-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none pointer-events-none">Right Page · Page {rightIdx + 1}</div>
+                    </div>
+                  ) : (
+                    <div className="w-[760px] bg-gray-50 border-l border-gray-200 flex flex-col items-center justify-center opacity-50 relative shrink-0">
+                      <div className="text-4xl mb-2">📄</div>
+                      <span className="text-gray-400 font-medium tracking-wide">Blank Inside Back Cover / No Right Partner</span>
+                    </div>
+                  )}
                 </div>
                 </div>
               )
