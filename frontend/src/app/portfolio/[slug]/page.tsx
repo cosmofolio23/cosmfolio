@@ -197,7 +197,7 @@ export default function PublicPortfolioPage() {
                     <div key={page.id} className="w-full bg-white border-b border-gray-100 p-8">
                        <h2 className="text-xl text-black font-bold mb-4 opacity-50">Page {idx + 1}</h2>
                              <div className="w-full h-full relative">
-                               <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} />
+                               <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} />
                              </div>
                     </div>
                   ))}
@@ -236,7 +236,7 @@ export default function PublicPortfolioPage() {
                   return (
                     <PageWrapper key={page.id}>
                       <div className="w-full h-full relative overflow-hidden bg-white">
-                        <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} />
+                        <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} />
                       </div>
                     </PageWrapper>
                   )

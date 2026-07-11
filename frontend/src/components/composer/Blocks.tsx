@@ -36,6 +36,7 @@ export function EditableText({
   bold,
   onFormatChange,
   onAiPolish,
+  readonly = false,
 }: {
   value: string
   onChange: (v: string) => void
@@ -50,6 +51,7 @@ export function EditableText({
   bold?: boolean
   onFormatChange?: (patch: any) => void
   onAiPolish?: (text: string) => Promise<string>
+  readonly?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -77,6 +79,7 @@ export function EditableText({
   }, [isSelected])
 
   const beginEdit = () => {
+    if (readonly) return
     setIsSelected(true)
     setIsEditing(true)
     setTimeout(() => {
@@ -103,6 +106,7 @@ export function EditableText({
   }
 
   const handleDoubleClick = (e: React.MouseEvent) => {
+    if (readonly) return
     e.stopPropagation()
     setIsEditing(true)
     setIsSelected(true)
@@ -149,7 +153,7 @@ export function EditableText({
     <div ref={wrapperRef} className="relative group/edittext inline-block min-w-[30px]" onBlur={handleBlur}>
       <div
         ref={ref}
-        contentEditable={isEditing}
+        contentEditable={isEditing && !readonly}
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onClick={(e) => {
@@ -158,6 +162,7 @@ export function EditableText({
         }}
         onDoubleClick={handleDoubleClick}
         onKeyDown={(e) => {
+          if (readonly) return
           if (e.key === 'Enter' && !multiline) {
             e.preventDefault()
             ref.current?.blur()
@@ -168,7 +173,7 @@ export function EditableText({
           }
         }}
         className={`outline-none rounded px-1 -mx-1 pb-[0.1em] transition ${
-          isEditing ? 'cursor-text outline outline-1 outline-blue-400' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : 'group-hover/canvas:outline group-hover/canvas:outline-1 group-hover/canvas:outline-dashed group-hover/canvas:outline-gray-500/70 hover:bg-blue-50/40 hover:outline-blue-400/60'
+          isEditing ? 'cursor-text outline outline-1 outline-blue-400' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : !readonly ? 'group-hover/canvas:outline group-hover/canvas:outline-1 group-hover/canvas:outline-dashed group-hover/canvas:outline-gray-500/70 hover:bg-blue-50/40 hover:outline-blue-400/60' : ''
         } ${multiline ? 'whitespace-pre-line' : ''} ${className || ''}`}
         style={style}
       >
@@ -177,7 +182,7 @@ export function EditableText({
 
       {/* Floating Toolbar — portalled to body so the page's overflow:hidden
           never clips it (Google-Docs-style toolbar above the text). */}
-      {isSelected && onFormatChange && mounted && tbPos && createPortal(
+      {!readonly && isSelected && onFormatChange && mounted && tbPos && createPortal(
         <div
           className="fixed z-[9999] floating-toolbar-portal flex items-center gap-1.5 bg-slate-900 text-white rounded-lg p-2 shadow-2xl border border-slate-700/60 whitespace-nowrap text-[11px]"
           style={{ top: Math.max(8, tbPos.top - 8), left: tbPos.left, transform: 'translate(-50%, -100%)' }}
@@ -295,7 +300,7 @@ export function EditableText({
 /* ------------------------------- Image Block ------------------------------ */
 
 export function ImageBlock({
-  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload,
+  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload, readonly = false,
 }: {
   block: Block
   tokens: DesignTokens
@@ -304,6 +309,7 @@ export function ImageBlock({
   showLabel?: boolean
   fill?: boolean
   onUpload?: (file: File) => Promise<string>
+  readonly?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -346,6 +352,7 @@ export function ImageBlock({
   }
 
   const onDragOver = (e: React.DragEvent) => {
+    if (readonly) return
     e.preventDefault()
     setIsDragging(true)
   }
@@ -353,6 +360,7 @@ export function ImageBlock({
     setIsDragging(false)
   }
   const onDrop = async (e: React.DragEvent) => {
+    if (readonly) return
     e.preventDefault()
     setIsDragging(false)
     const file = e.dataTransfer.files?.[0]
@@ -360,7 +368,7 @@ export function ImageBlock({
   }
 
   const onMouseDown = (e: React.MouseEvent) => {
-    if (!panActive || !block.imageUrl) return
+    if (readonly || !panActive || !block.imageUrl) return
     e.preventDefault()
     setDragStart({
       x: e.clientX,
@@ -397,11 +405,12 @@ export function ImageBlock({
       <div className={`relative w-full overflow-hidden tour-image-block ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
         {block.isFlowchart ? (
           <div className="relative w-full h-full group/fc">
-            <ProcessFlowchartRenderer block={block} onChange={onChange} />
+            <ProcessFlowchartRenderer block={block} onChange={onChange} readonly={readonly} />
             
             {/* Flowchart Floating Contextual Toolbar */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/fc:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px] print:hidden" data-html2canvas-ignore="true">
-              <button
+            {!readonly && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/fc:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px] print:hidden" data-html2canvas-ignore="true">
+                <button
                 type="button"
                 onClick={() => setEditorOpen(true)}
                 className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-yellow-400 font-bold"
@@ -415,8 +424,9 @@ export function ImageBlock({
                 className="px-1.5 py-0.5 rounded hover:bg-white/20 transition text-red-400 font-medium"
               >
                 🖼️ Reset Block
-              </button>
-            </div>
+                </button>
+              </div>
+            )}
           </div>
         ) : block.imageUrl ? (
           <div
@@ -430,15 +440,6 @@ export function ImageBlock({
             <div
               className="w-full h-full pointer-events-none select-none relative overflow-hidden"
             >
-              {/* 
-                Strategy: To allow panning across the ENTIRE unclipped image, we cannot use transform on a cover image
-                (because object-fit: cover clips the image BEFORE transform).
-                Instead, we scale the element's layout bounding box (width/height) by the zoom factor.
-                This pushes the element's edges OUTSIDE the container.
-                Then, we use `object-position` to pan the image *within* that expanded bounding box.
-                `calc(50% + panX)` provides an exact 1:1 pixel mapping for mouse drags, perfectly tracking the cursor.
-                The container's overflow:hidden ensures the expanded bounding box doesn't leak.
-              */}
               <img
                 src={block.imageUrl}
                 alt={block.label || block.type}
@@ -466,17 +467,18 @@ export function ImageBlock({
             )}
             
             {/* Floating Contextual Toolbar */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px] print:hidden" data-html2canvas-ignore="true">
-              <button
-                type="button"
-                onClick={() => onChange({ fit: block.fit === 'contain' ? 'cover' : 'contain' })}
-                className={`px-1.5 py-0.5 rounded hover:bg-white/20 transition font-medium ${block.fit === 'contain' ? 'text-blue-300' : ''}`}
-                title="Toggle Fit/Fill"
-              >
-                {block.fit === 'contain' ? 'Fill' : 'Fit'}
-              </button>
-              <span className="text-white/20">|</span>
-              <button
+            {!readonly && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/85 text-white rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 whitespace-nowrap text-[11px] print:hidden" data-html2canvas-ignore="true">
+                <button
+                  type="button"
+                  onClick={() => onChange({ fit: block.fit === 'contain' ? 'cover' : 'contain' })}
+                  className={`px-1.5 py-0.5 rounded hover:bg-white/20 transition font-medium ${block.fit === 'contain' ? 'text-blue-300' : ''}`}
+                  title="Toggle Fit/Fill"
+                >
+                  {block.fit === 'contain' ? 'Fill' : 'Fit'}
+                </button>
+                <span className="text-white/20">|</span>
+                <button
                 type="button"
                 onClick={() => setPanActive(!panActive)}
                 className={`px-1.5 py-0.5 rounded hover:bg-white/20 transition font-medium ${panActive ? 'text-blue-300 bg-blue-500/25' : ''}`}
@@ -537,31 +539,35 @@ export function ImageBlock({
             style={{ borderColor: isDragging ? undefined : 'rgba(0,0,0,0.15)' }}
             data-html2canvas-ignore="true"
           >
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="flex flex-col items-center justify-center w-full h-full pt-4 focus:outline-none"
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
-            >
-              <span className="text-3xl mb-1">＋</span>
-              <span className="text-[10px] uppercase tracking-widest font-semibold">{typeBadge[block.type] || 'IMAGE'}</span>
-              <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const defaultPreset = PROCESS_PRESETS[0].config
-                onChange({
-                  isFlowchart: true,
-                  flowchartConfig: defaultPreset
-                })
-              }}
-              className="absolute bottom-3 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] tracking-wide uppercase transition shadow-sm z-30"
-            >
-              🌿 Convert to Flowchart
-            </button>
+            {!readonly && (
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="flex flex-col items-center justify-center w-full h-full pt-4 focus:outline-none"
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+              >
+                <span className="text-3xl mb-1">＋</span>
+                <span className="text-[10px] uppercase tracking-widest font-semibold">{typeBadge[block.type] || 'IMAGE'}</span>
+                <span className="text-[8px] opacity-75 mt-0.5">Click or drag & drop</span>
+              </button>
+            )}
+            {!readonly && (
+              <button
+                type="button"
+                onClick={() => {
+                  const defaultPreset = PROCESS_PRESETS[0].config
+                  onChange({
+                    isFlowchart: true,
+                    flowchartConfig: defaultPreset
+                  })
+                }}
+                className="absolute bottom-3 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] tracking-wide uppercase transition shadow-sm z-30"
+              >
+                🌿 Convert to Flowchart
+              </button>
+            )}
           </div>
         )}
         {/* type badge */}
@@ -578,6 +584,7 @@ export function ImageBlock({
         <div className="flex items-center justify-between mt-1.5 pb-1 border-b" style={{ borderColor: tokens.muted }}>
           <EditableText
             value={block.label || ''}
+            readonly={readonly}
             onChange={v => onChange({ label: v })}
             className="text-[10px] font-semibold uppercase tracking-wider"
             style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
@@ -585,6 +592,7 @@ export function ImageBlock({
           {(block.type === 'plan' || block.type === 'section') && (
             <EditableText
               value={block.scale || ''}
+              readonly={readonly}
               onChange={v => onChange({ scale: v })}
               className="text-[10px] tabular-nums"
               style={{ color: tokens.muted, fontFamily: tokens.bodyFont }}
@@ -822,7 +830,7 @@ export function MetaBlock({
 
 /* ------------------------------ Text Blocks ------------------------------- */
 
-export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; size?: 'sm' | 'lg' | 'xl', onAiPolish?: (t: string) => Promise<string> }) {
+export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; size?: 'sm' | 'lg' | 'xl', onAiPolish?: (t: string) => Promise<string>, readonly?: boolean }) {
   const sizes = { sm: 'text-2xl', lg: 'text-4xl', xl: 'text-6xl' }
   return (
     <EditableText
@@ -836,6 +844,7 @@ export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish }:
       align={block.align || 'left'}
       bold={block.bold !== undefined ? block.bold : true}
       onFormatChange={patch => onChange(patch)}
+      readonly={readonly}
       style={{ 
         color: block.color || tokens.primary, 
         fontFamily: block.fontFamily || tokens.headingFont,
@@ -847,7 +856,7 @@ export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish }:
   )
 }
 
-export function SubtitleBlock({ block, tokens, onChange, onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string> }) {
+export function SubtitleBlock({ block, tokens, onChange, onAiPolish, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string>, readonly?: boolean }) {
   return (
     <EditableText
       value={block.text || ''}
@@ -860,6 +869,7 @@ export function SubtitleBlock({ block, tokens, onChange, onAiPolish }: { block: 
       align={block.align || 'left'}
       bold={block.bold}
       onFormatChange={patch => onChange(patch)}
+      readonly={readonly}
       style={{ 
         color: block.color || tokens.accent, 
         fontFamily: block.fontFamily || tokens.bodyFont,
@@ -871,7 +881,7 @@ export function SubtitleBlock({ block, tokens, onChange, onAiPolish }: { block: 
   )
 }
 
-export function DescriptionBlock({ block, tokens, onChange, onAiPolish }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string> }) {
+export function DescriptionBlock({ block, tokens, onChange, onAiPolish, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; onAiPolish?: (t: string) => Promise<string>, readonly?: boolean }) {
   return (
     <EditableText
       value={block.text || ''}
@@ -885,6 +895,7 @@ export function DescriptionBlock({ block, tokens, onChange, onAiPolish }: { bloc
       align={block.align || 'left'}
       bold={block.bold}
       onFormatChange={patch => onChange(patch)}
+      readonly={readonly}
       style={{ 
         color: block.color || tokens.text, 
         fontFamily: block.fontFamily || tokens.bodyFont,
