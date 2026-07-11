@@ -69,6 +69,7 @@ export default function PublicPortfolioPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
+  const [defaultZoom, setDefaultZoom] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
   const bookRef = useRef<any>(null)
 
@@ -87,6 +88,23 @@ export default function PublicPortfolioPage() {
     }
     loadPortfolio()
   }, [slug])
+
+  // Automatically calculate responsive zoom on mount and window resize
+  useEffect(() => {
+    if (isLoading || error || !portfolio) return
+    const calcDefaultZoom = () => {
+      if (containerRef.current) {
+        const availableW = containerRef.current.offsetWidth - 64 // subtract padding
+        const targetW = isLandscape ? 2160 : 1520
+        const fit = Math.min(availableW / targetW, 1)
+        setDefaultZoom(fit)
+        setZoom(fit)
+      }
+    }
+    calcDefaultZoom()
+    window.addEventListener('resize', calcDefaultZoom)
+    return () => window.removeEventListener('resize', calcDefaultZoom)
+  }, [isLoading, error, portfolio, isLandscape])
 
   if (isLoading) {
     return (
@@ -153,8 +171,8 @@ export default function PublicPortfolioPage() {
   const pageH = isLandscape ? 760 : 1080;
 
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
-  const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
-  const handleZoomFit = () => setZoom(1)
+  const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.25))
+  const handleZoomFit = () => setZoom(defaultZoom)
 
   return (
     <div className="h-screen bg-[#0A0A0A] text-white selection:bg-blue-500/30 flex flex-col relative overflow-hidden font-sans">
@@ -208,15 +226,23 @@ export default function PublicPortfolioPage() {
         <div className="min-h-full min-w-full w-fit mx-auto p-8">
           {bookPages.length > 0 ? (
             <div 
-              className="relative shadow-2xl ring-1 ring-white/10 mx-auto transition-all duration-300 origin-center"
+              className="relative shadow-2xl ring-1 ring-white/10 mx-auto transition-all duration-300 overflow-hidden"
               style={{
-                 width: `${100 * zoom}%`,
-                 maxWidth: `${1700 * zoom}px`,
-                 // Force the container to maintain the proper aspect ratio of an open book
-                 // If a single page is pageW x pageH, an open book is (pageW * 2) x pageH
-                 aspectRatio: `${pageW * 2} / ${pageH}`
+                 width: `${pageW * 2 * zoom}px`,
+                 height: `${pageH * zoom}px`
               }}
             >
+              <div
+                style={{
+                  width: `${pageW * 2}px`,
+                  height: `${pageH}px`,
+                  transform: `scale(${zoom})`,
+                  transformOrigin: 'top left',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
+                }}
+              >
               <FlipbookErrorBoundary fallback={
                 <div className="w-[850px] max-w-full bg-white rounded-xl overflow-hidden shadow-2xl mx-auto flex flex-col h-[1100px] max-h-[80vh] overflow-y-auto">
                   <div className="p-8 text-center bg-red-50 text-red-600 font-medium">
@@ -296,6 +322,7 @@ export default function PublicPortfolioPage() {
               </HTMLFlipBook>
               </FlipbookErrorBoundary>
             </div>
+              </div>
           ) : (
             <div className="text-white/50">No pages found in this portfolio.</div>
           )}
