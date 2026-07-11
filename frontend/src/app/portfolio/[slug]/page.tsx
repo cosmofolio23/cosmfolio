@@ -82,7 +82,7 @@ export default function PublicPortfolioPage() {
   }
 
   // Determine if portfolio is landscape or portrait safely at hook-level
-  const savedPageSize = portfolio?.document?.pageSize;
+  const savedPageSize = portfolio?.document?.publishing?.pageSize || portfolio?.document?.pageSize;
   const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
   const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
   const pageW = isLandscape ? 1080 : 760;
