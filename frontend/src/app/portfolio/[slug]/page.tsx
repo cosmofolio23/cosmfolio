@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import HTMLFlipBookRaw from 'react-pageflip'
 import type { Page, DesignTokens, Block } from '@/components/composer/types'
 import PageComposer from '@/components/composer/PageComposer'
+import SpreadComposer from '@/components/composer/SpreadComposer'
 
 // Error Boundary to catch react-pageflip crashes
 class FlipbookErrorBoundary extends React.Component<{children: React.ReactNode, fallback: React.ReactNode}, {hasError: boolean}> {
@@ -114,16 +115,52 @@ export default function PublicPortfolioPage() {
   const rawPages = document.pages || []
   const tokens = document.tokens || {}
 
-  // Pad with an empty page if the length is odd to prevent react-pageflip from crashing
-  // A physical book needs an even number of pages to render the cover properly
-  const pages = rawPages.length % 2 !== 0 
-    ? [...rawPages, { id: 'blank-page-pad', type: 'cover' as const, layoutId: 'cover.minimal', blocks: [] } as unknown as Page]
-    : rawPages
+  // Build physical book slots for react-pageflip
+  type BookSlot = { id: string; page?: Page; isBlank?: boolean; part?: 'full' | 'left' | 'right' };
+  let bookPages: BookSlot[] = [];
 
   // Determine if portfolio is landscape or portrait
   const savedPageSize = (document as any).pageSize;
   // Default to landscape if not specified, since most architectural portfolios are landscape
   const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
+  
+  if (isLandscape) {
+    // Single page mode
+    for (const p of rawPages) {
+      bookPages.push({ id: p.id, page: p, part: 'full' });
+    }
+    // Pad to even length so react-pageflip doesn't crash
+    if (bookPages.length % 2 !== 0) {
+      bookPages.push({ id: 'blank-pad-end', isBlank: true });
+    }
+  } else {
+    // Portrait mode (side-by-side)
+    let virtualPageNum = 1;
+    for (let i = 0; i < rawPages.length; i++) {
+      const p = rawPages[i];
+      if (i === 0) {
+        bookPages.push({ id: p.id, page: p, part: 'full' });
+        virtualPageNum = 2;
+      } else if (p.isSpread) {
+        if (virtualPageNum % 2 !== 0) {
+          bookPages.push({ id: `blank-${p.id}-left-pad`, isBlank: true });
+          virtualPageNum += 1;
+        }
+        bookPages.push({ id: `${p.id}-left`, page: p, part: 'left' });
+        bookPages.push({ id: `${p.id}-right`, page: p, part: 'right' });
+        virtualPageNum += 2;
+      } else {
+        bookPages.push({ id: p.id, page: p, part: 'full' });
+        virtualPageNum += 1;
+      }
+    }
+    // Pad to even length
+    if (bookPages.length % 2 !== 0) {
+      bookPages.push({ id: 'blank-pad-end', isBlank: true });
+    }
+  }
+
+
   
   const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
   const pageW = isLandscape ? 1080 : 760;
@@ -187,18 +224,22 @@ export default function PublicPortfolioPage() {
             className="transition-all duration-300 w-full h-full p-8"
             style={{ zoom: zoom }}
           >
-          {pages.length > 0 ? (
+          {bookPages.length > 0 ? (
             <div className="relative shadow-2xl ring-1 ring-white/10 w-full max-w-[1700px]">
               <FlipbookErrorBoundary fallback={
                 <div className="w-[850px] max-w-full bg-white rounded-xl overflow-hidden shadow-2xl mx-auto flex flex-col h-[1100px] max-h-[80vh] overflow-y-auto">
                   <div className="p-8 text-center bg-red-50 text-red-600 font-medium">
                     The 3D flipbook could not be loaded for this portfolio. Displaying standard view.
                   </div>
-                  {pages.map((page, idx) => (
-                    <div key={page.id} className="w-full bg-white border-b border-gray-100 p-8">
-                       <h2 className="text-xl text-black font-bold mb-4 opacity-50">Page {idx + 1}</h2>
+                  {bookPages.map((bookPage, idx) => (
+                    <div key={bookPage.id} className="w-full bg-white border-b border-gray-100 p-8">
+                       <h2 className="text-xl text-black font-bold mb-4 opacity-50">Slot {idx + 1}</h2>
                              <div className="w-full h-full relative">
-                               <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                               {bookPage.isBlank ? (
+                                  <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400">Blank Page</div>
+                               ) : (
+                                  <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                               )}
                              </div>
                     </div>
                   ))}
@@ -232,15 +273,46 @@ export default function PublicPortfolioPage() {
                 className="demo-book"
                 style={{ margin: '0 auto' }}
               >
-                {pages.map((page, idx) => {
-                  const PageWrapper = (idx === 0 || idx === pages.length - 1) ? PageCover : BookPage;
+                {bookPages.map((bookPage, idx) => {
+                  const PageWrapper = (idx === 0 || idx === bookPages.length - 1) ? PageCover : BookPage;
+                  if (bookPage.isBlank) {
+                     return (
+                       <PageWrapper key={bookPage.id}>
+                         <div className="w-full h-full relative overflow-hidden bg-white/5" />
+                       </PageWrapper>
+                     )
+                  }
+
+                  if (bookPage.part === 'left' || bookPage.part === 'right') {
+                     return (
+                       <PageWrapper key={bookPage.id}>
+                         <div className="w-full h-full relative overflow-hidden bg-white">
+                           <div style={{ 
+                             width: pageW * 2, 
+                             height: pageH, 
+                             position: 'absolute', 
+                             left: bookPage.part === 'right' ? -pageW : 0, 
+                             top: 0 
+                           }}>
+                             <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                           </div>
+                         </div>
+                       </PageWrapper>
+                     )
+                  }
+
                   return (
-                    <PageWrapper key={page.id}>
+                    <PageWrapper key={bookPage.id}>
                       <div className="w-full h-full relative overflow-hidden bg-white">
-                        <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                        {bookPage.page!.isSpread ? (
+                           <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                        ) : (
+                           <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                        )}
                       </div>
                     </PageWrapper>
                   )
+
                 })}
               </HTMLFlipBook>
               </FlipbookErrorBoundary>
