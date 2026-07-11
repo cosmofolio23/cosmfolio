@@ -10,6 +10,7 @@ export interface SetupSettings {
   purpose: 'internship' | 'university' | 'thesis' | 'professional'
   pages: number
   projects: number
+  format: 'pages' | 'spreads'
 }
 
 interface Props {
@@ -27,6 +28,7 @@ export default function SetupModal({ isOpen, isPro = false, isAdmin = false, onC
   const [purpose, setPurpose] = useState<SetupSettings['purpose']>('university')
   const [pages, setPages] = useState(5)
   const [projects, setProjects] = useState(3)
+  const [format, setFormat] = useState<SetupSettings['format']>('pages')
 
   if (!isOpen) return null
 
@@ -40,7 +42,8 @@ export default function SetupModal({ isOpen, isPro = false, isAdmin = false, onC
         customHeight: undefined,
         purpose,
         pages,
-        projects
+        projects,
+        format
       })
     }
   }
@@ -154,11 +157,42 @@ export default function SetupModal({ isOpen, isPro = false, isAdmin = false, onC
                 <p className="text-[11px] text-slate-400 mt-1">Estimate the initial sizing of your publishing document</p>
               </div>
               <div className="space-y-4 pt-2">
+                {/* Format Selection */}
+                <div className="space-y-2 mb-2">
+                  <span className="text-xs text-slate-400">Document Format</span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormat('pages')}
+                      className={`flex-1 p-3 rounded-lg border text-left transition hover:bg-slate-800/40 ${
+                        format === 'pages' 
+                          ? 'border-blue-500 bg-blue-500/10 text-white' 
+                          : 'border-slate-800 bg-slate-950/20 text-slate-400'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-0.5">Single Pages</div>
+                      <div className="text-[9px] opacity-75">Standard PDF view</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormat('spreads')}
+                      className={`flex-1 p-3 rounded-lg border text-left transition hover:bg-slate-800/40 ${
+                        format === 'spreads' 
+                          ? 'border-blue-500 bg-blue-500/10 text-white' 
+                          : 'border-slate-800 bg-slate-950/20 text-slate-400'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-0.5">Two-Page Spreads</div>
+                      <div className="text-[9px] opacity-75">Book-style layout</div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Pages */}
                 <div className="space-y-1">
                   <div className="flex justify-between items-baseline text-xs">
-                    <span className="text-slate-400">Target Page Count</span>
-                    <span className="font-mono text-blue-400 font-bold">{pages} Pages</span>
+                    <span className="text-slate-400">Target {format === 'spreads' ? 'Spread' : 'Page'} Count</span>
+                    <span className="font-mono text-blue-400 font-bold">{pages} {format === 'spreads' ? 'Spreads' : 'Pages'}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <input
@@ -169,7 +203,7 @@ export default function SetupModal({ isOpen, isPro = false, isAdmin = false, onC
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 pt-1">
-                    {isAdmin ? "Admin mode: Unlimited pages." : isPro ? "Pro plan unlocked: Up to 30 pages per portfolio." : "Free plan includes up to 6 pages. More pages unlock in Pro."}
+                    {isAdmin ? "Admin mode: Unlimited pages." : isPro ? `Pro plan unlocked: Up to 30 ${format === 'spreads' ? 'spreads' : 'pages'} per portfolio.` : `Free plan includes up to 6 ${format === 'spreads' ? 'spreads' : 'pages'}. More unlock in Pro.`}
                   </p>
                 </div>
                 {/* Projects */}
