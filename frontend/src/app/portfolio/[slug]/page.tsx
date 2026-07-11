@@ -163,7 +163,7 @@ export default function PublicPortfolioPage() {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[128px] pointer-events-none" />
 
       {/* Sleek Header */}
-      <header className="absolute top-0 w-full z-40 bg-[#0A0A0A]/40 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
+      <header className="relative z-40 bg-[#0A0A0A]/40 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
@@ -203,7 +203,7 @@ export default function PublicPortfolioPage() {
       {/* Main Content - Flipbook Canvas */}
       <main 
         ref={containerRef}
-        className="flex-1 w-full max-w-[95vw] mx-auto relative z-10 pt-8 pb-24 overflow-auto custom-scrollbar"
+        className="flex-1 w-full max-w-[95vw] mx-auto relative z-10 pt-4 pb-24 overflow-auto custom-scrollbar"
       >
         <div className="min-h-full min-w-full w-fit mx-auto p-8">
           {bookPages.length > 0 ? (
@@ -236,27 +236,6 @@ export default function PublicPortfolioPage() {
                   ))}
                 </div>
               }>
-              
-              {/* Left Arrow */}
-              <button 
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  bookRef.current?.pageFlip()?.flipPrev();
-                }}
-                onPointerUp={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }} 
-                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-[100] p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
-                title="Previous Page"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
               <HTMLFlipBook
                 ref={bookRef}
                 width={pageW}
@@ -316,27 +295,6 @@ export default function PublicPortfolioPage() {
                 })}
               </HTMLFlipBook>
               </FlipbookErrorBoundary>
-
-              {/* Right Arrow */}
-              <button 
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  bookRef.current?.pageFlip()?.flipNext();
-                }}
-                onPointerUp={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }} 
-                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-[100] p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
-                title="Next Page"
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
             </div>
           ) : (
             <div className="text-white/50">No pages found in this portfolio.</div>
@@ -374,6 +332,38 @@ export default function PublicPortfolioPage() {
           </svg>
         </button>
       </div>
+
+      {/* Fixed Page Navigation Overlay */}
+      {bookPages.length > 0 && (
+        <>
+          <button 
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              bookRef.current?.pageFlip()?.flipPrev();
+            }}
+            className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full transition-all shadow-lg hover:scale-110"
+            title="Previous Page"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button 
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              bookRef.current?.pageFlip()?.flipNext();
+            }}
+            className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full transition-all shadow-lg hover:scale-110"
+            title="Next Page"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
 
       {/* Custom Scrollbar Styles */}
       <style dangerouslySetInnerHTML={{__html: `
