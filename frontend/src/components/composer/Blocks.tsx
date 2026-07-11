@@ -174,7 +174,7 @@ export function EditableText({
         }}
         className={`outline-none rounded px-1 -mx-1 pb-[0.1em] transition ${
           isEditing ? 'cursor-text outline outline-1 outline-blue-400' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : !readonly ? 'group-hover/canvas:outline group-hover/canvas:outline-1 group-hover/canvas:outline-dashed group-hover/canvas:outline-gray-500/70 hover:bg-blue-50/40 hover:outline-blue-400/60' : ''
-        } ${multiline ? 'whitespace-pre-line' : ''} ${className || ''}`}
+        } ${multiline ? 'whitespace-pre-line' : ''} empty:before:content-[attr(data-placeholder)] empty:before:opacity-30 empty:before:pointer-events-none empty:min-h-[1.5em] empty:min-w-[50px] empty:inline-block ${className || ''}`}
         style={style}
       >
         {value}
@@ -855,6 +855,7 @@ export function TitleBlock({ block, tokens, onChange, size = 'lg', onAiPolish, r
   return (
     <EditableText
       value={block.text || ''}
+      placeholder="Type title here..."
       onAiPolish={onAiPolish}
       onChange={v => onChange({ text: v })}
       className={`leading-tight ${sizes[size]}`}
@@ -880,6 +881,7 @@ export function SubtitleBlock({ block, tokens, onChange, onAiPolish, readonly }:
   return (
     <EditableText
       value={block.text || ''}
+      placeholder="Type subtitle here..."
       onAiPolish={onAiPolish}
       onChange={v => onChange({ text: v })}
       className="text-lg"
@@ -905,6 +907,7 @@ export function DescriptionBlock({ block, tokens, onChange, onAiPolish, readonly
   return (
     <EditableText
       value={block.text || ''}
+      placeholder="Type text here..."
       onAiPolish={onAiPolish}
       onChange={v => onChange({ text: v })}
       multiline
