@@ -1485,6 +1485,7 @@ function RegionView({
   const z = overlay ? 'relative z-10' : ''
 
   if (!block) {
+    if (readonly) return null
     return (
       <button
         style={style}
@@ -1611,7 +1612,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${readonly || isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z}`}
+      className={`min-h-0 ${activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()
