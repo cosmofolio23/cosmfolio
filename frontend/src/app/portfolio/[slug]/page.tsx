@@ -125,9 +125,9 @@ export default function PublicPortfolioPage() {
   // Default to landscape if not specified, since most architectural portfolios are landscape
   const isLandscape = savedPageSize ? savedPageSize.preset.includes('landscape') : true;
   
+  const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
   const pageW = isLandscape ? 1080 : 760;
   const pageH = isLandscape ? 760 : 1080;
-  const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : undefined);
 
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
   const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
@@ -221,7 +221,7 @@ export default function PublicPortfolioPage() {
                 width={pageW}
                 height={pageH}
                 size="stretch"
-                usePortrait={false}
+                usePortrait={isLandscape ? true : false}
                 minWidth={315}
                 maxWidth={1000}
                 minHeight={400}
