@@ -2396,7 +2396,9 @@ export default function TemplateEditor() {
                 </div>
               )
             })()
-          ) : editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 ? (
+          ) : editSpreadMode && currentIdx > 0 && currentIdx < pages.length - 1 && 
+              !pages[currentIdx % 2 === 1 ? currentIdx : currentIdx - 1]?.isSpread && 
+              !pages[(currentIdx % 2 === 1 ? currentIdx : currentIdx - 1) + 1]?.isSpread ? (
             /* Cosmo Book Design Mode: Left and Right Page side-by-side spread */
             (() => {
               const leftIdx = currentIdx % 2 === 1 ? currentIdx : currentIdx - 1
