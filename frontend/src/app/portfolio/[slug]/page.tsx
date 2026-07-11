@@ -117,7 +117,7 @@ export default function PublicPortfolioPage() {
   // Pad with an empty page if the length is odd to prevent react-pageflip from crashing
   // A physical book needs an even number of pages to render the cover properly
   const pages = rawPages.length % 2 !== 0 
-    ? [...rawPages, { id: 'blank-page-pad', type: 'blank', blocks: [] }]
+    ? [...rawPages, { id: 'blank-page-pad', type: 'cover' as const, layoutId: 'cover.minimal', blocks: [] } as unknown as Page]
     : rawPages
 
   // Determine if portfolio is landscape or portrait
@@ -198,7 +198,7 @@ export default function PublicPortfolioPage() {
                     <div key={page.id} className="w-full bg-white border-b border-gray-100 p-8">
                        <h2 className="text-xl text-black font-bold mb-4 opacity-50">Page {idx + 1}</h2>
                              <div className="w-full h-full relative">
-                               <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} />
+                               <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
                              </div>
                     </div>
                   ))}
@@ -237,7 +237,7 @@ export default function PublicPortfolioPage() {
                   return (
                     <PageWrapper key={page.id}>
                       <div className="w-full h-full relative overflow-hidden bg-white">
-                        <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} />
+                        <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
                       </div>
                     </PageWrapper>
                   )

@@ -405,7 +405,7 @@ export function ImageBlock({
       <div className={`relative w-full overflow-hidden tour-image-block ${fill ? 'flex-1 min-h-0' : aspect}`} style={{ background: 'rgba(0,0,0,0.05)' }}>
         {block.isFlowchart ? (
           <div className="relative w-full h-full group/fc">
-            <ProcessFlowchartRenderer block={block} onChange={onChange} readonly={readonly} />
+            <ProcessFlowchartRenderer block={block} onChange={onChange} />
             
             {/* Flowchart Floating Contextual Toolbar */}
             {!readonly && (
@@ -532,6 +532,7 @@ export function ImageBlock({
                 Delete
               </button>
             </div>
+            )}
           </div>
         ) : (
           <div
