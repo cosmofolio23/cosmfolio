@@ -612,11 +612,12 @@ export function ImageBlock({
 /* ------------------------------- Legend Block ----------------------------- */
 
 export function LegendBlock({
-  block, tokens, onChange,
+  block, tokens, onChange, readonly
 }: {
   block: Block
   tokens: DesignTokens
   onChange: (patch: Partial<Block>) => void
+  readonly?: boolean
 }) {
   const items = block.legendItems || []
   
@@ -678,6 +679,7 @@ export function LegendBlock({
         onChange={v => onChange({ label: v })}
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
+        readonly={readonly}
       />
       <div className="flex flex-col flex-1 overflow-visible mt-1" style={{ gap: Math.max(2, 12 - items.length * 1.5) + 'px' }}>
         {items.map((it, idx) => (
@@ -686,20 +688,25 @@ export function LegendBlock({
               className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-sm text-[9px] font-bold"
               style={{ background: tokens.accent, color: pickContrast(tokens.accent) }}
             >
-              <EditableText value={it.key} onChange={v => update(idx, { key: v })} />
+              <EditableText value={it.key} onChange={v => update(idx, { key: v })} readonly={readonly} />
             </span>
             <EditableText
               value={it.label}
               onChange={v => update(idx, { label: v })}
               className="flex-1"
               style={{ color: tokens.text }}
+              readonly={readonly}
             />
-            <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
+            {!readonly && (
+              <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 transition text-xs z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>
+            )}
           </div>
         ))}
-        <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left print:hidden" style={{ color: tokens.accent }} data-html2canvas-ignore="true">
-          {getButtonText()}
-        </button>
+        {!readonly && (
+          <button onClick={add} className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-left print:hidden" style={{ color: tokens.accent }} data-html2canvas-ignore="true">
+            {getButtonText()}
+          </button>
+        )}
       </div>
     </div>
   )
@@ -708,12 +715,13 @@ export function LegendBlock({
 /* -------------------------------- Meta Block ------------------------------ */
 
 export function MetaBlock({
-  block, tokens, onChange, layout = 'stack',
+  block, tokens, onChange, layout = 'stack', readonly
 }: {
   block: Block
   tokens: DesignTokens
   onChange: (patch: Partial<Block>) => void
   layout?: 'stack' | 'inline'
+  readonly?: boolean
 }) {
   const fields = block.fields || []
   const label = block.label || 'INFO'
@@ -802,6 +810,7 @@ export function MetaBlock({
         onChange={v => onChange({ label: v })}
         className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2 pb-1 border-b block w-full"
         style={{ color: tokens.primary, borderColor: tokens.accent, fontFamily: tokens.bodyFont }}
+        readonly={readonly}
       />
       <div className={`flex-1 overflow-visible ${layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'}`} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
         {fields.map((f, idx) => (
@@ -811,6 +820,7 @@ export function MetaBlock({
               onChange={v => update(idx, { label: v })}
               className="text-[9px] font-bold uppercase tracking-[0.15em]"
               style={{ color: tokens.muted, fontFamily: tokens.bodyFont }}
+              readonly={readonly}
             />
             <div className="flex items-center gap-1">
               <EditableText
@@ -818,12 +828,17 @@ export function MetaBlock({
                 onChange={v => update(idx, { value: v })}
                 className="text-[13px] font-medium"
                 style={{ color: tokens.text, fontFamily: tokens.bodyFont }}
+                readonly={readonly}
               />
-              <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 text-xs z-10 cursor-pointer">✕</button>
+              {!readonly && (
+                <button onClick={() => remove(idx)} type="button" title="Delete" className="text-gray-300 hover:text-red-500 opacity-40 hover:!opacity-100 text-xs z-10 cursor-pointer">✕</button>
+              )}
             </div>
           </div>
         ))}
-        <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider block w-full text-left mt-1" style={{ color: tokens.accent }}>{getButtonText()}</button>
+        {!readonly && (
+          <button onClick={add} className="text-[10px] font-semibold uppercase tracking-wider block w-full text-left mt-1" style={{ color: tokens.accent }}>{getButtonText()}</button>
+        )}
       </div>
     </div>
   )

@@ -123,7 +123,7 @@ export default function PublicPortfolioPage() {
   // Determine if portfolio is landscape or portrait
   const savedPageSize = (document as any).pageSize;
   // Default to landscape if not specified, since most architectural portfolios are landscape
-  const isLandscape = savedPageSize ? savedPageSize.preset.includes('landscape') : true;
+  const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
   
   const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
   const pageW = isLandscape ? 1080 : 760;
@@ -208,7 +208,7 @@ export default function PublicPortfolioPage() {
               {/* Left Arrow */}
               <button 
                 onClick={() => bookRef.current?.pageFlip().flipPrev()} 
-                className="absolute -left-16 md:-left-24 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
                 title="Previous Page"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -248,7 +248,7 @@ export default function PublicPortfolioPage() {
               {/* Right Arrow */}
               <button 
                 onClick={() => bookRef.current?.pageFlip().flipNext()} 
-                className="absolute -right-16 md:-right-24 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
                 title="Next Page"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
