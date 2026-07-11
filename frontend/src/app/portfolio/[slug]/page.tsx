@@ -239,8 +239,14 @@ export default function PublicPortfolioPage() {
               
               {/* Left Arrow */}
               <button 
-                onClick={() => bookRef.current?.pageFlip().flipPrev()} 
-                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  bookRef.current?.pageFlip()?.flipPrev();
+                }} 
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-[100] p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
                 title="Previous Page"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -310,8 +316,14 @@ export default function PublicPortfolioPage() {
 
               {/* Right Arrow */}
               <button 
-                onClick={() => bookRef.current?.pageFlip().flipNext()} 
-                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  bookRef.current?.pageFlip()?.flipNext();
+                }} 
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-[100] p-4 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white/20 transition-all shadow-lg hover:scale-110"
                 title="Next Page"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
