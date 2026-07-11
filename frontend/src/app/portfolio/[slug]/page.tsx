@@ -40,6 +40,8 @@ interface PortfolioData {
     pages: Page[]
     tokens: DesignTokens
     templateId?: string
+    publishing?: { pageSize?: any; [key: string]: any }
+    pageSize?: any
   }
 }
 

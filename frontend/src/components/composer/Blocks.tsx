@@ -893,7 +893,7 @@ export function SubtitleBlock({ block, tokens, onChange, onAiPolish, readonly }:
       style={{ 
         color: block.color || tokens.accent, 
         fontFamily: block.fontFamily || tokens.bodyFont,
-        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        fontSize: block.fontSize ? (block.fontSize < 5 ? `${block.fontSize}em` : `${block.fontSize}px`) : undefined,
         textAlign: block.align || 'left',
         fontWeight: block.bold ? 'bold' : 'normal'
       }}
@@ -919,7 +919,7 @@ export function DescriptionBlock({ block, tokens, onChange, onAiPolish, readonly
       style={{ 
         color: block.color || tokens.text, 
         fontFamily: block.fontFamily || tokens.bodyFont,
-        fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+        fontSize: block.fontSize ? (block.fontSize < 5 ? `${block.fontSize}em` : `${block.fontSize}px`) : undefined,
         textAlign: block.align || 'left',
         fontWeight: block.bold ? 'bold' : 'normal'
       }}

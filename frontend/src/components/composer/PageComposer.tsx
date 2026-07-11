@@ -693,7 +693,27 @@ function BlockHoverToolbar({ block, tokens, onChange, showTypography = true, isA
           </button>
         </>
       )}
-      <button onClick={(e) => { e.stopPropagation(); onChange({ freeform: block.freeform ? undefined : { x: 10, y: 10, w: 40, h: 40 } }) }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
+      <button onClick={(e) => { 
+        e.stopPropagation(); 
+        if (block.freeform) {
+          onChange({ freeform: undefined });
+        } else {
+          const btn = e.currentTarget as HTMLElement;
+          const blockContainer = btn.closest('.group\\/block-container') as HTMLElement;
+          const pageContainer = btn.closest('.group\\/canvas > div') as HTMLElement;
+          if (blockContainer && pageContainer) {
+            const bRect = blockContainer.getBoundingClientRect();
+            const pRect = pageContainer.getBoundingClientRect();
+            const x = ((bRect.left - pRect.left) / pRect.width) * 100;
+            const y = ((bRect.top - pRect.top) / pRect.height) * 100;
+            const w = (bRect.width / pRect.width) * 100;
+            const h = (bRect.height / pRect.height) * 100;
+            onChange({ freeform: { x, y, w, h, z: 50 } });
+          } else {
+            onChange({ freeform: { x: 10, y: 10, w: 40, h: 40 } });
+          }
+        }
+      }} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 uppercase" title={block.freeform ? "Snap back to layout grid" : "Unlock from Grid"}>
         {block.freeform ? '↩ Grid' : '🔓 Unlock'}
       </button>
       <button onClick={(e) => { e.stopPropagation(); onChange({ isDeleted: true }) }} className="text-[9px] font-bold text-red-500 hover:text-red-700 uppercase ml-1" title="Delete Block">
