@@ -205,7 +205,7 @@ export default function PublicPortfolioPage() {
         ref={containerRef}
         className="flex-1 w-full max-w-[95vw] mx-auto relative z-10 pt-8 pb-24 overflow-auto custom-scrollbar"
       >
-        <div className="min-h-full min-w-full w-fit mx-auto flex items-center justify-center p-8">
+        <div className="min-h-full min-w-full w-fit mx-auto p-8">
           {bookPages.length > 0 ? (
             <div 
               className="relative shadow-2xl ring-1 ring-white/10 mx-auto transition-all duration-300 origin-center"

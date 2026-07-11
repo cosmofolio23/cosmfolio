@@ -1611,7 +1611,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={finalStyle} 
-      className={`min-h-0 ${readonly || isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : 'hover:z-[100] focus-within:z-[100]'} hover:ring-1 hover:ring-blue-500/30`} group/block-container ${z}`}
+      className={`min-h-0 ${readonly || isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : 'overflow-hidden hover:overflow-visible focus-within:overflow-visible'} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()
@@ -1637,7 +1637,7 @@ function RegionView({
       )}
       {region.role === 'title' && (
         titleBlock
-          ? <div className="group/tb relative cursor-pointer h-full" onClick={openEditTitleBlock}>
+          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'}`} onClick={!readonly ? openEditTitleBlock : undefined}>
               <TitleBlockView
                 style={titleBlock}
                 p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
@@ -1649,11 +1649,13 @@ function RegionView({
                 }}
                 override={{ color: block.color, fontFamily: block.fontFamily, scale: block.fontSize }}
               />
-              <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden" data-html2canvas-ignore="true">
-                <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
-                  ✏️ Edit Title Block
-                </span>
-              </div>
+              {!readonly && (
+                <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden" data-html2canvas-ignore="true">
+                  <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
+                    ✏️ Edit Title Block
+                  </span>
+                </div>
+              )}
               
               {editingTitleBlock && (
                 <div 
