@@ -73,6 +73,10 @@ export default function PublicPortfolioPage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const bookRef = useRef<any>(null)
 
+  // Determine if portfolio is landscape or portrait safely at hook-level
+  const savedPageSize = portfolio?.document?.pageSize;
+  const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
+
   useEffect(() => {
     const loadPortfolio = async () => {
       try {
@@ -137,10 +141,6 @@ export default function PublicPortfolioPage() {
   type BookSlot = { id: string; page?: Page; isBlank?: boolean; part?: 'full' | 'left' | 'right' };
   let bookPages: BookSlot[] = [];
 
-  // Determine if portfolio is landscape or portrait
-  const savedPageSize = (document as any).pageSize;
-  // Default to landscape if not specified, since most architectural portfolios are landscape
-  const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
   
   // Portrait mode (side-by-side) logic - now applies to BOTH Portrait and Landscape!
   // Physical books are always side-by-side regardless of whether individual pages are portrait or landscape.
