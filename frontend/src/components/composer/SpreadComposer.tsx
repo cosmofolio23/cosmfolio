@@ -41,6 +41,7 @@ interface Props {
   /** Show edit annotations (gutter line, page labels) */
   editMode?: boolean
   scale?: number
+  readonly?: boolean
 }
 
 export default function SpreadComposer({

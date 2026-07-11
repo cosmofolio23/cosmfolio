@@ -24,6 +24,32 @@ export const LAYOUT_VARIANTS = [
   { value: 'brutalist-blueprint', label: 'Brutalist Blueprint' },
   { value: 'editorial-monograph', label: 'Editorial Monograph' },
   { value: 'deconstructivist', label: 'Deconstructivist Node' },
+  // ── Text-Only and Bulleted/Numbered Layouts (25 Variants) ──
+  { value: 'text-bullet', label: 'Text List (Bulleted)' },
+  { value: 'text-number', label: 'Text List (Numbered)' },
+  { value: 'text-roman', label: 'Text List (Roman Numerals)' },
+  { value: 'text-alphabet', label: 'Text List (Alphabetical)' },
+  { value: 'text-arrow', label: 'Text List (Right Arrow)' },
+  { value: 'text-dash', label: 'Text List (Dashed)' },
+  { value: 'text-square', label: 'Text List (Square Bullet)' },
+  { value: 'clean-outline', label: 'Clean Outline List' },
+  { value: 'minimal-points', label: 'Minimal Bullet Points' },
+  { value: 'classic-bullet', label: 'Classic Bulleted Timeline' },
+  { value: 'hanging-indent', label: 'Hanging Indented List' },
+  { value: 'numbered-timeline', label: 'Numbered Timeline' },
+  { value: 'roman-timeline', label: 'Roman Numeral Timeline' },
+  { value: 'block-number', label: 'Bold Numbered Block' },
+  { value: 'bracket-number', label: 'Bracketed Numbered List' },
+  { value: 'double-bullet', label: 'Double Bullet Minimal' },
+  { value: 'editorial-list', label: 'Editorial Bulleted List' },
+  { value: 'architect-specification', label: 'Architect Specs (Bulleted)' },
+  { value: 'mono-specs', label: 'Monospace Specs (Bulleted)' },
+  { value: 'sans-clean-points', label: 'Sans Clean Point List' },
+  { value: 'serif-classic-points', label: 'Serif Classic Point List' },
+  { value: 'lined-bullets', label: 'Vertical Lined Bullet List' },
+  { value: 'dashed-timeline', label: 'Dashed Bullet Timeline' },
+  { value: 'minimalist-numbered', label: 'Minimalist Numbered List' },
+  { value: 'spaced-bullet-grid', label: 'Spaced Bullet Grid' },
 ];
 
 export const BAR_STYLES = [
@@ -95,6 +121,36 @@ export function getVariantClasses(variant: string): string {
     case 'brutalist-blueprint': return 'font-mono text-xs text-cyan-300 bg-sky-950 p-6 border-2 border-cyan-500/30 rounded-none shadow-[4px_4px_0_0_rgba(14,116,144,1)] relative overflow-visible';
     case 'editorial-monograph': return 'font-serif text-[13px] tracking-wide leading-relaxed pl-6 border-l-2 border-black/30 relative';
     case 'deconstructivist': return 'relative p-6 border border-black/10 bg-slate-50/50 hover:bg-slate-50 rotate-[0.5deg] hover:rotate-0 transition-transform duration-300';
+    // ── Text-Only Layout Class Mappings ──
+    case 'text-bullet':
+    case 'text-number':
+    case 'text-roman':
+    case 'text-alphabet':
+    case 'text-arrow':
+    case 'text-dash':
+    case 'text-square':
+    case 'minimal-points':
+    case 'classic-bullet':
+    case 'hanging-indent':
+    case 'numbered-timeline':
+    case 'roman-timeline':
+    case 'bracket-number':
+    case 'double-bullet':
+    case 'editorial-list':
+    case 'architect-specification':
+    case 'sans-clean-points':
+    case 'serif-classic-points':
+    case 'lined-bullets':
+    case 'dashed-timeline':
+    case 'minimalist-numbered':
+    case 'spaced-bullet-grid':
+      return 'pl-6 relative';
+    case 'block-number':
+      return 'pl-8 relative';
+    case 'mono-specs':
+      return 'font-mono pl-6 relative';
+    case 'clean-outline':
+      return 'border border-black/10 p-3 rounded-sm bg-transparent';
     default: return ''; // list, timeline, masonry, grid-2, grid-3 handled structurally
   }
 }

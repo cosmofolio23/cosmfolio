@@ -834,6 +834,48 @@ function ResumeBio({ block, tokens, onChange, readonly }: { block: Block; tokens
   )
 }
 
+function romanize(num: number): string {
+  const lookup: Array<[string, number]> = [['M',1000],['CM',900],['D',500],['CD',400],['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];
+  let roman = '';
+  let n = num;
+  for (const [letter, val] of lookup) {
+    while (n >= val) {
+      roman += letter;
+      n -= val;
+    }
+  }
+  return roman;
+}
+
+function getPrefix(variant: string, index: number): string {
+  switch (variant) {
+    case 'text-bullet': return '•';
+    case 'text-number': return `${index + 1}.`;
+    case 'text-roman': return `${romanize(index + 1)}.`;
+    case 'text-alphabet': return `${String.fromCharCode(97 + index)}.`;
+    case 'text-arrow': return '→';
+    case 'text-dash': return '—';
+    case 'text-square': return '▪';
+    case 'minimal-points': return '·';
+    case 'classic-bullet': return '•';
+    case 'numbered-timeline': return `${index + 1}.`;
+    case 'roman-timeline': return `${romanize(index + 1)}.`;
+    case 'block-number': return `${index + 1}`;
+    case 'bracket-number': return `[${index + 1}]`;
+    case 'double-bullet': return '»';
+    case 'editorial-list': return '§';
+    case 'architect-specification': return '▫';
+    case 'mono-specs': return '>';
+    case 'sans-clean-points': return '•';
+    case 'serif-classic-points': return '•';
+    case 'lined-bullets': return '•';
+    case 'dashed-timeline': return '○';
+    case 'minimalist-numbered': return `${index + 1}`;
+    case 'spaced-bullet-grid': return '•';
+    default: return '';
+  }
+}
+
 function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; tokens: DesignTokens; onChange: (p: Partial<Block>) => void; readonly?: boolean }) {
   const entries: ResumeEntry[] = block.resumeEntries || []
   const patch = (next: ResumeEntry[]) => onChange({ resumeEntries: next })
@@ -852,9 +894,16 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
 
   const isMasonry = variant === 'masonry'
   const isBento = variant === 'bento'
-  const isTimeline = variant === 'timeline'
+  const isTimeline = variant === 'timeline' || variant === 'classic-bullet' || variant === 'numbered-timeline' || variant === 'roman-timeline' || variant === 'dashed-timeline'
   
-  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' ? 'flex flex-col' : 
+  const isTextOnlyVariant = variant.startsWith('text-') || 
+                            ['clean-outline', 'minimal-points', 'classic-bullet', 'hanging-indent', 
+                             'numbered-timeline', 'roman-timeline', 'block-number', 'bracket-number', 
+                             'double-bullet', 'editorial-list', 'architect-specification', 'mono-specs', 
+                             'sans-clean-points', 'serif-classic-points', 'lined-bullets', 'dashed-timeline', 
+                             'minimalist-numbered', 'spaced-bullet-grid'].includes(variant);
+
+  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' || isTextOnlyVariant ? 'flex flex-col' : 
                     isTimeline ? 'flex flex-col pl-4 border-l border-black/10' : 
                     isMasonry ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : 
                     variant === 'grid-3' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6' : 
@@ -890,28 +939,41 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
       </div>
       <div className={`flex-1 overflow-visible pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : ''}`}>
-            {variant === 'timeline' && (
+          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : isTextOnlyVariant ? 'pl-6' : ''}`}>
+            {isTimeline && (
               <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             )}
             
-            <div className="w-16 @sm:w-20 shrink-0">
-              <input 
-                value={e.year || ''} 
-                onChange={ev => upd(i, 'year', ev.target.value)} 
-                placeholder="Year" 
-                className={`w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none ${
-                  variant === 'brutalist-blueprint' ? 'text-cyan-400' : 
-                  variant === 'editorial-monograph' ? 'font-serif italic text-xl font-light tracking-normal border-r border-black/20 pr-2 block w-auto' : 
-                  ''
-                }`} 
-                style={variant === 'brutalist-blueprint' ? { color: '#22d3ee' } : variant === 'editorial-monograph' ? { color: finalPrimary, fontFamily: tokens.headingFont } : { color: tokens.accent }} 
-              />
-            </div>
+            {isTextOnlyVariant ? (
+              <span className={`absolute left-0 top-[4px] text-[10px] font-bold ${variant === 'block-number' ? 'w-4 h-4 flex items-center justify-center bg-black text-white text-[8px] rounded-sm font-mono' : ''}`} style={variant === 'block-number' ? {} : { color: tokens.accent }}>
+                {getPrefix(variant, i)}
+              </span>
+            ) : (
+              <div className="w-16 @sm:w-20 shrink-0">
+                <input 
+                  value={e.year || ''} 
+                  onChange={ev => upd(i, 'year', ev.target.value)} 
+                  placeholder="Year" 
+                  className={`w-full text-[10px] font-mono font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none ${
+                    variant === 'brutalist-blueprint' ? 'text-cyan-400' : 
+                    variant === 'editorial-monograph' ? 'font-serif italic text-xl font-light tracking-normal border-r border-black/20 pr-2 block w-auto' : 
+                    ''
+                  }`} 
+                  style={variant === 'brutalist-blueprint' ? { color: '#22d3ee' } : variant === 'editorial-monograph' ? { color: finalPrimary, fontFamily: tokens.headingFont } : { color: tokens.accent }} 
+                />
+              </div>
+            )}
             
             <div className="flex-1 min-w-0 flex flex-col gap-[2px] overflow-visible min-h-0 shrink pt-0.5">
               <input value={e.title} onChange={ev => upd(i, 'title', ev.target.value)} placeholder="Role / Degree" className="block w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none leading-tight shrink-0" style={{ color: variant === 'brutalist-blueprint' ? '#ffffff' : finalPrimary, fontFamily: tokens.headingFont }} />
               <div className="flex flex-wrap gap-2 items-baseline shrink-0">
+                {isTextOnlyVariant && (
+                  readonly ? (
+                    e.year && <span className="text-[9px] font-mono opacity-50" style={{ color: finalText }}>{e.year} ·</span>
+                  ) : (
+                    <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-12 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: tokens.accent }} />
+                  )
+                )}
                 {readonly ? (
                   e.org && <span className={`text-[9px] uppercase tracking-wider font-semibold opacity-80 ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText, fontFamily: tokens.bodyFont }}>{e.org}</span>
                 ) : (
@@ -1099,7 +1161,14 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
   const isBento = variant === 'bento'
   const isTimeline = variant === 'timeline'
 
-  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' ? 'flex flex-col' : 
+  const isTextOnlyVariant = variant.startsWith('text-') || 
+                            ['clean-outline', 'minimal-points', 'classic-bullet', 'hanging-indent', 
+                             'numbered-timeline', 'roman-timeline', 'block-number', 'bracket-number', 
+                             'double-bullet', 'editorial-list', 'architect-specification', 'mono-specs', 
+                             'sans-clean-points', 'serif-classic-points', 'lined-bullets', 'dashed-timeline', 
+                             'minimalist-numbered', 'spaced-bullet-grid'].includes(variant);
+
+  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' || isTextOnlyVariant ? 'flex flex-col' : 
                     isTimeline ? 'flex flex-col pl-4 border-l border-black/10' : 
                     isMasonry ? 'columns-1 @xs:columns-2 gap-x-6' : 
                     variant === 'grid-3' ? 'grid grid-cols-1 @xs:grid-cols-3 gap-6' : 
@@ -1133,27 +1202,35 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
           <div key={i} className={`group flex flex-col gap-1.5 break-inside-avoid ${dividerClass}`}>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0 group/skill">
-                {isSoftware && s.imageUrl ? (
-                  <div className="relative">
-                    <img src={s.imageUrl} alt={s.name} className="w-5 h-5 object-contain rounded-sm" />
-                    {!readonly && onUploadImage && (
-                      <label className="absolute -inset-1 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/skill:opacity-100 cursor-pointer rounded transition-opacity z-10 shadow-sm" title="Change Image">
-                        <span className="text-[10px] font-bold">↑</span>
-                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
-                      </label>
-                    )}
-                  </div>
-                ) : isSoftware ? (
-                  <div className="relative">
-                    <SoftwareIcon name={s.name} fallbackText={s.icon} />
-                    {!readonly && onUploadImage && (
-                      <label className="absolute -inset-1 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/skill:opacity-100 cursor-pointer rounded transition-opacity z-10 shadow-sm" title="Upload custom image">
-                        <span className="text-[10px] font-bold">↑</span>
-                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
-                      </label>
-                    )}
-                  </div>
-                ) : null}
+                {isTextOnlyVariant ? (
+                  <span className={`text-[10px] font-bold ${variant === 'block-number' ? 'w-4 h-4 flex items-center justify-center bg-black text-white text-[8px] rounded-sm font-mono' : ''}`} style={variant === 'block-number' ? {} : { color: tokens.accent }}>
+                    {getPrefix(variant, i)}
+                  </span>
+                ) : (
+                  <>
+                    {isSoftware && s.imageUrl ? (
+                      <div className="relative">
+                        <img src={s.imageUrl} alt={s.name} className="w-5 h-5 object-contain rounded-sm" />
+                        {!readonly && onUploadImage && (
+                          <label className="absolute -inset-1 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/skill:opacity-100 cursor-pointer rounded transition-opacity z-10 shadow-sm" title="Change Image">
+                            <span className="text-[10px] font-bold">↑</span>
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
+                          </label>
+                        )}
+                      </div>
+                    ) : isSoftware ? (
+                      <div className="relative">
+                        <SoftwareIcon name={s.name} fallbackText={s.icon} />
+                        {!readonly && onUploadImage && (
+                          <label className="absolute -inset-1 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/skill:opacity-100 cursor-pointer rounded transition-opacity z-10 shadow-sm" title="Upload custom image">
+                            <span className="text-[10px] font-bold">↑</span>
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(i, e)} />
+                          </label>
+                        )}
+                      </div>
+                    ) : null}
+                  </>
+                )}
                 <input value={s.name} onChange={ev => upd(i, 'name', ev.target.value)} placeholder="Skill name" className="flex-1 text-[10px] font-semibold tracking-wide uppercase bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
               </div>
               {!readonly && <button onClick={() => del(i)} type="button" title="Delete Skill" className="text-[10px] opacity-40 hover:opacity-100 text-red-500 leading-none px-1 transition-opacity z-10 cursor-pointer print:hidden" data-html2canvas-ignore="true">✕</button>}
@@ -1185,7 +1262,14 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
   const divider = styleConfig.divider || 'none'
   const gap = styleConfig.gap ?? 14
 
-  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' ? 'flex flex-col' : 
+  const isTextOnlyVariant = variant.startsWith('text-') || 
+                            ['clean-outline', 'minimal-points', 'classic-bullet', 'hanging-indent', 
+                             'numbered-timeline', 'roman-timeline', 'block-number', 'bracket-number', 
+                             'double-bullet', 'editorial-list', 'architect-specification', 'mono-specs', 
+                             'sans-clean-points', 'serif-classic-points', 'lined-bullets', 'dashed-timeline', 
+                             'minimalist-numbered', 'spaced-bullet-grid'].includes(variant);
+
+  const gridClass = variant === 'list' || variant === 'compact' || variant === 'expanded' || isTextOnlyVariant ? 'flex flex-col' : 
                     variant === 'timeline' ? 'flex flex-col pl-4 border-l border-black/10' : 
                     variant === 'masonry' ? 'columns-1 @xs:columns-2 gap-x-6 gap-y-4' : 
                     variant === 'bento' ? 'grid grid-cols-1 @xs:grid-cols-2 auto-rows-max gap-4' : 
@@ -1221,11 +1305,15 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
       </div>
       <div className={`flex-1 overflow-visible pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : 'pl-3'}`}>
+          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : isTextOnlyVariant ? 'pl-6' : 'pl-3'}`}>
             {variant === 'timeline' ? (
                <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             ) : variant === 'brutalist-blueprint' ? (
                <span className="text-[10px] font-mono text-cyan-400 font-bold bg-sky-900/40 px-1 border border-cyan-500/10">[{icon}]</span>
+            ) : isTextOnlyVariant ? (
+               <span className={`absolute left-0 top-[2px] text-[10px] font-bold ${variant === 'block-number' ? 'w-4 h-4 flex items-center justify-center bg-black text-white text-[8px] rounded-sm font-mono' : ''}`} style={variant === 'block-number' ? {} : { color: tokens.accent }}>
+                 {getPrefix(variant, i)}
+               </span>
             ) : (
                <span className="absolute left-0 top-[2px] text-[10px] font-mono font-bold" style={{ color: tokens.accent }}>{icon}</span>
             )}
