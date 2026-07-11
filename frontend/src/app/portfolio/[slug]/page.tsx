@@ -120,6 +120,15 @@ export default function PublicPortfolioPage() {
     ? [...rawPages, { id: 'blank-page-pad', type: 'blank', blocks: [] }]
     : rawPages
 
+  // Determine if portfolio is landscape or portrait
+  const savedPageSize = (document as any).pageSize;
+  // Default to landscape if not specified, since most architectural portfolios are landscape
+  const isLandscape = savedPageSize ? savedPageSize.preset.includes('landscape') : true;
+  
+  const pageW = isLandscape ? 1080 : 760;
+  const pageH = isLandscape ? 760 : 1080;
+  const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : undefined);
+
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
   const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
   const handleZoomFit = () => setZoom(1)
@@ -187,8 +196,8 @@ export default function PublicPortfolioPage() {
                   {pages.map((page, idx) => (
                     <div key={page.id} className="w-full bg-white border-b border-gray-100 p-8">
                        <h2 className="text-xl text-black font-bold mb-4 opacity-50">Page {idx + 1}</h2>
-                             <div className="w-full h-full relative pointer-events-none">
-                               <PageComposer page={page} tokens={tokens} readonly={true} />
+                             <div className="w-full h-full relative">
+                               <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} />
                              </div>
                     </div>
                   ))}
@@ -208,8 +217,8 @@ export default function PublicPortfolioPage() {
 
               <HTMLFlipBook
                 ref={bookRef}
-                width={760}
-                height={1080}
+                width={pageW}
+                height={pageH}
                 size="stretch"
                 usePortrait={false}
                 minWidth={315}
@@ -226,8 +235,8 @@ export default function PublicPortfolioPage() {
                   const PageWrapper = (idx === 0 || idx === pages.length - 1) ? PageCover : BookPage;
                   return (
                     <PageWrapper key={page.id}>
-                      <div className="w-full h-full relative pointer-events-none overflow-hidden bg-white">
-                        <PageComposer page={page} tokens={tokens} readonly={true} />
+                      <div className="w-full h-full relative overflow-hidden bg-white">
+                        <PageComposer page={page} tokens={tokens} readonly={true} pageSize={pageSizeProp} />
                       </div>
                     </PageWrapper>
                   )
