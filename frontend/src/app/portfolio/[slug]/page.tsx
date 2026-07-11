@@ -84,6 +84,9 @@ export default function PublicPortfolioPage() {
   // Determine if portfolio is landscape or portrait safely at hook-level
   const savedPageSize = portfolio?.document?.pageSize;
   const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
+  const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
+  const pageW = isLandscape ? 1080 : 760;
+  const pageH = Math.round(pageW * (pageSizeProp.height / pageSizeProp.width));
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -107,7 +110,7 @@ export default function PublicPortfolioPage() {
     const calcDefaultZoom = () => {
       if (containerRef.current) {
         const availableW = containerRef.current.offsetWidth - 64 // subtract padding
-        const targetW = isLandscape ? 2160 : 1520
+        const targetW = pageW * 2
         const fit = Math.min(availableW / targetW, 1)
         setDefaultZoom(fit)
         setZoom(fit)
@@ -116,7 +119,7 @@ export default function PublicPortfolioPage() {
     calcDefaultZoom()
     window.addEventListener('resize', calcDefaultZoom)
     return () => window.removeEventListener('resize', calcDefaultZoom)
-  }, [isLoading, error, portfolio, isLandscape])
+  }, [isLoading, error, portfolio, pageW])
 
   if (isLoading) {
     return (
@@ -174,9 +177,7 @@ export default function PublicPortfolioPage() {
     bookPages.push({ id: 'blank-pad-end', isBlank: true });
   }
 
-  const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
-  const pageW = isLandscape ? 1080 : 760;
-  const pageH = isLandscape ? 760 : 1080;
+  
 
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
   const handleZoomOut = () => setZoom(z => Math.max(z - 0.25, 0.25))
