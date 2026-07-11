@@ -203,15 +203,20 @@ export default function PublicPortfolioPage() {
       {/* Main Content - Flipbook Canvas */}
       <main 
         ref={containerRef}
-        className="flex-1 w-full max-w-[90vw] mx-auto relative z-10 pt-8 pb-24 overflow-auto custom-scrollbar"
+        className="flex-1 w-full max-w-[95vw] mx-auto relative z-10 pt-8 pb-24 overflow-auto custom-scrollbar"
       >
-        <div className="min-h-full min-w-full w-fit mx-auto flex items-center justify-center">
-          <div 
-            className="transition-all duration-300 w-full h-full p-8"
-            style={{ zoom: zoom }}
-          >
+        <div className="min-h-full min-w-full w-fit mx-auto flex items-center justify-center p-8">
           {bookPages.length > 0 ? (
-            <div className="relative shadow-2xl ring-1 ring-white/10 w-full max-w-[1700px]">
+            <div 
+              className="relative shadow-2xl ring-1 ring-white/10 mx-auto transition-all duration-300 origin-center"
+              style={{
+                 width: `${100 * zoom}%`,
+                 maxWidth: `${1700 * zoom}px`,
+                 // Force the container to maintain the proper aspect ratio of an open book
+                 // If a single page is pageW x pageH, an open book is (pageW * 2) x pageH
+                 aspectRatio: `${pageW * 2} / ${pageH}`
+              }}
+            >
               <FlipbookErrorBoundary fallback={
                 <div className="w-[850px] max-w-full bg-white rounded-xl overflow-hidden shadow-2xl mx-auto flex flex-col h-[1100px] max-h-[80vh] overflow-y-auto">
                   <div className="p-8 text-center bg-red-50 text-red-600 font-medium">
@@ -318,7 +323,6 @@ export default function PublicPortfolioPage() {
           ) : (
             <div className="text-white/50">No pages found in this portfolio.</div>
           )}
-          </div>
         </div>
       </main>
 
