@@ -1884,8 +1884,8 @@ function RegionView({
       )}
       {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} readonly={readonly} />}
       {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} readonly={readonly} />}
-      {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
-      {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} />}
+      {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
+      {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
       {region.role === 'headshot' && <ResumeHeadshot block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} onUpload={onUploadImage} readonly={readonly} />}
       {region.role === 'bio' && <ResumeBio block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
       {region.role === 'education' && <ResumeEducation block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
