@@ -72,6 +72,14 @@ export default function PublicPortfolioPage() {
   const [defaultZoom, setDefaultZoom] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
   const bookRef = useRef<any>(null)
+  const pageFlipRef = useRef<any>(null)
+  const handleInit = (ev: any) => {
+    if (ev && ev.object) {
+      pageFlipRef.current = ev.object
+    } else {
+      pageFlipRef.current = ev
+    }
+  }
 
   // Determine if portfolio is landscape or portrait safely at hook-level
   const savedPageSize = portfolio?.document?.pageSize;
@@ -264,6 +272,7 @@ export default function PublicPortfolioPage() {
               }>
               <HTMLFlipBook
                 ref={bookRef}
+                onInit={handleInit}
                 width={pageW}
                 height={pageH}
                 size="stretch"
@@ -367,7 +376,7 @@ export default function PublicPortfolioPage() {
             onPointerDown={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              bookRef.current?.pageFlip()?.flipPrev();
+              pageFlipRef.current?.flipPrev();
             }}
             className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full transition-all shadow-lg hover:scale-110"
             title="Previous Page"
@@ -380,7 +389,7 @@ export default function PublicPortfolioPage() {
             onPointerDown={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              bookRef.current?.pageFlip()?.flipNext();
+              pageFlipRef.current?.flipNext();
             }}
             className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full transition-all shadow-lg hover:scale-110"
             title="Next Page"

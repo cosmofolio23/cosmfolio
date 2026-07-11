@@ -311,6 +311,10 @@ export function ImageBlock({
   onUpload?: (file: File) => Promise<string>
   readonly?: boolean
 }) {
+  if (readonly && !block.imageUrl && !block.isFlowchart) {
+    return null
+  }
+
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
