@@ -79,7 +79,7 @@ const ADD_BLOCKS: { type: BlockType; icon: string }[] = [
 const HEADING_FONTS = ['Montserrat', 'Playfair Display', 'Roboto', 'Inter', 'Poppins', 'Georgia', 'Lora', 'Bebas Neue', 'Oswald', 'Arial']
 const BODY_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', 'Raleway', 'Georgia', 'Arial']
 
-function seedCustomPages(data: any, orientation: string, size: string, purpose: string, targetPages: number, targetProjects: number): Page[] {
+function seedCustomPages(data: any, orientation: string, size: string, purpose: string, targetPages: number, targetProjects: number, isSpreadFormat: boolean = false): Page[] {
   const list: Page[] = []
 
   // Real layouts + text pulled from the source portfolio (Cosmo Special templates).
@@ -110,45 +110,65 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
   list.push({
     id: uid('p'),
     type: 'about',
-    layoutId: useId(ids.contents, 'index.minimal.default'),
+    layoutId: isSpreadFormat ? 'spread.contents-minimal' : useId(ids.contents, 'index.minimal.default'),
+    isSpread: isSpreadFormat,
     blocks: [
       { id: uid(), type: 'title', text: 'Selected Works' },
       { id: uid(), type: 'contents', label: 'Contents' }
     ]
   })
 
-  // 3. About / Resume Spread (2 pages)
-  list.push({
-    id: uid('p'),
-    type: 'about',
-    layoutId: useId(ids.about, 'about.portraitFull'),
-    blocks: [
-      { id: uid(), type: 'title', text: 'About Me' },
-      { id: uid(), type: 'description', text: ec.about || getPlaceholderText('bio', category) },
-      { id: uid(), type: 'headshot', imageUrl: getPlaceholderImage('portrait', colors, 5), label: 'Bio Image' }
-    ]
-  })
-  list.push({
-    id: uid('p'),
-    type: 'resume',
-    layoutId: useId(ids.resume, 'about.cardStack'),
-    blocks: ec.resume
-      ? [
-          { id: uid(), type: 'title', text: 'Curriculum Vitae' },
-          { id: uid(), type: 'description', text: ec.resume }
-        ]
-      : [
-          { id: uid(), type: 'title', text: 'Curriculum Vitae' },
-          { id: uid(), type: 'legend', label: 'EDUCATION & WORK', legendItems: [
-            { key: '2022-26', label: 'B.Arch Graduate' },
-            { key: '2025', label: 'Architectural Intern' }
-          ] }
-        ]
-  })
+  // 3. About / Resume
+  if (isSpreadFormat) {
+    list.push({
+      id: uid('p'),
+      type: 'resume',
+      layoutId: 'resume.spread-classic',
+      isSpread: true,
+      blocks: [
+        { id: uid(), type: 'title', text: 'About Me & CV' },
+        { id: uid(), type: 'description', text: ec.about || ec.resume || getPlaceholderText('bio', category) },
+        { id: uid(), type: 'headshot', imageUrl: getPlaceholderImage('portrait', colors, 5), label: 'Bio Image' }
+      ]
+    })
+  } else {
+    list.push({
+      id: uid('p'),
+      type: 'about',
+      layoutId: useId(ids.about, 'about.portraitFull'),
+      blocks: [
+        { id: uid(), type: 'title', text: 'About Me' },
+        { id: uid(), type: 'description', text: ec.about || getPlaceholderText('bio', category) },
+        { id: uid(), type: 'headshot', imageUrl: getPlaceholderImage('portrait', colors, 5), label: 'Bio Image' }
+      ]
+    })
+    list.push({
+      id: uid('p'),
+      type: 'resume',
+      layoutId: useId(ids.resume, 'about.cardStack'),
+      blocks: ec.resume
+        ? [
+            { id: uid(), type: 'title', text: 'Curriculum Vitae' },
+            { id: uid(), type: 'description', text: ec.resume }
+          ]
+        : [
+            { id: uid(), type: 'title', text: 'Curriculum Vitae' },
+            { id: uid(), type: 'legend', label: 'EDUCATION & WORK', legendItems: [
+              { key: '2022-26', label: 'B.Arch Graduate' },
+              { key: '2025', label: 'Architectural Intern' }
+            ] }
+          ]
+    })
+  }
 
   // 4. Projects
-  const remainingPages = Math.max(2, targetPages - 5)
-  const pagesPerProject = Math.max(2, Math.floor(remainingPages / targetProjects))
+  const getPhysCount = () => list.reduce((sum, p) => sum + (p.isSpread ? 2 : 1), 0)
+  
+  // We subtract 1 for the contact page that will be added at the end
+  const maxProjectPhysPages = Math.max(2, targetPages - 1)
+  
+  const remainingPhysPages = Math.max(2, targetPages - getPhysCount() - 1)
+  const pagesPerProject = Math.max(isSpreadFormat ? 2 : 1, Math.floor(remainingPhysPages / targetProjects))
   
   for (let pIdx = 0; pIdx < targetProjects; pIdx++) {
     const pNum = String(pIdx + 1).padStart(2, '0')
@@ -158,7 +178,8 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
     list.push({
       id: uid('p'),
       type: 'project',
-      layoutId: useId(ids.project, 'single.titleTopText'),
+      layoutId: isSpreadFormat ? 'spread.left-image-right-text' : useId(ids.project, 'single.titleTopText'),
+      isSpread: isSpreadFormat,
       blocks: [
         { id: uid(), type: 'title', text: pTitle },
         { id: uid(), type: 'subtitle', text: getPlaceholderText('subtitle', category) },
@@ -168,26 +189,29 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
       ]
     })
 
-    for (let pg = 1; pg < pagesPerProject; pg++) {
-      if (list.length >= targetPages - 1) break
+    // If a spread takes 2 pages, we step by 2
+    for (let pg = (isSpreadFormat ? 2 : 1); pg < pagesPerProject; pg += (isSpreadFormat ? 2 : 1)) {
+      if (getPhysCount() >= maxProjectPhysPages) break
       list.push({
         id: uid('p'),
         type: 'project',
-        layoutId: pg % 2 === 1 ? 'duoH.bare' : 'heroSideRight.titleLegendSide',
+        layoutId: isSpreadFormat ? 'spread.left-image-right-text' : (pg % 2 === 1 ? 'duoH.bare' : 'heroSideRight.titleLegendSide'),
+        isSpread: isSpreadFormat,
         blocks: [
           { id: uid(), type: 'render', imageUrl: getPlaceholderImage('render', colors, seedIndex + pg * 3), label: 'Visual View' },
           { id: uid(), type: 'plan', imageUrl: getPlaceholderImage('plan', colors, seedIndex + pg * 7), label: 'Ground Floor Plan' }
         ]
       })
     }
-    if (list.length >= targetPages - 1) break
+    if (getPhysCount() >= maxProjectPhysPages) break
   }
 
-  while (list.length < targetPages - 1) {
+  while (getPhysCount() < maxProjectPhysPages) {
     list.push({
       id: uid('p'),
       type: 'project',
-      layoutId: 'single.bare',
+      layoutId: isSpreadFormat ? 'spread.left-image-right-text' : 'single.bare',
+      isSpread: isSpreadFormat,
       blocks: [{ id: uid(), type: 'render', imageUrl: getPlaceholderImage('render', colors, 99), label: 'Project View' }]
     })
   }
@@ -203,18 +227,27 @@ function seedCustomPages(data: any, orientation: string, size: string, purpose: 
     ]
   })
 
-  // Hard cap total pages to the requested budget (free tier = 5). Keep the cover
-  // first and contact last; fill the middle preferring project pages.
-  if (list.length > targetPages) {
+  // Hard cap total pages to the requested budget.
+  if (getPhysCount() > targetPages) {
     const cover = list[0]
     const contact = list[list.length - 1]
     const middle = list.slice(1, -1)
-    const slots = Math.max(0, targetPages - 2) // minus cover + contact
     const projects = middle.filter(p => p.type === 'project')
     const others = middle.filter(p => p.type !== 'project')
-    const keep = new Set([...projects, ...others].slice(0, slots))
+    
+    // We only keep as many items as fit in the remaining physical slots
+    let currentPhys = 2 // cover + contact
+    const keep = new Set<Page>()
+    
+    for (const p of [...projects, ...others]) {
+       const cost = p.isSpread ? 2 : 1
+       if (currentPhys + cost <= targetPages) {
+         keep.add(p)
+         currentPhys += cost
+       }
+    }
     const ordered = middle.filter(p => keep.has(p))
-    return [cover, ...ordered, contact].slice(0, targetPages)
+    return [cover, ...ordered, contact]
   }
   return list
 }

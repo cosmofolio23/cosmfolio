@@ -294,8 +294,10 @@ export default function TemplateMarketplace() {
       const pagesParam = Math.min(maxPages, setupSettings?.pages || maxPages)
       const projectsParam = Math.min(maxProjects, setupSettings?.projects || maxProjects)
 
+      const formatParam = setupSettings?.format || 'pages'
+
       // Redirect to editor with the new project and configuration query params
-      router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}&orientation=${orientationParam}&size=${sizeParam}&purpose=${purposeParam}&pages=${pagesParam}&projects=${projectsParam}`)
+      router.push(`/dashboard/templates/${template.id}/editor?project=${newProject.id}&orientation=${orientationParam}&size=${sizeParam}&purpose=${purposeParam}&pages=${pagesParam}&projects=${projectsParam}&format=${formatParam}`)
     } catch (e) {
       alert('Failed to create portfolio from template')
       console.error(e)
