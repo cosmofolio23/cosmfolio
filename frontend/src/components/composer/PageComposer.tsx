@@ -1740,6 +1740,17 @@ function RegionView({
           y: (e.clientY - rect.top) / scaleY 
         })
       }}
+      onDoubleClick={e => {
+        if (readonly) return
+        const target = e.target as HTMLElement
+        if (target.closest('.floating-toolbar-portal') || target.closest('[data-html2canvas-ignore="true"]')) {
+          return
+        }
+        const editable = e.currentTarget.querySelector('[data-placeholder]') as HTMLElement
+        if (editable) {
+          editable.click()
+        }
+      }}
     >
       {!readonly && !['headshot', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) && (
         <BlockHoverToolbar 
