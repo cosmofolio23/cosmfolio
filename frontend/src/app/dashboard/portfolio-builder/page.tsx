@@ -15,7 +15,7 @@ export default function PortfolioBuilder() {
   const renderStep = () => {
     switch (builder.currentStep) {
       case 1:
-        return <Step1PageCount totalPages={builder.totalPages} onSetTotal={builder.setTotalPages} />
+        return <Step1PageCount totalPages={builder.totalPages} onSetTotal={builder.setTotalPages} pageFormat={builder.pageFormat} onSetFormat={builder.setPageFormat} />
       case 2:
         return <Step2ProjectCount projectCount={builder.projectCount} onSetCount={builder.setProjectCount} />
       case 3:

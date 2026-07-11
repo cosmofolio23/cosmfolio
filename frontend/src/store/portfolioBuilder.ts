@@ -42,6 +42,7 @@ interface PortfolioBuilderStore extends BuilderState {
 
   // Step 1: Page count
   setTotalPages: (count: number) => void
+  setPageFormat: (format: 'pages' | 'spreads') => void
 
   // Step 2: Project count
   setProjectCount: (count: number) => void
@@ -84,6 +85,7 @@ const initialState: BuilderState = {
   portfolioName: '',
   portfolioType: 'professional',
   totalPages: 8,
+  pageFormat: 'pages',
   projectCount: 3,
   frontCover: {
     title: '',
@@ -239,6 +241,7 @@ export const usePortfolioBuilder = create<PortfolioBuilderStore>((set, get) => (
 
   // Step 1
   setTotalPages: (count) => set({ totalPages: Math.max(4, Math.min(50, count)) }),
+  setPageFormat: (format) => set({ pageFormat: format }),
 
   // Step 2
   setProjectCount: (count) => set((s) => {

@@ -286,6 +286,7 @@ export interface BuilderState {
   portfolioType: PortfolioType
   projectCount: number
   totalPages: number  // auto-calculated from sections + projects
+  pageFormat: 'pages' | 'spreads'
   frontCover: FrontCoverConfig
   designProjects: DesignProjectConfig[]  // per-project configuration with assets
   aboutPage: AboutMePageConfig
