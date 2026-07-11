@@ -180,12 +180,13 @@ export default function PublicPortfolioPage() {
       {/* Main Content - Flipbook Canvas */}
       <main 
         ref={containerRef}
-        className="flex-1 w-full max-w-[90vw] mx-auto flex items-center justify-center relative z-10 pt-24 pb-24 overflow-auto custom-scrollbar"
+        className="flex-1 w-full max-w-[90vw] mx-auto relative z-10 pt-8 pb-24 overflow-auto custom-scrollbar"
       >
-        <div 
-          className="transition-transform duration-300 origin-center flex items-center justify-center w-full h-full"
-          style={{ transform: `scale(${zoom})` }}
-        >
+        <div className="min-h-full min-w-full w-fit mx-auto flex items-center justify-center">
+          <div 
+            className="transition-all duration-300 w-full h-full p-8"
+            style={{ zoom: zoom }}
+          >
           {pages.length > 0 ? (
             <div className="relative shadow-2xl ring-1 ring-white/10 w-full max-w-[1700px]">
               <FlipbookErrorBoundary fallback={
@@ -259,6 +260,7 @@ export default function PublicPortfolioPage() {
           ) : (
             <div className="text-white/50">No pages found in this portfolio.</div>
           )}
+          </div>
         </div>
       </main>
 
