@@ -269,7 +269,8 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
         ))}
         {page.blocks.filter(b => b.freeform).map((block, i) => {
           const isImg = ['render', 'plan', 'section', 'diagram'].includes(block.type)
-          const role = isImg ? 'image' : block.type as any
+          let role = isImg ? 'image' : block.type as any
+          if (role === 'description') role = 'text'
           const dummyRegion: Region = { role, r0: 0, c0: 0, rs: 1, cs: 1 }
           return (
             <RegionView
