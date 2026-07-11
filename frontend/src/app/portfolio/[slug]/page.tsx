@@ -124,42 +124,30 @@ export default function PublicPortfolioPage() {
   // Default to landscape if not specified, since most architectural portfolios are landscape
   const isLandscape = savedPageSize ? (savedPageSize.preset.includes('landscape') || savedPageSize.width > savedPageSize.height) : true;
   
-  if (isLandscape) {
-    // Single page mode
-    for (const p of rawPages) {
-      bookPages.push({ id: p.id, page: p, part: 'full' });
-    }
-    // Pad to even length so react-pageflip doesn't crash
-    if (bookPages.length % 2 !== 0) {
-      bookPages.push({ id: 'blank-pad-end', isBlank: true });
-    }
-  } else {
-    // Portrait mode (side-by-side)
-    let virtualPageNum = 1;
-    for (let i = 0; i < rawPages.length; i++) {
-      const p = rawPages[i];
-      if (p.isSpread) {
-        // A spread must start on an even virtual page number (left side of the book)
-        if (virtualPageNum % 2 !== 0) {
-          bookPages.push({ id: `blank-${p.id}-left-pad`, isBlank: true });
-          virtualPageNum += 1;
-        }
-        bookPages.push({ id: `${p.id}-left`, page: p, part: 'left' });
-        bookPages.push({ id: `${p.id}-right`, page: p, part: 'right' });
-        virtualPageNum += 2;
-      } else {
-        bookPages.push({ id: p.id, page: p, part: 'full' });
+  // Portrait mode (side-by-side) logic - now applies to BOTH Portrait and Landscape!
+  // Physical books are always side-by-side regardless of whether individual pages are portrait or landscape.
+  let virtualPageNum = 1;
+  for (let i = 0; i < rawPages.length; i++) {
+    const p = rawPages[i];
+    if (p.isSpread) {
+      // A spread must start on an even virtual page number (left side of the book)
+      if (virtualPageNum % 2 !== 0) {
+        bookPages.push({ id: `blank-${p.id}-left-pad`, isBlank: true });
         virtualPageNum += 1;
       }
-    }
-    // Pad to even length
-    if (bookPages.length % 2 !== 0) {
-      bookPages.push({ id: 'blank-pad-end', isBlank: true });
+      bookPages.push({ id: `${p.id}-left`, page: p, part: 'left' });
+      bookPages.push({ id: `${p.id}-right`, page: p, part: 'right' });
+      virtualPageNum += 2;
+    } else {
+      bookPages.push({ id: p.id, page: p, part: 'full' });
+      virtualPageNum += 1;
     }
   }
+  // Pad to even length so the book has a proper back cover
+  if (bookPages.length % 2 !== 0) {
+    bookPages.push({ id: 'blank-pad-end', isBlank: true });
+  }
 
-
-  
   const pageSizeProp = savedPageSize || (isLandscape ? { width: 297, height: 210, preset: 'a4-landscape', name: 'A4 Landscape' } : { width: 210, height: 297, preset: 'a4-portrait', name: 'A4 Portrait' });
   const pageW = isLandscape ? 1080 : 760;
   const pageH = isLandscape ? 760 : 1080;
@@ -260,7 +248,7 @@ export default function PublicPortfolioPage() {
                 width={pageW}
                 height={pageH}
                 size="stretch"
-                usePortrait={isLandscape ? true : false}
+                usePortrait={false}
                 minWidth={315}
                 maxWidth={1000}
                 minHeight={400}
