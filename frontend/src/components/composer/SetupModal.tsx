@@ -175,7 +175,10 @@ export default function SetupModal({ isOpen, isPro = false, isAdmin = false, onC
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormat('spreads')}
+                      onClick={() => {
+                        setFormat('spreads')
+                        if (pages % 2 !== 0) setPages(Math.max(2, pages - 1))
+                      }}
                       className={`flex-1 p-3 rounded-lg border text-left transition hover:bg-slate-800/40 ${
                         format === 'spreads' 
                           ? 'border-blue-500 bg-blue-500/10 text-white' 
@@ -192,18 +195,23 @@ export default function SetupModal({ isOpen, isPro = false, isAdmin = false, onC
                 <div className="space-y-1">
                   <div className="flex justify-between items-baseline text-xs">
                     <span className="text-slate-400">Target {format === 'spreads' ? 'Spread' : 'Page'} Count</span>
-                    <span className="font-mono text-blue-400 font-bold">{pages} {format === 'spreads' ? 'Spreads' : 'Pages'}</span>
+                    <span className="font-mono text-blue-400 font-bold">
+                      {format === 'spreads' ? pages / 2 : pages} {format === 'spreads' ? 'Spreads' : 'Pages'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <input
-                      type="range" min="1" max={isAdmin ? "100" : isPro ? "30" : "6"} step="1"
-                      value={pages}
-                      onChange={e => setPages(parseInt(e.target.value))}
+                      type="range" 
+                      min="1" 
+                      max={format === 'spreads' ? (isAdmin ? 50 : isPro ? 15 : 3) : (isAdmin ? 100 : isPro ? 30 : 6)} 
+                      step="1"
+                      value={format === 'spreads' ? pages / 2 : pages}
+                      onChange={e => setPages(parseInt(e.target.value) * (format === 'spreads' ? 2 : 1))}
                       className="flex-1 h-1 accent-blue-500 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 pt-1">
-                    {isAdmin ? "Admin mode: Unlimited pages." : isPro ? `Pro plan unlocked: Up to 30 ${format === 'spreads' ? 'spreads' : 'pages'} per portfolio.` : `Free plan includes up to 6 ${format === 'spreads' ? 'spreads' : 'pages'}. More unlock in Pro.`}
+                    {isAdmin ? "Admin mode: Unlimited pages." : isPro ? `Pro plan unlocked: Up to 30 pages (15 spreads) per portfolio.` : `Free plan includes up to 6 pages (3 spreads). More unlock in Pro.`}
                   </p>
                 </div>
                 {/* Projects */}
