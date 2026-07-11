@@ -279,10 +279,10 @@ export default function PublicPortfolioPage() {
                        <PageWrapper key={bookPage.id}>
                          <div className="w-full h-full relative overflow-hidden bg-white">
                            <div style={{ 
-                             width: pageW * 2, 
-                             height: pageH, 
+                             width: '200%', 
+                             height: '100%', 
                              position: 'absolute', 
-                             left: bookPage.part === 'right' ? -pageW : 0, 
+                             left: bookPage.part === 'right' ? '-100%' : '0', 
                              top: 0 
                            }}>
                              <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
