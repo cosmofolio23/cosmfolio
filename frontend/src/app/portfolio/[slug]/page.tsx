@@ -264,9 +264,9 @@ export default function PublicPortfolioPage() {
                 size="stretch"
                 usePortrait={false}
                 minWidth={315}
-                maxWidth={1000}
+                maxWidth={5000}
                 minHeight={400}
-                maxHeight={1533}
+                maxHeight={5000}
                 maxShadowOpacity={0.5}
                 showCover={true}
                 mobileScrollSupport={true}
