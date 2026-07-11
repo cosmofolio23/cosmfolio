@@ -137,8 +137,8 @@ class StorageClient:
         if len(file_data) > self.config.MAX_FILE_SIZE:
             return False, f"File size exceeds maximum of {self.config.MAX_FILE_SIZE / 1024 / 1024:.0f}MB"
 
-        if len(file_data) < self.config.MIN_FILE_SIZE:
-            return False, f"File size below minimum of {self.config.MIN_FILE_SIZE / 1024:.0f}KB"
+        if len(file_data) == 0:
+            return False, "File is empty"
 
         # Check MIME type
         if mime_type not in self.config.ALLOWED_MIME_TYPES:
