@@ -936,6 +936,7 @@ export default function TemplateEditor() {
     const purposeParam = searchParams.get('purpose')
     const pagesParam = searchParams.get('pages')
     const projectsParam = searchParams.get('projects')
+    const formatParam = searchParams.get('format')
 
     let pageSize = PAGE_SIZES['a4-landscape']
     if (orientationParam === 'square' || sizeParam === 'square') {
@@ -981,7 +982,8 @@ export default function TemplateEditor() {
           sizeParam || 'a4',
           purposeParam || 'university',
           parseInt(pagesParam) || 24,
-          parseInt(projectsParam) || 4
+          parseInt(projectsParam) || 4,
+          formatParam === 'spreads'
         )
       } else {
         initialPages = seedPagesFromTemplate(data)
@@ -1009,7 +1011,8 @@ export default function TemplateEditor() {
           sizeParam || 'a4',
           purposeParam || 'university',
           parseInt(pagesParam) || 24,
-          parseInt(projectsParam) || 4
+          parseInt(projectsParam) || 4,
+          formatParam === 'spreads'
         )
       } else {
         initialPages = seedPagesFromTemplate({ name: 'Portfolio', placeholders: { renders: 2, plans: 1, sections: 1, diagrams: 0 } })
