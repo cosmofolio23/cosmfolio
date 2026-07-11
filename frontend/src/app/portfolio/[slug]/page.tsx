@@ -138,10 +138,8 @@ export default function PublicPortfolioPage() {
     let virtualPageNum = 1;
     for (let i = 0; i < rawPages.length; i++) {
       const p = rawPages[i];
-      if (i === 0) {
-        bookPages.push({ id: p.id, page: p, part: 'full' });
-        virtualPageNum = 2;
-      } else if (p.isSpread) {
+      if (p.isSpread) {
+        // A spread must start on an even virtual page number (left side of the book)
         if (virtualPageNum % 2 !== 0) {
           bookPages.push({ id: `blank-${p.id}-left-pad`, isBlank: true });
           virtualPageNum += 1;
@@ -278,7 +276,7 @@ export default function PublicPortfolioPage() {
                   if (bookPage.isBlank) {
                      return (
                        <PageWrapper key={bookPage.id}>
-                         <div className="w-full h-full relative overflow-hidden bg-white/5" />
+                         <div className="w-full h-full relative overflow-hidden bg-[#e0e0e0]" />
                        </PageWrapper>
                      )
                   }
@@ -294,7 +292,7 @@ export default function PublicPortfolioPage() {
                              left: bookPage.part === 'right' ? -pageW : 0, 
                              top: 0 
                            }}>
-                             <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                             <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
                            </div>
                          </div>
                        </PageWrapper>
@@ -305,7 +303,7 @@ export default function PublicPortfolioPage() {
                     <PageWrapper key={bookPage.id}>
                       <div className="w-full h-full relative overflow-hidden bg-white">
                         {bookPage.page!.isSpread ? (
-                           <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                           <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
                         ) : (
                            <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
                         )}
