@@ -1781,24 +1781,27 @@ function RegionView({
             if (b.type === 'title') {
               return { 
                 ...b, 
-                text: draftTitle,
+                text: idx === currentIdx ? draftTitle : b.text,
                 color: draftColor || undefined,
                 fontFamily: draftFont || undefined,
                 fontSize: draftScale
               }
             }
             if (b.type === 'meta') {
-              const nextFields = (b.fields || []).map(f => {
-                const label = f.label.toLowerCase()
-                if (label === 'year') return { ...f, value: draftYear }
-                if (label === 'location') return { ...f, value: draftLoc }
-                if (label === 'program' || label === 'typology') return { ...f, value: draftTypo }
-                return f
-              })
-              if (nextFields[0]) {
-                nextFields[0] = { ...nextFields[0], value: draftNumber }
+              if (idx === currentIdx) {
+                const nextFields = (b.fields || []).map(f => {
+                  const label = f.label.toLowerCase()
+                  if (label === 'year') return { ...f, value: draftYear }
+                  if (label === 'location') return { ...f, value: draftLoc }
+                  if (label === 'program' || label === 'typology') return { ...f, value: draftTypo }
+                  return f
+                })
+                if (nextFields[0]) {
+                  nextFields[0] = { ...nextFields[0], value: draftNumber }
+                }
+                return { ...b, fields: nextFields }
               }
-              return { ...b, fields: nextFields }
+              return b
             }
             return b
           })
