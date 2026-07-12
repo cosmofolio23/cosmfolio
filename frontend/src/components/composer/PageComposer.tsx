@@ -1775,6 +1775,9 @@ function RegionView({
         targets = pgs.map((_, i) => i)
       }
 
+      // Ensure global title block styles don't override the front cover page
+      targets = targets.filter(idx => idx === currentIdx || pgs[idx]?.type !== 'cover')
+
       return pgs.map((p, idx) => {
         if (targets.includes(idx)) {
           const nextBlocks = p.blocks.map(b => {
