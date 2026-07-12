@@ -233,9 +233,9 @@ export function FlowchartBlockRenderer({
                     </div>
 
                     <div className="flex gap-2">
-                      {config.nodeStyle === 'image' && (
+                      {(config.nodeStyle === 'image' || config.nodeStyle === 'large-image') && (
                         <div className="w-10 flex-shrink-0 flex flex-col gap-1 items-center justify-start mt-2">
-                          <div className="w-10 h-10 rounded-full border border-black/10 overflow-hidden bg-white flex items-center justify-center">
+                          <div className={`rounded-full border border-black/10 overflow-hidden bg-white flex items-center justify-center ${config.nodeStyle === 'large-image' ? 'w-10 h-10 rounded-md' : 'w-10 h-10'}`}>
                             {step.imageUrl ? <img src={step.imageUrl} className="w-full h-full object-cover" alt="" /> : <span className="text-[8px] text-gray-400">Img</span>}
                           </div>
                           <label className="cursor-pointer text-[8px] font-bold text-blue-600 hover:text-blue-800 uppercase text-center w-full">
