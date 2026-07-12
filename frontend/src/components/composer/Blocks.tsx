@@ -97,13 +97,11 @@ export function EditableText({
   }
 
   // Sync external value changes (e.g., AI auto-fill) when the element is NOT focused
-  const prevValueRef = useRef(value)
-  if (prevValueRef.current !== value) {
-    prevValueRef.current = value
+  useEffect(() => {
     if (ref.current && document.activeElement !== ref.current) {
       ref.current.textContent = value
     }
-  }
+  }, [value])
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     if (readonly) return
@@ -176,9 +174,7 @@ export function EditableText({
           isEditing ? 'cursor-text outline outline-1 outline-blue-400' : isSelected ? 'ring-2 ring-blue-500 bg-blue-50/20' : !readonly ? 'group-hover/canvas:outline group-hover/canvas:outline-1 group-hover/canvas:outline-dashed group-hover/canvas:outline-gray-500/70 hover:bg-blue-50/40 hover:outline-blue-400/60' : ''
         } ${multiline ? 'whitespace-pre-line' : ''} empty:before:content-[attr(data-placeholder)] empty:before:opacity-30 empty:before:pointer-events-none empty:min-h-[1.5em] empty:min-w-[50px] empty:inline-block ${className || ''}`}
         style={style}
-      >
-        {value}
-      </div>
+      />
 
       {/* Floating Toolbar — portalled to body so the page's overflow:hidden
           never clips it (Google-Docs-style toolbar above the text). */}

@@ -1637,27 +1637,32 @@ function RegionView({
   }
 
   const handleSaveTitleBlock = (scope: 'page' | 'project' | 'all') => {
-    // Title text formatting (colour / font / size) always applies to this block.
-    patchBlock(block.id, {
-      color: draftColor || undefined,
-      fontFamily: draftFont || undefined,
-      fontSize: draftScale,
-    })
     if (!onUpdateGlobalPages) {
       // fallback to current page only
-      patchBlock(block.id, { text: draftTitle })
-      const mBlock = firstOfType('meta')
-      if (mBlock) {
-        const nextFields = (mBlock.fields || []).map(f => {
-          const l = f.label.toLowerCase()
-          if (l === 'year') return { ...f, value: draftYear }
-          if (l === 'location') return { ...f, value: draftLoc }
-          if (l === 'program' || l === 'typology') return { ...f, value: draftTypo }
-          return f
-        })
-        if (nextFields[0]) nextFields[0] = { ...nextFields[0], value: draftNumber }
-        patchBlock(mBlock.id, { fields: nextFields })
-      }
+      const nextBlocks = page.blocks.map(b => {
+        if (b.type === 'title') {
+          return {
+            ...b,
+            text: draftTitle,
+            color: draftColor || undefined,
+            fontFamily: draftFont || undefined,
+            fontSize: draftScale,
+          }
+        }
+        if (b.type === 'meta') {
+          const nextFields = (b.fields || []).map(f => {
+            const l = f.label.toLowerCase()
+            if (l === 'year') return { ...f, value: draftYear }
+            if (l === 'location') return { ...f, value: draftLoc }
+            if (l === 'program' || l === 'typology') return { ...f, value: draftTypo }
+            return f
+          })
+          if (nextFields[0]) nextFields[0] = { ...nextFields[0], value: draftNumber }
+          return { ...b, fields: nextFields }
+        }
+        return b
+      })
+      onChange({ ...page, blocks: nextBlocks })
       setEditingTitleBlock(false)
       return
     }
