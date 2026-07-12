@@ -156,7 +156,7 @@ export function EditableText({
         data-placeholder={placeholder}
         onClick={(e) => {
           e.stopPropagation()
-          beginEdit()
+          setIsSelected(true)
         }}
         onDoubleClick={handleDoubleClick}
         onKeyDown={(e) => {

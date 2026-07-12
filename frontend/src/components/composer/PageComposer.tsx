@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { Move, Maximize2 } from 'lucide-react'
-import type { Block, Page, DesignTokens, BlockType, ResumeEntry, SkillItem } from './types'
+import type { Block, Page, DesignTokens, BlockType, ResumeEntry, SkillItem, MetaField } from './types'
 import { allImages, createBlock } from './types'
 import { getSpec, type LayoutSpec, type Region, type RegionRole } from './layoutSpecs'
 import { getVariantClasses, getDividerClasses } from './StyleOptions'
@@ -237,6 +237,8 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             setActiveBlock={setActiveBlock}
             readonly={readonly}
             deletedRoles={page.deletedRoles}
+            page={page}
+            onChange={onChange}
             onInsertImage={url => {
               // Exact placeholder slot replacement logic (BUG 1)
               const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
@@ -294,6 +296,8 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
               setActiveBlock={setActiveBlock}
               readonly={readonly}
               deletedRoles={page.deletedRoles}
+              page={page}
+              onChange={onChange}
             />
           )
         })}
@@ -1504,7 +1508,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 function RegionView({
-  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly, deletedRoles, forceBlock
+  region, spec, tokens, overlay, images, patchBlock, addBlock, firstOfType, onUploadImage, titleBlock, onInsertImage, pages, pageContext, onUpdateGlobalPages, masterElements, activeBlock, setActiveBlock, readonly, deletedRoles, forceBlock, page, onChange
 }: {
   region: Region
   spec: LayoutSpec
@@ -1526,6 +1530,8 @@ function RegionView({
   readonly?: boolean
   deletedRoles?: string[]
   forceBlock?: Block
+  page?: Page
+  onChange?: (page: Page) => void
 }) {
   const style = { ...gridStyle(region) }
 
@@ -1639,30 +1645,32 @@ function RegionView({
   const handleSaveTitleBlock = (scope: 'page' | 'project' | 'all') => {
     if (!onUpdateGlobalPages) {
       // fallback to current page only
-      const nextBlocks = page.blocks.map(b => {
-        if (b.type === 'title') {
-          return {
-            ...b,
-            text: draftTitle,
-            color: draftColor || undefined,
-            fontFamily: draftFont || undefined,
-            fontSize: draftScale,
+      if (page && onChange) {
+        const nextBlocks = page.blocks.map((b: Block) => {
+          if (b.type === 'title') {
+            return {
+              ...b,
+              text: draftTitle,
+              color: draftColor || undefined,
+              fontFamily: draftFont || undefined,
+              fontSize: draftScale,
+            }
           }
-        }
-        if (b.type === 'meta') {
-          const nextFields = (b.fields || []).map(f => {
-            const l = f.label.toLowerCase()
-            if (l === 'year') return { ...f, value: draftYear }
-            if (l === 'location') return { ...f, value: draftLoc }
-            if (l === 'program' || l === 'typology') return { ...f, value: draftTypo }
-            return f
-          })
-          if (nextFields[0]) nextFields[0] = { ...nextFields[0], value: draftNumber }
-          return { ...b, fields: nextFields }
-        }
-        return b
-      })
-      onChange({ ...page, blocks: nextBlocks })
+          if (b.type === 'meta') {
+            const nextFields = (b.fields || []).map((f: MetaField) => {
+              const l = f.label.toLowerCase()
+              if (l === 'year') return { ...f, value: draftYear }
+              if (l === 'location') return { ...f, value: draftLoc }
+              if (l === 'program' || l === 'typology') return { ...f, value: draftTypo }
+              return f
+            })
+            if (nextFields[0]) nextFields[0] = { ...nextFields[0], value: draftNumber }
+            return { ...b, fields: nextFields }
+          }
+          return b
+        })
+        onChange({ ...page, blocks: nextBlocks })
+      }
       setEditingTitleBlock(false)
       return
     }
@@ -1753,7 +1761,7 @@ function RegionView({
         }
         const editable = e.currentTarget.querySelector('[data-placeholder]') as HTMLElement
         if (editable) {
-          editable.click()
+          editable.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }))
         }
       }}
     >
@@ -1767,7 +1775,7 @@ function RegionView({
       )}
       {region.role === 'title' && (
         titleBlock
-          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'}`} onClick={!readonly ? openEditTitleBlock : undefined}>
+          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'}`} onDoubleClick={!readonly ? openEditTitleBlock : undefined}>
               <TitleBlockView
                 style={titleBlock}
                 p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
@@ -1782,7 +1790,7 @@ function RegionView({
               {!readonly && (
                 <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden" data-html2canvas-ignore="true">
                   <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
-                    ✏️ Edit Title Block
+                    ✏️ Double-Click to Edit
                   </span>
                 </div>
               )}
