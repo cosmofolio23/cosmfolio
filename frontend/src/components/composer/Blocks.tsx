@@ -155,6 +155,7 @@ export function EditableText({
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onClick={(e) => {
+          if (readonly) return
           e.stopPropagation()
           setIsSelected(true)
         }}
