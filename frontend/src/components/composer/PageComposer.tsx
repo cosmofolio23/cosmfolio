@@ -102,6 +102,12 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
   const images = allImages(page.blocks).filter(b => !b.freeform)
   const titleBlock = page.titleBlockId ? TITLE_BLOCKS.find(b => b.id === page.titleBlockId) : undefined
 
+  const resumeBlocks = page.blocks.filter(b => ['education', 'skills', 'software', 'achievement', 'interest', 'experience', 'bio'].includes(b.type))
+  const firstResumeBlock = resumeBlocks[0]
+  const currentGap = firstResumeBlock?.resumeStyle?.gap ?? 16
+  const isResumePage = page.type === 'resume' || page.type === 'about' || resumeBlocks.length > 0
+  const dynamicGridGap = isResumePage ? Math.max(0, Math.min(16, Math.round(currentGap / 2))) : 8
+
   const patchBlock = (id: string, patch: Partial<Block> & { isDeleted?: boolean, zOp?: 'front' | 'back' | 'forward' | 'backward' }) => {
     if (patch.isDeleted) {
       const blockToDelete = page.blocks.find(b => b.id === id)
@@ -134,7 +140,59 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
       }
       delete newPatch.zOp
     }
-    onChange({ ...page, blocks: page.blocks.map(b => b.id === id ? { ...b, ...newPatch } : b) })
+
+    const targetBlock = page.blocks.find(b => b.id === id)
+    const isResumeType = (type: string) => ['education', 'skills', 'software', 'achievement', 'interest', 'experience', 'bio'].includes(type)
+    
+    let updatedBlocks = page.blocks.map(b => {
+      if (b.id === id) {
+        const mergedResumeStyle = newPatch.resumeStyle ? { ...(b.resumeStyle || {}), ...newPatch.resumeStyle } : b.resumeStyle
+        const mergedTocStyle = newPatch.tocStyle ? { ...(b.tocStyle || {}), ...newPatch.tocStyle } : b.tocStyle
+        return { ...b, ...newPatch, resumeStyle: mergedResumeStyle, tocStyle: mergedTocStyle }
+      }
+      return b
+    })
+
+    if (targetBlock && isResumeType(targetBlock.type)) {
+      const fontSizeChanged = newPatch.fontSize !== undefined
+      const colorChanged = newPatch.color !== undefined
+      const fontFamilyChanged = newPatch.fontFamily !== undefined
+      const gapChanged = newPatch.resumeStyle?.gap !== undefined
+      const titleColorChanged = newPatch.tocStyle?.titleColor !== undefined
+
+      if (fontSizeChanged || colorChanged || fontFamilyChanged || gapChanged || titleColorChanged) {
+        updatedBlocks = updatedBlocks.map(b => {
+          if (b.id !== id && isResumeType(b.type)) {
+            const nextBlock = { ...b }
+            if (fontSizeChanged) {
+              nextBlock.fontSize = newPatch.fontSize
+            }
+            if (colorChanged) {
+              nextBlock.color = newPatch.color
+            }
+            if (fontFamilyChanged) {
+              nextBlock.fontFamily = newPatch.fontFamily
+            }
+            if (gapChanged) {
+              nextBlock.resumeStyle = {
+                ...(b.resumeStyle || {}),
+                gap: newPatch.resumeStyle?.gap
+              }
+            }
+            if (titleColorChanged) {
+              nextBlock.tocStyle = {
+                ...(b.tocStyle || {}),
+                titleColor: newPatch.tocStyle?.titleColor
+              }
+            }
+            return nextBlock
+          }
+          return b
+        })
+      }
+    }
+
+    onChange({ ...page, blocks: updatedBlocks })
   }
 
   const addBlock = (type: BlockType): Block => {
@@ -213,7 +271,7 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
 
       <div
         className="absolute inset-0 grid p-6"
-        style={{ gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)', gridAutoColumns: '1fr', gap: 8 }}
+        style={{ gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)', gridAutoColumns: '1fr', gap: dynamicGridGap }}
         onPointerDown={() => setActiveBlock(null)}
       >
         {spec.regions.map((region, i) => (
@@ -1390,14 +1448,19 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
 }
 
 function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly }: { block?: Block, patchBlock: (id: string, patch: Partial<Block>) => void, children: React.ReactNode, zClass?: string, tokens: DesignTokens, readonly?: boolean }) {
-  const dragRef = useRef<{ mode: 'move'|'resize-bl'|'resize-br', sx: number, sy: number, startFree: any } | null>(null)
-
+  const dragRef = useRef<{ mode: 'move'|'resize-bl'|'resize-br', sx: number, sy: number, startFree: any, startFontSize: number } | null>(null)
   const isFree = !!block?.freeform
   if (!isFree) return <>{children}</>
 
   const onPointerDown = (e: React.PointerEvent, mode: 'move'|'resize-bl'|'resize-br') => {
     e.stopPropagation()
-    dragRef.current = { mode, sx: e.clientX, sy: e.clientY, startFree: { ...block.freeform } }
+    dragRef.current = { 
+      mode, 
+      sx: e.clientX, 
+      sy: e.clientY, 
+      startFree: { ...block.freeform },
+      startFontSize: block.fontSize || 1
+    }
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
   }
 
@@ -1415,17 +1478,36 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
     if (d.mode === 'move') {
       patch.x = d.startFree.x + dxp
       patch.y = d.startFree.y + dyp
+      patchBlock(block.id, { freeform: { ...block.freeform, ...patch } })
     } else if (d.mode === 'resize-bl') {
       const newW = Math.max(5, d.startFree.w - dxp)
       const actualDxP = d.startFree.w - newW
       patch.w = newW
       patch.x = d.startFree.x + actualDxP
-      patch.h = Math.max(5, d.startFree.h + dyp)
+      const newH = Math.max(5, d.startFree.h + dyp)
+      patch.h = newH
+
+      // Calculate font scale based on Y-axis (height) scaling factor
+      const ratio = newH / d.startFree.h
+      const nextFontSize = Math.max(0.4, Math.min(2.5, d.startFontSize * ratio))
+      patchBlock(block.id, { 
+        freeform: { ...block.freeform, ...patch },
+        fontSize: nextFontSize
+      })
     } else if (d.mode === 'resize-br') {
-      patch.w = Math.max(5, d.startFree.w + dxp)
-      patch.h = Math.max(5, d.startFree.h + dyp)
+      const newW = Math.max(5, d.startFree.w + dxp)
+      const newH = Math.max(5, d.startFree.h + dyp)
+      patch.w = newW
+      patch.h = newH
+
+      // Calculate font scale based on Y-axis (height) scaling factor
+      const ratio = newH / d.startFree.h
+      const nextFontSize = Math.max(0.4, Math.min(2.5, d.startFontSize * ratio))
+      patchBlock(block.id, { 
+        freeform: { ...block.freeform, ...patch },
+        fontSize: nextFontSize
+      })
     }
-    patchBlock(block.id, { freeform: { ...block.freeform, ...patch } })
   }
 
   const onPointerUp = (e: React.PointerEvent) => {
@@ -1734,11 +1816,17 @@ function RegionView({
   const isTextRole = ['title', 'subtitle', 'text', 'meta', 'legend', 'contents', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) || isFree
   const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
 
+  const resumeBlocks = page?.blocks.filter(b => ['education', 'skills', 'software', 'achievement', 'interest', 'experience', 'bio'].includes(b.type)) || []
+  const firstResumeBlock = resumeBlocks[0]
+  const currentGap = firstResumeBlock?.resumeStyle?.gap ?? 16
+  const isResumePage = page?.type === 'resume' || page?.type === 'about' || resumeBlocks.length > 0
+  const dynamicBlockPadding = isResumePage ? Math.max(0, Math.min(24, Math.round(currentGap / 1.5))) : 12
+
   return (
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
-      style={finalStyle} 
-      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} p-3 transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z}`}
+      style={{ ...finalStyle, padding: `${dynamicBlockPadding}px` }} 
+      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z}`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()

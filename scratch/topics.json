@@ -1,0 +1,26 @@
+[
+  {
+    "id": "template_switcher",
+    "feature_name": "Template Instant Switcher",
+    "hook_script": "Stop wasting weeks designing your architecture portfolio. With CosmoFolio, you can swap templates instantly and the layout auto-reflows your images. Watch this.",
+    "outro_script": "Build yours in 2 minutes for free. Link in bio!",
+    "playwright_script_description": "Logs in, opens the composer, switches between two templates, showing the layout dynamically rearranging.",
+    "status": "pending"
+  },
+  {
+    "id": "pdf_export",
+    "feature_name": "High-Quality PDF Export",
+    "hook_script": "You need a PDF portfolio for job applications, but converting web layouts is a nightmare. Here is how CosmoFolio exports a pixel-perfect print-ready PDF in one click.",
+    "outro_script": "Try it yourself. Get started for free at the link in bio.",
+    "playwright_script_description": "Logs in, opens a portfolio, clicks the Export button, and triggers the PDF preview generation.",
+    "status": "pending"
+  },
+  {
+    "id": "sheet_wizard",
+    "feature_name": "Sheet Set onboarding Wizard",
+    "hook_script": "Don't start with a blank page. The CosmoFolio wizard builds a tailored portfolio page structure for you in 30 seconds. Look at how easy this is.",
+    "outro_script": "No coding, no design skills needed. Link in bio!",
+    "playwright_script_description": "Logs in, opens the template wizard, clicks through the onboarding steps, and shows the generated template structure.",
+    "status": "pending"
+  }
+]
