@@ -946,7 +946,10 @@ async def save_customization(
             
             if not is_admin:
                 max_pages = 6 if plan_type == "free" else 30 + (boost_pack_count * 20)
-                if len(pages) > max_pages:
+                current_pages_len = len(ps.get("composer_doc", {}).get("pages", []))
+                
+                # Only block if they are over the limit AND trying to add more pages
+                if len(pages) > max_pages and len(pages) > current_pages_len:
                     if plan_type == "free":
                         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Free tier is limited to 6 pages per portfolio. Please upgrade to Pro.")
                     else:

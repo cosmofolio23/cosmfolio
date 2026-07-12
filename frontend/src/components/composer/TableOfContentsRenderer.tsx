@@ -65,31 +65,37 @@ export function TableOfContentsRenderer({
   let projCount = 0
   
   if (Array.isArray(pages)) {
+    let lastProjectTitle = ''
     pages.forEach((p, idx) => {
       if (p.type === 'project') {
         const titleBlock = p.blocks?.find((b: any) => b.type === 'title')
-        if (titleBlock) {
-          projCount++
-          const metaBlock = p.blocks?.find((b: any) => b.type === 'meta')
-          const fields = metaBlock?.fields || []
-          
-          const year = fields.find((f: any) => f.label.toLowerCase() === 'year')?.value || '2026'
-          const location = fields.find((f: any) => f.label.toLowerCase() === 'location')?.value || 'Location'
-          const typology = fields.find((f: any) => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || 'Residential'
-          
-          const imgBlock = p.blocks?.find((b: any) => ['render', 'plan', 'section', 'diagram'].includes(b.type) && b.imageUrl)
-          const thumbnail = block.tocStyle?.customThumbnails?.[String(idx)] || imgBlock?.imageUrl || ''
-          
-          projectItems.push({
-            num: String(projCount).padStart(2, '0'),
-            title: titleBlock.text || 'Project Title',
-            year,
-            typology,
-            location,
-            thumbnail,
-            pageNumber: String(idx + 1).padStart(2, '0'),
-            pageIndex: idx
-          })
+        if (titleBlock && titleBlock.text) {
+          const currentTitle = titleBlock.text.trim()
+          // Only add to TOC if it's a new project title
+          if (currentTitle !== lastProjectTitle) {
+            projCount++
+            lastProjectTitle = currentTitle
+            const metaBlock = p.blocks?.find((b: any) => b.type === 'meta')
+            const fields = metaBlock?.fields || []
+            
+            const year = fields.find((f: any) => f.label.toLowerCase() === 'year')?.value || '2026'
+            const location = fields.find((f: any) => f.label.toLowerCase() === 'location')?.value || 'Location'
+            const typology = fields.find((f: any) => f.label.toLowerCase() === 'program' || f.label.toLowerCase() === 'typology')?.value || 'Residential'
+            
+            const imgBlock = p.blocks?.find((b: any) => ['render', 'plan', 'section', 'diagram'].includes(b.type) && b.imageUrl)
+            const thumbnail = block.tocStyle?.customThumbnails?.[String(idx)] || imgBlock?.imageUrl || ''
+            
+            projectItems.push({
+              num: String(projCount).padStart(2, '0'),
+              title: currentTitle,
+              year,
+              typology,
+              location,
+              thumbnail,
+              pageNumber: String(idx + 1).padStart(2, '0'),
+              pageIndex: idx
+            })
+          }
         }
       }
     })

@@ -214,7 +214,7 @@ export default function PortfolioEditorPage() {
   // survive reloads — not just layout choices.
   const saveDoc = async (nextPages: Page[], nextTokens: DesignTokens) => {
     try {
-      await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/customization`, {
+      const res = await fetch(`${API_URL}/api/portfolios/${params.portfolioId}/customization`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${authToken()}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,8 +230,18 @@ export default function PortfolioEditorPage() {
           },
         }),
       })
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        const errMsg = errData.detail || 'Failed to save portfolio'
+        setSavedNote(`⚠️ ${errMsg.length > 30 ? 'Limit Reached' : errMsg}`)
+        return
+      }
+      
       setSavedNote('✓ Saved'); setTimeout(() => setSavedNote(''), 1500)
-    } catch { /* best-effort */ }
+    } catch { 
+      setSavedNote('⚠️ Save failed') 
+    }
   }
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)

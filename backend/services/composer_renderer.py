@@ -115,11 +115,34 @@ def render_composer_pages(doc: dict):
     tokens = doc.get("tokens") or {}
     out = []
     for i, p in enumerate(pages):
+        page_type = p.get("type", "project")
+        html_content = ""
+        
+        if page_type == "contents":
+            # Generate a basic python TOC since we can't run React
+            contents_items = []
+            proj_count = 0
+            last_title = ""
+            for dp_idx, dp in enumerate(pages):
+                if dp.get("type") == "project":
+                    title_block = _first(dp.get("blocks") or [], "title")
+                    if title_block and title_block.get("text"):
+                        curr_title = title_block.get("text", "").strip()
+                        if curr_title != last_title:
+                            proj_count += 1
+                            last_title = curr_title
+                            contents_items.append({"title": curr_title, "page": dp_idx + 1})
+            
+            from services.portfolio_renderer import contents_page
+            html_content = contents_page({"items": contents_items}, tokens)
+        else:
+            html_content = _render_page(p, tokens)
+
         out.append({
             "id": p.get("id", f"page-{i}"),
-            "type": p.get("type", "project"),
+            "type": page_type,
             "name": (_first(p.get("blocks") or [], "title") or {}).get("text", f"Page {i + 1}"),
-            "html": _render_page(p, tokens),
+            "html": html_content,
         })
     return {"pages": out}
 
@@ -132,7 +155,14 @@ def render_composer_doc(doc: dict):
     if not pages:
         return None
     tokens = doc.get("tokens") or {}
-    body = "".join(_render_page(p, tokens) for p in pages)
+    
+    # We need to construct the body using the same logic as render_composer_pages
+    # to support the contents page
+    pages_data = render_composer_pages(doc)
+    if not pages_data or not pages_data.get("pages"):
+        return None
+        
+    body = "".join(p["html"] for p in pages_data["pages"])
     return (
         '<!DOCTYPE html><html><head><meta charset="utf-8">'
         '<style>@page{size:A4;margin:0;}*{box-sizing:border-box;margin:0;padding:0;'
