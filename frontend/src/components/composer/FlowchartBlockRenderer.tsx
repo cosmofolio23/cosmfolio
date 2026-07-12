@@ -233,17 +233,15 @@ export function FlowchartBlockRenderer({
                     </div>
 
                     <div className="flex gap-2">
-                      {(config.nodeStyle === 'image' || config.nodeStyle === 'large-image') && (
-                        <div className="w-10 flex-shrink-0 flex flex-col gap-1 items-center justify-start mt-2">
-                          <div className={`rounded-full border border-black/10 overflow-hidden bg-white flex items-center justify-center ${config.nodeStyle === 'large-image' ? 'w-10 h-10 rounded-md' : 'w-10 h-10'}`}>
-                            {step.imageUrl ? <img src={step.imageUrl} className="w-full h-full object-cover" alt="" /> : <span className="text-[8px] text-gray-400">Img</span>}
-                          </div>
-                          <label className="cursor-pointer text-[8px] font-bold text-blue-600 hover:text-blue-800 uppercase text-center w-full">
-                            {uploadingStepId === step.id ? '...' : 'Upload'}
-                            <input type="file" accept="image/*" className="hidden" disabled={uploadingStepId !== null} onChange={e => handleStepImageUpload(step.id, e)} />
-                          </label>
+                      <div className="w-10 flex-shrink-0 flex flex-col gap-1 items-center justify-start mt-2">
+                        <div className={`rounded-full border border-black/10 overflow-hidden bg-white flex items-center justify-center ${config.nodeStyle === 'large-image' ? 'w-10 h-10 rounded-md' : 'w-10 h-10'}`}>
+                          {step.imageUrl ? <img src={step.imageUrl} className="w-full h-full object-cover" alt="" /> : <span className="text-[8px] text-gray-400">Img</span>}
                         </div>
-                      )}
+                        <label className="cursor-pointer text-[8px] font-bold text-blue-600 hover:text-blue-800 uppercase text-center w-full">
+                          {uploadingStepId === step.id ? '...' : 'Upload'}
+                          <input type="file" accept="image/*" className="hidden" disabled={uploadingStepId !== null} onChange={e => handleStepImageUpload(step.id, e)} />
+                        </label>
+                      </div>
                       <div className="flex-1 space-y-1">
                         <input type="text" value={step.title} onChange={e => handleUpdateStep(step.id, { title: e.target.value })} className="w-full text-[11px] font-bold bg-transparent border-b border-transparent hover:border-black/20 focus:border-blue-500 focus:bg-white outline-none px-1 py-0.5 transition-colors" placeholder="Step Title" />
                         <textarea value={step.description} onChange={e => handleUpdateStep(step.id, { description: e.target.value })} className="w-full text-[10px] bg-transparent border border-transparent hover:border-black/20 focus:border-blue-500 focus:bg-white outline-none px-1 py-0.5 rounded resize-none h-12 custom-scrollbar transition-colors" placeholder="Description" />
