@@ -148,7 +148,7 @@ export function EditableText({
   }, [isSelected, onChange])
 
   return (
-    <div ref={wrapperRef} className="relative group/edittext inline-block min-w-[30px]" onBlur={handleBlur}>
+    <div ref={wrapperRef} className="relative group/edittext inline-block min-w-[30px] pointer-events-auto" onBlur={handleBlur}>
       <div
         ref={ref}
         contentEditable={isEditing && !readonly}
@@ -397,7 +397,7 @@ export function ImageBlock({
   }
 
   return (
-    <div className="group/img relative w-full h-full flex flex-col min-h-0">
+    <div className="group/img relative w-full h-full flex flex-col min-h-0 pointer-events-auto">
       {uploading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70">
           <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
@@ -674,7 +674,7 @@ export function LegendBlock({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full pointer-events-auto">
       <EditableText
         value={block.label || 'LEGEND'}
         onChange={v => onChange({ label: v })}
@@ -805,7 +805,7 @@ export function MetaBlock({
   }
 
   return (
-    <div className={layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col'} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
+    <div className={(layout === 'inline' ? 'flex flex-wrap gap-x-8 gap-y-2' : 'flex flex-col') + ' pointer-events-auto'} style={layout !== 'inline' ? { gap: Math.max(2, 12 - fields.length * 1.5) + 'px' } : undefined}>
       <EditableText
         value={label}
         onChange={v => onChange({ label: v })}

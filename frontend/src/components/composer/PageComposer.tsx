@@ -477,7 +477,7 @@ function ImageUploadPlaceholder({
         readonly 
           ? 'border-transparent text-transparent pointer-events-none' 
           : `hover:text-blue-500 hover:bg-blue-50/40 border-2 border-dashed cursor-pointer ${isDragging ? 'border-blue-500 bg-blue-50/10 text-blue-500' : 'border-gray-300'}`
-      } print:border-transparent print:text-transparent print:bg-transparent`}
+      } print:border-transparent print:text-transparent print:bg-transparent pointer-events-auto`}
     >
       {uploading ? (
         <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin print:hidden" />
@@ -886,7 +886,7 @@ function ResumeBio({ block, tokens, onChange, readonly }: { block: Block; tokens
   const dividerClass = getDividerClasses(divider)
 
   return (
-    <div className={`w-full h-full flex flex-col overflow-visible relative ${wrapperClass} ${dividerClass}`} style={{ zoom: finalFontSize, gap: gap + 'px' } as React.CSSProperties}>
+    <div className={`w-full h-full flex flex-col overflow-visible relative pointer-events-auto ${wrapperClass} ${dividerClass}`} style={{ zoom: finalFontSize, gap: gap + 'px' } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <div className="flex items-center gap-2">
           <div className="w-4 h-[1px]" style={{ background: tokens.accent }} />
@@ -913,8 +913,8 @@ function ResumeBio({ block, tokens, onChange, readonly }: { block: Block; tokens
           <button onClick={save} className="text-[9px] font-bold tracking-wider px-3 py-1 rounded self-start mt-1" style={{ background: tokens.accent, color: '#fff' }}>SAVE</button>
         </div>
       ) : (
-        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors whitespace-pre-wrap" style={{ color: finalText, fontFamily: tokens.bodyFont }} onClick={() => { setDraft(block.text || ''); setEditing(true) }}>
-          {block.text || <span className="opacity-40 italic">Click to write your architectural manifesto or professional summary...</span>}
+        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors whitespace-pre-wrap" style={{ color: finalText, fontFamily: tokens.bodyFont }} onDoubleClick={() => { setDraft(block.text || ''); setEditing(true) }}>
+          {block.text || <span className="opacity-40 italic">Double-click to write your architectural manifesto or professional summary...</span>}
         </p>
       )}
     </div>
@@ -1005,7 +1005,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
   const dividerClass = getDividerClasses(divider)
 
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible pointer-events-auto" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>Experience / Education</span>
       {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
@@ -1264,7 +1264,7 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
   const dividerClass = getDividerClasses(divider)
 
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible pointer-events-auto" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
@@ -1371,7 +1371,7 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
   const dividerClass = getDividerClasses(divider)
 
   return (
-    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible" style={{ zoom: finalFontSize } as React.CSSProperties}>
+    <div className="w-full @container h-full flex flex-col gap-3 overflow-visible pointer-events-auto" style={{ zoom: finalFontSize } as React.CSSProperties}>
       <div className="flex items-center justify-between border-b pb-1.5 shrink-0" style={{ borderColor: tokens.muted + '40' }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: finalPrimary, fontFamily: tokens.headingFont }}>{label}</span>
         {!readonly && <div className="flex items-center gap-3 print:hidden" data-html2canvas-ignore="true">
@@ -1832,7 +1832,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={{ ...finalStyle, padding: `${dynamicBlockPadding}px` }} 
-      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z}`}
+      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z} pointer-events-none`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()
@@ -1869,7 +1869,7 @@ function RegionView({
       )}
       {region.role === 'title' && (
         titleBlock
-          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'}`} onDoubleClick={!readonly ? openEditTitleBlock : undefined}>
+          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'} pointer-events-auto`} onDoubleClick={!readonly ? openEditTitleBlock : undefined}>
               <TitleBlockView
                 style={titleBlock}
                 p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
