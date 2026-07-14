@@ -157,26 +157,26 @@ export function getVariantClasses(variant: string): string {
 
 export function getDividerClasses(divider: string): string {
   switch (divider) {
-    case 'solid': return 'border-b border-black/10 pb-4';
-    case 'dashed': return 'border-b border-dashed border-black/15 pb-4';
-    case 'dotted': return 'border-b-2 border-dotted border-black/20 pb-4';
-    case 'double': return 'border-b-4 border-double border-black/10 pb-4';
-    case 'thick': return 'border-b-4 border-black/20 pb-4';
-    case 'gradient': return 'pb-4 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-gradient-to-r after:from-transparent after:via-black/20 after:to-transparent';
-    case 'zigzag': return 'pb-4 border-b-2 border-dashed border-red-500'; // simplified
-    case 'wave': return 'pb-4 border-b-[3px] border-blue-300'; 
-    case 'dots-spaced': return 'pb-4 border-b-4 border-dotted border-black/10';
-    case 'dashes-spaced': return 'pb-4 border-b-4 border-dashed border-black/10';
-    case 'shadow': return 'pb-4 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.3)]';
-    case 'glow': return 'pb-4 shadow-[0_4px_15px_-3px_rgba(59,130,246,0.3)] border-b border-blue-100';
-    case 'fade': return 'pb-4 border-b border-black/10 opacity-70';
-    case 'slash-sep': return 'pb-4 relative after:content-["///"] after:absolute after:-bottom-2.5 after:left-1/2 after:-translate-x-1/2 after:text-xs after:text-black/20 after:font-mono after:bg-white after:px-2';
-    case 'diamond-sep': return 'pb-4 relative border-b border-black/10 after:content-["◇"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
-    case 'star-sep': return 'pb-4 relative border-b border-black/10 after:content-["★"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
-    case 'circle-sep': return 'pb-4 relative border-b border-black/10 after:content-["○"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
-    case 'square-sep': return 'pb-4 relative border-b border-black/10 after:content-["□"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
-    case 'plus-sep': return 'pb-4 relative border-b border-black/10 after:content-["+"] after:absolute after:-bottom-[11px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
-    case 'architect-dimension': return 'pb-4 relative border-b border-black/10 after:content-["⁄"] after:absolute after:-bottom-[8px] after:left-0 after:text-black/50 after:font-mono after:bg-white after:px-0.5 after:font-bold after:scale-125 before:content-["⁄"] before:absolute before:-bottom-[8px] before:right-0 before:text-black/50 before:bg-white before:px-0.5 before:font-bold before:scale-125';
+    case 'solid': return 'border-b border-black/10 pb-2';
+    case 'dashed': return 'border-b border-dashed border-black/15 pb-2';
+    case 'dotted': return 'border-b-2 border-dotted border-black/20 pb-2';
+    case 'double': return 'border-b-4 border-double border-black/10 pb-2';
+    case 'thick': return 'border-b-4 border-black/20 pb-2';
+    case 'gradient': return 'pb-2 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-gradient-to-r after:from-transparent after:via-black/20 after:to-transparent';
+    case 'zigzag': return 'pb-2 border-b-2 border-dashed border-red-500'; // simplified
+    case 'wave': return 'pb-2 border-b-[3px] border-blue-300'; 
+    case 'dots-spaced': return 'pb-2 border-b-4 border-dotted border-black/10';
+    case 'dashes-spaced': return 'pb-2 border-b-4 border-dashed border-black/10';
+    case 'shadow': return 'pb-2 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.3)]';
+    case 'glow': return 'pb-2 shadow-[0_4px_15px_-3px_rgba(59,130,246,0.3)] border-b border-blue-100';
+    case 'fade': return 'pb-2 border-b border-black/10 opacity-70';
+    case 'slash-sep': return 'pb-2 relative after:content-["///"] after:absolute after:-bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:text-xs after:text-black/20 after:font-mono after:bg-white after:px-2';
+    case 'diamond-sep': return 'pb-2 relative border-b border-black/10 after:content-["◇"] after:absolute after:-bottom-[9px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
+    case 'star-sep': return 'pb-2 relative border-b border-black/10 after:content-["★"] after:absolute after:-bottom-[9px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
+    case 'circle-sep': return 'pb-2 relative border-b border-black/10 after:content-["○"] after:absolute after:-bottom-[9px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
+    case 'square-sep': return 'pb-2 relative border-b border-black/10 after:content-["□"] after:absolute after:-bottom-[9px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
+    case 'plus-sep': return 'pb-2 relative border-b border-black/10 after:content-["+"] after:absolute after:-bottom-[9px] after:left-1/2 after:-translate-x-1/2 after:text-black/30 after:bg-white after:px-2';
+    case 'architect-dimension': return 'pb-2 relative border-b border-black/10 after:content-["⁄"] after:absolute after:-bottom-[6px] after:left-0 after:text-black/50 after:font-mono after:bg-white after:px-0.5 after:font-bold after:scale-125 before:content-["⁄"] before:absolute before:-bottom-[6px] before:right-0 before:text-black/50 before:bg-white before:px-0.5 before:font-bold before:scale-125';
     default: return '';
   }
 }

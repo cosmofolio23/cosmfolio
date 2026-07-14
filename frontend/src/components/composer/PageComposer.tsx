@@ -1052,7 +1052,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
       </div>
       <div className={`overflow-visible pb-2 pr-1 content-start mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : isTextOnlyVariant ? 'pl-6' : ''}`}>
+          <div key={i} className={`group relative flex flex-col @sm:flex-row gap-1 @sm:gap-4 items-start shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : isTextOnlyVariant ? 'pl-6' : ''}`} style={{ paddingBottom: divider !== 'none' ? Math.max(2, Math.round(gap / 3)) + 'px' : undefined }}>
             {isTimeline && (
               <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             )}
@@ -1084,13 +1084,13 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
                   readonly ? (
                     e.year && <span className="text-[9px] font-mono opacity-50" style={{ color: finalText }}>{e.year} ·</span>
                   ) : (
-                    <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-12 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0" style={{ color: tokens.accent }} />
+                    <input value={e.year || ''} onChange={ev => upd(i, 'year', ev.target.value)} placeholder="Year" className="w-10 text-[9px] font-mono opacity-50 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none" style={{ color: finalText }} />
                   )
                 )}
                 {readonly ? (
-                  e.org && <span className={`text-[9px] uppercase tracking-wider font-semibold opacity-80 ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText, fontFamily: tokens.bodyFont }}>{e.org}</span>
+                  e.org && <span className={`text-[10px] font-bold uppercase tracking-wider ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalPrimary, fontFamily: tokens.headingFont }}>{e.org}</span>
                 ) : (
-                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Organisation / Institution" className={`block text-[9px] uppercase tracking-wider font-semibold opacity-80 bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none shrink-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalText, fontFamily: tokens.bodyFont }} />
+                  <input value={e.org || ''} onChange={ev => upd(i, 'org', ev.target.value)} placeholder="Institution / Company" className={`flex-1 text-[10px] font-bold uppercase tracking-wider bg-transparent border-b border-transparent hover:border-current/20 focus:border-current/40 outline-none ${variant === 'brutalist-blueprint' ? 'text-cyan-200' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#99f6e4' : finalPrimary, fontFamily: tokens.headingFont }} />
                 )}
                 {readonly ? (
                   e.coordinates && <span className={`text-[8px] font-mono opacity-50 ${variant === 'brutalist-blueprint' ? 'text-cyan-400 bg-sky-900/30 px-1 border border-cyan-500/20' : ''}`} style={{ color: variant === 'brutalist-blueprint' ? '#22d3ee' : finalText }}>{variant === 'brutalist-blueprint' ? `COORD: ${e.coordinates}` : e.coordinates}</span>
@@ -1107,7 +1107,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
                 }}
                 placeholder="Description / Details" 
                 rows={1} 
-                className={`w-full mt-1 text-[9.5px] leading-tight bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-70'}`} 
+                className={`w-full mt-0.5 text-[9.5px] leading-tight bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-70'}`} 
                 style={{ color: variant === 'brutalist-blueprint' ? '#e0f2fe' : finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
@@ -1312,7 +1312,7 @@ function ResumeSkills({ block, tokens, onChange, readonly, label = 'Skills', onU
       
       <div className={`overflow-visible pr-1 content-start mt-1 ${gridClass}`} style={{ gap: gap + 'px' }}>
         {items.map((s, i) => (
-          <div key={i} className={`group flex flex-col gap-1.5 break-inside-avoid ${dividerClass}`}>
+          <div key={i} className={`group flex flex-col gap-1.5 break-inside-avoid ${dividerClass}`} style={{ paddingBottom: divider !== 'none' ? Math.max(2, Math.round(gap / 3)) + 'px' : undefined }}>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0 group/skill">
                 {isTextOnlyVariant ? (
@@ -1418,7 +1418,7 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
       </div>
       <div className={`overflow-visible pr-1 mt-1 ${gridClass}`} style={variant === 'bento' || variant === 'masonry' ? {} : { gap: gap + 'px' }}>
         {entries.map((e, i) => (
-          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : isTextOnlyVariant ? 'pl-6' : 'pl-3'}`}>
+          <div key={i} className={`group flex gap-2 items-start relative shrink min-h-0 overflow-visible break-inside-avoid ${itemClass} ${dividerClass} ${variant === 'timeline' ? 'pl-4 @sm:pl-0' : isTextOnlyVariant ? 'pl-6' : 'pl-3'}`} style={{ paddingBottom: divider !== 'none' ? Math.max(2, Math.round(gap / 3)) + 'px' : undefined }}>
             {variant === 'timeline' ? (
                <div className="hidden @sm:block w-[1.5px] h-[150%] absolute left-0 top-0" style={{ background: tokens.accent, opacity: 0.2 }} />
             ) : variant === 'brutalist-blueprint' ? (
@@ -1460,7 +1460,7 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
                 }}
                 placeholder="Detail" 
                 rows={1} 
-                className={`w-full mt-1 text-[9px] leading-tight bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-60'}`} 
+                className={`w-full mt-0.5 text-[9px] leading-tight bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-60'}`} 
                 style={{ color: variant === 'brutalist-blueprint' ? '#e0f2fe' : finalText, minHeight: '14px' }} 
               />
             </div>
