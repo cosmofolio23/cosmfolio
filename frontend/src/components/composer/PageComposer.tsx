@@ -124,6 +124,33 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
       return
     }
     const newPatch = { ...patch }
+    
+    const targetBlock = page.blocks.find(b => b.id === id)
+    if (newPatch.freeform && targetBlock && !targetBlock.freeform) {
+      const isImg = ['render', 'plan', 'section', 'diagram'].includes(targetBlock.type)
+      const role = isImg ? 'image' : (targetBlock.type === 'description' ? 'text' : targetBlock.type)
+      
+      let region = spec.regions.find(r => r.role === role || (ROLE_TO_TYPE as Record<string, string>)[r.role] === targetBlock.type)
+      if (isImg) {
+        const imgBlocks = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
+        const idx = imgBlocks.findIndex(b => b.id === id)
+        const matchedRegions = spec.regions.filter(r => r.role === 'image')
+        if (idx !== -1 && matchedRegions[idx]) {
+          region = matchedRegions[idx]
+        }
+      }
+      
+      if (region) {
+        newPatch.freeform = {
+          x: (region.c0 / 12) * 100,
+          y: (region.r0 / 12) * 100,
+          w: (region.cs / 12) * 100,
+          h: (region.rs / 12) * 100,
+          z: 50
+        }
+      }
+    }
+
     if (newPatch.zOp) {
       const block = page.blocks.find(b => b.id === id)
       if (block && block.freeform) {
@@ -141,7 +168,6 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
       delete newPatch.zOp
     }
 
-    const targetBlock = page.blocks.find(b => b.id === id)
     const isResumeType = (type: string) => ['education', 'skills', 'software', 'achievement', 'interest', 'experience', 'bio'].includes(type)
     
     let updatedBlocks = page.blocks.map(b => {
