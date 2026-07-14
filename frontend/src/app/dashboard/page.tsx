@@ -17,6 +17,7 @@ interface Project {
   project_type: string
   status: string
   created_at: string
+  cover_image_url?: string
 }
 
 export default function Dashboard() {
@@ -105,6 +106,16 @@ export default function Dashboard() {
       } catch (error) {
         console.error('Failed to delete project:', error)
       }
+    }
+  }
+
+  const handleDuplicateProject = async (projectId: string) => {
+    try {
+      const newProject = await apiClient.duplicateProject(projectId)
+      setProjects([newProject, ...projects])
+    } catch (error) {
+      console.error('Failed to duplicate project:', error)
+      alert('Failed to duplicate project.')
     }
   }
 
@@ -463,15 +474,23 @@ export default function Dashboard() {
                         className="bg-white dark:bg-[#1A1A1A] rounded-[16px] group overflow-hidden cursor-pointer relative shadow-sm border border-stone-light/10 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
                         onClick={() => router.push(isPortfolio ? `/dashboard/templates/default/editor?project=${project.id}` : `/dashboard/project/${project.id}/sheet`)}
                       >
-                        {/* Thumbnail Placeholder (To be replaced with auto-thumbnails) */}
-                        <div className="h-56 bg-[#f8f9fa] dark:bg-[#111111] overflow-hidden relative border-b border-stone-light/10">
-                          <div className="absolute inset-0 flex items-center justify-center text-8xl opacity-5 font-bold text-slate-800 dark:text-white group-hover:scale-110 transition-transform duration-700 font-montserrat">
-                            {project.title.substring(0, 2).toUpperCase()}
-                          </div>
+                        {/* Thumbnail / Cover Image */}
+                        <div className="h-56 bg-[#f8f9fa] dark:bg-[#111111] overflow-hidden relative border-b border-stone-light/10 flex items-center justify-center">
+                          {project.cover_image_url ? (
+                            <img 
+                              src={project.cover_image_url} 
+                              alt={project.title} 
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-8xl opacity-5 font-bold text-slate-800 dark:text-white group-hover:scale-110 transition-transform duration-700 font-montserrat">
+                              {project.title.substring(0, 2).toUpperCase()}
+                            </div>
+                          )}
                           
                           {/* Status Badge */}
                           <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-full text-[10px] font-bold font-inter text-stone-500 shadow-sm border border-stone-light/20 flex items-center gap-1.5">
-                             <div className={`w-1.5 h-1.5 rounded-full ${isPortfolio ? 'bg-yellow-400' : 'bg-blue-400'}`}></div> {isPortfolio ? 'Draft' : 'Editing'}
+                             <div className={`w-1.5 h-1.5 rounded-full ${isPortfolio ? 'bg-yellow-400' : 'bg-blue-400'}`}></div> {isPortfolio ? (project.status === 'published' ? 'Published' : 'Draft') : 'Editing'}
                           </div>
                           
                           {/* Hover Action Menu */}
@@ -486,8 +505,15 @@ export default function Dashboard() {
                                 ⋮
                               </button>
                               <div className="absolute bottom-full right-0 mb-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-stone-light/10 overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all origin-bottom-right">
-                                <button className="w-full text-left px-4 py-2 text-xs font-medium text-text-primary dark:text-dark-text-primary hover:bg-stone-light/10 transition">🌍 Share</button>
+                                <button className="w-full text-left px-4 py-2 text-xs font-medium text-text-primary dark:text-dark-text-primary hover:bg-stone-light/10 transition"
+                                  onClick={(e) => { e.stopPropagation(); router.push(isPortfolio ? `/portfolio/${project.id}` : `/dashboard/project/${project.id}/sheet`) }}>🌍 View</button>
                                 <button className="w-full text-left px-4 py-2 text-xs font-medium text-text-primary dark:text-dark-text-primary hover:bg-stone-light/10 transition">📄 Export PDF</button>
+                                <button 
+                                  className="w-full text-left px-4 py-2 text-xs font-medium text-text-primary dark:text-dark-text-primary hover:bg-stone-light/10 transition"
+                                  onClick={(e) => { e.stopPropagation(); handleDuplicateProject(project.id) }}
+                                >
+                                  ✨ Duplicate
+                                </button>
                                 <div className="h-px bg-stone-light/10 w-full"></div>
                                 <button 
                                   className="w-full text-left px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"

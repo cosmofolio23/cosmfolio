@@ -557,7 +557,7 @@ function ResumeBlockStyleSettings({ block, tokens, onChange }: { block: Block, t
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Item Spacing</span><span className="text-[9px] font-mono">{styleConfig.gap ?? 16}px</span></div>
-                <input type="range" min="4" max="48" step="4" value={styleConfig.gap ?? 16} onChange={e => updateStyle({ gap: parseInt(e.target.value) })} className="w-full accent-black" />
+                <input type="range" min="0" max="48" step="2" value={styleConfig.gap ?? 16} onChange={e => updateStyle({ gap: parseInt(e.target.value) })} className="w-full accent-black" />
               </div>
               
               <div className="flex flex-col gap-1">
@@ -710,7 +710,7 @@ function BlockTypographySettings({ block, tokens, onChange }: { block: Block, to
             <div className="flex flex-col gap-1">
               <div className="flex justify-between"><span className="text-[9px] uppercase text-gray-500 font-semibold">Font Size</span><span className="text-[9px] font-mono">{Math.round(currentFontSize*100)}%</span></div>
               <input 
-                type="range" min="0.5" max="2" step="0.1" 
+                type="range" min="0.75" max="2" step="0.05" 
                 value={currentFontSize} 
                 onChange={e => setDraftFontSize(parseFloat(e.target.value))}
                 onPointerUp={commitFontSize}
@@ -909,11 +909,11 @@ function ResumeBio({ block, tokens, onChange, readonly }: { block: Block; tokens
       </div>
       {editing ? (
         <div className="flex flex-col gap-1 flex-1 pl-6">
-          <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-relaxed bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
+          <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)} className="flex-1 text-[11px] leading-snug bg-white/10 border border-current/20 rounded p-2 resize-none w-full outline-none focus:border-blue-400" style={{ color: finalText, fontFamily: tokens.bodyFont }} />
           <button onClick={save} className="text-[9px] font-bold tracking-wider px-3 py-1 rounded self-start mt-1" style={{ background: tokens.accent, color: '#fff' }}>SAVE</button>
         </div>
       ) : (
-        <p className="text-[11px] leading-relaxed flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors whitespace-pre-wrap" style={{ color: finalText, fontFamily: tokens.bodyFont }} onDoubleClick={() => { setDraft(block.text || ''); setEditing(true) }}>
+        <p className="text-[11px] leading-snug flex-1 cursor-text hover:opacity-80 pl-6 border-l-[1.5px] border-transparent hover:border-gray-200 transition-colors whitespace-pre-wrap" style={{ color: finalText, fontFamily: tokens.bodyFont }} onDoubleClick={() => { setDraft(block.text || ''); setEditing(true) }}>
           {block.text || <span className="opacity-40 italic">Double-click to write your architectural manifesto or professional summary...</span>}
         </p>
       )}
@@ -1081,7 +1081,7 @@ function ResumeEducation({ block, tokens, onChange, readonly }: { block: Block; 
                 }}
                 placeholder="Description / Details" 
                 rows={1} 
-                className={`w-full mt-1 text-[9.5px] leading-relaxed bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-70'}`} 
+                className={`w-full mt-1 text-[9.5px] leading-tight bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-70'}`} 
                 style={{ color: variant === 'brutalist-blueprint' ? '#e0f2fe' : finalText, fontFamily: tokens.bodyFont, minHeight: '12px' }} 
               />
             </div>
@@ -1434,7 +1434,7 @@ function ResumeList({ block, tokens, onChange, readonly, label, icon }: { block:
                 }}
                 placeholder="Detail" 
                 rows={1} 
-                className={`w-full mt-1 text-[9px] leading-relaxed bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-60'}`} 
+                className={`w-full mt-1 text-[9px] leading-tight bg-transparent border border-transparent hover:border-current/20 focus:border-current/40 outline-none resize-none overflow-hidden shrink min-h-0 ${variant === 'brutalist-blueprint' ? 'text-cyan-100 opacity-90' : 'opacity-60'}`} 
                 style={{ color: variant === 'brutalist-blueprint' ? '#e0f2fe' : finalText, minHeight: '14px' }} 
               />
             </div>
@@ -1489,7 +1489,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
 
       // Calculate font scale based on Y-axis (height) scaling factor
       const ratio = newH / d.startFree.h
-      const nextFontSize = Math.max(0.4, Math.min(2.5, d.startFontSize * ratio))
+      const nextFontSize = Math.max(0.75, Math.min(2.5, d.startFontSize * ratio))
       patchBlock(block.id, { 
         freeform: { ...block.freeform, ...patch },
         fontSize: nextFontSize
@@ -1502,7 +1502,7 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
 
       // Calculate font scale based on Y-axis (height) scaling factor
       const ratio = newH / d.startFree.h
-      const nextFontSize = Math.max(0.4, Math.min(2.5, d.startFontSize * ratio))
+      const nextFontSize = Math.max(0.75, Math.min(2.5, d.startFontSize * ratio))
       patchBlock(block.id, { 
         freeform: { ...block.freeform, ...patch },
         fontSize: nextFontSize

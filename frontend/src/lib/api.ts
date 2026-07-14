@@ -101,6 +101,11 @@ export class APIClient {
     return response.data
   }
 
+  async duplicateProject(projectId: string) {
+    const response = await this.client.post(`/api/projects/${projectId}/duplicate`)
+    return response.data
+  }
+
   // Assets endpoints (use /api/projects/{id}/assets pattern)
   async uploadAssets(projectId: string, assetType: string, files: File[]) {
     const formData = new FormData()
