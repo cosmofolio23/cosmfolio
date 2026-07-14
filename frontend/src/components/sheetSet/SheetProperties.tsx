@@ -43,6 +43,67 @@ export function SheetProperties({
     setExpandedSections(newSections)
   }
 
+  const handleAutoGenerateRoomTags = () => {
+    if (!sheet || !selectedElement) return
+    
+    const dx = selectedElement.x
+    const dy = selectedElement.y
+    const dw = selectedElement.w
+    const dh = selectedElement.h
+
+    const drawingName = selectedElement.drawing?.drawingName?.toLowerCase() || ''
+    
+    let rooms = [
+      { name: 'LIVING ROOM', area: '24.5 sq.m', rx: 0.25, ry: 0.3 },
+      { name: 'KITCHEN', area: '12.0 sq.m', rx: 0.75, ry: 0.3 },
+      { name: 'MASTER BEDROOM', area: '18.0 sq.m', rx: 0.25, ry: 0.7 },
+      { name: 'BATHROOM', area: '6.5 sq.m', rx: 0.75, ry: 0.7 }
+    ]
+
+    if (drawingName.includes('first') || drawingName.includes('upper') || drawingName.includes('level 1')) {
+      rooms = [
+        { name: 'BEDROOM 01', area: '16.0 sq.m', rx: 0.25, ry: 0.3 },
+        { name: 'BEDROOM 02', area: '14.5 sq.m', rx: 0.75, ry: 0.3 },
+        { name: 'STUDY ROOM', area: '11.0 sq.m', rx: 0.25, ry: 0.7 },
+        { name: 'BALCONY', area: '5.2 sq.m', rx: 0.75, ry: 0.7 }
+      ]
+    } else if (drawingName.includes('site') || drawingName.includes('layout') || drawingName.includes('plan')) {
+      rooms = [
+        { name: 'MAIN ENTRANCE', area: 'SITE BOUNDARY', rx: 0.3, ry: 0.2 },
+        { name: 'COURTYARD GARDEN', area: '68.0 sq.m', rx: 0.7, ry: 0.4 },
+        { name: 'PARKING BAY', area: '32.0 sq.m', rx: 0.3, ry: 0.7 },
+        { name: 'SECURITY CABIN', area: '4.5 sq.m', rx: 0.8, ry: 0.8 }
+      ]
+    }
+
+    const newElements = rooms.map((r, idx) => {
+      const w = 18
+      const h = 6
+      const x = dx + dw * r.rx - w / 2
+      const y = dy + dh * r.ry - h / 2
+      return {
+        id: `annot-ai-${Date.now()}-${idx}`,
+        kind: 'annotation' as const,
+        annotationType: 'room-tag' as const,
+        annotationLabels: {
+          primary: r.name,
+          extra: r.area
+        },
+        x: Math.max(0, Math.min(100 - w, x)),
+        y: Math.max(0, Math.min(100 - h, y)),
+        w,
+        h,
+        z: 95,
+        locked: false,
+        visible: true
+      }
+    })
+
+    onUpdateSheet({
+      elements: [...sheet.elements, ...newElements]
+    })
+  }
+
   if (!selectedElement) {
     const handleOrientationChange = (newOrientation: 'portrait' | 'landscape') => {
       if (newOrientation === sheetSet.orientation) return
@@ -192,6 +253,70 @@ export function SheetProperties({
                   </label>
                 </>
               )}
+            </div>
+          </section>
+
+          <hr className="border-gray-200" />
+
+          {/* Aesthetic Style DNA Presets (Feature 5) */}
+          <section>
+            <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">🎨 Style DNA Presets</h4>
+            <div className="grid grid-cols-2 gap-2 text-left">
+              <button
+                onClick={() => onUpdateSheetSet({
+                  fontFamily: 'Outfit, sans-serif',
+                  backgroundColor: '#F9F9FB',
+                  textColor: '#111111',
+                  primaryColor: '#FF4B4B', // BIG Red
+                  titleBlockTemplate: 'minimal-corner'
+                })}
+                className={`p-2.5 rounded-lg border text-left transition ${sheetSet.fontFamily?.includes('Outfit') ? 'border-red-500 bg-red-50/40' : 'border-gray-200 hover:border-red-400 bg-gray-50'}`}
+              >
+                <div className="font-bold text-xs text-gray-900">BIG Style</div>
+                <div className="text-[7.5px] text-gray-500 mt-0.5 leading-tight">Vibrant red accents, modern rounded headers, minimal block.</div>
+              </button>
+
+              <button
+                onClick={() => onUpdateSheetSet({
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  backgroundColor: '#0B0E14', // Zaha Dark Mode
+                  textColor: '#FFFFFF',
+                  primaryColor: '#00FFBB', // Neon cyan
+                  titleBlockTemplate: 'right-column'
+                })}
+                className={`p-2.5 rounded-lg border text-left transition ${sheetSet.fontFamily?.includes('Space Grotesk') ? 'border-emerald-500 bg-emerald-950/40' : 'border-gray-200 hover:border-emerald-400 bg-gray-50'}`}
+              >
+                <div className="font-bold text-xs text-gray-900">Zaha Hadid</div>
+                <div className="text-[7.5px] text-gray-500 mt-0.5 leading-tight">Futuristic dark mode, neon cyan lines, column borders.</div>
+              </button>
+
+              <button
+                onClick={() => onUpdateSheetSet({
+                  fontFamily: 'Inter, sans-serif',
+                  backgroundColor: '#FFFFFF', // Minimal White
+                  textColor: '#000000',
+                  primaryColor: '#111111',
+                  titleBlockTemplate: 'none'
+                })}
+                className={`p-2.5 rounded-lg border text-left transition ${sheetSet.fontFamily?.includes('Inter') && sheetSet.backgroundColor === '#FFFFFF' ? 'border-stone-800 bg-stone-50' : 'border-gray-200 hover:border-stone-400 bg-gray-50'}`}
+              >
+                <div className="font-bold text-xs text-gray-900">SANAA Minimal</div>
+                <div className="text-[7.5px] text-gray-500 mt-0.5 leading-tight">Whitespace-heavy, hairline thin black fonts, raw grids.</div>
+              </button>
+
+              <button
+                onClick={() => onUpdateSheetSet({
+                  fontFamily: 'Courier New, monospace',
+                  backgroundColor: '#0B2A66', // Blueprint Blue
+                  textColor: '#FFFFFF',
+                  primaryColor: '#FFFFFF', // White lines
+                  titleBlockTemplate: 'bottom-strip'
+                })}
+                className={`p-2.5 rounded-lg border text-left transition ${sheetSet.fontFamily?.includes('Courier New') ? 'border-blue-500 bg-blue-900/40' : 'border-gray-200 hover:border-blue-400 bg-gray-50'}`}
+              >
+                <div className="font-bold text-xs text-gray-900">Blueprint Retro</div>
+                <div className="text-[7.5px] text-gray-500 mt-0.5 leading-tight">Classic blueprint cyan paper, monospaced tech fonts.</div>
+              </button>
             </div>
           </section>
         </div>
@@ -474,6 +599,37 @@ export function SheetProperties({
           </div>
         )}
 
+         {/* Site Analysis Widgets (Feature 1) */}
+        {selectedElement.kind === 'sitewidget' && (
+          <div className="space-y-3 p-3 bg-amber-50/50 rounded border border-amber-200">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">☀️ Site Analysis Widget</h4>
+
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Widget Type</span>
+              <select
+                value={selectedElement.siteAnalysisType || 'sunpath'}
+                onChange={e => onUpdateElement({ siteAnalysisType: e.target.value as any })}
+                className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+              >
+                <option value="sunpath">Sun Path Solar Graph</option>
+                <option value="windrose">Wind Rose Frequency Spoke</option>
+                <option value="climatology">Monthly Temperature & Rain</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium">Location Info Label</span>
+              <input
+                type="text"
+                value={selectedElement.locationName || ''}
+                placeholder="Chennai, TN (Latitude 13.08° N)"
+                onChange={e => onUpdateElement({ locationName: e.target.value })}
+                className="w-full mt-0.5 px-2 py-1 border border-gray-300 rounded text-xs"
+              />
+            </label>
+          </div>
+        )}
+
         {/* Drawing Upload (if drawing element) */}
         {selectedElement.kind === 'drawing' && (
           <div className="space-y-2">
@@ -712,6 +868,26 @@ export function SheetProperties({
                   />
                   <span className="text-gray-700">North Point</span>
                 </label>
+              </div>
+            </Section>
+
+            {/* AI Documenter Tool (Feature 4) */}
+            <Section
+              title="🤖 AI Documenter"
+              id="ai-helper"
+              expanded={expandedSections.has('ai-helper')}
+              onToggle={toggleSection}
+            >
+              <div className="space-y-2">
+                <span className="text-[10px] text-gray-500 block leading-tight">
+                  Auto-detect rooms and generate interactive room area tags directly on your floor plan or site layout.
+                </span>
+                <button
+                  onClick={handleAutoGenerateRoomTags}
+                  className="w-full py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:brightness-105 text-white font-bold rounded text-xs transition shadow-sm flex items-center justify-center gap-1.5 mt-2"
+                >
+                  <span>🤖 Auto-Tag Rooms</span>
+                </button>
               </div>
             </Section>
           </>

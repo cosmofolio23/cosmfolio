@@ -235,10 +235,13 @@ export function SheetSetCanvas({
       <div
         key={currentSheet.id}
         id={`sheet-canvas-${currentSheet.id}`}
-        className="relative bg-white shadow-2xl shrink-0"
+        className="relative shadow-2xl shrink-0"
         style={{
           width: `${sheetWidthPx}px`,
           height: `${sheetHeightPx}px`,
+          backgroundColor: sheetSet.backgroundColor || '#ffffff',
+          color: sheetSet.textColor || '#111111',
+          fontFamily: sheetSet.fontFamily || 'Inter',
           backgroundImage: gridEnabled
             ? `linear-gradient(90deg, #e5e7eb 1px, transparent 1px), linear-gradient(#e5e7eb 1px, transparent 1px)`
             : undefined,
