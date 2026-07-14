@@ -1524,7 +1524,8 @@ function FreeformWrapper({ block, patchBlock, children, zClass, tokens, readonly
         left: `${block.freeform!.x}%`,
         top: `${block.freeform!.y}%`,
         width: `${block.freeform!.w}%`,
-        height: `${block.freeform!.h}%`,
+        height: ['render', 'plan', 'section', 'diagram'].includes(block.type) ? `${block.freeform!.h}%` : 'auto',
+        minHeight: `${block.freeform!.h}%`,
         zIndex: block.freeform!.z !== undefined ? block.freeform!.z : 50,
       }}
       onPointerMove={isPinned ? undefined : onPointerMove}
@@ -1687,6 +1688,8 @@ function RegionView({
 
   if (!block) {
     if (readonly) return null
+    const hasAnyOfThisType = page?.blocks.some(b => b.type === type)
+    if (hasAnyOfThisType) return null
     return (
       <button
         style={style}
@@ -1820,7 +1823,7 @@ function RegionView({
 
   const isFree = !!block?.freeform
   const isTextRole = ['title', 'subtitle', 'text', 'meta', 'legend', 'contents', 'bio', 'education', 'skills', 'software', 'achievement', 'interest', 'experience'].includes(region.role) || isFree
-  const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style
+  const finalStyle = isFree ? { width: '100%', height: ['render', 'plan', 'section', 'diagram'].includes(block.type) ? '100%' : 'auto', position: 'relative' as any, minHeight: 0 } : style
 
   const resumeBlocks = page?.blocks.filter(b => ['education', 'skills', 'software', 'achievement', 'interest', 'experience', 'bio'].includes(b.type)) || []
   const firstResumeBlock = resumeBlocks[0]

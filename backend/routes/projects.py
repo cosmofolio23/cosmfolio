@@ -122,6 +122,60 @@ async def delete_project(project_id: str, authorization: str = Header(None)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+@router.post("/{project_id}/duplicate", response_model=ProjectResponse)
+async def duplicate_project(project_id: str, authorization: str = Header(None)):
+    """Duplicate an existing portfolio (project) and its JSON document."""
+    current_user = get_current_user(authorization)
+    try:
+        # 1. Check ownership first
+        existing = supabase.table("projects").select("*").eq("id", project_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        if existing.data[0]["user_id"] != current_user["user_id"]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+        original = existing.data[0]
+        new_id = str(uuid.uuid4())
+        new_title = f"Copy of {original['title']}"
+
+        # 2. Duplicate row in 'projects' table
+        new_project_data = {
+            "id": new_id,
+            "user_id": current_user["user_id"],
+            "title": new_title,
+            "description": original.get("description"),
+            "project_type": original.get("project_type", "portfolio"),
+            "status": "draft",  # duplicated portfolio starts as draft
+            "cover_image_url": original.get("cover_image_url"),
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+
+        response = supabase.table("projects").insert(new_project_data).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to duplicate project in database")
+
+        # 3. Duplicate JSON document in Supabase Storage if it exists
+        try:
+            from services.storage import get_storage_client
+            storage = get_storage_client()
+            original_doc_path = f"documents/{project_id}.json"
+            new_doc_path = f"documents/{new_id}.json"
+
+            doc = await storage.download_json(original_doc_path)
+            if doc:
+                doc["title"] = new_title
+                await storage.upload_json(new_doc_path, doc)
+        except Exception as storage_err:
+            print(f"[Warning] Failed to clone project document from storage: {storage_err}")
+
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
 @router.post("/{project_id}/analyze-assets")
 async def analyze_project_assets(project_id: str, authorization: str = Header(None)):
     """Phase 4: auto-tag a project's assets (type / subtype / orientation /

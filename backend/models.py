@@ -91,6 +91,7 @@ class ProjectResponse(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     custom_domain: Optional[str] = None
+    cover_image_url: Optional[str] = None
 
 # ==================== Assets ====================
 

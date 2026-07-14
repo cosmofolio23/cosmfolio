@@ -20,6 +20,7 @@ interface Project {
   view_count?: number
   status?: string
   custom_domain?: string
+  cover_image_url?: string
 }
 
 export default function MyPortfoliosPage() {
@@ -161,6 +162,25 @@ export default function MyPortfoliosPage() {
     }
   }
 
+  const duplicatePortfolio = async (projectId: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/duplicate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken()}` },
+      })
+      if (res.ok) {
+        const duplicatedProject = await res.json()
+        setProjects([duplicatedProject, ...projects])
+        showToast('✓ Portfolio duplicated successfully!')
+      } else {
+        const err = await res.text()
+        alert(`Failed to duplicate: ${err}`)
+      }
+    } catch (e) {
+      alert('Failed to duplicate portfolio')
+    }
+  }
+
   const handleSetCustomLink = async () => {
     if (!customLinkInput.trim()) {
       alert('Please enter a valid link name')
@@ -250,64 +270,94 @@ export default function MyPortfoliosPage() {
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition"
+                className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition flex flex-col justify-between"
               >
-                {/* Card Header */}
-                <div className="bg-gradient-to-r from-[#FBE7A1]/30 to-[#D4AF37]/15 p-4 border-b">
-                  <h3 className="font-bold text-lg text-gray-900 truncate">
-                    {project.title}
-                  </h3>
-                  {project.description && (
-                    <p className="text-xs text-gray-600 truncate mt-1">
-                      {project.description}
-                    </p>
-                  )}
+                <div>
+                  {/* Card Image Cover / Preview */}
+                  <div className="h-48 bg-[#f8f9fa] overflow-hidden relative border-b border-gray-100 group">
+                    {project.cover_image_url ? (
+                      <img
+                        src={project.cover_image_url}
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                        <div className="text-center p-4">
+                          <span className="text-4xl block mb-2 opacity-40">🖼️</span>
+                          <span className="text-xs font-semibold text-gray-400 tracking-wide uppercase font-inter block">
+                            No Cover Image
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Status Badge */}
+                    <div className="absolute top-3 right-3">
+                      {project.status === 'published' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider shadow-sm border border-green-400">
+                          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                          Published
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-500/90 text-white text-[10px] font-bold rounded-full uppercase tracking-wider shadow-sm">
+                          Draft
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-5">
+                    <h3 className="font-bold text-lg text-gray-900 truncate hover:text-blue-600 transition-colors">
+                      {project.title}
+                    </h3>
+                    {project.description ? (
+                      <p className="text-sm text-gray-600 truncate mt-1">
+                        {project.description}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic mt-1">
+                        No description provided
+                      </p>
+                    )}
+
+                    {/* Metadata */}
+                    <div className="text-xs text-gray-400 mt-4 space-y-1 font-inter">
+                      <div className="flex justify-between">
+                        <span>Updated:</span>
+                        <span>{new Date(project.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                      {project.status === 'published' && (
+                        <div className="flex justify-between">
+                          <span>Views:</span>
+                          <span className="font-medium text-gray-700">{project.view_count || 0} views</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Card Body */}
-                <div className="p-4 space-y-3">
-                  {/* Status Badge */}
-                  <div className="flex items-center gap-2">
-                    {project.status === 'published' ? (
-                      <>
-                        <span className="inline-block w-2 h-2 bg-green-500 rounded-full" />
-                        <span className="text-xs font-medium text-green-700">Published</span>
-                        <span className="text-xs text-gray-500">
-                          ({project.view_count || 0} views)
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="inline-block w-2 h-2 bg-gray-400 rounded-full" />
-                        <span className="text-xs font-medium text-gray-700">Draft</span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Metadata */}
-                  <div className="text-xs text-gray-500">
-                    <p>Created {new Date(project.created_at).toLocaleDateString()}</p>
-                    <p>Updated {new Date(project.updated_at).toLocaleDateString()}</p>
-                  </div>
-
+                {/* Card Actions */}
+                <div className="p-5 pt-0 space-y-3">
                   {/* Share URL */}
                   {project.status === 'published' && (
-                    <div className="mt-2 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="text-xs font-semibold text-gray-700">Share URL</p>
+                    <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 font-inter">Share Link</p>
                         <button
                           onClick={() => {
                             setSelectedProjectId(project.id)
                             setCustomLinkInput(project.custom_domain || '')
                             setShowLinkModal(true)
                           }}
-                          className="text-[10px] uppercase font-bold tracking-wider text-blue-600 hover:text-blue-800"
+                          className="text-[10px] uppercase font-bold tracking-wider text-blue-600 hover:text-blue-800 font-inter"
                         >
-                          Set Custom Link
+                          Set Custom URL
                         </button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <code className="flex-1 text-xs text-blue-700 font-mono truncate bg-white px-2 py-1.5 rounded border border-blue-200">
+                        <code className="flex-1 text-[11px] text-blue-700 font-mono truncate bg-white px-2 py-1 rounded border border-blue-200">
                           {window.location.origin}/portfolio/{project.custom_domain || project.id}
                         </code>
                         <button 
@@ -315,55 +365,62 @@ export default function MyPortfoliosPage() {
                             navigator.clipboard.writeText(`${window.location.origin}/portfolio/${project.custom_domain || project.id}`)
                             showToast('Link copied!')
                           }}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md shadow-sm font-medium transition-colors"
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] rounded font-medium transition-colors"
                         >
                           Copy
                         </button>
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Card Footer */}
-                <div className="bg-gray-50 px-4 py-3 border-t space-y-2">
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/dashboard/templates/default/editor?project=${project.id}`}
-                      className="flex-1 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 text-center"
-                    >
-                      ✏️ Edit
-                    </Link>
-                    {project.is_published && project.slug ? (
-                      <button
-                        onClick={() => unpublishPortfolio(project.id)}
-                        className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 text-xs font-medium rounded hover:bg-gray-300"
-                      >
-                        🔒 Unpublish
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => publishPortfolio(project.id)}
-                        className="flex-1 px-3 py-2 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700"
-                      >
-                        🌐 Publish
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {project.status === 'published' && (
+                  {/* Footer Actions */}
+                  <div className="space-y-2 border-t pt-3">
+                    <div className="flex gap-2">
                       <Link
-                        href={`/portfolio/${project.id}`}
-                        className="flex-1 px-3 py-2 bg-[#FBE7A1]/40 text-[#9C7416] text-xs font-medium rounded hover:bg-[#FBE7A1]/60 text-center"
+                        href={`/dashboard/templates/default/editor?project=${project.id}`}
+                        className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded text-center transition-colors shadow-sm"
                       >
-                        👁️ View
+                        ✏️ Edit
                       </Link>
-                    )}
-                    <button
-                      onClick={() => deletePortfolio(project.id)}
-                      className="flex-1 px-3 py-2 bg-red-100 text-red-700 text-xs font-medium rounded hover:bg-red-200"
-                    >
-                      🗑️ Delete
-                    </button>
+                      <button
+                        onClick={() => duplicatePortfolio(project.id)}
+                        className="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded transition-colors shadow-sm"
+                      >
+                        ✨ Duplicate
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      {project.status === 'published' ? (
+                        <button
+                          onClick={() => unpublishPortfolio(project.id)}
+                          className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded transition-colors"
+                        >
+                          🔒 Unpublish
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => publishPortfolio(project.id)}
+                          className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded transition-colors"
+                        >
+                          🌐 Publish
+                        </button>
+                      )}
+                      {project.status === 'published' && (
+                        <Link
+                          href={`/portfolio/${project.id}`}
+                          className="flex-1 px-3 py-2 bg-[#FBE7A1]/40 text-[#9C7416] text-xs font-semibold rounded hover:bg-[#FBE7A1]/60 text-center transition-colors"
+                        >
+                          👁️ View
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => deletePortfolio(project.id)}
+                        className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded transition-colors"
+                        title="Delete Portfolio"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
