@@ -397,12 +397,52 @@ export default function PortfolioBookPage() {
       {/* Edge-to-edge print: no browser print margins, no page shrink */}
       <style>{`
         @media print {
-          @page { size: ${pageSize && pageSize.width > pageSize.height ? 'landscape' : 'portrait'}; margin: 0; }
-          html, body { margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          /* Each page = exactly one sheet; clip the 1px overflow that was
-             spilling onto a blank second sheet. */
-          .pf-print-page { height: 100vh; overflow: hidden; break-after: page; page-break-after: always; break-inside: avoid; }
-          .pf-print-page:last-child { break-after: auto; page-break-after: auto; }
+          @page {
+            size: ${pageSize ? `${pageSize.width}mm ${pageSize.height}mm` : '297mm 210mm'};
+            margin: 0;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          /* Each page = exactly one sheet; clip overflow */
+          .pf-print-page {
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            break-after: page;
+            page-break-after: always;
+            break-inside: avoid;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .pf-print-page:last-child {
+            break-after: auto;
+            page-break-after: auto;
+          }
+          
+          /* Force the PageComposer/SpreadComposer outer container to fill the page width and height */
+          .pf-print-page > div {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Scale the absolute positioned inner container to fill the page width exactly */
+          .pf-print-page:not([data-spread="1"]) > div > div {
+            transform: scale(calc(100vw / 760)) !important;
+            transform-origin: top left !important;
+          }
+          .pf-print-page[data-spread="1"] > div > div {
+            transform: scale(calc(100vw / 1520)) !important;
+            transform-origin: top left !important;
+          }
         }
       `}</style>
 

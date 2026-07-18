@@ -26,30 +26,30 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 "--no-zygote"
             ]
         )
-        # Viewport = 760px wide: matches PageComposer baseWidth so scale=1.0
-        # The frontend's checkReady() will strip all ancestor padding so the 
-        # print container is exactly 760px wide (not 696px which p-8 caused).
+        # Use a standard landscape viewport for initial loading
         context = await browser.new_context(
-            viewport={"width": 760, "height": 2000},
-            device_scale_factor=2,
+            viewport={"width": 1124, "height": 794},
+            device_scale_factor=2,  # High res rendering
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
         page = await context.new_page()
         page.on("console", lambda msg: print(f"[BROWSER] {msg.text}"))
         
         try:
+            # Navigate to the portfolio print page
             await page.goto(print_url, wait_until="domcontentloaded", timeout=60000)
             
-            # Wait for frontend to signal ready (fonts, images, layout all settled)
+            # Wait for the explicit signal that React has finished rendering everything
             await page.wait_for_selector("#render-complete", state="attached", timeout=60000)
             
-            # Scroll to trigger lazy image/background loading
+            # Scroll down to ensure all lazy images and background images are requested
             await page.evaluate("""
                 async () => {
                     window.scrollTo(0, document.body.scrollHeight);
                     await new Promise(r => setTimeout(r, 1000));
                     window.scrollTo(0, 0);
                     
+                    // Wait for background images
                     const elements = document.querySelectorAll('*');
                     const promises = [];
                     for (let el of elements) {
@@ -58,7 +58,7 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                         if (bg && bg !== 'none' && bg.includes('url(')) {
                             const url = bg.slice(bg.indexOf('url(') + 4, bg.indexOf(')'));
                             const cleanUrl = url.replace(/['"]/g, '');
-                            if (cleanUrl && !cleanUrl.startsWith('data:')) {
+                            if(cleanUrl && !cleanUrl.startsWith('data:')) {
                                 promises.push(new Promise(resolve => {
                                     const img = new Image();
                                     const timer = setTimeout(resolve, 15000);
@@ -73,41 +73,27 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 }
             """)
             
-            # Read the EXACT pixel size of one page of content.
-            # After checkReady() strips all ancestor padding, the outer PageComposer
-            # container should be exactly 760px wide (= baseWidth, scale=1.0).
-            # Its aspect-ratio CSS then sets the height correctly for the page size.
-            page_dims = await page.evaluate("""
+            # Read orientation from the rendered content
+            page_info = await page.evaluate("""
                 () => {
-                    const printPage = document.querySelector('.pf-print-page');
-                    if (!printPage) return { width: 760, height: 537 };
-                    const content = printPage.firstElementChild;
-                    if (!content) return { width: 760, height: 537 };
-                    // Force a reflow to get fresh layout values
-                    void content.offsetHeight;
-                    const rect = content.getBoundingClientRect();
-                    console.log('[PDF] Page content rect:', JSON.stringify({w: rect.width, h: rect.height}));
-                    return {
-                        width: Math.round(rect.width),
-                        height: Math.round(rect.height)
-                    };
+                    const el = document.querySelector('.pf-print-page');
+                    if (!el) return { is_landscape: true };
+                    const child = el.firstElementChild;
+                    if (!child) return { is_landscape: true };
+                    const rect = child.getBoundingClientRect();
+                    return { is_landscape: rect.width > rect.height };
                 }
             """)
             
-            w = page_dims.get("width", 760)
-            h = page_dims.get("height", 537)
-            print(f"[PDF] Measured content size: {w}px x {h}px → PDF will be {w}px x {h}px")
+            is_landscape = page_info.get("is_landscape", True)
             
-            # Resize viewport to exactly match the content page dimensions
-            await page.set_viewport_size({"width": w, "height": h})
-            await page.wait_for_timeout(300)
-            
-            # Generate PDF where the page size EXACTLY matches the content dimensions.
-            # Using px units: 1px = 1/96 inch. This ensures no scaling occurs.
+            # Print to PDF. Since format, width, and height are NOT specified here,
+            # Chromium will respect the CSS @page size defined in page.tsx (e.g. A4 / 297mm x 210mm).
+            # The CSS auto-scaling rule will automatically scale the PageComposer contents
+            # to fit 100vw / 100vh of the page perfectly with zero margins.
             pdf_bytes = await page.pdf(
-                width=f"{w}px",
-                height=f"{h}px",
                 print_background=True,
+                landscape=is_landscape,
                 margin={"top": "0", "right": "0", "bottom": "0", "left": "0"}
             )
             
