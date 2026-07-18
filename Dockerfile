@@ -16,6 +16,10 @@ COPY backend/requirements.txt /tmp/requirements.txt
 # Install Python dependencies
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+# Install Playwright Chromium browser and its system dependencies
+RUN playwright install chromium
+RUN playwright install-deps chromium
+
 # Copy entire backend directory
 COPY backend/ /backend/
 
