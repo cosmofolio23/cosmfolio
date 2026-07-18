@@ -1681,7 +1681,17 @@ function RegionView({
           {block.isFlowchart ? (
             <FlowchartBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} onUploadImage={onUploadImage} />
           ) : (
-            <ImageBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} fill showLabel={!overlay} onUpload={onUploadImage} readonly={readonly} />
+            <ImageBlock 
+              block={block} 
+              tokens={tokens} 
+              onChange={p => patchBlock(block.id, p)} 
+              fill 
+              showLabel={!overlay} 
+              onUpload={onUploadImage} 
+              readonly={readonly} 
+              splitConfig={region.splitGroup ? { c0: region.c0, r0: region.r0, cs: region.cs, rs: region.rs } : undefined}
+              cssFilter={region.cssFilter}
+            />
           )}
         </div>
       )

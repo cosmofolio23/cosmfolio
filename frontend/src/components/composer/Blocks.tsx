@@ -297,7 +297,7 @@ export function EditableText({
 /* ------------------------------- Image Block ------------------------------ */
 
 export function ImageBlock({
-  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload, readonly = false,
+  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload, readonly = false, splitConfig, cssFilter,
 }: {
   block: Block
   tokens: DesignTokens
@@ -307,6 +307,8 @@ export function ImageBlock({
   fill?: boolean
   onUpload?: (file: File) => Promise<string>
   readonly?: boolean
+  splitConfig?: { c0: number, r0: number, cs: number, rs: number }
+  cssFilter?: string
 }) {
   if (readonly && !block.imageUrl && !block.isFlowchart) {
     return null
@@ -445,13 +447,19 @@ export function ImageBlock({
                 src={block.imageUrl}
                 alt={block.label || block.type}
                 className="absolute"
-                style={{
+                style={splitConfig ? {
+                  width: `${(12/splitConfig.cs) * 100}%`,
+                  height: `${(12/splitConfig.rs) * 100}%`,
+                  objectFit: 'cover',
+                  top: `${-(splitConfig.r0-1)/splitConfig.rs * 100}%`,
+                  left: `${-(splitConfig.c0-1)/splitConfig.cs * 100}%`,
+                  filter: cssFilter || block.cssFilter || 'none',
+                  transform: `translate(calc(${(block.xOffset || 0)}px), calc(${(block.yOffset || 0)}px))`,
+                } : {
                   width: `${(block.zoom || 1) * 100}%`,
                   height: `${(block.zoom || 1) * 100}%`,
                   maxWidth: 'none',
                   maxHeight: 'none',
-                  top: `${(1 - (block.zoom || 1)) * 50}%`,
-                  left: `${(1 - (block.zoom || 1)) * 50}%`,
                   objectFit: block.fit === 'contain' ? 'contain' : 'cover',
                   objectPosition: `calc(50% + ${block.xOffset || 0}px) calc(50% + ${block.yOffset || 0}px)`,
                   transition: dragStart ? 'none' : 'object-position 0.15s ease, width 0.15s ease, height 0.15s ease, top 0.15s ease, left 0.15s ease',

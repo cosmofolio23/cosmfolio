@@ -24,6 +24,8 @@ export interface Region {
   r0: number   // grid row start (1..12)
   rs: number   // row span
   imageIndex?: number
+  splitGroup?: string // if set, all regions with this group act as continuous windows to a single image
+  cssFilter?: string  // applies a specific filter to this region (e.g. grayscale, sepia)
 }
 
 export type LayoutCategory = 'Cover' | 'Single' | 'Duo' | 'Grid' | 'Hero' | 'Asymmetric' | 'Strip' | 'Text' | 'Contact' | 'Resume' | 'Contents' | 'Spread' | 'About' | 'Project Spread' | 'Content Spread' | 'About Spread'
@@ -2077,6 +2079,25 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
     { id: 'cv-ns', n: 'Negative Space Cutout', r: [img(0,1,12,1,12), rv('title',4,6,5,4)] },
   ]
 
+  const s_img = (c0: number, cs: number, r0: number, rs: number, filter?: string): Region => ({ 
+    role: 'image', imageIndex: 0, c0, cs, r0, rs, splitGroup: 'cover', cssFilter: filter 
+  })
+
+  const fracturedBases = [
+    { id: 'frac-wp', n: 'Window Pane Matrix', r: [s_img(1,7,1,12), s_img(9,4,1,5,'grayscale(1)'), s_img(9,4,7,6,'sepia(0.8)'), rv('title',2,5,10,2)] },
+    { id: 'frac-df', n: 'Horizontal Fracture', r: [s_img(1,12,1,4), s_img(1,12,5,4,'contrast(1.5)'), s_img(1,12,9,4,'hue-rotate(90deg)'), rv('title',2,10,6,2)] },
+    { id: 'frac-ta', n: 'Triptych Archways', r: [s_img(2,2,2,8,'grayscale(1) blur(2px)'), s_img(5,4,2,8,'brightness(1.1)'), s_img(10,2,2,8,'grayscale(1) blur(2px)'), rv('title',5,4,11,1)] },
+    { id: 'frac-pb', n: 'Parametric Blur', r: [s_img(1,12,1,12,'blur(10px) grayscale(0.5)'), s_img(4,6,4,6,'brightness(1.1)'), rv('title',4,6,5,4)] },
+    { id: 'frac-rs', n: 'Rhythm Strip', r: [s_img(2,1,1,12,'hue-rotate(0deg)'), s_img(4,1,1,12,'hue-rotate(45deg)'), s_img(6,1,1,12,'hue-rotate(90deg)'), s_img(8,1,1,12,'hue-rotate(135deg)'), s_img(10,1,1,12,'hue-rotate(180deg)'), rv('title',1,12,11,2)] },
+    { id: 'frac-ls', n: 'Lens Shift', r: [s_img(1,12,1,12,'grayscale(1)'), s_img(5,4,3,8), rv('title',5,4,10,2)] },
+    { id: 'frac-gr', n: 'Golden Ratio Cut', r: [s_img(1,8,1,8), s_img(9,4,1,4,'sepia(0.8)'), s_img(9,4,5,4,'grayscale(1)'), s_img(1,8,9,4,'invert(0.1)'), s_img(9,4,9,4,'brightness(0.5)'), rv('title',2,6,10,2)] },
+    { id: 'frac-vb', n: 'Venetian Blinds', r: [s_img(1,12,2,1), s_img(1,12,4,1), s_img(1,12,6,1), s_img(1,12,8,1), s_img(1,12,10,1), s_img(1,12,12,1), rv('title',2,10,7,2)] },
+    { id: 'frac-ps', n: 'Polaroid Scatter', r: [s_img(2,4,2,4), s_img(7,4,4,4,'grayscale(1)'), s_img(3,4,8,4,'sepia(0.5)'), rv('title',8,4,9,2)] },
+    { id: 'frac-bo', n: 'Brutalist Offset', r: [s_img(1,12,1,4), s_img(3,10,5,4,'invert(1) hue-rotate(180deg)'), s_img(1,12,9,4), rv('title',1,4,6,2)] },
+    { id: 'frac-sp', n: 'Staircase Progression', r: [s_img(2,3,8,4,'brightness(0.4)'), s_img(5,3,5,4,'brightness(0.8)'), s_img(8,3,2,4,'brightness(1.2)'), rv('title',8,4,10,2)] },
+  ]
+
+
   const closingBases = [
     { id: 'cl-tb', n: 'Title Block Sign-Off', r: [rv('title',1,12,1,2), rv('meta',1,12,3,2), rv('text',10,3,10,3), img(0,1,12,1,12)] },
     { id: 'cl-qp', n: 'QR Portal', r: [img(0,4,6,3,6), rv('title',1,3,4,4), rv('meta',10,3,4,4)] },
@@ -2107,8 +2128,8 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
 
   const results: LayoutSpec[] = []
 
-  // Add 18 Cover Bases
-  for (const base of coverBases) {
+  // Add 18 Cover Bases + 11 Fractured Bases
+  for (const base of [...coverBases, ...fracturedBases]) {
     results.push(mk(
       `system.cover.${base.id}`,
       base.n,
