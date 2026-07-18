@@ -280,6 +280,12 @@ export default function PortfolioBookPage() {
             windowWidth: targetWidth,
             windowHeight: targetHeight,
             onclone: (_doc: Document, clonedEl: HTMLElement) => {
+              // Reset any React-driven scale transforms so html2canvas renders 1:1 natively
+              const innerContainer = clonedEl.querySelector('div > div') as HTMLElement
+              if (innerContainer && innerContainer.style.transform && innerContainer.style.transform.includes('scale')) {
+                innerContainer.style.transform = 'none'
+              }
+              
               clonedEl.querySelectorAll('*').forEach((node) => {
                 const el = node as HTMLElement
                 if (!el.style) return
@@ -392,6 +398,11 @@ export default function PortfolioBookPage() {
   const currentPage = pages[currentPageIdx]
   const totalPages = pages.length
 
+  // Calculate high-quality scaling factor (A4 page width in pixels = 1122.5px at 96dpi)
+  const basePageSize = pageSize || { width: 297, height: 210 }
+  const pagePixelWidth = (basePageSize.width * 96) / 25.4
+  const printScale = pagePixelWidth / 760
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col print:bg-white print:bg-none print:min-h-0 print:block">
       {/* Edge-to-edge print: no browser print margins, no page shrink */}
@@ -427,21 +438,11 @@ export default function PortfolioBookPage() {
           
           /* Force the PageComposer/SpreadComposer outer container to fill the page width and height */
           .pf-print-page > div {
-            width: 100vw !important;
-            height: 100vh !important;
+            width: 100% !important;
+            height: 100% !important;
             max-width: none !important;
             margin: 0 !important;
             padding: 0 !important;
-          }
-          
-          /* Scale the absolute positioned inner container to fill the page width exactly */
-          .pf-print-page:not([data-spread="1"]) > div > div {
-            transform: scale(calc(100vw / 760)) !important;
-            transform-origin: top left !important;
-          }
-          .pf-print-page[data-spread="1"] > div > div {
-            transform: scale(calc(100vw / 1520)) !important;
-            transform-origin: top left !important;
           }
         }
       `}</style>
@@ -572,7 +573,7 @@ export default function PortfolioBookPage() {
                   pageSize={pageSize}
                   editMode={false}
                   showWatermark={isFreeTier}
-                  scale={1}
+                  scale={printScale / 2}
                 />
               ) : (
                 <PageComposer
@@ -594,7 +595,7 @@ export default function PortfolioBookPage() {
                   pageSize={pageSize}
                   showWatermark={isFreeTier}
                   readonly={true}
-                  scale={1}
+                  scale={printScale}
                 />
               )}
             </div>
