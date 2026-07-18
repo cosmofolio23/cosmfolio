@@ -168,6 +168,77 @@ export function SheetProperties({
 
           <hr className="border-gray-200" />
 
+          {/* Modular Layout Grid & Border Settings */}
+          <section>
+            <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">📏 Modular Layout Grid</h4>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block">
+                  <span className="text-[10px] text-gray-500 font-medium">Grid Columns</span>
+                  <select
+                    value={sheetSet.gridColumns || 12}
+                    onChange={e => onUpdateSheetSet({ gridColumns: parseInt(e.target.value) })}
+                    className="w-full mt-1 px-2 py-1.5 border border-gray-300 rounded text-xs bg-white"
+                  >
+                    <option value="4">4 Columns</option>
+                    <option value="6">6 Columns</option>
+                    <option value="8">8 Columns</option>
+                    <option value="12">12 Columns (Std)</option>
+                    <option value="16">16 Columns</option>
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] text-gray-500 font-medium">Gutter Width</span>
+                  <select
+                    value={sheetSet.gridGutter || 1.5}
+                    onChange={e => onUpdateSheetSet({ gridGutter: parseFloat(e.target.value) })}
+                    className="w-full mt-1 px-2 py-1.5 border border-gray-300 rounded text-xs bg-white"
+                  >
+                    <option value="0">0% (No Gutter)</option>
+                    <option value="1">1.0% Gutter</option>
+                    <option value="1.5">1.5% Gutter</option>
+                    <option value="2">2.0% Gutter</option>
+                    <option value="3">3.0% Gutter</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block">
+                  <span className="text-[10px] text-gray-500 font-medium">Sheet Margins (mm)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={sheetSet.sheetMargins ?? 15}
+                    onChange={e => onUpdateSheetSet({ sheetMargins: parseInt(e.target.value) || 0 })}
+                    className="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] text-gray-500 font-medium">Sheet Outer Border</span>
+                  <select
+                    value={sheetSet.sheetBorder || 'none'}
+                    onChange={e => onUpdateSheetSet({ sheetBorder: e.target.value as any })}
+                    className="w-full mt-1 px-2 py-1.5 border border-gray-300 rounded text-xs bg-white"
+                  >
+                    <option value="none">None (Border-free)</option>
+                    <option value="thin-black">Thin Technical Border</option>
+                    <option value="double-line">Double Line Studio Frame</option>
+                    <option value="dashed-border">Dashed Layout Guide</option>
+                  </select>
+                </label>
+              </div>
+              <p className="text-[9px] text-gray-400 leading-tight">
+                Propagated across all sheets to enforce alignment. Red margins and columns only show when grid lines are visible.
+              </p>
+            </div>
+          </section>
+
+          <hr className="border-gray-200" />
+
           {/* Master Title Block */}
           <section>
             <h4 className="text-xs font-bold text-gray-700 uppercase mb-3 tracking-wider">Master Title Block</h4>
@@ -359,7 +430,7 @@ export function SheetProperties({
         {/* Material Swatch Shape (Feature 1) */}
         {(selectedElement.kind === 'image' || selectedElement.kind === 'drawing') && (
           <div className="space-y-3 p-3 bg-stone-50 rounded border border-stone-200">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">🎭 Material Swatch Shape</h4>
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">🎭 Material Swatch & Frame</h4>
             <label className="block">
               <span className="text-[10px] text-gray-500 font-medium">Mask Shape</span>
               <select
@@ -373,6 +444,34 @@ export function SheetProperties({
                 <option value="slanted-left">Slanted Left Cut</option>
                 <option value="slanted-right">Slanted Right Cut</option>
               </select>
+            </label>
+
+            <label className="block">
+              <span className="text-[10px] text-gray-500 font-medium block">Frame Fit Mode</span>
+              <div className="flex bg-gray-200 p-0.5 rounded mt-1">
+                <button
+                  type="button"
+                  onClick={() => onUpdateElement({ fitMode: 'contain' })}
+                  className={`flex-1 py-1 text-[10px] font-semibold rounded ${
+                    (selectedElement.fitMode || (selectedElement.kind === 'drawing' ? 'contain' : 'cover')) === 'contain'
+                      ? 'bg-white shadow text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Fit (Contain)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateElement({ fitMode: 'cover' })}
+                  className={`flex-1 py-1 text-[10px] font-semibold rounded ${
+                    (selectedElement.fitMode || (selectedElement.kind === 'drawing' ? 'contain' : 'cover')) === 'cover'
+                      ? 'bg-white shadow text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Fill (Crop)
+                </button>
+              </div>
             </label>
           </div>
         )}

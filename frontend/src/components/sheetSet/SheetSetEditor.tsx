@@ -49,6 +49,7 @@ export function SheetSetEditor({
   const [aiProcessing, setAiProcessing] = useState(false)
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
   const [spreadMode, setSpreadMode] = useState(false)
+  const [overviewMode, setOverviewMode] = useState(false)
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(false)
   
   // File upload state
@@ -185,6 +186,48 @@ export function SheetSetEditor({
     if (selectedSheetId === id) {
       setSelectedSheetId(newSheets[0].id)
     }
+  }
+
+  const handleMoveSheet = (index: number, direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= sheetSet.sheets.length) return
+    
+    const updatedSheets = [...sheetSet.sheets]
+    const temp = updatedSheets[index]
+    updatedSheets[index] = updatedSheets[newIndex]
+    updatedSheets[newIndex] = temp
+    
+    const orderedSheets = updatedSheets.map((s, i) => ({
+      ...s,
+      order: i,
+      sheetNumber: i + 1
+    }))
+    
+    setSheetSet(prev => ({
+      ...prev,
+      sheets: orderedSheets
+    }))
+  }
+
+  const handleDuplicateSheet = (sheet: Sheet) => {
+    const duplicatedSheet: Sheet = {
+      ...sheet,
+      id: `sheet-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      sheetName: `${sheet.sheetName} (Copy)`,
+      sheetNumber: sheetSet.sheets.length + 1,
+      order: sheetSet.sheets.length,
+      elements: sheet.elements.map(el => ({
+        ...el,
+        id: `elem-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        isMaster: false,
+        masterId: undefined
+      }))
+    }
+    
+    setSheetSet(prev => ({
+      ...prev,
+      sheets: [...prev.sheets, duplicatedSheet]
+    }))
   }
 
   const handleReorderSheets = (sheets: Sheet[]) => {
@@ -484,6 +527,7 @@ export function SheetSetEditor({
       <SheetSetAssetLibrary 
         assets={projectAssets} 
         onDragStart={() => {}} 
+        onAddAssets={newAssets => setProjectAssets(prev => [...prev, ...newAssets])}
       />
 
       {/* Architectural Symbols */}
@@ -501,37 +545,217 @@ export function SheetSetEditor({
       {/* Thesis Tracker Widget */}
       <ThesisCompanion sheets={sheetSet.sheets} />
 
-      {/* Canvas */}
-      <SheetSetCanvas
-        sheet={currentSheet}
-        nextSheet={nextSheet}
-        spreadMode={spreadMode}
-        sheetSet={sheetSet}
-        selectedElementId={selectedElementId}
-        onSelectElement={setSelectedElementId}
-        onUpdateElement={updateElement}
-        onDeleteElement={deleteElement}
-        onDuplicateElement={duplicateElement}
-        zoom={zoom}
-        onZoomChange={setZoom}
-        gridEnabled={currentSheet.gridEnabled}
-        snapEnabled={currentSheet.snapEnabled}
-        onToggleGrid={() => updateSheet(currentSheet.id, { gridEnabled: !currentSheet.gridEnabled })}
-        onToggleSnap={() => updateSheet(currentSheet.id, { snapEnabled: !currentSheet.snapEnabled })}
-      />
+      {/* Canvas or Light Table Overview */}
+      {overviewMode ? (
+        <div className="flex-1 overflow-y-auto bg-gray-100 p-8 h-full">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">📊 Light Table</h2>
+                <p className="text-xs text-gray-500 font-medium">Overview of all sheets in your portfolio submission. Compare layouts, margins, and borders.</p>
+              </div>
+              <button
+                onClick={handleAddSheet}
+                className="px-4 py-2 bg-[#D4AF37] hover:bg-[#b8952d] text-gray-950 font-bold rounded-lg text-xs shadow transition flex items-center gap-1.5"
+              >
+                <span>＋ Add Page</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              {sheetSet.sheets.map((sheet, index) => {
+                const isPortrait = sheetSet.orientation === 'portrait'
+                const pageSpec = SHEET_SIZES[sheetSet.sheetSize as keyof typeof SHEET_SIZES] || SHEET_SIZES.A1
+                const baseW = sheetSet.sheetSize === 'custom' ? (sheetSet.customWidth || 594) : pageSpec.width
+                const baseH = sheetSet.sheetSize === 'custom' ? (sheetSet.customHeight || 841) : pageSpec.height
+                const sWidth = isPortrait ? baseW : baseH
+                const sHeight = isPortrait ? baseH : baseW
+
+                return (
+                  <div 
+                    key={sheet.id} 
+                    className={`bg-white rounded-xl shadow border p-4 flex flex-col justify-between group transition ${
+                      selectedSheetId === sheet.id ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20 shadow-md' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {/* Miniature Page Canvas Preview */}
+                    <div 
+                      onClick={() => {
+                        setSelectedSheetId(sheet.id)
+                        setOverviewMode(false)
+                      }}
+                      className="cursor-pointer relative bg-gray-50 rounded border border-gray-250 overflow-hidden flex items-center justify-center p-2 hover:bg-gray-100 transition"
+                      style={{
+                        aspectRatio: isPortrait ? '1 / 1.414' : '1.414 / 1',
+                        backgroundColor: sheetSet.backgroundColor || '#ffffff',
+                      }}
+                    >
+                      {/* Outer Theme Border */}
+                      {sheetSet.sheetBorder && sheetSet.sheetBorder !== 'none' && (
+                        <div 
+                          className="absolute pointer-events-none"
+                          style={{
+                            left: '5%',
+                            top: '5%',
+                            right: '5%',
+                            bottom: '5%',
+                            border: sheetSet.sheetBorder === 'thin-black' ? '0.5px solid currentColor'
+                              : sheetSet.sheetBorder === 'double-line' ? '1.5px double currentColor'
+                              : sheetSet.sheetBorder === 'dashed-border' ? '0.5px dashed currentColor'
+                              : 'none',
+                            borderColor: sheetSet.textColor || '#111111'
+                          }}
+                        />
+                      )}
+
+                      {/* Elements placeholder list */}
+                      <div className="absolute inset-0 p-3 pointer-events-none">
+                        {sheet.elements.map(el => (
+                          <div 
+                            key={el.id} 
+                            className="absolute bg-gray-400/20 border border-gray-400/30 rounded flex items-center justify-center text-[7px] text-gray-500 overflow-hidden truncate"
+                            style={{
+                              left: `${el.x}%`,
+                              top: `${el.y}%`,
+                              width: `${el.w}%`,
+                              height: `${el.h}%`,
+                            }}
+                          >
+                            {el.kind === 'drawing' ? '📐' : el.kind === 'image' ? '🖼️' : '💬'}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Quick click label */}
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition flex items-center justify-center">
+                        <span className="opacity-0 group-hover:opacity-100 px-3 py-1 bg-black/75 backdrop-blur-sm text-white text-[9px] font-bold rounded-full transition shadow">
+                          ✏️ Edit
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Metadata & Controls */}
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-[#9C7416] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                          PAGE {index + 1}
+                        </span>
+                        <div className="flex gap-1">
+                          <button
+                            disabled={index === 0}
+                            onClick={() => handleMoveSheet(index, 'left')}
+                            className="p-1 rounded hover:bg-gray-150 text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Move Left"
+                          >
+                            ◀
+                          </button>
+                          <button
+                            disabled={index === sheetSet.sheets.length - 1}
+                            onClick={() => handleMoveSheet(index, 'right')}
+                            className="p-1 rounded hover:bg-gray-150 text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Move Right"
+                          >
+                            ▶
+                          </button>
+                        </div>
+                      </div>
+
+                      <h4 className="text-xs font-bold text-gray-800 mt-1 truncate">{sheet.sheetName}</h4>
+                      <p className="text-[9px] text-gray-400 capitalize">{sheet.sheetType} layout</p>
+
+                      <div className="flex gap-2 mt-3 pt-2.5 border-t border-gray-100">
+                        <button
+                          onClick={() => {
+                            setSelectedSheetId(sheet.id)
+                            setOverviewMode(false)
+                          }}
+                          className="flex-1 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-250 rounded text-[9px] font-bold text-gray-700 transition"
+                        >
+                          ✏️ Canvas
+                        </button>
+                        <button
+                          onClick={() => handleDuplicateSheet(sheet)}
+                          className="flex-1 py-1.5 bg-gray-50 hover:bg-amber-50 hover:border-amber-200 rounded text-[9px] font-bold text-gray-700 hover:text-[#9C7416] transition border border-gray-250"
+                        >
+                          📋 Clone
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSheet(sheet.id)}
+                          className="p-1.5 bg-gray-50 hover:bg-red-50 hover:border-red-200 text-gray-500 hover:text-red-750 border border-gray-250 rounded transition"
+                          title="Delete Page"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Add New Sheet Placeholder Card */}
+              <div 
+                onClick={handleAddSheet}
+                className="aspect-square bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl hover:bg-gray-100 hover:border-gray-400 cursor-pointer flex flex-col items-center justify-center text-center p-6 transition"
+                style={{
+                  aspectRatio: sheetSet.orientation === 'portrait' ? '1 / 1.414' : '1.414 / 1',
+                }}
+              >
+                <span className="text-2xl text-gray-400">＋</span>
+                <span className="text-xs font-bold text-gray-600 mt-1">Add Page</span>
+                <span className="text-[9px] text-gray-400 mt-0.5">Appends sheet to set</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <SheetSetCanvas
+          sheet={currentSheet}
+          nextSheet={nextSheet}
+          spreadMode={spreadMode}
+          sheetSet={sheetSet}
+          selectedElementId={selectedElementId}
+          onSelectElement={setSelectedElementId}
+          onUpdateElement={updateElement}
+          onDeleteElement={deleteElement}
+          onDuplicateElement={duplicateElement}
+          zoom={zoom}
+          onZoomChange={setZoom}
+          gridEnabled={currentSheet.gridEnabled}
+          snapEnabled={currentSheet.snapEnabled}
+          onToggleGrid={() => updateSheet(currentSheet.id, { gridEnabled: !currentSheet.gridEnabled })}
+          onToggleSnap={() => updateSheet(currentSheet.id, { snapEnabled: !currentSheet.snapEnabled })}
+        />
+      )}
 
       {/* Right Sidebar: Properties + AI */}
       <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto flex flex-col">
         
-        {/* Spread Mode Toggle */}
-        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-700">📖 Spread View</span>
-          <button 
-            onClick={() => setSpreadMode(!spreadMode)}
-            className={`w-10 h-5 rounded-full relative transition-colors ${spreadMode ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}
-          >
-            <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${spreadMode ? 'translate-x-5' : 'translate-x-0'}`} />
-          </button>
+        {/* View Mode Controls */}
+        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-700">📖 Spread View</span>
+            <button 
+              onClick={() => {
+                setSpreadMode(!spreadMode)
+                if (overviewMode) setOverviewMode(false)
+              }}
+              className={`w-10 h-5 rounded-full relative transition-colors ${spreadMode ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${spreadMode ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+            <span className="text-xs font-bold text-gray-700">📊 Light Table Overview</span>
+            <button 
+              onClick={() => {
+                setOverviewMode(!overviewMode)
+                if (spreadMode) setSpreadMode(false)
+              }}
+              className={`w-10 h-5 rounded-full relative transition-colors ${overviewMode ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${overviewMode ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
         </div>
 
         {/* Sheet Layout Switcher */}

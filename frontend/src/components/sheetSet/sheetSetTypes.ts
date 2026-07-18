@@ -113,6 +113,9 @@ export interface SheetElement {
   // Site Analysis Widgets (Feature 1)
   siteAnalysisType?: 'sunpath' | 'windrose' | 'climatology'
   locationName?: string
+
+  // Image Frame Fitting
+  fitMode?: 'contain' | 'cover'
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -235,6 +238,12 @@ export interface SheetSet {
   customHeight?: number         // mm
   orientation: Orientation
   titleBlockTemplate?: TitleBlockType
+
+  // Modular Grid & Sheet Layout
+  gridColumns?: number
+  gridGutter?: number
+  sheetMargins?: number
+  sheetBorder?: 'none' | 'thin-black' | 'double-line' | 'dashed-border'
 
   // Master elements
   masterSheets: MasterSheet[]

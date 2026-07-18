@@ -204,18 +204,67 @@ export function SheetSetCanvas({
       if (newH < 2) { newY -= (2 - newH); newH = 2; }
 
       if (snapEnabled) {
-        newW = Math.round(newW / 2) * 2
-        newH = Math.round(newH / 2) * 2
-        newX = Math.round(newX / 2) * 2
-        newY = Math.round(newY / 2) * 2
+        const cols = sheetSet.gridColumns || 12
+        const gutter = sheetSet.gridGutter || 1.5
+        const colWidth = (100 - (cols - 1) * gutter) / cols
+
+        const snapToColumn = (val: number): number => {
+          let closest = val
+          let minDist = Infinity
+          for (let i = 0; i < cols; i++) {
+            const start = i * (colWidth + gutter)
+            const end = start + colWidth
+            const distStart = Math.abs(start - val)
+            if (distStart < minDist) { minDist = distStart; closest = start; }
+            const distEnd = Math.abs(end - val)
+            if (distEnd < minDist) { minDist = distEnd; closest = end; }
+          }
+          return minDist < 2 ? closest : val
+        }
+
+        if (resizingHandle.includes('e')) {
+          const snappedRight = snapToColumn(newX + newW)
+          newW = Math.max(2, snappedRight - newX)
+        }
+        if (resizingHandle.includes('w')) {
+          const snappedLeft = snapToColumn(newX)
+          newW = Math.max(2, (newX + newW) - snappedLeft)
+          newX = snappedLeft
+        }
+        if (resizingHandle.includes('s')) {
+          newH = Math.round(newH / 2.5) * 2.5
+        }
+        if (resizingHandle.includes('n')) {
+          const snappedTop = Math.round(newY / 2.5) * 2.5
+          newH = Math.max(2, (newY + newH) - snappedTop)
+          newY = snappedTop
+        }
       }
       onUpdateElement(element.id, { x: newX, y: newY, w: newW, h: newH })
     } else if (draggingId) {
       let newX = Math.max(0, Math.min(100 - element.w, element.x + (deltaX / sheetWidthPx) * 100))
       let newY = Math.max(0, Math.min(100 - element.h, element.y + (deltaY / sheetHeightPx) * 100))
       if (snapEnabled) {
-        newX = Math.round(newX / 2) * 2
-        newY = Math.round(newY / 2) * 2
+        const cols = sheetSet.gridColumns || 12
+        const gutter = sheetSet.gridGutter || 1.5
+        const colWidth = (100 - (cols - 1) * gutter) / cols
+
+        const snapToColumn = (val: number): number => {
+          let closest = val
+          let minDist = Infinity
+          for (let i = 0; i < cols; i++) {
+            const start = i * (colWidth + gutter)
+            const end = start + colWidth
+            const distStart = Math.abs(start - val)
+            if (distStart < minDist) { minDist = distStart; closest = start; }
+            const distEnd = Math.abs(end - val)
+            if (distEnd < minDist) { minDist = distEnd; closest = end; }
+          }
+          return minDist < 2 ? closest : val
+        }
+
+        newX = snapToColumn(newX)
+        newY = Math.round(newY / 2.5) * 2.5
       }
       onUpdateElement(element.id, { x: newX, y: newY })
     }
@@ -243,11 +292,83 @@ export function SheetSetCanvas({
           color: sheetSet.textColor || '#111111',
           fontFamily: sheetSet.fontFamily || 'Inter',
           backgroundImage: gridEnabled
-            ? `linear-gradient(90deg, #e5e7eb 1px, transparent 1px), linear-gradient(#e5e7eb 1px, transparent 1px)`
+            ? `linear-gradient(#e5e7eb 1px, transparent 1px)`
             : undefined,
-          backgroundSize: gridEnabled ? '2% 2%' : undefined,
+          backgroundSize: gridEnabled ? '100% 2.5%' : undefined,
         }}
       >
+        {/* Modular Grid Overlay (Feature Grid) */}
+        {gridEnabled && (() => {
+          const cols = sheetSet.gridColumns || 12
+          const gutter = sheetSet.gridGutter || 1.5
+          const colWidth = (100 - (cols - 1) * gutter) / cols
+          
+          return (
+            <div className="absolute inset-0 pointer-events-none z-10" style={{ paddingLeft: '0%', paddingRight: '0%' }}>
+              {Array.from({ length: cols }).map((_, i) => {
+                const left = i * (colWidth + gutter)
+                return (
+                  <div
+                    key={i}
+                    className="absolute h-full bg-blue-500/[0.015] border-l border-r border-blue-400/10"
+                    style={{
+                      left: `${left}%`,
+                      width: `${colWidth}%`
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )
+        })()}
+
+        {/* Margins & Sheet Borders (Feature margins) */}
+        {(() => {
+          const marginMm = sheetSet.sheetMargins ?? 15
+          // Convert margin in mm to percentage of sheet width/height
+          const marginPctX = (marginMm / sheetWidth) * 100
+          const marginPctY = (marginMm / sheetHeight) * 100
+          
+          const borderStyle = sheetSet.sheetBorder || 'none'
+          
+          return (
+            <>
+              {/* Red Dotted Margin Guide */}
+              {gridEnabled && (
+                <div 
+                  className="absolute border border-dashed border-red-400/35 pointer-events-none"
+                  style={{
+                    left: `${marginPctX}%`,
+                    top: `${marginPctY}%`,
+                    right: `${marginPctX}%`,
+                    bottom: `${marginPctY}%`,
+                    zIndex: 12
+                  }}
+                />
+              )}
+              
+              {/* Real Print Border Frame */}
+              {borderStyle !== 'none' && (
+                <div 
+                  className="absolute pointer-events-none"
+                  style={{
+                    left: `${marginPctX}%`,
+                    top: `${marginPctY}%`,
+                    right: `${marginPctX}%`,
+                    bottom: `${marginPctY}%`,
+                    zIndex: 11,
+                    border: borderStyle === 'thin-black' ? '1px solid currentColor'
+                      : borderStyle === 'double-line' ? '3px double currentColor'
+                      : borderStyle === 'dashed-border' ? '1px dashed currentColor'
+                      : 'none',
+                    borderColor: 'inherit'
+                  }}
+                />
+              )}
+            </>
+          )
+        })()}
+
         {/* Master Elements (Background) */}
         {currentSheet.background && currentSheet.background.visible !== false && (
           <div
@@ -326,8 +447,9 @@ export function SheetSetCanvas({
                   <img
                     src={element.drawing.url}
                     alt={element.drawing.drawingName}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full"
                     style={{
+                      objectFit: element.fitMode || 'contain',
                       filter: [
                         element.drawing.vector ? '' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))',
                         element.imageEffects?.grayscale ? 'grayscale(100%)' : '',
@@ -368,8 +490,9 @@ export function SheetSetCanvas({
                 <img
                   src={element.src}
                   alt="element"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full"
                   style={{
+                    objectFit: element.fitMode || 'cover',
                     clipPath: getClipPath(element.maskShape),
                     filter: [
                       element.imageEffects?.grayscale ? 'grayscale(100%)' : '',

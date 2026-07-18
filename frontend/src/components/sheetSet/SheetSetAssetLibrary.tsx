@@ -12,14 +12,51 @@ export interface ProjectAsset {
 interface SheetSetAssetLibraryProps {
   assets: ProjectAsset[]
   onDragStart: (asset: ProjectAsset) => void
+  onAddAssets?: (newAssets: ProjectAsset[]) => void
 }
 
-export function SheetSetAssetLibrary({ assets, onDragStart }: SheetSetAssetLibraryProps) {
+export function SheetSetAssetLibrary({ assets, onDragStart, onAddAssets }: SheetSetAssetLibraryProps) {
   const [collapsed, setCollapsed] = useState(true)
 
   const drawings = assets.filter(a => ['plan', 'section', 'elevation', 'detail'].includes(a.type))
   const visuals = assets.filter(a => ['render'].includes(a.type))
   const process = assets.filter(a => ['diagram', 'analysis', 'sketch'].includes(a.type))
+
+  const handleBulkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    const newAssets: ProjectAsset[] = files.map((file, idx) => {
+      const url = URL.createObjectURL(file)
+      const name = file.name.split('.')[0]
+      const lowerName = name.toLowerCase()
+
+      let type: DrawingType = 'diagram'
+      if (lowerName.includes('plan') || lowerName.includes('floor') || lowerName.includes('ground') || lowerName.includes('site')) {
+        type = 'plan'
+      } else if (lowerName.includes('section')) {
+        type = 'section'
+      } else if (lowerName.includes('elevation')) {
+        type = 'elevation'
+      } else if (lowerName.includes('render') || lowerName.includes('view') || lowerName.includes('photo') || lowerName.includes('perspective')) {
+        type = 'render'
+      } else if (lowerName.includes('sketch') || lowerName.includes('concept')) {
+        type = 'sketch' as any
+      }
+
+      return {
+        id: `bulk-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+        url,
+        name,
+        type,
+        originalScale: '1:100'
+      }
+    })
+
+    if (onAddAssets) {
+      onAddAssets(newAssets)
+    }
+  }
 
   if (collapsed) {
     return (
@@ -73,10 +110,23 @@ export function SheetSetAssetLibrary({ assets, onDragStart }: SheetSetAssetLibra
       </div>
 
       <div className="flex-1 overflow-y-auto p-3">
+        {/* Bulk Upload Dropzone */}
+        <div className="p-3 mb-4 bg-amber-50/30 hover:bg-amber-50/50 border border-dashed border-amber-300 rounded-lg text-center relative transition cursor-pointer">
+          <input
+            type="file"
+            multiple
+            accept="image/*,.pdf,.svg"
+            onChange={handleBulkUpload}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+          />
+          <span className="text-sm">📥</span>
+          <p className="text-[10px] font-bold text-[#9C7416] mt-0.5">Bulk Import Assets</p>
+          <p className="text-[7.5px] text-gray-400 leading-tight mt-0.5">Click or drop multiple plans / renders here</p>
+        </div>
+
         {assets.length === 0 ? (
           <div className="text-center text-gray-400 text-xs py-10 px-4">
-            <p className="text-2xl mb-2">📥</p>
-            Drop images onto the canvas to add them to your project library.
+            No assets loaded. Upload files above to populate your library.
           </div>
         ) : (
           <>
