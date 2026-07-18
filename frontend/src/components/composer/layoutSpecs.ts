@@ -37,6 +37,8 @@ export interface LayoutSpec {
   imageCount: number
   kind?: 'overlay'   // cover overlay rendering
   pro?: boolean      // Requires Pro subscription
+  colorTreatment?: string
+  typographyPairing?: string
 }
 
 export const LAYOUT_CATEGORIES: LayoutCategory[] = ['Cover', 'Single', 'Duo', 'Hero', 'Strip', 'Grid', 'Asymmetric', 'Text', 'About', 'Contact', 'Resume', 'Contents', 'Spread', 'Project Spread', 'Content Spread', 'About Spread']
@@ -2048,7 +2050,104 @@ function generateExtraCovers100(): LayoutSpec[] {
   ]
 }
 
+function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
+  const mk = (id: string, n: string, category: LayoutCategory, suits: PageType[], r: Region[]): LayoutSpec => ({
+    id, name: n, category, suits,
+    imageCount: r.filter(x => x.role === 'image').length, regions: r,
+  })
+
+  const coverBases = [
+    { id: 'cv-tb', n: 'Title Block Sheet', r: [rv('title',1,12,1,2), rv('meta',1,12,3,2), rv('legend',10,3,10,3), img(0,1,12,1,12)] },
+    { id: 'cv-bg', n: 'Blueprint Grid', r: [img(0,1,12,1,12), rv('title',8,5,10,3)] },
+    { id: 'cv-sp', n: 'Site Plan Silhouette', r: [img(0,1,12,2,8), rv('title',1,12,10,3)] },
+    { id: 'cv-sc', n: 'Section Cut', r: [img(0,1,12,4,6), rv('title',2,10,10,2)] },
+    { id: 'cv-ae', n: 'Axonometric Explosion', r: [img(0,4,6,3,6), rv('title',10,3,10,3)] },
+    { id: 'cv-ct', n: 'Contour Topography', r: [img(0,1,12,1,12), rv('title',4,6,5,4)] },
+    { id: 'cv-sd', n: 'Sun Path Diagram', r: [img(0,3,8,3,8), rv('title',1,12,11,2)] },
+    { id: 'cv-sg', n: 'Structural Grid Overlay', r: [img(0,1,12,1,12), rv('title',3,2,3,2)] },
+    { id: 'cv-es', n: 'Elevation Skyline', r: [img(0,1,12,8,5), rv('title',2,10,3,3)] },
+    { id: 'cv-dc', n: 'Detail Callout Bubble', r: [img(0,4,6,3,6), rv('title',10,3,10,2)] },
+    { id: 'cv-dp', n: 'Drafting Pin-Up', r: [img(0,2,10,2,10), rv('title',3,8,11,1)] },
+    { id: 'cv-ms', n: 'Monogram Stamp', r: [img(0,5,4,4,4), rv('title',5,4,9,2)] },
+    { id: 'cv-sdg', n: 'Split Diagonal', r: [img(0,1,6,1,12), img(1,7,6,1,12), rv('title',5,4,6,2)] },
+    { id: 'cv-lt', n: 'Layered Trace Paper', r: [img(0,2,9,2,9), img(1,3,9,3,9), rv('title',2,9,1,2)] },
+    { id: 'cv-mp', n: 'Model Photography Full-Bleed', r: [img(0,1,12,1,12), rv('title',1,12,11,2)] },
+    { id: 'cv-tm', n: 'Thumbnail Mosaic', r: [img(0,1,12,1,12), rv('title',4,6,5,4)] },
+    { id: 'cv-st', n: 'Sketchbook Texture', r: [img(0,1,12,1,12), img(1,5,4,5,4), rv('title',4,6,9,2)] },
+    { id: 'cv-ns', n: 'Negative Space Cutout', r: [img(0,1,12,1,12), rv('title',4,6,5,4)] },
+  ]
+
+  const closingBases = [
+    { id: 'cl-tb', n: 'Title Block Sign-Off', r: [rv('title',1,12,1,2), rv('meta',1,12,3,2), rv('text',10,3,10,3), img(0,1,12,1,12)] },
+    { id: 'cl-qp', n: 'QR Portal', r: [img(0,4,6,3,6), rv('title',1,3,4,4), rv('meta',10,3,4,4)] },
+    { id: 'cl-cf', n: 'Contour Fade', r: [img(0,1,12,1,6), rv('meta',4,6,8,4)] },
+    { id: 'cl-bc', n: 'Business Card Sheet', r: [rv('meta',2,4,2,3), rv('meta',7,4,2,3), rv('meta',2,4,7,3), rv('meta',7,4,7,3)] },
+    { id: 'cl-es', n: 'Elevation Sunset', r: [img(0,1,12,8,5), rv('meta',2,10,3,3)] },
+    { id: 'cl-ss', n: 'Sketch Signature', r: [img(0,5,4,3,4), rv('title',3,8,8,2), rv('meta',3,8,10,2)] },
+    { id: 'cl-cr', n: 'Compass Rose Contact', r: [img(0,5,4,4,4), rv('meta',1,12,9,3)] },
+    { id: 'cl-dc', n: 'Detail Callout Contact', r: [img(0,4,6,3,6), rv('meta',5,4,4,4)] },
+    { id: 'cl-tn', n: 'Torn Note Pin-Up', r: [img(0,3,8,3,8), rv('meta',4,6,4,6)] },
+    { id: 'cl-ms', n: 'Minimal Monogram Sign-Off', r: [img(0,5,4,5,4), rv('meta',5,4,10,2)] },
+  ]
+
+  const colors = [
+    { id: 'blue', label: 'Blueprint Cyan' },
+    { id: 'kraft', label: 'Kraft/Warm' },
+    { id: 'mono', label: 'Monochrome B&W' },
+    { id: 'conc', label: 'Concrete Grey' },
+    { id: 'acc', label: 'Accent-Color Pop' },
+  ]
+
+  const typos = [
+    { id: 'tech', label: 'Technical/Monospace' },
+    { id: 'edit', label: 'Editorial Serif' },
+    { id: 'sans', label: 'Geometric Sans' },
+    { id: 'hand', label: 'Hand-Lettered Accent' },
+  ]
+
+  const results: LayoutSpec[] = []
+
+  // Generate 360 Cover Templates (18 x 5 x 4)
+  for (const base of coverBases) {
+    for (const c of colors) {
+      for (const t of typos) {
+        const spec = mk(
+          `system.${base.id}.${c.id}.${t.id}`,
+          `${base.n} (${c.label}, ${t.label})`,
+          'Cover',
+          ['cover'],
+          base.r
+        )
+        spec.colorTreatment = c.id
+        spec.typographyPairing = t.id
+        results.push(spec)
+      }
+    }
+  }
+
+  // Generate 200 Closing Templates (10 x 5 x 4)
+  for (const base of closingBases) {
+    for (const c of colors) {
+      for (const t of typos) {
+        const spec = mk(
+          `system.${base.id}.${c.id}.${t.id}`,
+          `${base.n} (${c.label}, ${t.label})`,
+          'Contact',
+          ['contact'],
+          base.r
+        )
+        spec.colorTreatment = c.id
+        spec.typographyPairing = t.id
+        results.push(spec)
+      }
+    }
+  }
+
+  return results
+}
+
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
+  ...generateSystematicCoversAndClosingPages(),
   ...SPREAD_SPECS,
   ...RESUME_SPREAD_SPECS,
   ...generateUniqueContentSpreads200(),
