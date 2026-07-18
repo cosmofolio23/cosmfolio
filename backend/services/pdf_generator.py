@@ -80,10 +80,23 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
             # Optionally, give it 1 more second to let any micro-animations settle
             await page.wait_for_timeout(1000)
             
+            # Get page orientation dynamically
+            is_landscape = await page.evaluate("""
+                () => {
+                    const el = document.querySelector('.pf-print-page');
+                    if (el) {
+                        const rect = el.getBoundingClientRect();
+                        return rect.width > rect.height;
+                    }
+                    return true; // Default to landscape for portfolios
+                }
+            """)
+            
             # Print to PDF
-            # A4 size in inches (8.27 x 11.69), standard portfolio format
+            # A4 size, respecting orientation dynamically
             pdf_bytes = await page.pdf(
                 format="A4",
+                landscape=is_landscape,
                 print_background=True,
                 margin={"top": "0", "right": "0", "bottom": "0", "left": "0"}
             )
