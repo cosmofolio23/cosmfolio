@@ -63,8 +63,11 @@ export function TitleBlockView({
     paddingBottom: '0.1em', // Prevent html2canvas clipping
   }
 
+  const isTransparent = style.fill === 'none' || style.fill === 'tint'
+
   return (
     <div
+      className={isTransparent ? 'pointer-events-none' : 'pointer-events-auto'}
       style={{
         background: bg, color: fg, padding: style.fill === 'none' ? '0.2em 0' : '0.8em 0.9em',
         borderLeft: style.rule === 'left' ? `3px solid ${ruleColor}` : undefined,
@@ -78,7 +81,7 @@ export function TitleBlockView({
           <span style={{ position: 'absolute', top: 0, left: 0, width: 2, height: '1.2em', background: ruleColor }} />
         </>
       )}
-      <div className="flex flex-col gap-[0.35em]" style={items}>
+      <div className={`flex flex-col gap-[0.35em] ${isTransparent ? 'pointer-events-auto w-fit max-w-full' : ''}`} style={items}>
         {numberEl()}
         {style.accentBar && <div style={{ width: '2.6em', height: 4, background: p.accent }} />}
         {showRuleOver && <Rule w={style.rule === 'split' ? '1.6em' : '2.8em'} />}

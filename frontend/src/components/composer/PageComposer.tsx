@@ -1913,7 +1913,7 @@ function RegionView({
       )}
       {region.role === 'title' && (
         titleBlock
-          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'} pointer-events-auto`} onDoubleClick={!readonly ? openEditTitleBlock : undefined}>
+          ? <div className={`group/tb relative h-full ${readonly ? '' : 'cursor-pointer'} pointer-events-none`} onDoubleClick={!readonly ? openEditTitleBlock : undefined}>
               <TitleBlockView
                 style={titleBlock}
                 p={toPalette(overlay ? { ...tokens, primary: '#fff', text: '#fff' } : tokens)}
@@ -1926,8 +1926,8 @@ function RegionView({
                 override={{ color: block.color, fontFamily: block.fontFamily, scale: block.fontSize }}
               />
               {!readonly && (
-                <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden" data-html2canvas-ignore="true">
-                  <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200">
+                <div className="absolute inset-0 bg-blue-500/5 hover:bg-blue-500/10 border border-transparent hover:border-blue-400 rounded-sm transition flex items-center justify-center print:hidden pointer-events-none" data-html2canvas-ignore="true">
+                  <span className="bg-blue-600 text-white text-[9px] font-semibold uppercase px-2 py-0.5 rounded shadow opacity-0 group-hover/tb:opacity-100 transition-opacity duration-200 pointer-events-none">
                     ✏️ Double-Click to Edit
                   </span>
                 </div>
