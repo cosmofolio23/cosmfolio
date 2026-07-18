@@ -29,8 +29,10 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 "--no-zygote"
             ]
         )
+        # Use a viewport width of 760px — this matches the PageComposer's baseWidth,
+        # so the CSS transform scale will be ~1.0 and content fills the viewport exactly.
         context = await browser.new_context(
-            viewport={"width": 1920, "height": 1080},
+            viewport={"width": 760, "height": 1074},
             device_scale_factor=2,  # High res rendering
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
@@ -77,39 +79,77 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 }
             """)
             
-            # Get page orientation and exact dimensions dynamically
-            dimensions = await page.evaluate("""
+            # Read the page size and orientation from the frontend
+            page_info = await page.evaluate("""
                 () => {
                     const el = document.querySelector('.pf-print-page');
-                    if (el) {
-                        // Find the actual content container (the first child of the print page)
-                        const child = el.firstElementChild;
-                        if (child) {
-                            const rect = child.getBoundingClientRect();
-                            return {
-                                width: Math.round(rect.width),
-                                height: Math.round(rect.height),
-                                is_landscape: rect.width > rect.height
-                            };
-                        }
-                    }
-                    return { width: 1414, height: 1000, is_landscape: true }; // Default A4 landscape fallback
+                    if (!el) return { is_landscape: false };
+                    const child = el.firstElementChild;
+                    if (!child) return { is_landscape: false };
+                    const rect = child.getBoundingClientRect();
+                    return {
+                        is_landscape: rect.width > rect.height,
+                        content_width: Math.round(rect.width),
+                        content_height: Math.round(rect.height)
+                    };
                 }
             """)
             
-            is_landscape = dimensions.get("is_landscape", True)
+            is_landscape = page_info.get("is_landscape", False)
             
-            # Set the viewport to match the exact page content size to prevent scaling margins
-            await page.set_viewport_size({
-                "width": dimensions["width"],
-                "height": dimensions["height"]
-            })
+            # Inject CSS to force full-page printing: each .pf-print-page fills one printed sheet
+            await page.add_style_tag(content="""
+                @media print {
+                    @page { margin: 0; }
+                    html, body {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    /* Hide everything except the print container */
+                    body > * { display: none !important; }
+                    #pf-print-container,
+                    #pf-print-container ~ script,
+                    #__next { display: block !important; }
+                    #__next > * { display: none !important; }
+                    #__next > div:has(#pf-print-container) { display: block !important; }
+                    #__next > div > * { display: none !important; }
+                    #__next > div > main { display: block !important; }
+                    #__next > div > main > * { display: none !important; }
+                    #pf-print-container { display: block !important; }
+                    
+                    /* Each print page fills exactly one sheet */
+                    .pf-print-page {
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        overflow: hidden !important;
+                        break-after: page;
+                        page-break-after: always;
+                        page-break-inside: avoid;
+                    }
+                    .pf-print-page:last-child {
+                        break-after: auto;
+                        page-break-after: auto;
+                    }
+                    /* Force the PageComposer outer container to fill the print page */
+                    .pf-print-page > div {
+                        width: 100% !important;
+                        height: 100% !important;
+                        max-width: none !important;
+                    }
+                    /* Force the inner scaled content to fill 100% too */
+                    .pf-print-page > div > div {
+                        width: 100% !important;
+                        height: 100% !important;
+                        transform: none !important;
+                    }
+                }
+            """)
             
-            # Wait for layout adjustment
             await page.wait_for_timeout(500)
             
             # Print to PDF
-            # A4 size, respecting orientation dynamically
             pdf_bytes = await page.pdf(
                 format="A4",
                 landscape=is_landscape,
