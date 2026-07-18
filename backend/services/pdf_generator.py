@@ -67,7 +67,7 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                             if(cleanUrl && !cleanUrl.startsWith('data:')) {
                                 promises.push(new Promise(resolve => {
                                     const img = new Image();
-                                    const timer = setTimeout(resolve, 15000); // 15s max per image
+                                    const timer = setTimeout(resolve, 15000);
                                     img.onload = () => { clearTimeout(timer); resolve(); };
                                     img.onerror = () => { clearTimeout(timer); resolve(); };
                                     img.src = cleanUrl;
@@ -79,7 +79,7 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 }
             """)
             
-            # Read the page size and orientation from the frontend
+            # Read orientation from the rendered content
             page_info = await page.evaluate("""
                 () => {
                     const el = document.querySelector('.pf-print-page');
@@ -87,69 +87,16 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                     const child = el.firstElementChild;
                     if (!child) return { is_landscape: false };
                     const rect = child.getBoundingClientRect();
-                    return {
-                        is_landscape: rect.width > rect.height,
-                        content_width: Math.round(rect.width),
-                        content_height: Math.round(rect.height)
-                    };
+                    return { is_landscape: rect.width > rect.height };
                 }
             """)
             
             is_landscape = page_info.get("is_landscape", False)
             
-            # Inject CSS to force full-page printing: each .pf-print-page fills one printed sheet
-            await page.add_style_tag(content="""
-                @media print {
-                    @page { margin: 0; }
-                    html, body {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                    /* Hide everything except the print container */
-                    body > * { display: none !important; }
-                    #pf-print-container,
-                    #pf-print-container ~ script,
-                    #__next { display: block !important; }
-                    #__next > * { display: none !important; }
-                    #__next > div:has(#pf-print-container) { display: block !important; }
-                    #__next > div > * { display: none !important; }
-                    #__next > div > main { display: block !important; }
-                    #__next > div > main > * { display: none !important; }
-                    #pf-print-container { display: block !important; }
-                    
-                    /* Each print page fills exactly one sheet */
-                    .pf-print-page {
-                        width: 100vw !important;
-                        height: 100vh !important;
-                        overflow: hidden !important;
-                        break-after: page;
-                        page-break-after: always;
-                        page-break-inside: avoid;
-                    }
-                    .pf-print-page:last-child {
-                        break-after: auto;
-                        page-break-after: auto;
-                    }
-                    /* Force the PageComposer outer container to fill the print page */
-                    .pf-print-page > div {
-                        width: 100% !important;
-                        height: 100% !important;
-                        max-width: none !important;
-                    }
-                    /* Force the inner scaled content to fill 100% too */
-                    .pf-print-page > div > div {
-                        width: 100% !important;
-                        height: 100% !important;
-                        transform: none !important;
-                    }
-                }
-            """)
+            # Wait for layout to settle
+            await page.wait_for_timeout(1000)
             
-            await page.wait_for_timeout(500)
-            
-            # Print to PDF
+            # Print to PDF - the frontend's own @media print CSS handles page sizing
             pdf_bytes = await page.pdf(
                 format="A4",
                 landscape=is_landscape,
