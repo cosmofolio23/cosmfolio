@@ -1682,7 +1682,7 @@ function RegionView({
 
     if (block.imageUrl || block.isFlowchart) {
       const content = (
-        <div style={finalStyle} className={`transition-all duration-200 ${isFree ? '' : overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
+        <div style={finalStyle} className={`w-full h-full overflow-hidden transition-all duration-200 ${isFree ? '' : overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
           {block.isFlowchart ? (
             <FlowchartBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} onUploadImage={onUploadImage} />
           ) : (

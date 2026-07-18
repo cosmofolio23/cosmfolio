@@ -2133,40 +2133,26 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
 
   const results: LayoutSpec[] = []
 
-  // Add all Cover Combinations
+  // Add Cover Bases + Fractured Bases (one per base, no duplicates)
   for (const base of [...coverBases, ...fracturedBases]) {
-    for (const c of colors) {
-      for (const t of typos) {
-        const spec = mk(
-          `system.cover.${base.id}.${c.id}.${t.id}`,
-          `${base.n} (${c.label}, ${t.label})`,
-          'Cover',
-          ['cover'],
-          base.r
-        )
-        spec.colorTreatment = c.id
-        spec.typographyPairing = t.id
-        results.push(spec)
-      }
-    }
+    results.push(mk(
+      `system.cover.${base.id}`,
+      base.n,
+      'Cover',
+      ['cover'],
+      base.r
+    ))
   }
 
-  // Add all Closing Combinations
+  // Add Closing Bases (one per base, no duplicates)
   for (const base of closingBases) {
-    for (const c of colors) {
-      for (const t of typos) {
-        const spec = mk(
-          `system.closing.${base.id}.${c.id}.${t.id}`,
-          `${base.n} (${c.label}, ${t.label})`,
-          'Contact',
-          ['contact'],
-          base.r
-        )
-        spec.colorTreatment = c.id
-        spec.typographyPairing = t.id
-        results.push(spec)
-      }
-    }
+    results.push(mk(
+      `system.closing.${base.id}`,
+      base.n,
+      'Contact',
+      ['contact'],
+      base.r
+    ))
   }
 
   return results
