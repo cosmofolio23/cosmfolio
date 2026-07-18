@@ -437,8 +437,15 @@ export default function PortfolioBookPage() {
           }
           
           /* Force the PageComposer/SpreadComposer outer container to fill the page width and height */
-          .pf-print-page > div {
+          .pf-print-page:not(.pf-print-spread-half) > div {
             width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .pf-print-spread-half > div {
+            width: 200% !important;
             height: 100% !important;
             max-width: none !important;
             margin: 0 !important;
@@ -550,56 +557,89 @@ export default function PortfolioBookPage() {
           </div>
         )}
 
-        {/* Print View (All Pages) — each wrapper is exactly one printed sheet */}
         <div id="pf-print-container" className="hidden print:block w-full m-0 p-0">
-          {pages.map((p, idx) => (
-            <div key={p.id} className="pf-print-page w-full relative" data-spread={p.isSpread ? '1' : undefined}>
-              {p.isSpread ? (
-                <SpreadComposer
-                  page={p}
-                  tokens={tokens}
-                  onChange={() => {}}
-                  onUploadImage={() => Promise.resolve('')}
-                  backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
-                  masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
-                  pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
-                  grid={publishing.grid}
-                  editableFree={false}
-                  onFreeChange={() => {}}
-                  onApplyScope={() => {}}
-                  pages={pages}
-                  onUpdateGlobalPages={() => {}}
-                  onUpdateMasterElement={() => {}}
-                  pageSize={pageSize}
-                  editMode={false}
-                  showWatermark={isFreeTier}
-                  scale={printScale / 2}
-                />
-              ) : (
-                <PageComposer
-                  page={p}
-                  tokens={tokens}
-                  onChange={() => {}}
-                  onUploadImage={() => Promise.resolve('')}
-                  backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
-                  masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
-                  pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
-                  grid={publishing.grid}
-                  editableFree={false}
-                  onFreeChange={() => {}}
-                  onApplyScope={() => {}}
-                  pages={pages}
-                  onUpdateGlobalPages={() => {}}
-                  overflowVisible={true}
-                  onUpdateMasterElement={() => {}}
-                  pageSize={pageSize}
-                  showWatermark={isFreeTier}
-                  readonly={true}
-                  scale={printScale}
-                />
-              )}
-            </div>
-          ))}
+          {pages.flatMap((p, idx) => {
+            if (p.isSpread) {
+              return [
+                // Left half of the spread
+                <div key={`${p.id}-left`} className="pf-print-page pf-print-spread-half w-full relative overflow-hidden" data-spread-half="left">
+                  <div className="w-[200%] h-full relative" style={{ left: 0 }}>
+                    <SpreadComposer
+                      page={p}
+                      tokens={tokens}
+                      onChange={() => {}}
+                      onUploadImage={() => Promise.resolve('')}
+                      backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
+                      masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                      pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
+                      grid={publishing.grid}
+                      editableFree={false}
+                      onFreeChange={() => {}}
+                      onApplyScope={() => {}}
+                      pages={pages}
+                      onUpdateGlobalPages={() => {}}
+                      onUpdateMasterElement={() => {}}
+                      pageSize={pageSize}
+                      editMode={false}
+                      showWatermark={isFreeTier}
+                      scale={printScale}
+                    />
+                  </div>
+                </div>,
+                // Right half of the spread
+                <div key={`${p.id}-right`} className="pf-print-page pf-print-spread-half w-full relative overflow-hidden" data-spread-half="right">
+                  <div className="w-[200%] h-full absolute top-0" style={{ left: '-100%' }}>
+                    <SpreadComposer
+                      page={p}
+                      tokens={tokens}
+                      onChange={() => {}}
+                      onUploadImage={() => Promise.resolve('')}
+                      backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
+                      masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                      pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
+                      grid={publishing.grid}
+                      editableFree={false}
+                      onFreeChange={() => {}}
+                      onApplyScope={() => {}}
+                      pages={pages}
+                      onUpdateGlobalPages={() => {}}
+                      onUpdateMasterElement={() => {}}
+                      pageSize={pageSize}
+                      editMode={false}
+                      showWatermark={isFreeTier}
+                      scale={printScale}
+                    />
+                  </div>
+                </div>
+              ]
+            } else {
+              return (
+                <div key={p.id} className="pf-print-page w-full relative">
+                  <PageComposer
+                    page={p}
+                    tokens={tokens}
+                    onChange={() => {}}
+                    onUploadImage={() => Promise.resolve('')}
+                    backgrounds={publishing.backgrounds?.filter((b: any) => b.appliesTo === 'entire-project' || !b.pageId || b.pageId === p.id)}
+                    masterElements={publishing.masterPages?.flatMap((m: any) => m.elements)}
+                    pageContext={{ pageNumber: idx + 1, totalPages, projectTitle: project.title, projectNumber: String(idx + 1).padStart(2, '0') }}
+                    grid={publishing.grid}
+                    editableFree={false}
+                    onFreeChange={() => {}}
+                    onApplyScope={() => {}}
+                    pages={pages}
+                    onUpdateGlobalPages={() => {}}
+                    overflowVisible={true}
+                    onUpdateMasterElement={() => {}}
+                    pageSize={pageSize}
+                    showWatermark={isFreeTier}
+                    readonly={true}
+                    scale={printScale}
+                  />
+                </div>
+              )
+            }
+          })}
         </div>
       </main>
 
