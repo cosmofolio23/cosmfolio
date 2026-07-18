@@ -297,7 +297,7 @@ export function EditableText({
 /* ------------------------------- Image Block ------------------------------ */
 
 export function ImageBlock({
-  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload, readonly = false, splitConfig, cssFilter,
+  block, tokens, onChange, aspect = 'aspect-[4/3]', showLabel = true, fill = false, onUpload, readonly = false, splitConfig, cssFilter, showBadge = true,
 }: {
   block: Block
   tokens: DesignTokens
@@ -309,6 +309,7 @@ export function ImageBlock({
   readonly?: boolean
   splitConfig?: { c0: number, r0: number, cs: number, rs: number }
   cssFilter?: string
+  showBadge?: boolean
 }) {
   if (readonly && !block.imageUrl && !block.isFlowchart) {
     return null
@@ -583,12 +584,14 @@ export function ImageBlock({
           </div>
         )}
         {/* type badge */}
-        <span
-          className="absolute top-2 left-2 text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 pb-[0.2em] rounded-sm"
-          style={{ background: tokens.accent, color: pickContrast(tokens.accent) }}
-        >
-          {typeBadge[block.type] || 'IMG'}
-        </span>
+        {showBadge && (
+          <span
+            className="absolute top-2 left-2 text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 pb-[0.2em] rounded-sm"
+            style={{ background: tokens.accent, color: pickContrast(tokens.accent) }}
+          >
+            {typeBadge[block.type] || 'IMG'}
+          </span>
+        )}
       </div>
 
       {/* Drawing label + scale (architecture title block style) */}
