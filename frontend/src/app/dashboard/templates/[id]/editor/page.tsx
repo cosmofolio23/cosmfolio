@@ -2135,9 +2135,10 @@ export default function TemplateEditor() {
                       onChange={() => {}}
                       pageSize={publishingPortfolio.pageSize}
                       editMode={false}
+                      pages={pages}
                     />
                   ) : (
-                    <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} />
+                    <PageComposer page={page} tokens={tokens} pageSize={publishingPortfolio.pageSize} onChange={() => {}} pages={pages} />
                   )}
                   <div className="mt-1 text-center text-[10px] text-gray-400">{page.type} · {getSpec(page.layoutId).name}</div>
                 </div>
@@ -2209,6 +2210,7 @@ export default function TemplateEditor() {
                               grid={publishingPortfolio.grid}
                               pageSize={publishingPortfolio.pageSize}
                               editMode={false}
+                              pages={pages}
                             />
                           ) : (
                             <PageComposer 
@@ -2220,6 +2222,7 @@ export default function TemplateEditor() {
                               pageContext={{ pageNumber: pages.indexOf(page) + 1, totalPages: pages.length, projectTitle: portfolioTitle, projectNumber: String(pages.indexOf(page) + 1).padStart(2, '0') }}
                               grid={publishingPortfolio.grid}
                               pageSize={publishingPortfolio.pageSize}
+                              pages={pages}
                             />
                           )}
                         </div>

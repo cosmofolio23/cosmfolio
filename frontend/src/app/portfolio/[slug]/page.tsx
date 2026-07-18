@@ -266,7 +266,7 @@ export default function PublicPortfolioPage() {
                                {bookPage.isBlank ? (
                                   <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400">Blank Page</div>
                                ) : (
-                                  <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                                  <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} pages={rawPages} />
                                )}
                              </div>
                     </div>
@@ -311,7 +311,7 @@ export default function PublicPortfolioPage() {
                              left: bookPage.part === 'right' ? '-100%' : '0', 
                              top: 0 
                            }}>
-                             <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                             <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} pages={rawPages} />
                            </div>
                          </div>
                        </PageWrapper>
@@ -322,9 +322,9 @@ export default function PublicPortfolioPage() {
                     <PageWrapper key={bookPage.id}>
                       <div className="w-full h-full relative overflow-hidden bg-white">
                         {bookPage.page!.isSpread ? (
-                           <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                           <SpreadComposer page={bookPage.page!} tokens={tokens} readonly={true} editMode={false} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} pages={rawPages} />
                         ) : (
-                           <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} />
+                           <PageComposer page={bookPage.page!} tokens={tokens} readonly={true} pageSize={pageSizeProp} showWatermark={false} onChange={() => {}} pages={rawPages} />
                         )}
                       </div>
                     </PageWrapper>
