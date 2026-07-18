@@ -77,20 +77,36 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 }
             """)
             
-            # Optionally, give it 1 more second to let any micro-animations settle
-            await page.wait_for_timeout(1000)
-            
-            # Get page orientation dynamically
-            is_landscape = await page.evaluate("""
+            # Get page orientation and exact dimensions dynamically
+            dimensions = await page.evaluate("""
                 () => {
                     const el = document.querySelector('.pf-print-page');
                     if (el) {
-                        const rect = el.getBoundingClientRect();
-                        return rect.width > rect.height;
+                        // Find the actual content container (the first child of the print page)
+                        const child = el.firstElementChild;
+                        if (child) {
+                            const rect = child.getBoundingClientRect();
+                            return {
+                                width: Math.round(rect.width),
+                                height: Math.round(rect.height),
+                                is_landscape: rect.width > rect.height
+                            };
+                        }
                     }
-                    return true; // Default to landscape for portfolios
+                    return { width: 1414, height: 1000, is_landscape: true }; // Default A4 landscape fallback
                 }
             """)
+            
+            is_landscape = dimensions.get("is_landscape", True)
+            
+            # Set the viewport to match the exact page content size to prevent scaling margins
+            await page.set_viewport_size({
+                "width": dimensions["width"],
+                "height": dimensions["height"]
+            })
+            
+            # Wait for layout adjustment
+            await page.wait_for_timeout(500)
             
             # Print to PDF
             # A4 size, respecting orientation dynamically
