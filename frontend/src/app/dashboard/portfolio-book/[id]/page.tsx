@@ -205,6 +205,14 @@ export default function PortfolioBookPage() {
 
         const elements = window.document.querySelectorAll('.pf-print-page')
         if (elements.length === 0) throw new Error('No pages found')
+        
+        // Hide main view to ensure print container is only thing visible
+        const mainView = window.document.querySelector('[class*="print:hidden"]')
+        const oldMainViewStyle = mainView ? (mainView as HTMLElement).style.display : ''
+        if (mainView && mainView instanceof HTMLElement) mainView.style.display = 'none'
+
+        // Wait for browser to process the unhide and initiate network requests
+        await new Promise(resolve => setTimeout(resolve, 500))
 
         const pdf = new jsPDF({
           orientation: sizeSettings && sizeSettings.width > sizeSettings.height ? 'landscape' : 'portrait',
@@ -322,6 +330,10 @@ export default function PortfolioBookPage() {
       if (printContainer) {
         printContainer.classList.add('hidden')
         printContainer.classList.add('print:block')
+      }
+      const mainView = window.document.querySelector('[class*="print:hidden"]')
+      if (mainView && mainView instanceof HTMLElement) {
+        mainView.style.display = ''
       }
       setIsDownloading(false)
     }

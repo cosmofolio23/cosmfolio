@@ -31,7 +31,8 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
         )
         context = await browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            device_scale_factor=2  # High res rendering
+            device_scale_factor=2,  # High res rendering
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
         page = await context.new_page()
         page.on("console", lambda msg: print(f"[BROWSER] {msg.text}"))
@@ -44,6 +45,15 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
             # (including fonts, images, and layout calculations).
             # The frontend will inject <div id="render-complete"></div> when ready.
             await page.wait_for_selector("#render-complete", state="attached", timeout=60000)
+            
+            # Scroll down to ensure all lazy images and background images are requested
+            await page.evaluate("""
+                async () => {
+                    window.scrollTo(0, document.body.scrollHeight);
+                    await new Promise(r => setTimeout(r, 1000));
+                    window.scrollTo(0, 0);
+                }
+            """)
             
             # Optionally, give it 1 more second to let any micro-animations settle
             await page.wait_for_timeout(1000)
