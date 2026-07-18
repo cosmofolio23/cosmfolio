@@ -1690,6 +1690,8 @@ function RegionView({
               block={block} 
               tokens={tokens}
               onChange={p => patchBlock(block.id, p)}
+              fill
+              showLabel={!overlay && !region.splitGroup}
               readonly={readonly} 
               onUpload={onUploadImage} 
               splitConfig={region.splitGroup ? {
