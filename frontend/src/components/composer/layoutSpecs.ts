@@ -2059,11 +2059,11 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
   })
 
   const coverBases = [
-    { id: 'cv-tb', n: 'Title Block Sheet', r: [rv('title',1,12,1,2), rv('meta',1,12,3,2), rv('legend',10,3,10,3), img(0,1,12,1,12)] },
-    { id: 'cv-bg', n: 'Blueprint Grid', r: [img(0,1,12,1,12), rv('title',8,5,10,3)] },
-    { id: 'cv-sp', n: 'Site Plan Silhouette', r: [img(0,1,12,2,8), rv('title',1,12,10,3)] },
-    { id: 'cv-sc', n: 'Section Cut', r: [img(0,1,12,4,6), rv('title',2,10,10,2)] },
-    { id: 'cv-ae', n: 'Axonometric Explosion', r: [img(0,4,6,3,6), rv('title',10,3,10,3)] },
+    { id: 'cv-tb', n: 'Title Block Sheet (Classic)', r: [rv('title',1,12,1,2), rv('meta',1,12,3,2), rv('legend',10,3,10,3), img(0,1,12,1,12)] },
+    { id: 'cv-bg', n: 'Blueprint Grid (Classic)', r: [img(0,1,12,1,12), rv('title',8,5,10,3)] },
+    { id: 'cv-sp', n: 'Site Plan Silhouette (Classic)', r: [img(0,1,12,2,8), rv('title',1,12,10,3)] },
+    { id: 'cv-sc', n: 'Section Cut (Classic)', r: [img(0,1,12,4,6), rv('title',2,10,10,2)] },
+    { id: 'cv-ae', n: 'Axonometric Explosion (Classic)', r: [img(0,4,6,3,6), rv('title',10,3,10,3)] },
     { id: 'cv-ct', n: 'Contour Topography', r: [img(0,1,12,1,12), rv('title',4,6,5,4)] },
     { id: 'cv-sd', n: 'Sun Path Diagram', r: [img(0,3,8,3,8), rv('title',1,12,11,2)] },
     { id: 'cv-sg', n: 'Structural Grid Overlay', r: [img(0,1,12,1,12), rv('title',3,2,3,2)] },
@@ -2095,11 +2095,11 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
     { id: 'frac-ps', n: 'Polaroid Scatter', r: [s_img(2,4,2,4), s_img(7,4,4,4,'grayscale(1)'), s_img(3,4,8,4,'sepia(0.5)'), rv('title',8,4,9,2)] },
     { id: 'frac-bo', n: 'Brutalist Offset', r: [s_img(1,12,1,4), s_img(3,10,5,4,'invert(1) hue-rotate(180deg)'), s_img(1,12,9,4), rv('title',1,4,6,2)] },
     { id: 'frac-sp', n: 'Staircase Progression', r: [s_img(2,3,8,4,'brightness(0.4)'), s_img(5,3,5,4,'brightness(0.8)'), s_img(8,3,2,4,'brightness(1.2)'), rv('title',8,4,10,2)] },
-    { id: 'frac-tb', n: 'Title Block Sheet', r: [s_img(1,12,1,12), rv('title', 9, 4, 9, 2), rv('meta', 9, 4, 11, 2)] },
-    { id: 'frac-bp', n: 'Blueprint Grid', r: [s_img(1,12,1,12, 'sepia(1) hue-rotate(180deg) contrast(1.5)'), rv('title', 9, 4, 11, 2)] },
-    { id: 'frac-si', n: 'Site Plan Silhouette', r: [s_img(1,12,1,6, 'grayscale(1) contrast(2)'), rv('title', 1, 12, 7, 2)] },
-    { id: 'frac-sc', n: 'Section Cut', r: [s_img(1,12,1,9), rv('title', 1, 12, 10, 2)] },
-    { id: 'frac-ae', n: 'Axonometric Explosion', r: [s_img(4,4,2,4), s_img(2,4,5,4), s_img(6,4,5,4), s_img(4,4,8,4), rv('title', 4, 4, 12, 1)] },
+    { id: 'frac-tb', n: 'Title Block Sheet (Split)', r: [s_img(1,12,1,12), rv('title', 9, 4, 9, 2), rv('meta', 9, 4, 11, 2)] },
+    { id: 'frac-bp', n: 'Blueprint Grid (Split)', r: [s_img(1,12,1,12, 'sepia(1) hue-rotate(180deg) contrast(1.5)'), rv('title', 9, 4, 11, 2)] },
+    { id: 'frac-si', n: 'Site Plan Silhouette (Split)', r: [s_img(1,12,1,6, 'grayscale(1) contrast(2)'), rv('title', 1, 12, 7, 2)] },
+    { id: 'frac-sc', n: 'Section Cut (Split)', r: [s_img(1,12,1,9), rv('title', 1, 12, 10, 2)] },
+    { id: 'frac-ae', n: 'Axonometric Explosion (Split)', r: [s_img(4,4,2,4), s_img(2,4,5,4), s_img(6,4,5,4), s_img(4,4,8,4), rv('title', 4, 4, 12, 1)] },
   ]
 
 

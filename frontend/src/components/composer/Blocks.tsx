@@ -450,11 +450,13 @@ export function ImageBlock({
                 style={splitConfig ? {
                   width: `${(12/splitConfig.cs) * 100}%`,
                   height: `${(12/splitConfig.rs) * 100}%`,
+                  maxWidth: 'none',
+                  maxHeight: 'none',
                   objectFit: 'cover',
                   top: `${-(splitConfig.r0-1)/splitConfig.rs * 100}%`,
                   left: `${-(splitConfig.c0-1)/splitConfig.cs * 100}%`,
                   filter: cssFilter || block.cssFilter || 'none',
-                  transform: `translate(calc(${(block.xOffset || 0)}px), calc(${(block.yOffset || 0)}px))`,
+                  transform: `translate(${(block.xOffset || 0)}px, ${(block.yOffset || 0)}px)`,
                 } : {
                   width: `${(block.zoom || 1) * 100}%`,
                   height: `${(block.zoom || 1) * 100}%`,
