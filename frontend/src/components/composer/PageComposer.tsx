@@ -1682,7 +1682,7 @@ function RegionView({
 
     if (block.imageUrl || block.isFlowchart) {
       const content = (
-        <div style={finalStyle} className={`w-full h-full overflow-hidden transition-all duration-200 ${isFree ? '' : overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
+        <div style={finalStyle} className={`w-full h-full overflow-hidden transition-all duration-200 ${isFree ? '' : overlay ? 'z-0' : 'z-10 hover:z-[20] focus-within:z-[20]'}`}>
           {block.isFlowchart ? (
             <FlowchartBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} onUploadImage={onUploadImage} />
           ) : (
@@ -1725,7 +1725,7 @@ function RegionView({
   }
   const block = forceBlock || firstOfType(type)
   const onColor = overlay ? '#ffffff' : undefined
-  const z = overlay ? 'relative z-10' : ''
+  const z = overlay ? 'relative z-30' : ''
 
   if (!block) {
     if (readonly) return null
@@ -1876,7 +1876,7 @@ function RegionView({
     <FreeformWrapper block={block} patchBlock={patchBlock} zClass={z} tokens={tk} readonly={readonly}>
     <div 
       style={{ ...finalStyle, padding: `${dynamicBlockPadding}px` }} 
-      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} transition-all duration-200 ${isFree ? '' : `z-20 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z} pointer-events-none`}
+      className={`min-h-0 ${isTextRole || activeBlock?.id === block.id || editingTitleBlock ? 'overflow-visible' : `overflow-hidden ${!readonly ? 'hover:overflow-visible focus-within:overflow-visible' : ''}`} transition-all duration-200 ${isFree ? '' : `z-30 ${activeBlock?.id === block.id || editingTitleBlock ? 'z-[10000]' : (!readonly ? 'hover:z-[100] focus-within:z-[100] hover:ring-1 hover:ring-blue-500/30' : '')}`} group/block-container ${z} pointer-events-none`}
       onPointerDown={e => {
         if (!isFree || block.freeform?.pinned) {
           e.stopPropagation()

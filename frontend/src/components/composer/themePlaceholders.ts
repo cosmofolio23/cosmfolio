@@ -17,7 +17,13 @@ export function getPlaceholderImage(
   else if (type === 'portrait') kind = 'portrait'
 
   const svgString = archArt(kind, palette, seed)
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`
+  let base64 = ''
+  if (typeof window === 'undefined') {
+    base64 = Buffer.from(svgString).toString('base64')
+  } else {
+    base64 = window.btoa(unescape(encodeURIComponent(svgString)))
+  }
+  return `data:image/svg+xml;base64,${base64}`
 }
 
 /**

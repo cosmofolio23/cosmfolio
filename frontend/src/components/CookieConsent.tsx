@@ -20,7 +20,7 @@ export default function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[200] bg-gray-900 text-white px-4 py-3 shadow-2xl">
+    <div className="fixed bottom-0 inset-x-0 z-[200] bg-gray-900 text-white px-4 py-3 shadow-2xl print:hidden">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-3 justify-between text-sm">
         <p className="text-gray-200">
           We use cookies for core functionality and, via Google AdSense, for advertising. See our{' '}
