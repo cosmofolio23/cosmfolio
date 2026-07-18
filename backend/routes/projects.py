@@ -16,14 +16,19 @@ HEADLESS_SECRET = os.environ.get("HEADLESS_SECRET", "super-secret-headless-key")
 async def export_pdf(project_id: str, authorization: str = Header(None)):
     current_user = get_current_user(authorization)
     
-    # Verify ownership
+    # Verify ownership and get user plan type
     response = supabase.table("projects").select("id").eq("id", project_id).eq("user_id", current_user["user_id"]).execute()
     if not response.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
         
+    user_resp = supabase.table("users").select("is_pro, plan_type").eq("id", current_user["user_id"]).execute()
+    is_pro = False
+    if user_resp.data:
+        is_pro = bool(user_resp.data[0].get("is_pro")) or user_resp.data[0].get("plan_type") == "pro"
+        
     # Generate a short-lived token to bypass frontend auth for headless browser
     headless_token = jwt.encode(
-        {"project_id": project_id, "user_id": current_user["user_id"], "exp": datetime.utcnow() + timedelta(minutes=5)},
+        {"project_id": project_id, "user_id": current_user["user_id"], "is_pro": is_pro, "exp": datetime.utcnow() + timedelta(minutes=5)},
         HEADLESS_SECRET,
         algorithm="HS256"
     )

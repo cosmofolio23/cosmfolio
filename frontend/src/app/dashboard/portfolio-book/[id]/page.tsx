@@ -29,7 +29,20 @@ export default function PortfolioBookPage() {
   const params = useParams()
   const { isAuthenticated, token, user } = useAuthStore()
   const projectId = params.id as string
-  const isFreeTier = (user as any)?.plan_type !== 'pro' && !(user as any)?.is_pro
+  let isFreeTier = (user as any)?.plan_type !== 'pro' && !(user as any)?.is_pro
+  if (typeof window !== 'undefined') {
+    const searchParams = new URLSearchParams(window.location.search)
+    const headlessToken = searchParams.get('headless_token')
+    if (headlessToken) {
+      try {
+        const payloadStr = atob(headlessToken.split('.')[1])
+        const payload = JSON.parse(payloadStr)
+        isFreeTier = !payload.is_pro
+      } catch (e) {
+        console.error('Failed to parse headless_token', e)
+      }
+    }
+  }
 
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null)
   const [currentPageIdx, setCurrentPageIdx] = useState(0)
@@ -198,13 +211,25 @@ export default function PortfolioBookPage() {
           unit: 'mm',
           format: sizeSettings ? [sizeSettings.width, sizeSettings.height] : 'a4'
         })
-
         const pdfWidth = pdf.internal.pageSize.getWidth()
         const pdfHeight = pdf.internal.pageSize.getHeight()
 
         let pdfPageIndex = 0
         for (let i = 0; i < elements.length; i++) {
           const el = elements[i] as HTMLElement
+
+          // Force browser to load images by waiting
+          const images = el.querySelectorAll('img')
+          await Promise.all(Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve()
+            return new Promise(resolve => {
+              img.onload = resolve
+              img.onerror = resolve
+            })
+          }))
+          // Small delay for CSS background images and paints
+          await new Promise(resolve => setTimeout(resolve, 1000))
+
           const isSpread = el.dataset.spread === '1'
 
           const targetWidth = isSpread ? 1520 : 760
