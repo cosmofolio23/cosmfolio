@@ -13,9 +13,6 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
     
     from playwright.async_api import async_playwright
     
-    # Construct the print URL with the headless token
-    # NOTE: Do NOT use print=true here — that triggers window.print() on the frontend.
-    # The headless_token param alone is sufficient for the frontend to enter headless mode.
     print_url = f"{frontend_url}/dashboard/portfolio-book/{project_id}?headless_token={headless_token}"
     
     async with async_playwright() as p:
@@ -29,26 +26,20 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 "--no-zygote"
             ]
         )
-        # Use a viewport width of 760px — this matches the PageComposer's baseWidth,
-        # so the CSS transform scale will be ~1.0 and content fills the viewport exactly.
+        # Start with a 760px viewport (PageComposer baseWidth) so scale=1.0
         context = await browser.new_context(
             viewport={"width": 760, "height": 1074},
-            device_scale_factor=2,  # High res rendering
+            device_scale_factor=2,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
         page = await context.new_page()
         page.on("console", lambda msg: print(f"[BROWSER] {msg.text}"))
         
         try:
-            # Navigate to the portfolio print page
             await page.goto(print_url, wait_until="domcontentloaded", timeout=60000)
-            
-            # Wait for the explicit signal that React has finished rendering everything
-            # (including fonts, images, and layout calculations).
-            # The frontend will inject <div id="render-complete"></div> when ready.
             await page.wait_for_selector("#render-complete", state="attached", timeout=60000)
             
-            # Scroll down to ensure all lazy images and background images are requested
+            # Scroll to trigger lazy image loading
             await page.evaluate("""
                 async () => {
                     window.scrollTo(0, document.body.scrollHeight);
@@ -79,27 +70,50 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 }
             """)
             
-            # Read orientation from the rendered content
+            # Read the EXACT pixel dimensions of the rendered content block.
+            # This is the inner div (position: absolute, 760px base) scaled by CSS transform.
+            # We read the outer container's rendered size (which respects aspect-ratio CSS).
             page_info = await page.evaluate("""
                 () => {
-                    const el = document.querySelector('.pf-print-page');
-                    if (!el) return { is_landscape: false };
-                    const child = el.firstElementChild;
-                    if (!child) return { is_landscape: false };
-                    const rect = child.getBoundingClientRect();
-                    return { is_landscape: rect.width > rect.height };
+                    // The outer container uses aspect-ratio CSS to maintain page proportions.
+                    // Its pixel size IS the page size we want for the PDF.
+                    const printPage = document.querySelector('.pf-print-page');
+                    if (!printPage) return { width_mm: 297, height_mm: 210 };
+                    
+                    const outerContainer = printPage.firstElementChild;
+                    if (!outerContainer) return { width_mm: 297, height_mm: 210 };
+                    
+                    const rect = outerContainer.getBoundingClientRect();
+                    const w = rect.width;
+                    const h = rect.height;
+                    
+                    // Convert px to mm at 96dpi: 1px = 25.4/96 mm
+                    const PX_TO_MM = 25.4 / 96;
+                    return {
+                        width_mm: w * PX_TO_MM,
+                        height_mm: h * PX_TO_MM,
+                        width_px: w,
+                        height_px: h
+                    };
                 }
             """)
             
-            is_landscape = page_info.get("is_landscape", False)
+            width_mm = page_info.get("width_mm", 297)
+            height_mm = page_info.get("height_mm", 210)
             
-            # Wait for layout to settle
-            await page.wait_for_timeout(1000)
+            print(f"[PDF] Page size: {width_mm:.1f}mm x {height_mm:.1f}mm (viewport 760px)")
             
-            # Print to PDF - the frontend's own @media print CSS handles page sizing
+            # Resize the viewport height to match the content exactly
+            await page.set_viewport_size({
+                "width": 760,
+                "height": max(100, round(page_info.get("height_px", 537)))
+            })
+            await page.wait_for_timeout(500)
+            
+            # Print to PDF using EXACT custom page size — content fills the page perfectly
             pdf_bytes = await page.pdf(
-                format="A4",
-                landscape=is_landscape,
+                width=f"{width_mm:.2f}mm",
+                height=f"{height_mm:.2f}mm",
                 print_background=True,
                 margin={"top": "0", "right": "0", "bottom": "0", "left": "0"}
             )
