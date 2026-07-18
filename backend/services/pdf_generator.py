@@ -26,7 +26,6 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 "--no-zygote"
             ]
         )
-        # Use a standard landscape viewport for initial loading
         context = await browser.new_context(
             viewport={"width": 1124, "height": 794},
             device_scale_factor=2,  # High res rendering
@@ -73,27 +72,13 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                 }
             """)
             
-            # Read orientation from the rendered content
-            page_info = await page.evaluate("""
-                () => {
-                    const el = document.querySelector('.pf-print-page');
-                    if (!el) return { is_landscape: true };
-                    const child = el.firstElementChild;
-                    if (!child) return { is_landscape: true };
-                    const rect = child.getBoundingClientRect();
-                    return { is_landscape: rect.width > rect.height };
-                }
-            """)
-            
-            is_landscape = page_info.get("is_landscape", True)
-            
-            # Print to PDF. Since format, width, and height are NOT specified here,
+            # Print to PDF. Since we set prefer_css_page_size=True,
             # Chromium will respect the CSS @page size defined in page.tsx (e.g. A4 / 297mm x 210mm).
             # The CSS auto-scaling rule will automatically scale the PageComposer contents
             # to fit 100vw / 100vh of the page perfectly with zero margins.
             pdf_bytes = await page.pdf(
                 print_background=True,
-                landscape=is_landscape,
+                prefer_css_page_size=True,
                 margin={"top": "0", "right": "0", "bottom": "0", "left": "0"}
             )
             
