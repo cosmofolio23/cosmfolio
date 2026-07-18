@@ -108,12 +108,25 @@ export default function PortfolioBookPage() {
         // Signal for Playwright backend PDF generation
         if (search.get('headless_token')) {
           const checkReady = async () => {
-            // Unhide the print container so Playwright can see all pages
+            // Unhide the print container
             const printContainer = window.document.getElementById('pf-print-container')
             if (printContainer) {
               printContainer.classList.remove('hidden')
-              printContainer.style.display = 'block'
+              printContainer.style.cssText = 'display: block !important; width: 100%; margin: 0; padding: 0;'
             }
+            
+            // CRITICAL: Strip padding/margin from ALL ancestors up to body.
+            // The <main> has p-8 (32px padding), which makes the container only 696px
+            // wide instead of 760px (the PageComposer baseWidth). This causes the content
+            // to be scaled down in the PDF, leaving white margins.
+            let ancestor = printContainer?.parentElement
+            while (ancestor && ancestor !== window.document.body) {
+              (ancestor as HTMLElement).style.cssText = 'display: block !important; width: 100%; margin: 0 !important; padding: 0 !important; flex: none; max-width: none; background: transparent;'
+              ancestor = ancestor.parentElement
+            }
+            window.document.documentElement.style.cssText = 'margin: 0; padding: 0;'
+            window.document.body.style.cssText = 'margin: 0; padding: 0; background: transparent;'
+            
             // Hide the single-page interactive view and navigation
             const mainView = window.document.querySelector('[class*="print:hidden"]')
             if (mainView && mainView instanceof HTMLElement) mainView.style.display = 'none'
