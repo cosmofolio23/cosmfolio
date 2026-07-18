@@ -2086,7 +2086,7 @@ function RegionView({
           <div className="flex-1 min-h-0">
             <ContentsBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} pages={pages || []} layoutId={spec.id} onUploadImage={onUploadImage} />
           </div>
-          {onUpdateGlobalPages && (
+          {onUpdateGlobalPages && !readonly && (
             <button
               onClick={() => {
                 onUpdateGlobalPages(currentPages => {

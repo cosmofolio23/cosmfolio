@@ -263,8 +263,12 @@ export function TableOfContentsRenderer({
             <div key={idx} className={`${itemClass} ${lineClass} pb-2 mb-2 break-inside-avoid`} style={{ gap: dynGapSmall + 'px' }}>
               {imageShape !== 'none' && (
                 <div className={`${getShapeClasses(imageShape || 'square')} overflow-hidden bg-gray-100 flex-shrink-0 w-full md:w-32 relative ${['diamond'].includes(imageShape||'') ? 'origin-center' : ''} ${['bento-box', 'mosaic', 'carousel', 'filmstrip'].includes(structure||'') ? '!w-full flex-1 basis-[80px] md:basis-[120px] shrink min-h-[40px]' : ''} group/img`}>
-                  <div className={`absolute inset-0 bg-cover bg-center ${['diamond'].includes(imageShape||'') ? '-rotate-45 scale-150' : ''}`} style={it.thumbnail ? { backgroundImage: `url(${it.thumbnail})` } : { backgroundColor: '#f0f0f0' }}>
-                    {!it.thumbnail && <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-mono text-xs opacity-50">IMG_{it.num}</div>}
+                  <div className={`absolute inset-0 ${['diamond'].includes(imageShape||'') ? '-rotate-45 scale-150' : ''}`}>
+                    {it.thumbnail ? (
+                      <img src={it.thumbnail} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 bg-gray-100 flex items-center justify-center text-gray-400 font-mono text-xs opacity-50">IMG_{it.num}</div>
+                    )}
                   </div>
                   {onUploadImage && (
                     <div 
@@ -318,7 +322,7 @@ export function TableOfContentsRenderer({
       {items.map((it, idx) => (
         <div key={idx} className="flex-1 h-full relative overflow-hidden flex flex-col">
           <div className="w-full flex-1 bg-gray-200 relative overflow-hidden">
-            {it.thumbnail && <div className="absolute inset-0 bg-cover bg-center grayscale hover:grayscale-0 transition-all duration-500" style={{ backgroundImage: `url(${it.thumbnail})` }} />}
+            {it.thumbnail && <img src={it.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[120px] lg:text-[180px] font-bold text-transparent leading-none z-10" 
                  style={{ WebkitTextStroke: `2px ${tokens.background}`, textShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
               {it.num}
@@ -341,7 +345,7 @@ export function TableOfContentsRenderer({
           <div key={idx} className="relative">
             <div className="absolute -inset-4 bg-red-600 z-0 transform translate-x-2 -translate-y-2" />
             <div className="relative z-10 w-full aspect-square bg-white shadow-xl overflow-hidden grayscale">
-              {it.thumbnail && <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${it.thumbnail})` }} />}
+              {it.thumbnail && <img src={it.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />}
             </div>
             
             <div className="absolute -left-8 -top-8 z-20 flex gap-1">
@@ -368,7 +372,7 @@ export function TableOfContentsRenderer({
         {items.map((it, idx) => (
           <div key={idx} className="flex-1 relative rounded-t-[100px] rounded-b-[100px] bg-gradient-to-b from-blue-100 to-transparent p-2 border border-blue-200">
             <div className="w-full h-full rounded-t-[100px] rounded-b-[100px] overflow-hidden bg-gray-200 relative mix-blend-multiply grayscale">
-               {it.thumbnail && <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${it.thumbnail})` }} />}
+               {it.thumbnail && <img src={it.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />}
             </div>
             <div className="absolute bottom-16 -left-4 flex items-end">
               <span className="text-[80px] font-bold text-blue-600 leading-none" style={{ textShadow: '2px 2px 0px white' }}>{it.num}</span>
@@ -400,7 +404,7 @@ export function TableOfContentsRenderer({
                 <span className="font-mono text-sm">{it.num}.</span>
                 <div className="w-16 h-16 border-[3px] border-black rounded-sm flex items-center justify-center p-1 bg-white transform rotate-3 hover:rotate-0 transition-transform shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                   {it.thumbnail ? (
-                    <div className="w-full h-full bg-cover bg-center grayscale contrast-150 opacity-80" style={{ backgroundImage: `url(${it.thumbnail})` }} />
+                    <img src={it.thumbnail} alt="" className="w-full h-full object-cover grayscale contrast-150 opacity-80" />
                   ) : (
                     <div className="w-full h-full bg-black/5" />
                   )}
@@ -435,7 +439,7 @@ export function TableOfContentsRenderer({
         <div className="grid grid-cols-12 gap-4 flex-1 overflow-hidden shrink min-h-0">
           <div className="col-span-5 bg-black/5 rounded overflow-hidden relative flex flex-col justify-end p-3 min-h-[160px]">
             {featured.thumbnail ? (
-              <div className="absolute inset-0 w-full h-full opacity-80" style={{ backgroundImage: `url(${featured.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+              <img src={featured.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80" />
             ) : (
               <div className="absolute inset-0 bg-gray-200" />
             )}
@@ -500,7 +504,7 @@ export function TableOfContentsRenderer({
             <div key={idx} className="border border-black/5 rounded p-1.5 bg-black/[0.01] flex items-center gap-2 shrink min-h-0">
               <div className="w-12 h-12 bg-black/5 rounded overflow-hidden flex-shrink-0">
                 {it.thumbnail ? (
-                  <div className="w-full h-full" style={{ backgroundImage: `url(${it.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <img src={it.thumbnail} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-400">{it.num}</div>
                 )}
@@ -715,7 +719,7 @@ export function TableOfContentsRenderer({
         {/* Left Column: Big Image Feature */}
         <div className="flex-1 md:flex-[1.2] h-full relative overflow-hidden border border-black/5 rounded-sm bg-gray-50 flex flex-col justify-end p-6">
           {featuredItem && featuredItem.thumbnail ? (
-            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700" style={{ backgroundImage: `url(${featuredItem.thumbnail})` }} />
+            <img src={featuredItem.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700" />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-mono text-xs">NO FEATURED IMAGE</div>
           )}
@@ -814,7 +818,7 @@ export function TableOfContentsRenderer({
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{it.typology} // {it.location}</p>
                     
                     {it.thumbnail && (
-                      <div className={`mt-3 w-32 h-20 bg-cover bg-center border border-black/5 rounded-sm grayscale hover:grayscale-0 transition-all duration-300 ${isEven ? 'md:ml-auto' : ''}`} style={{ backgroundImage: `url(${it.thumbnail})` }} />
+                      <img src={it.thumbnail} alt="" className={`mt-3 w-32 h-20 object-cover border border-black/5 rounded-sm grayscale hover:grayscale-0 transition-all duration-300 ${isEven ? 'md:ml-auto' : ''}`} />
                     )}
                   </div>
                   <div className="hidden md:block w-[10%]" />
@@ -886,7 +890,7 @@ export function TableOfContentsRenderer({
               </div>
               <div className="flex items-center gap-6 shrink-0 font-serif">
                 {it.thumbnail && (
-                  <div className="w-16 h-12 bg-cover bg-center border border-black/5 opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" style={{ backgroundImage: `url(${it.thumbnail})` }} />
+                  <img src={it.thumbnail} alt="" className="w-16 h-12 object-cover border border-black/5 opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" />
                 )}
                 <span className="text-3xl font-light italic text-gray-300 group-hover:text-black transition-colors" style={{ fontFamily: tokens.headingFont }}>{it.pageNumber}</span>
               </div>
