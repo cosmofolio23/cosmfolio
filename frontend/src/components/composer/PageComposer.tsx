@@ -323,34 +323,6 @@ export default function PageComposer({ page, tokens, onChange, onUploadImage, ba
             deletedRoles={page.deletedRoles}
             page={page}
             onChange={onChange}
-            onInsertImage={url => {
-              // Exact placeholder slot replacement logic (BUG 1)
-              const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
-              const idx = region.imageIndex ?? 0
-              if (idx < currentImages.length) {
-                const targetBlockId = currentImages[idx].id
-                const updatedBlocks = page.blocks.map(b =>
-                  b.id === targetBlockId ? { ...b, imageUrl: url, zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' as const } : b
-                )
-                onChange({ ...page, blocks: updatedBlocks })
-              } else {
-                const newBlocks = [...page.blocks]
-                const needed = idx - currentImages.length + 1
-                for (let k = 0; k < needed; k++) {
-                  const isLast = k === needed - 1
-                  const newImgBlock = {
-                    ...createBlock('render'),
-                    imageUrl: isLast ? url : undefined,
-                    zoom: 1,
-                    xOffset: 0,
-                    yOffset: 0,
-                    fit: 'cover' as const
-                  }
-                  newBlocks.push(newImgBlock)
-                }
-                onChange({ ...page, blocks: newBlocks })
-              }
-            }}
           />
         ))}
         {page.blocks.filter(b => b.freeform).map((block, i) => {
@@ -1644,16 +1616,6 @@ function RegionView({
 }) {
   const style = { ...gridStyle(region) }
 
-  const handleAiPolish = async (text: string) => {
-    try {
-      const res = await apiClient.polishText(text)
-      return res.polished_text
-    } catch (e: any) {
-      alert(`AI Polish failed: ${e.message}`)
-      throw e
-    }
-  }
-
   // Collision detection and safe area guard (BUG 4)
   const hasTopMaster = masterElements?.some(el => !el.hidden && (el.position.startsWith('top') || (el.position === 'custom' && (el.y ?? 0) < 15)))
   const hasBottomMaster = masterElements?.some(el => !el.hidden && (el.position.startsWith('bottom') || (el.position === 'custom' && (el.y ?? 0) > 85)))
@@ -1670,12 +1632,62 @@ function RegionView({
 
   /* ---- image region ---- */
   if (region.role === 'image') {
-    const idx = region.imageIndex ?? 0
+    const isFractured = region.splitGroup === 'cover'
+    const idx = isFractured ? 0 : (region.imageIndex ?? 0)
     const block = forceBlock || images[idx]
-    if (block) {
-      const isFree = !!block.freeform;
-      const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style;
 
+    const onInsertImage = (url: string) => {
+      if (onChange && page) {
+        // Exact placeholder slot replacement logic (BUG 1)
+        const currentImages = page.blocks.filter(b => ['render', 'plan', 'section', 'diagram'].includes(b.type))
+        if (idx < currentImages.length) {
+          const targetBlockId = currentImages[idx].id
+          const updatedBlocks = page.blocks.map(b =>
+            b.id === targetBlockId ? { ...b, imageUrl: url, zoom: 1, xOffset: 0, yOffset: 0, fit: 'cover' as const } : b
+          )
+          onChange({ ...page, blocks: updatedBlocks })
+        } else {
+          const newBlocks = [...page.blocks]
+          const needed = idx - currentImages.length + 1
+          for (let k = 0; k < needed; k++) {
+            const isLast = k === needed - 1
+            newBlocks.push({
+              ...createBlock('render'),
+              imageUrl: isLast ? url : undefined
+            })
+          }
+          onChange({ ...page, blocks: newBlocks })
+        }
+      }
+    }
+
+    if (!block) {
+      if (region.role === 'title' || region.role === 'subtitle' || region.role === 'text' || region.role === 'meta') {
+        return (
+          <div style={style} className="flex items-center justify-center bg-gray-100 text-gray-400 text-xs tracking-widest uppercase">
+            {region.role}
+          </div>
+        )
+      }
+      return (
+        <ImageUploadPlaceholder
+          style={style}
+          type="render"
+          onUploadImage={onUploadImage}
+          onDone={url => {
+            onInsertImage?.(url)
+          }}
+          readonly={readonly}
+        />
+      )
+    }
+
+    if (deletedRoles?.includes(region.role)) return null
+
+    const isFree = !!block.freeform;
+    const finalStyle = isFree ? { width: '100%', height: '100%', position: 'relative' as any, minHeight: 0 } : style;
+
+    if (block.imageUrl || block.isFlowchart) {
       const content = (
         <div style={finalStyle} className={`transition-all duration-200 ${isFree ? '' : overlay ? 'z-0' : 'z-20 hover:z-[100] focus-within:z-[100]'}`}>
           {block.isFlowchart ? (
@@ -1683,21 +1695,16 @@ function RegionView({
           ) : (
             <ImageBlock 
               block={block} 
-              tokens={tokens} 
-              onChange={p => patchBlock(block.id, p)} 
-              fill 
-              showLabel={!overlay} 
-              onUpload={onUploadImage} 
               readonly={readonly} 
-              splitConfig={region.splitGroup ? { c0: region.c0, r0: region.r0, cs: region.cs, rs: region.rs } : undefined}
+              onUploadImage={onUploadImage} 
+              splitConfig={region.splitGroup ? {
+                c0: region.c0, cs: region.cs, r0: region.r0, rs: region.rs, splitGroup: region.splitGroup
+              } : undefined}
               cssFilter={region.cssFilter}
             />
           )}
         </div>
       )
-      if (isFree) {
-        return <FreeformWrapper block={block} patchBlock={patchBlock} zClass="z-30" tokens={tokens} readonly={readonly}>{content}</FreeformWrapper>
-      }
       return content
     }
     return (

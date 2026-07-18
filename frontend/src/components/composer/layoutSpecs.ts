@@ -2095,6 +2095,11 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
     { id: 'frac-ps', n: 'Polaroid Scatter', r: [s_img(2,4,2,4), s_img(7,4,4,4,'grayscale(1)'), s_img(3,4,8,4,'sepia(0.5)'), rv('title',8,4,9,2)] },
     { id: 'frac-bo', n: 'Brutalist Offset', r: [s_img(1,12,1,4), s_img(3,10,5,4,'invert(1) hue-rotate(180deg)'), s_img(1,12,9,4), rv('title',1,4,6,2)] },
     { id: 'frac-sp', n: 'Staircase Progression', r: [s_img(2,3,8,4,'brightness(0.4)'), s_img(5,3,5,4,'brightness(0.8)'), s_img(8,3,2,4,'brightness(1.2)'), rv('title',8,4,10,2)] },
+    { id: 'frac-tb', n: 'Title Block Sheet', r: [s_img(1,12,1,12), rv('title', 9, 4, 9, 2), rv('meta', 9, 4, 11, 2)] },
+    { id: 'frac-bp', n: 'Blueprint Grid', r: [s_img(1,12,1,12, 'sepia(1) hue-rotate(180deg) contrast(1.5)'), rv('title', 9, 4, 11, 2)] },
+    { id: 'frac-si', n: 'Site Plan Silhouette', r: [s_img(1,12,1,6, 'grayscale(1) contrast(2)'), rv('title', 1, 12, 7, 2)] },
+    { id: 'frac-sc', n: 'Section Cut', r: [s_img(1,12,1,9), rv('title', 1, 12, 10, 2)] },
+    { id: 'frac-ae', n: 'Axonometric Explosion', r: [s_img(4,4,2,4), s_img(2,4,5,4), s_img(6,4,5,4), s_img(4,4,8,4), rv('title', 4, 4, 12, 1)] },
   ]
 
 
@@ -2128,26 +2133,40 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
 
   const results: LayoutSpec[] = []
 
-  // Add 18 Cover Bases + 11 Fractured Bases
+  // Add all Cover Combinations
   for (const base of [...coverBases, ...fracturedBases]) {
-    results.push(mk(
-      `system.cover.${base.id}`,
-      base.n,
-      'Cover',
-      ['cover'],
-      base.r
-    ))
+    for (const c of colors) {
+      for (const t of typos) {
+        const spec = mk(
+          `system.cover.${base.id}.${c.id}.${t.id}`,
+          `${base.n} (${c.label}, ${t.label})`,
+          'Cover',
+          ['cover'],
+          base.r
+        )
+        spec.colorTreatment = c.id
+        spec.typographyPairing = t.id
+        results.push(spec)
+      }
+    }
   }
 
-  // Add 10 Closing Bases
+  // Add all Closing Combinations
   for (const base of closingBases) {
-    results.push(mk(
-      `system.closing.${base.id}`,
-      base.n,
-      'Contact',
-      ['contact'],
-      base.r
-    ))
+    for (const c of colors) {
+      for (const t of typos) {
+        const spec = mk(
+          `system.closing.${base.id}.${c.id}.${t.id}`,
+          `${base.n} (${c.label}, ${t.label})`,
+          'Contact',
+          ['contact'],
+          base.r
+        )
+        spec.colorTreatment = c.id
+        spec.typographyPairing = t.id
+        results.push(spec)
+      }
+    }
   }
 
   return results
