@@ -52,6 +52,28 @@ async def generate_portfolio_pdf(project_id: str, headless_token: str) -> bytes:
                     window.scrollTo(0, document.body.scrollHeight);
                     await new Promise(r => setTimeout(r, 1000));
                     window.scrollTo(0, 0);
+                    
+                    // Wait for background images
+                    const elements = document.querySelectorAll('*');
+                    const promises = [];
+                    for (let el of elements) {
+                        const style = window.getComputedStyle(el);
+                        const bg = style.backgroundImage;
+                        if (bg && bg !== 'none' && bg.includes('url(')) {
+                            const url = bg.slice(bg.indexOf('url(') + 4, bg.indexOf(')'));
+                            const cleanUrl = url.replace(/['"]/g, '');
+                            if(cleanUrl && !cleanUrl.startsWith('data:')) {
+                                promises.push(new Promise(resolve => {
+                                    const img = new Image();
+                                    const timer = setTimeout(resolve, 15000); // 15s max per image
+                                    img.onload = () => { clearTimeout(timer); resolve(); };
+                                    img.onerror = () => { clearTimeout(timer); resolve(); };
+                                    img.src = cleanUrl;
+                                }));
+                            }
+                        }
+                    }
+                    await Promise.all(promises);
                 }
             """)
             

@@ -127,8 +127,9 @@ export default function PortfolioBookPage() {
             await Promise.all(Array.from(images).map(img => {
               if (img.complete) return Promise.resolve()
               return new Promise(resolve => {
-                img.onload = resolve
-                img.onerror = resolve
+                const timer = setTimeout(resolve, 10000)
+                img.onload = () => { clearTimeout(timer); resolve(null) }
+                img.onerror = () => { clearTimeout(timer); resolve(null) }
               })
             }))
             await new Promise(resolve => setTimeout(resolve, 1000))
@@ -231,8 +232,9 @@ export default function PortfolioBookPage() {
           await Promise.all(Array.from(images).map(img => {
             if (img.complete) return Promise.resolve()
             return new Promise(resolve => {
-              img.onload = resolve
-              img.onerror = resolve
+              const timer = setTimeout(resolve, 10000)
+              img.onload = () => { clearTimeout(timer); resolve(null) }
+              img.onerror = () => { clearTimeout(timer); resolve(null) }
             })
           }))
           // Small delay for CSS background images and paints
