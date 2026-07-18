@@ -2107,47 +2107,32 @@ function generateSystematicCoversAndClosingPages(): LayoutSpec[] {
 
   const results: LayoutSpec[] = []
 
-  // Generate 360 Cover Templates (18 x 5 x 4)
+  // Add 18 Cover Bases
   for (const base of coverBases) {
-    for (const c of colors) {
-      for (const t of typos) {
-        const spec = mk(
-          `system.${base.id}.${c.id}.${t.id}`,
-          `${base.n} (${c.label}, ${t.label})`,
-          'Cover',
-          ['cover'],
-          base.r
-        )
-        spec.colorTreatment = c.id
-        spec.typographyPairing = t.id
-        results.push(spec)
-      }
-    }
+    results.push(mk(
+      `system.cover.${base.id}`,
+      base.n,
+      'Cover',
+      ['cover'],
+      base.r
+    ))
   }
 
-  // Generate 200 Closing Templates (10 x 5 x 4)
+  // Add 10 Closing Bases
   for (const base of closingBases) {
-    for (const c of colors) {
-      for (const t of typos) {
-        const spec = mk(
-          `system.${base.id}.${c.id}.${t.id}`,
-          `${base.n} (${c.label}, ${t.label})`,
-          'Contact',
-          ['contact'],
-          base.r
-        )
-        spec.colorTreatment = c.id
-        spec.typographyPairing = t.id
-        results.push(spec)
-      }
-    }
+    results.push(mk(
+      `system.closing.${base.id}`,
+      base.n,
+      'Contact',
+      ['contact'],
+      base.r
+    ))
   }
 
   return results
 }
 
 export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
-  ...generateSystematicCoversAndClosingPages(),
   ...SPREAD_SPECS,
   ...RESUME_SPREAD_SPECS,
   ...generateUniqueContentSpreads200(),
@@ -2159,6 +2144,7 @@ export const RAW_LAYOUT_CATALOG: LayoutSpec[] = [
   ...generateExtraCovers100(),
   ...generateArchitecturalCovers50(),
   ...COVER_SPECS,
+  ...generateSystematicCoversAndClosingPages(),
   ...buildImageSpecs(),
   ...TEXT_SPECS,
   ...CONTACT_SPECS,
