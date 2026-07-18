@@ -1662,13 +1662,6 @@ function RegionView({
     }
 
     if (!block) {
-      if (region.role === 'title' || region.role === 'subtitle' || region.role === 'text' || region.role === 'meta') {
-        return (
-          <div style={style} className="flex items-center justify-center bg-gray-100 text-gray-400 text-xs tracking-widest uppercase">
-            {region.role}
-          </div>
-        )
-      }
       return (
         <ImageUploadPlaceholder
           style={style}
@@ -1695,10 +1688,12 @@ function RegionView({
           ) : (
             <ImageBlock 
               block={block} 
+              tokens={tokens}
+              onChange={p => patchBlock(block.id, p)}
               readonly={readonly} 
-              onUploadImage={onUploadImage} 
+              onUpload={onUploadImage} 
               splitConfig={region.splitGroup ? {
-                c0: region.c0, cs: region.cs, r0: region.r0, rs: region.rs, splitGroup: region.splitGroup
+                c0: region.c0, cs: region.cs, r0: region.r0, rs: region.rs
               } : undefined}
               cssFilter={region.cssFilter}
             />
@@ -2069,10 +2064,10 @@ function RegionView({
                 </div>
               )}
             </div>
-          : <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} onAiPolish={handleAiPolish} readonly={readonly} />
+          : <TitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} size={spec.category === 'Cover' ? 'xl' : 'lg'} readonly={readonly} />
       )}
-      {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} readonly={readonly} />}
-      {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} onAiPolish={handleAiPolish} readonly={readonly} />}
+      {region.role === 'subtitle' && <SubtitleBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
+      {region.role === 'text' && <DescriptionBlock block={block} tokens={tk} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
       {region.role === 'legend' && <LegendBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
       {region.role === 'meta' && <MetaBlock block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} readonly={readonly} />}
       {region.role === 'headshot' && <ResumeHeadshot block={block} tokens={tokens} onChange={p => patchBlock(block.id, p)} onUpload={onUploadImage} readonly={readonly} />}
