@@ -21,6 +21,7 @@ import { AssetUploadModal } from './AssetUploadModal'
 import { SheetSetAssetLibrary, type ProjectAsset } from './SheetSetAssetLibrary'
 import { SheetSetSymbolsPanel } from './SheetSetSymbolsPanel'
 import { ThesisCompanion } from './ThesisCompanion'
+import { SheetStoryboardEngine } from './SheetStoryboardEngine'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -50,6 +51,7 @@ export function SheetSetEditor({
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
   const [spreadMode, setSpreadMode] = useState(false)
   const [overviewMode, setOverviewMode] = useState(false)
+  const [viewMode, setViewMode] = useState<'storyboard' | 'canvas'>('storyboard')
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(false)
   
   // File upload state
@@ -448,6 +450,40 @@ export function SheetSetEditor({
     setPendingUploadUrl(null)
   }
 
+  if (viewMode === 'storyboard') {
+    return (
+      <div className="flex h-full relative bg-slate-900">
+        <SheetStoryboardEngine
+          sheetSet={sheetSet}
+          currentSheetId={selectedSheetId}
+          onUpdateSheetSet={updates => setSheetSet(prev => ({ ...prev, ...updates }))}
+          onUpdateSheet={updateSheet}
+          onAddSheet={handleAddSheet}
+          onDeleteSheet={handleDeleteSheet}
+          onSelectSheet={setSelectedSheetId}
+          onExportPdf={() => {
+            if (onExport) {
+              const canvas = document.querySelector('[id^="sheet-canvas"]')
+              if (canvas) {
+                onExport(canvas.outerHTML, sheetSet)
+              }
+            } else {
+              const json = JSON.stringify(sheetSet, null, 2)
+              const blob = new Blob([json], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `${sheetSet.projectName}.sheet-set.json`
+              a.click()
+              URL.revokeObjectURL(url)
+            }
+          }}
+          onSwitchToCanvasMode={() => setViewMode('canvas')}
+        />
+      </div>
+    )
+  }
+
   return (
     <div 
       className={`flex h-full relative transition-colors ${isDraggingOver ? 'bg-blue-50' : 'bg-gray-100'}`}
@@ -732,7 +768,14 @@ export function SheetSetEditor({
         
         {/* View Mode Controls */}
         <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
+          <button
+            onClick={() => setViewMode('storyboard')}
+            className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-105 text-white font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5"
+          >
+            <span>✨ Switch to Storyboard Engine</span>
+          </button>
+
+          <div className="flex items-center justify-between border-t border-gray-200 pt-2">
             <span className="text-xs font-bold text-gray-700">📖 Spread View</span>
             <button 
               onClick={() => {
