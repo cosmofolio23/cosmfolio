@@ -1062,6 +1062,41 @@ export function SheetProperties({
               />
             </label>
           </div>
+
+          <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700 flex justify-between">
+                Rotation Angle
+                <span className="text-purple-600 font-mono font-bold">{selectedElement.rotation || 0}°</span>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                step="1"
+                value={selectedElement.rotation || 0}
+                onChange={e => onUpdateElement({ rotation: parseInt(e.target.value) })}
+                className="w-full mt-1 accent-purple-600"
+              />
+            </label>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => onUpdateElement({ flipH: !selectedElement.flipH })}
+                className={`flex-1 py-1 text-xs border rounded transition ${selectedElement.flipH ? 'bg-purple-50 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+              >
+                ↔ Flip H
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateElement({ flipV: !selectedElement.flipV })}
+                className={`flex-1 py-1 text-xs border rounded transition ${selectedElement.flipV ? 'bg-purple-50 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+              >
+                ↕ Flip V
+              </button>
+            </div>
+          </div>
         </Section>
 
         {/* Style */}
@@ -1101,15 +1136,57 @@ export function SheetProperties({
                   />
                 </label>
 
-                <label className="block">
-                  <span className="text-xs font-medium text-gray-700">Color</span>
-                  <input
-                    type="color"
-                    value={selectedElement.color || '#000000'}
-                    onChange={e => onUpdateElement({ color: e.target.value })}
-                    className="w-full mt-1 h-8 border border-gray-300 rounded cursor-pointer"
-                  />
-                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="block">
+                    <span className="text-xs font-medium text-gray-700">Text Color</span>
+                    <input
+                      type="color"
+                      value={selectedElement.color || '#000000'}
+                      onChange={e => onUpdateElement({ color: e.target.value })}
+                      className="w-full mt-1 h-7 border border-gray-300 rounded cursor-pointer"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-medium text-gray-700">Background Fill</span>
+                    <input
+                      type="color"
+                      value={selectedElement.bgColor || '#ffffff'}
+                      onChange={e => onUpdateElement({ bgColor: e.target.value })}
+                      className="w-full mt-1 h-7 border border-gray-300 rounded cursor-pointer"
+                    />
+                  </label>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-xs font-medium text-gray-700 block">Text Formatting</span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateElement({ fontWeight: selectedElement.fontWeight === 'bold' ? 'normal' : 'bold' })}
+                      className={`px-3 py-1 text-xs border rounded font-bold transition ${selectedElement.fontWeight === 'bold' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateElement({ fontStyle: selectedElement.fontStyle === 'italic' ? 'normal' : 'italic' })}
+                      className={`px-3 py-1 text-xs border rounded italic font-serif transition ${selectedElement.fontStyle === 'italic' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                    >
+                      I
+                    </button>
+                    <div className="w-px h-5 bg-gray-300 mx-1 self-center" />
+                    {(['left', 'center', 'right'] as const).map(align => (
+                      <button
+                        key={align}
+                        type="button"
+                        onClick={() => onUpdateElement({ textAlign: align })}
+                        className={`flex-1 py-1 text-[10px] border rounded capitalize transition ${selectedElement.textAlign === align ? 'bg-purple-50 text-purple-700 border-purple-500 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                      >
+                        {align}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </>
             )}
           </div>

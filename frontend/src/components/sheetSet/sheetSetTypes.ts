@@ -82,13 +82,19 @@ export interface SheetElement {
   fontFamily?: string
   color?: string
   bgColor?: string
+  textAlign?: 'left' | 'center' | 'right'
+  fontWeight?: 'normal' | 'bold'
+  fontStyle?: 'normal' | 'italic'
 
   // Image
   src?: string
 
-  // Style
+  // Style & Transforms
   opacity?: number
   blendMode?: BlendMode
+  rotation?: number // degrees (0-360)
+  flipH?: boolean
+  flipV?: boolean
 
   // Material Swatch Shape (Feature 1)
   maskShape?: 'circle' | 'hexagon' | 'slanted-left' | 'slanted-right' | 'rect'

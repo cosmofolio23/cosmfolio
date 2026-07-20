@@ -59,6 +59,10 @@ export function SheetSetCanvas({
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [resizingId, setResizingId] = useState<string | null>(null)
   const [resizingHandle, setResizingHandle] = useState<string | null>(null)
+  const [rotatingId, setRotatingId] = useState<string | null>(null)
+  const [editingTextId, setEditingTextId] = useState<string | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; elementId: string } | null>(null)
+  const [activeSnapGuides, setActiveSnapGuides] = useState<Array<{ type: 'h' | 'v'; pos: number }>>([])
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
   const [isSpaceDown, setIsSpaceDown] = useState(false)
@@ -67,9 +71,34 @@ export function SheetSetCanvas({
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Close context menu on any key press
+      if (contextMenu) setContextMenu(null)
+
       if (e.code === 'Space' && !e.repeat && e.target === document.body) {
         e.preventDefault()
         setIsSpaceDown(true)
+        return
+      }
+
+      // Canva Keyboard Shortcuts (Ctrl+D duplicate, Delete/Backspace delete, Esc deselect)
+      if (selectedElementId && (e.key === 'Delete' || e.key === 'Backspace')) {
+        if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
+        e.preventDefault()
+        onDeleteElement(selectedElementId)
+        onSelectElement('')
+        return
+      }
+
+      if (selectedElementId && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault()
+        onDuplicateElement(selectedElementId)
+        return
+      }
+
+      if (e.key === 'Escape') {
+        onSelectElement('')
+        setEditingTextId(null)
+        setContextMenu(null)
         return
       }
 
@@ -109,7 +138,7 @@ export function SheetSetCanvas({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [selectedElementId, sheet, nextSheet, onUpdateElement])
+  }, [selectedElementId, sheet, nextSheet, onUpdateElement, contextMenu, onDeleteElement, onDuplicateElement, onSelectElement])
   const pageSize = SHEET_SIZES[sheetSet.sheetSize as keyof typeof SHEET_SIZES]
   const isPortrait = sheetSet.orientation === 'portrait'
   const sheetWidth = isPortrait ? pageSize.width : pageSize.height
@@ -156,12 +185,47 @@ export function SheetSetCanvas({
     onSelectElement(element.id)
   }
 
+  const handleRotateMouseDown = (e: React.MouseEvent, element: SheetElement) => {
+    e.stopPropagation()
+    if (e.button !== 0 || element.locked) return
+    setRotatingId(element.id)
+    onSelectElement(element.id)
+  }
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isPanning && canvasRef.current) {
       const deltaX = e.clientX - panStart.x
       const deltaY = e.clientY - panStart.y
       canvasRef.current.scrollBy(-deltaX, -deltaY)
       setPanStart({ x: e.clientX, y: e.clientY })
+      return
+    }
+
+    // Handle 360 Degree Canva Rotation
+    if (rotatingId) {
+      const activeSheet = [sheet, nextSheet].find(s => s?.elements.some(el => el.id === rotatingId))
+      if (!activeSheet) return
+      const element = activeSheet.elements.find(el => el.id === rotatingId)
+      if (!element || element.locked) return
+
+      const canvasNode = document.getElementById(`sheet-canvas-${activeSheet.id}`)
+      if (canvasNode) {
+        const rect = canvasNode.getBoundingClientRect()
+        const centerX = rect.left + (element.x + element.w / 2) * (rect.width / 100)
+        const centerY = rect.top + (element.y + element.h / 2) * (rect.height / 100)
+
+        const rad = Math.atan2(e.clientY - centerY, e.clientX - centerX)
+        let deg = Math.round(rad * (180 / Math.PI)) + 90
+        if (deg < 0) deg += 360
+        if (deg >= 360) deg -= 360
+
+        // Shift snaps to 15 degree intervals
+        if (e.shiftKey) {
+          deg = Math.round(deg / 15) * 15
+        }
+
+        onUpdateElement(element.id, { rotation: deg })
+      }
       return
     }
 
@@ -178,6 +242,10 @@ export function SheetSetCanvas({
 
     const deltaX = e.clientX - dragStart.x
     const deltaY = e.clientY - dragStart.y
+
+    // Calculate Canva Magnetic Snap Line Guides
+    const guides: Array<{ type: 'h' | 'v'; pos: number }> = []
+    const snapThreshold = 0.8
 
     if (resizingId && resizingHandle) {
       let newX = element.x
@@ -239,11 +307,17 @@ export function SheetSetCanvas({
           newH = Math.max(2, (newY + newH) - snappedTop)
           newY = snappedTop
         }
+
+        // Check center snapping
+        if (Math.abs(newX + newW / 2 - 50) < snapThreshold) guides.push({ type: 'v', pos: 50 })
+        if (Math.abs(newY + newH / 2 - 50) < snapThreshold) guides.push({ type: 'h', pos: 50 })
       }
+      setActiveSnapGuides(guides)
       onUpdateElement(element.id, { x: newX, y: newY, w: newW, h: newH })
     } else if (draggingId) {
       let newX = Math.max(0, Math.min(100 - element.w, element.x + (deltaX / sheetWidthPx) * 100))
       let newY = Math.max(0, Math.min(100 - element.h, element.y + (deltaY / sheetHeightPx) * 100))
+
       if (snapEnabled) {
         const cols = sheetSet.gridColumns || 12
         const gutter = sheetSet.gridGutter || 1.5
@@ -265,7 +339,20 @@ export function SheetSetCanvas({
 
         newX = snapToColumn(newX)
         newY = Math.round(newY / 2.5) * 2.5
+
+        // Check center snapping & element alignment guides
+        if (Math.abs(newX + element.w / 2 - 50) < snapThreshold) guides.push({ type: 'v', pos: 50 })
+        if (Math.abs(newY + element.h / 2 - 50) < snapThreshold) guides.push({ type: 'h', pos: 50 })
+
+        activeSheet.elements.forEach(other => {
+          if (other.id === element.id) return
+          if (Math.abs(newX - other.x) < snapThreshold) guides.push({ type: 'v', pos: other.x })
+          if (Math.abs(newX + element.w - (other.x + other.w)) < snapThreshold) guides.push({ type: 'v', pos: other.x + other.w })
+          if (Math.abs(newY - other.y) < snapThreshold) guides.push({ type: 'h', pos: other.y })
+          if (Math.abs(newY + element.h - (other.y + other.h)) < snapThreshold) guides.push({ type: 'h', pos: other.y + other.h })
+        })
       }
+      setActiveSnapGuides(guides)
       onUpdateElement(element.id, { x: newX, y: newY })
     }
     
@@ -276,7 +363,9 @@ export function SheetSetCanvas({
     setDraggingId(null)
     setResizingId(null)
     setResizingHandle(null)
+    setRotatingId(null)
     setIsPanning(false)
+    setActiveSnapGuides([])
   }
 
   const renderSheetBoard = (currentSheet: Sheet, index: number) => {
@@ -426,9 +515,16 @@ export function SheetSetCanvas({
           {currentSheet.elements.map(element => (
             <div
               key={element.id}
+              id={`element-box-${element.id}`}
               onMouseDown={e => handleElementMouseDown(e, element.id)}
+              onContextMenu={e => {
+                e.preventDefault()
+                e.stopPropagation()
+                onSelectElement(element.id)
+                setContextMenu({ x: e.clientX, y: e.clientY, elementId: element.id })
+              }}
               className={`absolute transition-all ${element.locked ? 'cursor-not-allowed' : 'cursor-move'} ${
-                selectedElementId === element.id ? 'ring-2 ring-blue-500' : ''
+                selectedElementId === element.id ? 'ring-2 ring-purple-600 shadow-[0_0_15px_rgba(147,51,234,0.35)]' : 'hover:ring-1 hover:ring-purple-400/60'
               }`}
               style={{
                 left: `${element.x}%`,
@@ -437,6 +533,8 @@ export function SheetSetCanvas({
                 height: `${element.h}%`,
                 zIndex: element.z,
                 opacity: element.opacity ?? 1,
+                transform: `rotate(${element.rotation || 0}deg) scaleX(${element.flipH ? -1 : 1}) scaleY(${element.flipV ? -1 : 1})`,
+                transformOrigin: 'center center',
                 backgroundColor: element.imageEffects?.blueprintMode ? '#0B2A66' : undefined,
               }}
               title={element.drawing?.drawingName || element.content}
@@ -470,19 +568,45 @@ export function SheetSetCanvas({
                 </div>
               )}
 
-              {/* Text */}
+              {/* Text — Canva Double Click Inline Editing */}
               {element.kind === 'text' && (
-                <div
-                  className="w-full h-full flex items-center justify-center p-2 overflow-hidden"
-                  style={{
-                    fontSize: `${element.fontSize || 12}px`,
-                    fontFamily: element.fontFamily || 'Inter',
-                    color: element.color || '#000',
-                    backgroundColor: element.bgColor,
-                  }}
-                >
-                  {element.content}
-                </div>
+                editingTextId === element.id ? (
+                  <textarea
+                    autoFocus
+                    value={element.content || ''}
+                    onChange={e => onUpdateElement(element.id, { content: e.target.value })}
+                    onBlur={() => setEditingTextId(null)}
+                    onKeyDown={e => {
+                      if (e.key === 'Escape') setEditingTextId(null)
+                    }}
+                    className="w-full h-full bg-white/95 border-2 border-purple-600 rounded p-1.5 outline-none font-medium resize-none shadow-xl z-50 text-gray-900"
+                    style={{
+                      fontSize: `${element.fontSize || 14}px`,
+                      fontFamily: element.fontFamily || 'Inter',
+                      color: element.color || '#000',
+                      textAlign: element.textAlign || 'left',
+                      fontWeight: element.fontWeight || 'normal',
+                      fontStyle: element.fontStyle || 'normal',
+                    }}
+                  />
+                ) : (
+                  <div
+                    onDoubleClick={() => setEditingTextId(element.id)}
+                    className="w-full h-full flex items-center p-2 overflow-hidden select-none cursor-pointer"
+                    style={{
+                      fontSize: `${element.fontSize || 12}px`,
+                      fontFamily: element.fontFamily || 'Inter',
+                      color: element.color || '#000',
+                      backgroundColor: element.bgColor,
+                      justifyContent: element.textAlign === 'center' ? 'center' : element.textAlign === 'right' ? 'flex-end' : 'flex-start',
+                      textAlign: element.textAlign || 'left',
+                      fontWeight: element.fontWeight || 'normal',
+                      fontStyle: element.fontStyle || 'normal',
+                    }}
+                  >
+                    {element.content || 'Double click to edit text'}
+                  </div>
+                )
               )}
 
               {/* Image */}
@@ -794,40 +918,78 @@ export function SheetSetCanvas({
               {/* Selection & Resize Handles */}
               {selectedElementId === element.id && !element.locked && (
                 <>
-                  {/* Floating Context Toolbar */}
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 p-1 flex items-center gap-1 z-50 whitespace-nowrap pointer-events-auto cursor-default">
-                    <button onClick={(e) => { e.stopPropagation(); onUpdateElement(element.id, { z: (element.z || 0) + 1 }) }} className="p-1.5 hover:bg-gray-100 rounded text-gray-600" title="Bring Forward">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 14h6v6H4zm10-10h6v6h-6zM10 10h10v10H10z"/></svg>
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); onUpdateElement(element.id, { z: Math.max(0, (element.z || 0) - 1) }) }} className="p-1.5 hover:bg-gray-100 rounded text-gray-600" title="Send Backward">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h6v6H4zm10 10h6v6h-6zM10 10h10v10H10z"/></svg>
-                    </button>
-                    <div className="w-px h-4 bg-gray-300 mx-1" />
-                    <button onClick={(e) => { e.stopPropagation(); onDuplicateElement(element.id) }} className="p-1.5 hover:bg-gray-100 rounded text-gray-600" title="Duplicate">
-                      <Copy size={14} />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); onDeleteElement(element.id); onSelectElement('') }} className="p-1.5 hover:bg-red-50 rounded text-red-600" title="Delete">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-
-                  {/* 8-Point Resize Handles */}
-                  {['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'].map(pos => (
-                    <div 
+                  {/* 4 Corner Round Handles */}
+                  {['nw', 'ne', 'sw', 'se'].map(pos => (
+                    <div
                       key={pos}
-                      className={`absolute w-2.5 h-2.5 bg-white border-[1.5px] border-blue-500 shadow-sm ${
-                        pos.includes('n') ? '-top-[5px]' : pos.includes('s') ? '-bottom-[5px]' : 'top-1/2 -translate-y-1/2'
+                      className={`absolute w-3.5 h-3.5 bg-white border-2 border-purple-600 rounded-full shadow-md z-30 ${
+                        pos.includes('n') ? '-top-1.5' : '-bottom-1.5'
                       } ${
-                        pos.includes('w') ? '-left-[5px]' : pos.includes('e') ? '-right-[5px]' : 'left-1/2 -translate-x-1/2'
-                      } cursor-${pos}-resize`}
-                      onMouseDown={(e) => handleResizeMouseDown(e, element, pos)}
+                        pos.includes('w') ? '-left-1.5' : '-right-1.5'
+                      } cursor-${pos}-resize hover:scale-125 transition-transform`}
+                      onMouseDown={e => handleResizeMouseDown(e, element, pos)}
                     />
                   ))}
+
+                  {/* 4 Edge Pill Handles */}
+                  {['n', 's', 'w', 'e'].map(pos => (
+                    <div
+                      key={pos}
+                      className={`absolute bg-white border border-purple-600 rounded-full z-30 shadow-sm ${
+                        pos === 'n' || pos === 's'
+                          ? `w-4 h-1.5 left-1/2 -translate-x-1/2 ${pos === 'n' ? '-top-1' : '-bottom-1'} cursor-${pos}-resize`
+                          : `h-4 w-1.5 top-1/2 -translate-y-1/2 ${pos === 'w' ? '-left-1' : '-right-1'} cursor-${pos}-resize`
+                      }`}
+                      onMouseDown={e => handleResizeMouseDown(e, element, pos)}
+                    />
+                  ))}
+
+                  {/* Rotation Stem & 360° Rotate Button */}
+                  <div 
+                    className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-30 pointer-events-auto cursor-grab active:cursor-grabbing group/rotate"
+                    onMouseDown={e => handleRotateMouseDown(e, element)}
+                    title="Drag to rotate 360° (Hold Shift to snap 15°)"
+                  >
+                    <div className="w-0.5 h-3 bg-purple-600" />
+                    <div className="w-6 h-6 rounded-full bg-white border-2 border-purple-600 text-purple-700 shadow-md flex items-center justify-center hover:scale-110 hover:bg-purple-50 transition">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                      </svg>
+                    </div>
+
+                    {/* Floating Rotation Angle Tooltip */}
+                    {rotatingId === element.id && (
+                      <div className="absolute -top-7 px-2 py-0.5 bg-purple-900 text-white text-[9px] font-mono font-bold rounded shadow-lg whitespace-nowrap">
+                        {element.rotation || 0}°
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>
           ))}
         </div>
+
+        {/* Canva Magenta/Purple Magnetic Snap Guidelines */}
+        {activeSnapGuides.map((guide, idx) => (
+          <div
+            key={idx}
+            className="absolute pointer-events-none z-40 border-purple-500 border-dashed"
+            style={{
+              ...(guide.type === 'v' ? {
+                left: `${guide.pos}%`,
+                top: 0,
+                bottom: 0,
+                borderLeftWidth: '1.5px',
+              } : {
+                top: `${guide.pos}%`,
+                left: 0,
+                right: 0,
+                borderTopWidth: '1.5px',
+              })
+            }}
+          />
+        ))}
 
         {/* Sheet Info (Footer) */}
         <div className="absolute bottom-4 left-4 right-4 text-xs text-gray-600 pointer-events-none flex justify-between">
@@ -848,47 +1010,218 @@ export function SheetSetCanvas({
     sheetsToRender.push(nextSheet)
   }
 
+  const selectedSheet = [sheet, nextSheet].find(s => s?.elements.some(el => el.id === selectedElementId))
+  const selectedElement = selectedSheet?.elements.find(el => el.id === selectedElementId)
+
   return (
-    <div className="flex-1 bg-gray-100 flex flex-col overflow-hidden">
-      {/* Toolbar */}
-      <div className="bg-white border-b border-gray-200 p-3 flex items-center gap-2 shrink-0">
-        <button
-          onClick={() => onZoomChange(Math.max(50, zoom - 10))}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-100"
-        >
-          −
-        </button>
-        <input
-          type="number"
-          value={zoom}
-          onChange={e => onZoomChange(Math.min(200, Math.max(50, parseInt(e.target.value))))}
-          className="w-16 px-2 py-1 text-sm border rounded text-center"
-        />
-        <span className="text-sm text-gray-600">%</span>
-        <button
-          onClick={() => onZoomChange(Math.min(200, zoom + 10))}
-          className="px-2 py-1 text-sm border rounded hover:bg-gray-100"
-        >
-          +
-        </button>
+    <div className="flex-1 bg-gray-100 flex flex-col overflow-hidden relative">
+      {/* Canva Floating Top Contextual Action Toolbar */}
+      <div className="bg-white border-b border-gray-200 p-2 px-3 flex items-center gap-2 shrink-0 z-30 shadow-sm">
+        {selectedElement ? (
+          <div className="flex items-center gap-2 flex-1 overflow-x-auto py-0.5 animate-in fade-in duration-150">
+            <div className="flex items-center gap-1 px-2 py-1 bg-purple-50 border border-purple-200 rounded text-xs font-bold text-purple-700 uppercase tracking-wide shrink-0">
+              <span>{selectedElement.kind === 'drawing' ? '📐' : selectedElement.kind === 'text' ? '📝' : selectedElement.kind === 'image' ? '🖼️' : '✨'}</span>
+              <span>{selectedElement.kind}</span>
+            </div>
 
-        <div className="border-l border-gray-300 mx-2 h-5" />
+            <div className="h-5 w-px bg-gray-300 mx-0.5 shrink-0" />
 
-        <label className="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" checked={gridEnabled} onChange={onToggleGrid} className="w-4 h-4 text-blue-600" />
-          Grid
-        </label>
+            {/* Text Controls */}
+            {selectedElement.kind === 'text' && (
+              <>
+                <select
+                  value={selectedElement.fontFamily || 'Inter'}
+                  onChange={e => onUpdateElement(selectedElement.id, { fontFamily: e.target.value })}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded bg-white hover:border-purple-400 focus:outline-none"
+                >
+                  <option value="Inter">Inter (Clean Sans)</option>
+                  <option value="Outfit">Outfit (Modern Studio)</option>
+                  <option value="Space Grotesk">Space Grotesk (Tech)</option>
+                  <option value="Playfair Display">Playfair Display (Serif)</option>
+                  <option value="Courier New">Courier New (Mono)</option>
+                </select>
 
-        <label className="flex items-center gap-2 text-sm cursor-pointer ml-2">
-          <input type="checkbox" checked={snapEnabled} onChange={onToggleSnap} className="w-4 h-4 text-blue-600" />
-          Snap
-        </label>
+                <div className="flex items-center border border-gray-300 rounded bg-white overflow-hidden">
+                  <button
+                    onClick={() => onUpdateElement(selectedElement.id, { fontSize: Math.max(8, (selectedElement.fontSize || 14) - 2) })}
+                    className="px-2 py-0.5 text-xs hover:bg-gray-100 font-bold border-r border-gray-200"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    value={selectedElement.fontSize || 14}
+                    onChange={e => onUpdateElement(selectedElement.id, { fontSize: parseInt(e.target.value) || 14 })}
+                    className="w-10 text-xs text-center border-none focus:outline-none font-mono"
+                  />
+                  <button
+                    onClick={() => onUpdateElement(selectedElement.id, { fontSize: Math.min(120, (selectedElement.fontSize || 14) + 2) })}
+                    className="px-2 py-0.5 text-xs hover:bg-gray-100 font-bold border-l border-gray-200"
+                  >
+                    +
+                  </button>
+                </div>
 
-        <div className="flex-1" />
+                <div className="flex items-center gap-0.5 bg-gray-100 p-0.5 rounded border border-gray-200">
+                  <button
+                    onClick={() => onUpdateElement(selectedElement.id, { fontWeight: selectedElement.fontWeight === 'bold' ? 'normal' : 'bold' })}
+                    className={`w-7 h-6 text-xs font-bold rounded flex items-center justify-center transition ${selectedElement.fontWeight === 'bold' ? 'bg-purple-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`}
+                    title="Bold"
+                  >
+                    B
+                  </button>
+                  <button
+                    onClick={() => onUpdateElement(selectedElement.id, { fontStyle: selectedElement.fontStyle === 'italic' ? 'normal' : 'italic' })}
+                    className={`w-7 h-6 text-xs italic font-serif rounded flex items-center justify-center transition ${selectedElement.fontStyle === 'italic' ? 'bg-purple-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`}
+                    title="Italic"
+                  >
+                    I
+                  </button>
+                  <div className="w-px h-4 bg-gray-300 mx-0.5" />
+                  {(['left', 'center', 'right'] as const).map(align => (
+                    <button
+                      key={align}
+                      onClick={() => onUpdateElement(selectedElement.id, { textAlign: align })}
+                      className={`w-7 h-6 text-[10px] rounded flex items-center justify-center transition ${selectedElement.textAlign === align ? 'bg-purple-600 text-white font-bold' : 'hover:bg-gray-200 text-gray-600'}`}
+                      title={`Align ${align}`}
+                    >
+                      {align === 'left' ? '⯇' : align === 'center' ? '≡' : '⯈'}
+                    </button>
+                  ))}
+                </div>
 
-        <span className="text-xs text-gray-500">
-          {sheet.elements.length} elements
-        </span>
+                <label className="flex items-center gap-1 cursor-pointer border border-gray-300 px-1.5 py-0.5 rounded bg-white hover:border-purple-400" title="Text Color">
+                  <span className="text-[10px] font-bold text-gray-500">A</span>
+                  <input
+                    type="color"
+                    value={selectedElement.color || '#000000'}
+                    onChange={e => onUpdateElement(selectedElement.id, { color: e.target.value })}
+                    className="w-4 h-4 border-none bg-transparent cursor-pointer"
+                  />
+                </label>
+              </>
+            )}
+
+            {/* Frame Fit Toggle */}
+            {(selectedElement.kind === 'image' || selectedElement.kind === 'drawing') && (
+              <button
+                onClick={() => onUpdateElement(selectedElement.id, { fitMode: selectedElement.fitMode === 'cover' ? 'contain' : 'cover' })}
+                className="px-2 py-1 text-xs border border-gray-300 rounded bg-white hover:border-purple-400 font-semibold text-gray-700 flex items-center gap-1"
+                title="Toggle Frame Fit Mode"
+              >
+                <span>🖼️</span>
+                <span>{selectedElement.fitMode === 'cover' ? 'Fill (Crop)' : 'Fit (Contain)'}</span>
+              </button>
+            )}
+
+            {/* Flip H / Flip V */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onUpdateElement(selectedElement.id, { flipH: !selectedElement.flipH })}
+                className={`px-2 py-1 text-xs border rounded font-semibold transition ${selectedElement.flipH ? 'bg-purple-100 border-purple-500 text-purple-800' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                title="Flip Horizontal"
+              >
+                ↔ Flip H
+              </button>
+              <button
+                onClick={() => onUpdateElement(selectedElement.id, { flipV: !selectedElement.flipV })}
+                className={`px-2 py-1 text-xs border rounded font-semibold transition ${selectedElement.flipV ? 'bg-purple-100 border-purple-500 text-purple-800' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                title="Flip Vertical"
+              >
+                ↕ Flip V
+              </button>
+            </div>
+
+            {/* Layer Order */}
+            <div className="flex items-center gap-0.5 bg-gray-100 p-0.5 rounded border border-gray-200">
+              <button
+                onClick={() => onUpdateElement(selectedElement.id, { z: (selectedElement.z || 0) + 1 })}
+                className="px-2 py-0.5 text-xs hover:bg-gray-200 text-gray-700 rounded font-semibold"
+                title="Bring Forward"
+              >
+                ▲ Forward
+              </button>
+              <button
+                onClick={() => onUpdateElement(selectedElement.id, { z: Math.max(0, (selectedElement.z || 0) - 1) })}
+                className="px-2 py-0.5 text-xs hover:bg-gray-200 text-gray-700 rounded font-semibold"
+                title="Send Backward"
+              >
+                ▼ Back
+              </button>
+            </div>
+
+            {/* Rotation Angle Stepper */}
+            <div className="flex items-center gap-1 border border-gray-300 rounded bg-white px-2 py-0.5 text-xs" title="Rotation Angle">
+              <span className="text-gray-400">🔄</span>
+              <input
+                type="number"
+                value={selectedElement.rotation || 0}
+                onChange={e => onUpdateElement(selectedElement.id, { rotation: parseInt(e.target.value) || 0 })}
+                className="w-10 text-xs border-none focus:outline-none font-mono"
+              />
+              <span className="text-gray-500">°</span>
+            </div>
+
+            <div className="h-5 w-px bg-gray-300 mx-0.5 shrink-0" />
+
+            {/* Duplicate & Delete */}
+            <button
+              onClick={() => onDuplicateElement(selectedElement.id)}
+              className="p-1.5 hover:bg-purple-50 text-purple-700 border border-purple-200 rounded transition"
+              title="Duplicate (Ctrl+D)"
+            >
+              <Copy size={14} />
+            </button>
+            <button
+              onClick={() => { onDeleteElement(selectedElement.id); onSelectElement('') }}
+              className="p-1.5 hover:bg-red-50 text-red-600 border border-red-200 rounded transition"
+              title="Delete (Trash)"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ) : (
+          /* Canvas Global Zoom & Grid Controls */
+          <>
+            <button
+              onClick={() => onZoomChange(Math.max(50, zoom - 10))}
+              className="px-2 py-1 text-sm border rounded hover:bg-gray-100"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              value={zoom}
+              onChange={e => onZoomChange(Math.min(200, Math.max(50, parseInt(e.target.value))))}
+              className="w-16 px-2 py-1 text-sm border rounded text-center"
+            />
+            <span className="text-sm text-gray-600">%</span>
+            <button
+              onClick={() => onZoomChange(Math.min(200, zoom + 10))}
+              className="px-2 py-1 text-sm border rounded hover:bg-gray-100"
+            >
+              +
+            </button>
+
+            <div className="border-l border-gray-300 mx-2 h-5" />
+
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={gridEnabled} onChange={onToggleGrid} className="w-4 h-4 text-purple-600" />
+              Grid
+            </label>
+
+            <label className="flex items-center gap-2 text-sm cursor-pointer ml-2">
+              <input type="checkbox" checked={snapEnabled} onChange={onToggleSnap} className="w-4 h-4 text-purple-600" />
+              Snap
+            </label>
+
+            <div className="flex-1" />
+
+            <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded border border-purple-200">
+              ⚡ Canva Canvas Mode
+            </span>
+          </>
+        )}
       </div>
 
       {/* Canvas Area */}
@@ -906,6 +1239,50 @@ export function SheetSetCanvas({
         </div>
       </div>
 
+      {/* Context Menu Popover */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-white border border-gray-200 rounded-xl shadow-2xl py-1.5 px-1 w-48 text-xs font-sans text-gray-700 animate-in fade-in zoom-in-95 duration-100"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={() => { onDuplicateElement(contextMenu.elementId); setContextMenu(null) }}
+            className="w-full text-left px-3 py-1.5 hover:bg-purple-50 hover:text-purple-700 rounded flex items-center justify-between"
+          >
+            <span>📋 Duplicate</span>
+            <span className="text-[10px] text-gray-400">Ctrl+D</span>
+          </button>
+          <button
+            onClick={() => { onDeleteElement(contextMenu.elementId); onSelectElement(''); setContextMenu(null) }}
+            className="w-full text-left px-3 py-1.5 hover:bg-red-50 hover:text-red-600 rounded flex items-center justify-between"
+          >
+            <span>🗑️ Delete</span>
+            <span className="text-[10px] text-gray-400">Del</span>
+          </button>
+
+          <div className="h-px bg-gray-150 my-1" />
+
+          <button
+            onClick={() => { onUpdateElement(contextMenu.elementId, { z: (selectedElement?.z || 0) + 1 }); setContextMenu(null) }}
+            className="w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded"
+          >
+            🔝 Bring Forward
+          </button>
+          <button
+            onClick={() => { onUpdateElement(contextMenu.elementId, { z: Math.max(0, (selectedElement?.z || 0) - 1) }); setContextMenu(null) }}
+            className="w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded"
+          >
+            🔽 Send Backward
+          </button>
+          <button
+            onClick={() => { onUpdateElement(contextMenu.elementId, { rotation: 0 }); setContextMenu(null) }}
+            className="w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded"
+          >
+            🔄 Reset Rotation
+          </button>
+        </div>
+      )}
     </div>
   )
 }
