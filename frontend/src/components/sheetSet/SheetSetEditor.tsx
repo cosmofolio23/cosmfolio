@@ -22,6 +22,7 @@ import { SheetSetAssetLibrary, type ProjectAsset } from './SheetSetAssetLibrary'
 import { SheetSetSymbolsPanel } from './SheetSetSymbolsPanel'
 import { ThesisCompanion } from './ThesisCompanion'
 import { SheetStoryboardEngine } from './SheetStoryboardEngine'
+import { InDesignCanvaHybridEngine } from './InDesignCanvaHybridEngine'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -51,7 +52,7 @@ export function SheetSetEditor({
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
   const [spreadMode, setSpreadMode] = useState(false)
   const [overviewMode, setOverviewMode] = useState(false)
-  const [viewMode, setViewMode] = useState<'storyboard' | 'canvas'>('storyboard')
+  const [viewMode, setViewMode] = useState<'indesign' | 'storyboard' | 'canvas'>('indesign')
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(false)
   
   // File upload state
@@ -450,10 +451,10 @@ export function SheetSetEditor({
     setPendingUploadUrl(null)
   }
 
-  if (viewMode === 'storyboard') {
+  if (viewMode === 'indesign') {
     return (
       <div className="flex h-full relative bg-slate-900">
-        <SheetStoryboardEngine
+        <InDesignCanvaHybridEngine
           sheetSet={sheetSet}
           currentSheetId={selectedSheetId}
           onUpdateSheetSet={updates => setSheetSet(prev => ({ ...prev, ...updates }))}
@@ -478,7 +479,6 @@ export function SheetSetEditor({
               URL.revokeObjectURL(url)
             }
           }}
-          onSwitchToCanvasMode={() => setViewMode('canvas')}
         />
       </div>
     )
