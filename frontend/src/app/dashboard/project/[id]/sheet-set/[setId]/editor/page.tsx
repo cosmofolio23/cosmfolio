@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/auth'
 import { apiClient } from '@/lib/api'
 import { SheetSetEditor } from '@/components/sheetSet/SheetSetEditor'
+import { SheetComposer2Editor } from '@/components/sheetSet/SheetComposer2Editor'
 import type { SheetSet } from '@/components/sheetSet/sheetSetTypes'
 import DesktopOnlyLock from '@/components/DesktopOnlyLock'
 
@@ -162,12 +163,11 @@ export default function SheetSetEditorPage() {
   return (
     <>
       <DesktopOnlyLock />
-      <SheetSetEditor
+      <SheetComposer2Editor
         initialSheetSet={sheetSet!}
         onSave={handleSave}
         onExport={handleExport}
-        onAICommand={handleAICommand}
-        onClose={() => router.push(`/dashboard/project/${projectId}/sheet-set`)}
+        onClose={() => router.push('/dashboard')}
       />
     </>
   )
