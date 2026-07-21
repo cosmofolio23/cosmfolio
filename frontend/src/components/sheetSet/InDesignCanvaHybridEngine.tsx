@@ -25,6 +25,10 @@ import {
 import type { SheetSet, Sheet, SheetElement } from './sheetSetTypes'
 import { TitleBlockRenderer } from './TitleBlockEngine'
 import { SHEET_SIZES, mmToPx } from './sheetSetTypes'
+import { ProjectStyleManager } from './ProjectStyleManager'
+import { BlownUpDetailTool } from './tools/BlownUpDetailTool'
+import { VectorBorderOverlay } from './borders/VectorBorderOverlay'
+import { MasterTitleBlock } from './borders/MasterTitleBlock'
 
 interface InDesignCanvaHybridEngineProps {
   sheetSet: SheetSet
@@ -65,6 +69,8 @@ export const InDesignCanvaHybridEngine: React.FC<InDesignCanvaHybridEngineProps>
   const [activePanel, setActivePanel] = useState<'pages' | 'styles' | 'layers'>('pages')
   const [editingTextId, setEditingTextId] = useState<string | null>(null)
   const [draggingGuideId, setDraggingGuideId] = useState<string | null>(null)
+  const [showProjectStyleManager, setShowProjectStyleManager] = useState<boolean>(false)
+  const [showDetailTool, setShowDetailTool] = useState<boolean>(false)
 
   // Find active sheet
   const activeSheet = sheetSet.sheets.find(s => s.id === currentSheetId) || sheetSet.sheets[0]
@@ -295,6 +301,22 @@ export const InDesignCanvaHybridEngine: React.FC<InDesignCanvaHybridEngineProps>
           >
             <span>+ H-Guide</span>
           </button>
+
+          {/* Project Style Engine & Detail Tool Buttons */}
+          <button
+            onClick={() => setShowProjectStyleManager(true)}
+            className="px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-gray-950 font-bold text-xs rounded shadow border border-amber-300 flex items-center gap-1.5 transition"
+          >
+            🎨 Project Style Engine
+          </button>
+          {selectedElement && selectedElement.kind === 'drawing' && (
+            <button
+              onClick={() => setShowDetailTool(true)}
+              className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded border border-cyan-500/40 flex items-center gap-1 transition"
+            >
+              🔍 Blown-Up Detail
+            </button>
+          )}
 
           <div className="h-5 w-px bg-slate-700 mx-1" />
 
@@ -623,6 +645,29 @@ export const InDesignCanvaHybridEngine: React.FC<InDesignCanvaHybridEngineProps>
           )}
         </div>
       </div>
+
+      {/* Sheet Composer 2.0 Modals */}
+      {showProjectStyleManager && (
+        <ProjectStyleManager
+          sheetSet={sheetSet}
+          onApplyProjectStyle={updatedSet => onUpdateSheetSet(updatedSet)}
+          onClose={() => setShowProjectStyleManager(false)}
+        />
+      )}
+
+      {showDetailTool && selectedElement && (
+        <BlownUpDetailTool
+          sourceElement={selectedElement}
+          onCreateDetail={detailElem => {
+            if (activeSheet) {
+              onUpdateSheet(activeSheet.id, {
+                elements: [...activeSheet.elements, detailElem as SheetElement]
+              })
+            }
+          }}
+          onClose={() => setShowDetailTool(false)}
+        />
+      )}
     </div>
   )
 }

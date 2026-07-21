@@ -56,7 +56,7 @@ export function SheetSetEditor({
   const [handoff, setHandoff] = useState<SheetImageHandoff | null>(null)
   const [spreadMode, setSpreadMode] = useState(false)
   const [overviewMode, setOverviewMode] = useState(false)
-  const [viewMode, setViewMode] = useState<'indesign' | 'storyboard' | 'canvas'>('indesign')
+  const [viewMode, setViewMode] = useState<'indesign' | 'storyboard' | 'canvas'>('canvas')
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(false)
   const [showProjectStyleManager, setShowProjectStyleManager] = useState(false)
   const [showDetailTool, setShowDetailTool] = useState(false)
