@@ -23,6 +23,10 @@ import { SheetSetSymbolsPanel } from './SheetSetSymbolsPanel'
 import { ThesisCompanion } from './ThesisCompanion'
 import { SheetStoryboardEngine } from './SheetStoryboardEngine'
 import { InDesignCanvaHybridEngine } from './InDesignCanvaHybridEngine'
+import { ProjectStyleManager } from './ProjectStyleManager'
+import { BlownUpDetailTool } from './tools/BlownUpDetailTool'
+import { VectorBorderOverlay } from './borders/VectorBorderOverlay'
+import { MasterTitleBlock } from './borders/MasterTitleBlock'
 
 interface SheetSetEditorProps {
   initialSheetSet?: SheetSet
@@ -54,6 +58,8 @@ export function SheetSetEditor({
   const [overviewMode, setOverviewMode] = useState(false)
   const [viewMode, setViewMode] = useState<'indesign' | 'storyboard' | 'canvas'>('indesign')
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(false)
+  const [showProjectStyleManager, setShowProjectStyleManager] = useState(false)
+  const [showDetailTool, setShowDetailTool] = useState(false)
   
   // File upload state
   const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
@@ -501,6 +507,24 @@ export function SheetSetEditor({
           }} 
         />
       )}
+      {/* Sheet Composer 2.0 Action Bar */}
+      <div className="absolute top-3 right-4 z-40 flex items-center gap-2">
+        <button
+          onClick={() => setShowProjectStyleManager(true)}
+          className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-gray-950 font-bold text-xs rounded-lg shadow-md border border-amber-300 flex items-center gap-1.5 transition-all"
+        >
+          🎨 Project Style Engine
+        </button>
+        {selectedElement && selectedElement.kind === 'drawing' && (
+          <button
+            onClick={() => setShowDetailTool(true)}
+            className="px-3.5 py-1.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-xs rounded-lg shadow-md border border-gray-700 flex items-center gap-1.5 transition-all"
+          >
+            🔍 Blown-Up Detail
+          </button>
+        )}
+      </div>
+
       {/* Handoff banner — an image pushed from a studio tool */}
       {handoff && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 bg-white rounded-xl shadow-xl border border-[#D4AF37]/40 px-3 py-2 flex items-center gap-3">
@@ -913,6 +937,23 @@ export function SheetSetEditor({
           )}
         </div>
       </div>
+
+      {/* Sheet Composer 2.0 Modals */}
+      {showProjectStyleManager && (
+        <ProjectStyleManager
+          sheetSet={sheetSet}
+          onApplyProjectStyle={updatedSet => setSheetSet(updatedSet)}
+          onClose={() => setShowProjectStyleManager(false)}
+        />
+      )}
+
+      {showDetailTool && selectedElement && (
+        <BlownUpDetailTool
+          sourceElement={selectedElement}
+          onCreateDetail={detailElem => addElement(detailElem as SheetElement)}
+          onClose={() => setShowDetailTool(false)}
+        />
+      )}
     </div>
   )
 }

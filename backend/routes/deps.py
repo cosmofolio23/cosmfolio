@@ -224,3 +224,13 @@ def get_current_user_optional(authorization: str = Header(None)):
         return get_current_user(authorization)
     except Exception:
         return None
+
+def check_sheet_composer_admin(current_user: dict):
+    """Enforce strict admin access control: strictly accessible ONLY to boseraj001@gmail.com."""
+    email = current_user.get("email", "").strip().lower() if isinstance(current_user, dict) else ""
+    if email != "boseraj001@gmail.com":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Sheet Composer is strictly restricted to boseraj001@gmail.com."
+        )
+

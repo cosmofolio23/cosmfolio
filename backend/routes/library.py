@@ -11,7 +11,7 @@ from typing import List, Optional
 from datetime import datetime
 from uuid import uuid4
 
-from .deps import get_current_user
+from .deps import get_current_user, check_sheet_composer_admin
 from services.entitlements import require_library, get_user_entitlements
 from services.upload import get_upload_manager
 from services.storage import get_storage_client
@@ -422,6 +422,7 @@ async def generate_sheet_set_from_library(
 ):
     """Persist a SheetSet that the frontend built (slot-filled from this project's
     library assets) under a shared backing project, linked back to the library."""
+    check_sheet_composer_admin(current_user)
     payload = payload or {}
     proj = _own_project(project_id, current_user["user_id"])
     uid = current_user["user_id"]

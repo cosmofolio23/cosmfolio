@@ -196,12 +196,111 @@ export interface SlotDefinition {
 // SHEET
 // ─────────────────────────────────────────────────────────────
 
+export interface ProjectStyle {
+  id: string
+  name: string
+  templateId: string
+  borderId: string
+  titleBlockStyle: TitleBlockType
+  fontPairing: {
+    headingFont: string
+    bodyFont: string
+    codeFont?: string
+  }
+  colorPalette: {
+    primary: string
+    secondary: string
+    accent: string
+    background: string
+    text: string
+    borderLine: string
+  }
+  gridConfig: {
+    columns: number
+    rows: number
+    gutterMm: number
+    marginMm: number
+    gridType: 'column' | 'modular' | 'architectural' | 'golden'
+  }
+  sheetSize: SheetSize
+  orientation: Orientation
+  customWidthMm?: number
+  customHeightMm?: number
+  defaultNorthStyle: string
+  defaultScalebarStyle: string
+}
+
+export interface BorderDefinition {
+  id: string
+  name: string
+  category: 'minimal' | 'competition' | 'jury' | 'swiss' | 'technical' | 'dark' | 'luxury' | 'parametric' | 'japanese' | 'bauhaus' | 'brutalist' | 'editorial'
+  tags: string[]
+  style: {
+    borderWidthMm: number
+    marginMm: number
+    cornerStyle: 'sharp' | 'inset' | 'double' | 'rounded' | 'accent-tick' | 'crosshair'
+    lineColor?: string
+    accentColor?: string
+    showGridLines?: boolean
+    gridPattern?: 'none' | 'dots' | 'crosses' | 'subtle-grid'
+  }
+  titleBlockPosition: 'bottom' | 'right' | 'top-right' | 'bottom-right' | 'none'
+  titleBlockHeightMm?: number
+  titleBlockWidthMm?: number
+  svgPathData?: string
+}
+
+export interface ScaleConfig {
+  archScale: ArchScale
+  scaleRatio: number          // e.g. 100 for 1:100, 50 for 1:50
+  realWorldWidthMm?: number   // Real world dimension in mm
+  sheetWidthMm?: number       // Placed width on sheet in mm
+  isMismatch?: boolean
+  calculatedScaleLabel?: string
+}
+
+export interface HatchDefinition {
+  id: string
+  name: string
+  category: 'concrete' | 'brick' | 'earth' | 'wood' | 'glass' | 'insulation' | 'tiles' | 'fabric' | 'metal' | 'pattern'
+  svgPatternId: string
+  scale: number
+  rotation: number
+  color: string
+  bgColor?: string
+}
+
+export interface EntourageDefinition {
+  id: string
+  name: string
+  category: 'tree' | 'people' | 'vehicle' | 'furniture' | 'plant' | 'interior'
+  viewType: 'top' | 'elevation' | 'section' | '3d'
+  style: 'line' | 'silhouette' | 'colored' | 'watercolor' | 'sketch'
+  realWorldHeightMm: number
+  realWorldWidthMm: number
+  svgContent: string
+}
+
+export interface BlownUpDetail {
+  id: string
+  sourceElementId: string
+  cropRect: { x: number; y: number; w: number; h: number }
+  targetScale: ArchScale
+  detailLabel: string
+  shape: 'circle' | 'rect' | 'cloud'
+}
+
 export interface Sheet {
   id: string
   setId: string
   sheetNumber: number
   sheetName: string
   sheetType: SheetType
+
+  // Project Style Override Tracking
+  isOverriddenFromProjectStyle?: boolean
+  overrideBorderId?: string
+  overrideTitleBlockStyle?: TitleBlockType
 
   // Layout
   layout: SheetLayout
@@ -223,11 +322,15 @@ export interface Sheet {
 // SHEET SET (THE MAIN DOCUMENT)
 // ─────────────────────────────────────────────────────────────
 
-export type TitleBlockType = 'bottom-strip' | 'right-column' | 'minimal-corner' | 'none'
+export type TitleBlockType = 'bottom-strip' | 'right-column' | 'minimal-corner' | 'floating' | 'none'
 
 export interface SheetSet {
   id: string
   projectId: string
+
+  // Project Style (Master Consistency Engine)
+  projectStyle?: ProjectStyle
+  borderId?: string
 
   // Project metadata
   projectName: string

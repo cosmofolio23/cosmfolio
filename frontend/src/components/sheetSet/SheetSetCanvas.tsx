@@ -11,6 +11,9 @@ import type { Sheet, SheetElement, SheetSet } from './sheetSetTypes'
 import { SHEET_SIZES, mmToPx } from './sheetSetTypes'
 import { generateScaleLabel } from './drawingScaleEngine'
 import { TitleBlockRenderer } from './TitleBlockEngine'
+import { VectorBorderOverlay } from './borders/VectorBorderOverlay'
+import { MasterTitleBlock } from './borders/MasterTitleBlock'
+import { ScalebarGenerator } from './tools/ScalebarGenerator'
 
 const getClipPath = (shape?: string) => {
   if (shape === 'circle') return 'circle(50% at 50% 50%)'
@@ -508,6 +511,21 @@ export function SheetSetCanvas({
         <TitleBlockRenderer 
           sheetSet={sheetSet} 
           sheet={currentSheet} 
+        />
+
+        {/* Sheet Composer 2.0 Vector Border & Live Title Block */}
+        <VectorBorderOverlay
+          sheetSet={sheetSet}
+          sheet={currentSheet}
+          widthPx={sheetWidthPx}
+          heightPx={sheetHeightPx}
+        />
+
+        <MasterTitleBlock
+          sheetSet={sheetSet}
+          sheet={currentSheet}
+          widthPx={sheetWidthPx}
+          heightPx={sheetHeightPx}
         />
 
         {/* Elements */}

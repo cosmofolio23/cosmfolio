@@ -11,7 +11,7 @@ from typing import Optional
 from datetime import datetime
 from uuid import uuid4
 
-from .deps import get_current_user
+from .deps import get_current_user, check_sheet_composer_admin
 from database import supabase
 from services.sheet_export import get_sheet_export_service
 
@@ -27,11 +27,7 @@ def _summary(row: dict) -> dict:
 
 
 def check_admin_access(current_user: dict):
-    if current_user.get("email", "").strip().lower() != "boseraj001@gmail.com":
-        raise HTTPException(
-            status_code=403,
-            detail="Forbidden: Sheet Composer is restricted to authorized admins."
-        )
+    check_sheet_composer_admin(current_user)
 
 
 @router.get("/api/sheet-sets")

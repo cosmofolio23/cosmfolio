@@ -31,14 +31,14 @@ export default function CommandPalette() {
       icon: '📁',
       action: () => router.push('/dashboard?new=portfolio'),
     },
-    {
+    ...(isAdmin ? [{
       id: 'new-sheet',
       label: 'New Sheet',
       description: 'Create a new presentation sheet',
       category: 'Create',
       icon: '📄',
       action: () => router.push('/dashboard?new=sheet'),
-    },
+    }] : []),
     ...(isAdmin ? [{
       id: 'ai-studio',
       label: 'AI Studio',
