@@ -2,9 +2,11 @@
 
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { useAuthStore } from '@/store/auth'
 
 export default function AnalyticsTracker() {
   const pathname = usePathname()
+  const { isAuthenticated, user } = useAuthStore()
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
@@ -53,7 +55,7 @@ export default function AnalyticsTracker() {
     return () => {
       if (intervalId) clearInterval(intervalId)
     }
-  }, [pathname])
+  }, [pathname, isAuthenticated, user?.id])
 
   return null
 }

@@ -7,42 +7,64 @@ from database import get_db
 from models import UserResponse
 
 class ErrorLogCreate(BaseModel):
-    error_message: str
+    error_type: Optional[str] = "general_error"
+    message: Optional[str] = None
+    error_message: Optional[str] = None
     stack_trace: Optional[str] = None
     component: Optional[str] = None
+    page: Optional[str] = None
     url: Optional[str] = None
+    browser: Optional[str] = None
     browser_info: Optional[Dict[str, Any]] = None
+    device: Optional[str] = None
 
 class ActivityLogCreate(BaseModel):
     event_name: str
     metadata: Optional[Dict[str, Any]] = None
     session_id: Optional[str] = None
+
 from routes.deps import get_current_user_optional, get_current_user
 from services.notification import NotificationService
 
 router = APIRouter()
+
+def _extract_user_info(user: Any) -> tuple:
+    """Safely extract user_id and email regardless of whether user is a dict or object"""
+    user_id = None
+    user_email = None
+    if isinstance(user, dict):
+        user_id = user.get("user_id") or user.get("id") or user.get("sub")
+        user_email = user.get("email")
+    elif user:
+        user_id = getattr(user, "id", None) or getattr(user, "user_id", None)
+        user_email = getattr(user, "email", None)
+    return user_id, user_email
 
 @router.post("/track-activity")
 async def track_activity(
     activity: ActivityLogCreate,
     request: Request,
     db: Session = Depends(get_db),
-    user: Optional[UserResponse] = Depends(get_current_user_optional)
+    user: Any = Depends(get_current_user_optional)
 ):
     try:
-        user_id = user.id if user else None
+        user_id, user_email = _extract_user_info(user)
         
-        # Merge session_id into metadata if provided
+        # Merge session_id and email into metadata if provided
         metadata_dict = activity.metadata or {}
         if activity.session_id:
             metadata_dict['session_id'] = activity.session_id
+        if user_email:
+            metadata_dict['email'] = user_email
             
-        # Save to database
-        db.table("activity_logs").insert({
-            "user_id": user_id,
-            "event_name": activity.event_name,
-            "metadata": metadata_dict
-        }).execute()
+        # Save to database using Supabase client
+        from database import supabase
+        if supabase:
+            supabase.table("activity_logs").insert({
+                "user_id": user_id,
+                "event_name": activity.event_name,
+                "metadata": metadata_dict
+            }).execute()
         return {"status": "ok"}
     except Exception as e:
         print(f"[Monitoring Error] Failed to track activity: {str(e)}")
@@ -53,29 +75,34 @@ async def track_error(
     error: ErrorLogCreate,
     request: Request,
     db: Session = Depends(get_db),
-    user: Optional[UserResponse] = Depends(get_current_user_optional)
+    user: Any = Depends(get_current_user_optional)
 ):
     try:
-        user_id = user.id if user else None
+        user_id, user_email = _extract_user_info(user)
+        err_msg = error.message or error.error_message or "Unknown error"
+        err_page = error.page or error.url or "Unknown page"
+        err_type = error.error_type or "general_error"
         
-        db.table("error_logs").insert({
-            "user_id": user_id,
-            "error_type": error.error_type,
-            "message": error.message,
-            "stack_trace": error.stack_trace,
-            "page": error.page,
-            "browser": error.browser,
-            "device": error.device
-        }).execute()
+        from database import supabase
+        if supabase:
+            supabase.table("error_logs").insert({
+                "user_id": user_id,
+                "error_type": err_type,
+                "message": err_msg,
+                "stack_trace": error.stack_trace,
+                "page": err_page,
+                "browser": error.browser or str(error.browser_info or ""),
+                "device": error.device
+            }).execute()
 
         # Alert admin if critical
         critical_types = ["pdf_export_failed", "payment_error", "payment_failed", "crash"]
-        if error.error_type in critical_types or "timeout" in error.message.lower():
+        if err_type in critical_types or "timeout" in err_msg.lower():
             NotificationService.sendErrorAlert({
-                "user": user.email if user else "Anonymous",
-                "page": error.page,
-                "action": error.error_type,
-                "message": error.message,
+                "user": user_email or "Anonymous",
+                "page": err_page,
+                "action": err_type,
+                "message": err_msg,
                 "stack_trace": error.stack_trace,
                 "browser": error.browser,
                 "device": error.device
