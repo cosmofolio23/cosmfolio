@@ -578,7 +578,71 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
             
         # Get users sorted by creation date (newest first)
         result = database.supabase.table("users").select("*").order("created_at", desc=True).execute()
-        return result.data
+        users = result.data or []
+
+        try:
+            # 1. Portfolios count per user
+            portfolios_res = database.supabase.table("portfolios").select("user_id").execute()
+            portfolios_by_user = {}
+            for p in (portfolios_res.data or []):
+                uid = p.get("user_id")
+                if uid:
+                    portfolios_by_user[uid] = portfolios_by_user.get(uid, 0) + 1
+
+            # 2. Activity logs per user (last page view & last active timestamp)
+            activity_res = database.supabase.table("activity_logs").select("user_id, event_name, metadata, created_at").order("created_at", desc=True).limit(1000).execute()
+            user_last_page = {}
+            user_last_seen = {}
+            for act in (activity_res.data or []):
+                uid = act.get("user_id")
+                if not uid:
+                    continue
+                tstamp = act.get("created_at")
+                if uid not in user_last_seen and tstamp:
+                    user_last_seen[uid] = tstamp
+                if uid not in user_last_page and act.get("event_name") == "page_view":
+                    meta = act.get("metadata") or {}
+                    if meta.get("url"):
+                        user_last_page[uid] = meta.get("url")
+
+            # 3. Error logs per user
+            errors_res = database.supabase.table("error_logs").select("user_id, message, resolved, created_at").order("created_at", desc=True).limit(500).execute()
+            user_errors_count = {}
+            user_last_error = {}
+            for err in (errors_res.data or []):
+                uid = err.get("user_id")
+                if not uid:
+                    continue
+                if not err.get("resolved", False):
+                    user_errors_count[uid] = user_errors_count.get(uid, 0) + 1
+                if uid not in user_last_error:
+                    user_last_error[uid] = err.get("message")
+
+            import datetime as dt
+            now = dt.datetime.now(dt.timezone.utc)
+
+            for u in users:
+                uid = u.get("id")
+                u["portfolios_count"] = portfolios_by_user.get(uid, 0)
+                u["current_page"] = user_last_page.get(uid, "—")
+                u["last_seen_at"] = user_last_seen.get(uid, u.get("created_at"))
+                u["unresolved_errors"] = user_errors_count.get(uid, 0)
+                u["last_error_message"] = user_last_error.get(uid)
+
+                # Check if online (active within last 5 minutes)
+                is_online = False
+                if uid in user_last_seen and user_last_seen[uid]:
+                    try:
+                        last_seen_dt = dt.datetime.fromisoformat(user_last_seen[uid].replace("Z", "+00:00"))
+                        if (now - last_seen_dt).total_seconds() < 300:
+                            is_online = True
+                    except Exception:
+                        pass
+                u["is_online"] = is_online
+        except Exception as telemetry_err:
+            print(f"[Admin Users] Telemetry fetch warning: {telemetry_err}")
+
+        return users
         
     except Exception as e:
         print(f"Error fetching users: {e}")

@@ -18,6 +18,12 @@ interface UserRecord {
   export_count: number
   is_pro?: boolean
   created_at: string
+  portfolios_count?: number
+  current_page?: string
+  last_seen_at?: string
+  is_online?: boolean
+  unresolved_errors?: number
+  last_error_message?: string
 }
 
 interface CouponRecord {
@@ -484,11 +490,12 @@ export default function AdminDashboard() {
                   <table className="w-full text-left text-sm border-collapse">
                     <thead>
                       <tr className="border-b border-gray-100 dark:border-white/10 text-text-secondary dark:text-dark-text-secondary font-semibold">
-                        <th className="py-4 px-3">Name / Email</th>
-                        <th className="py-4 px-3">College & Stream</th>
+                        <th className="py-4 px-3">User & Presence</th>
+                        <th className="py-4 px-3">Current Active Page</th>
+                        <th className="py-4 px-3 text-center">Portfolios</th>
+                        <th className="py-4 px-3 text-center">Status / Alerts</th>
                         <th className="py-4 px-3 text-center">Plan Tier</th>
                         <th className="py-4 px-3 text-center">Exports Used</th>
-                        <th className="py-4 px-3">Registration Date</th>
                         <th className="py-4 px-3 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -496,12 +503,45 @@ export default function AdminDashboard() {
                       {filteredUsers.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50/50 dark:hover:bg-white/20 transition-colors">
                           <td className="py-4 px-3">
-                            <div className="font-bold text-text-primary dark:text-dark-text-primary">{item.name || "Anonymous User"}</div>
-                            <div className="text-xs text-text-secondary dark:text-dark-text-secondary">{item.email}</div>
+                            <div className="flex items-center gap-2">
+                              <span 
+                                className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${item.is_online ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} 
+                                title={item.is_online ? 'Online now' : `Last seen: ${item.last_seen_at ? new Date(item.last_seen_at).toLocaleTimeString() : 'Offline'}`}
+                              />
+                              <div className="font-bold text-text-primary dark:text-dark-text-primary">{item.name || "Anonymous User"}</div>
+                            </div>
+                            <div className="text-xs text-text-secondary dark:text-dark-text-secondary pl-4">{item.email}</div>
                           </td>
                           <td className="py-4 px-3">
-                            <div className="max-w-[200px] truncate font-medium">{item.college_name || "—"}</div>
-                            <div className="text-xs text-text-secondary dark:text-dark-text-secondary">{item.stream || "—"}</div>
+                            <div className="max-w-[200px] truncate font-mono text-xs text-accent-primary dark:text-accent-gold" title={item.current_page || '—'}>
+                              {item.current_page || '—'}
+                            </div>
+                            <div className="text-xxs text-text-secondary dark:text-dark-text-secondary mt-0.5">
+                              {item.is_online ? 'Active Now' : item.last_seen_at ? `Seen ${new Date(item.last_seen_at).toLocaleDateString('en-IN')}` : 'No recent logs'}
+                            </div>
+                          </td>
+                          <td className="py-4 px-3 text-center">
+                            <span className="inline-block px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-xs font-bold">
+                              {item.portfolios_count || 0}
+                            </span>
+                          </td>
+                          <td className="py-4 px-3 text-center">
+                            {(item.unresolved_errors || 0) > 0 ? (
+                              <span 
+                                className="inline-block px-2 py-1 rounded bg-red-500/10 text-red-500 border border-red-500/20 text-xs font-bold"
+                                title={item.last_error_message || 'User encountered an error'}
+                              >
+                                {item.unresolved_errors} Error{item.unresolved_errors! > 1 ? 's' : ''}
+                              </span>
+                            ) : (item.portfolios_count || 0) === 0 ? (
+                              <span className="inline-block px-2 py-1 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-medium">
+                                No Portfolio
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-medium">
+                                Healthy
+                              </span>
+                            )}
                           </td>
                           <td className="py-4 px-3 text-center">
                             {item.is_pro ? (
@@ -525,9 +565,6 @@ export default function AdminDashboard() {
                               </span>
                             )}
                           </td>
-                          <td className="py-4 px-3 text-xs text-text-secondary dark:text-dark-text-secondary">
-                            {new Date(item.created_at).toLocaleDateString('en-IN')}
-                          </td>
                           <td className="py-4 px-3 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {!item.is_pro && (
@@ -539,21 +576,21 @@ export default function AdminDashboard() {
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                 </button>
                               )}
-                                <button 
-                                  onClick={() => handleTogglePro(item.id, !!item.is_pro)}
-                                  className={`px-2 py-1.5 rounded text-xs font-semibold transition-colors ${item.is_pro ? 'bg-gray-100 dark:bg-white/10 text-gray-500 hover:bg-red-500/10 hover:text-red-500' : 'bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white'}`}
-                                  title={item.is_pro ? "Downgrade to Free" : "Upgrade to Pro"}
-                                >
-                                  {item.is_pro ? "Downgrade" : "Upgrade"}
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteUser(item.id, item.email)}
-                                  className="px-2 py-1.5 rounded text-xs font-semibold bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition-colors"
-                                  title="Delete User"
-                                >
-                                  Delete
-                                </button>
-                              </div>
+                              <button 
+                                onClick={() => handleTogglePro(item.id, !!item.is_pro)}
+                                className={`px-2 py-1.5 rounded text-xs font-semibold transition-colors ${item.is_pro ? 'bg-gray-100 dark:bg-white/10 text-gray-500 hover:bg-red-500/10 hover:text-red-500' : 'bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white'}`}
+                                title={item.is_pro ? "Downgrade to Free" : "Upgrade to Pro"}
+                              >
+                                {item.is_pro ? "Downgrade" : "Upgrade"}
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteUser(item.id, item.email)}
+                                className="px-2 py-1.5 rounded text-xs font-semibold bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition-colors"
+                                title="Delete User"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
