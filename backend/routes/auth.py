@@ -581,51 +581,73 @@ async def get_admin_users(current_user: dict = Depends(get_current_user_from_dep
         users = result.data or []
 
         try:
-            # 1. Portfolios count per user
-            portfolios_res = database.supabase.table("portfolios").select("user_id").execute()
-            portfolios_by_user = {}
-            for p in (portfolios_res.data or []):
-                uid = p.get("user_id")
-                if uid:
-                    portfolios_by_user[uid] = portfolios_by_user.get(uid, 0) + 1
+            # Create lookup maps for user ID and lowercase email
+            user_ids_map = {u.get("id"): u.get("id") for u in users if u.get("id")}
+            user_emails_map = {u.get("email", "").lower(): u.get("id") for u in users if u.get("email")}
+
+            # 1. Projects count per user (from `projects` table)
+            project_counts_by_id = {}
+            try:
+                projects_res = database.supabase.table("projects").select("id, user_id").execute()
+                for p in (projects_res.data or []):
+                    raw_uid = p.get("user_id")
+                    if not raw_uid:
+                        continue
+                    matched_id = user_ids_map.get(raw_uid) or user_emails_map.get(str(raw_uid).lower())
+                    if matched_id:
+                        project_counts_by_id[matched_id] = project_counts_by_id.get(matched_id, 0) + 1
+            except Exception as proj_err:
+                print(f"[Admin Users] Projects query error: {proj_err}")
 
             # 2. Activity logs per user (last page view & last active timestamp)
-            activity_res = database.supabase.table("activity_logs").select("user_id, event_name, metadata, created_at").order("created_at", desc=True).limit(1000).execute()
             user_last_page = {}
             user_last_seen = {}
-            for act in (activity_res.data or []):
-                uid = act.get("user_id")
-                if not uid:
-                    continue
-                tstamp = act.get("created_at")
-                if uid not in user_last_seen and tstamp:
-                    user_last_seen[uid] = tstamp
-                if uid not in user_last_page and act.get("event_name") == "page_view":
-                    meta = act.get("metadata") or {}
-                    if meta.get("url"):
-                        user_last_page[uid] = meta.get("url")
+            try:
+                activity_res = database.supabase.table("activity_logs").select("user_id, event_name, metadata, created_at").order("created_at", desc=True).limit(1500).execute()
+                for act in (activity_res.data or []):
+                    raw_uid = act.get("user_id")
+                    if not raw_uid:
+                        continue
+                    matched_id = user_ids_map.get(raw_uid) or user_emails_map.get(str(raw_uid).lower())
+                    if not matched_id:
+                        continue
+                    tstamp = act.get("created_at")
+                    if matched_id not in user_last_seen and tstamp:
+                        user_last_seen[matched_id] = tstamp
+                    if matched_id not in user_last_page and act.get("event_name") == "page_view":
+                        meta = act.get("metadata") or {}
+                        if meta.get("url"):
+                            user_last_page[matched_id] = meta.get("url")
+            except Exception as act_err:
+                print(f"[Admin Users] Activity query error: {act_err}")
 
             # 3. Error logs per user
-            errors_res = database.supabase.table("error_logs").select("user_id, message, resolved, created_at").order("created_at", desc=True).limit(500).execute()
             user_errors_count = {}
             user_last_error = {}
-            for err in (errors_res.data or []):
-                uid = err.get("user_id")
-                if not uid:
-                    continue
-                if not err.get("resolved", False):
-                    user_errors_count[uid] = user_errors_count.get(uid, 0) + 1
-                if uid not in user_last_error:
-                    user_last_error[uid] = err.get("message")
+            try:
+                errors_res = database.supabase.table("error_logs").select("user_id, message, resolved, created_at").order("created_at", desc=True).limit(500).execute()
+                for err in (errors_res.data or []):
+                    raw_uid = err.get("user_id")
+                    if not raw_uid:
+                        continue
+                    matched_id = user_ids_map.get(raw_uid) or user_emails_map.get(str(raw_uid).lower())
+                    if not matched_id:
+                        continue
+                    if not err.get("resolved", False):
+                        user_errors_count[matched_id] = user_errors_count.get(matched_id, 0) + 1
+                    if matched_id not in user_last_error:
+                        user_last_error[matched_id] = err.get("message")
+            except Exception as err_err:
+                print(f"[Admin Users] Error logs query error: {err_err}")
 
             import datetime as dt
             now = dt.datetime.now(dt.timezone.utc)
 
             for u in users:
                 uid = u.get("id")
-                u["portfolios_count"] = portfolios_by_user.get(uid, 0)
+                u["portfolios_count"] = project_counts_by_id.get(uid, 0)
                 u["current_page"] = user_last_page.get(uid, "—")
-                u["last_seen_at"] = user_last_seen.get(uid, u.get("created_at"))
+                u["last_seen_at"] = user_last_seen.get(uid, None)
                 u["unresolved_errors"] = user_errors_count.get(uid, 0)
                 u["last_error_message"] = user_last_error.get(uid)
 
