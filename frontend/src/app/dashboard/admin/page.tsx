@@ -491,6 +491,7 @@ export default function AdminDashboard() {
                     <thead>
                       <tr className="border-b border-gray-100 dark:border-white/10 text-text-secondary dark:text-dark-text-secondary font-semibold">
                         <th className="py-4 px-3">User & Presence</th>
+                        <th className="py-4 px-3">College & Stream</th>
                         <th className="py-4 px-3">Current Active Page</th>
                         <th className="py-4 px-3 text-center">Portfolios</th>
                         <th className="py-4 px-3 text-center">Status / Alerts</th>
@@ -511,6 +512,14 @@ export default function AdminDashboard() {
                               <div className="font-bold text-text-primary dark:text-dark-text-primary">{item.name || "Anonymous User"}</div>
                             </div>
                             <div className="text-xs text-text-secondary dark:text-dark-text-secondary pl-4">{item.email}</div>
+                          </td>
+                          <td className="py-4 px-3">
+                            <div className="max-w-[200px] truncate font-medium text-text-primary dark:text-dark-text-primary" title={item.college_name || '—'}>
+                              {item.college_name || "—"}
+                            </div>
+                            <div className="text-xs text-text-secondary dark:text-dark-text-secondary">
+                              {item.stream || "—"} {item.state ? `• ${item.state}` : ''} {item.year_of_passing ? `('${item.year_of_passing.slice(-2)})` : ''}
+                            </div>
                           </td>
                           <td className="py-4 px-3">
                             <div className="max-w-[200px] truncate font-mono text-xs text-accent-primary dark:text-accent-gold" title={item.current_page || '—'}>
