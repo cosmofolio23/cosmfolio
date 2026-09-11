@@ -7,6 +7,9 @@ import os
 import uuid
 from config import settings
 
+import httpx
+from supabase.client import ClientOptions
+
 # Supabase Client - use service_role key for backend (bypasses RLS, full access)
 supabase = None
 _key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_ANON_KEY
@@ -17,7 +20,16 @@ print(f"  SUPABASE_KEY: {'service_role' if settings.SUPABASE_SERVICE_ROLE_KEY el
 supabase_init_error = None
 try:
     if settings.SUPABASE_URL and _key:
-        supabase = create_client(settings.SUPABASE_URL, _key)
+        custom_client = httpx.Client(
+            http2=False,
+            limits=httpx.Limits(keepalive_expiry=2.0, max_keepalive_connections=20, max_connections=100)
+        )
+        opts = ClientOptions(
+            httpx_client=custom_client,
+            postgrest_client_timeout=30,
+            storage_client_timeout=30
+        )
+        supabase = create_client(settings.SUPABASE_URL, _key, options=opts)
         print("[OK] Supabase initialized successfully")
     else:
         print("[ERROR] SUPABASE_URL or key not configured")

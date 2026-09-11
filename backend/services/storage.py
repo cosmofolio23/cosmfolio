@@ -112,11 +112,18 @@ class StorageClient:
             else:
                 logger.warning("AWS/R2 credentials not configured, S3 disabled")
 
-            # Supabase Client (Alternative / JSON Store)
             if self.config.SUPABASE_URL and self.config.SUPABASE_KEY:
+                import httpx
+                custom_client = httpx.Client(
+                    http2=False,
+                    limits=httpx.Limits(keepalive_expiry=2.0, max_keepalive_connections=20, max_connections=100)
+                )
+                from supabase.client import ClientOptions
+                opts = ClientOptions(httpx_client=custom_client)
                 self.supabase = create_client(
                     self.config.SUPABASE_URL,
-                    self.config.SUPABASE_KEY
+                    self.config.SUPABASE_KEY,
+                    options=opts
                 )
                 logger.info("Supabase storage client initialized")
             else:
