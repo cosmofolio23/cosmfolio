@@ -44,5 +44,5 @@ RUN ls -la /backend/main.py
 # Expose port
 EXPOSE 8000
 
-# Run uvicorn respecting dynamic PORT environment variable (Railway/Render)
-CMD sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
+# Run app respecting dynamic PORT environment variable (Railway/Render)
+CMD ["python", "main.py"]
