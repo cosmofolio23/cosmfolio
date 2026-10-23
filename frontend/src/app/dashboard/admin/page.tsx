@@ -36,6 +36,24 @@ interface CouponRecord {
   created_at: string
 }
 
+async function parseApiError(res: Response, fallback: string): Promise<string> {
+  try {
+    const text = await res.text()
+    if (!text) return `${fallback} (${res.status})`
+    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+      return `Backend server error (${res.status}): The backend API server is currently unreachable or failed to respond.`
+    }
+    try {
+      const parsed = JSON.parse(text)
+      return parsed.detail || parsed.message || text
+    } catch {
+      return text
+    }
+  } catch {
+    return `${fallback} (${res.status})`
+  }
+}
+
 export default function AdminDashboard() {
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
@@ -100,8 +118,8 @@ export default function AdminDashboard() {
       ])
 
       if (!usersRes.ok) {
-        const body = await usersRes.text()
-        throw new Error(`Failed to fetch user list (${usersRes.status}): ${body}`)
+        const errorMsg = await parseApiError(usersRes, 'Failed to fetch user list')
+        throw new Error(errorMsg)
       }
       const usersData = await usersRes.json()
       setUsers(usersData)
@@ -136,7 +154,7 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token || ''}` }
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await parseApiError(res, 'Failed to reset exports'))
       // Optimistic update
       setUsers(users.map(u => u.id === userId ? { ...u, export_count: 0 } : u))
     } catch (err: any) {
@@ -158,7 +176,7 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token || ''}` }
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await parseApiError(res, `Failed to ${action} user`))
       // Optimistic update
       setUsers(users.map(u => u.id === userId ? { ...u, is_pro: !currentProStatus } : u))
     } catch (err: any) {
@@ -175,7 +193,7 @@ export default function AdminDashboard() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token || ''}` }
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await parseApiError(res, 'Failed to delete user'))
       // Optimistic update
       setUsers(users.filter(u => u.id !== userId))
     } catch (err: any) {
@@ -202,8 +220,7 @@ export default function AdminDashboard() {
         })
       })
       if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.detail || 'Failed to create coupon')
+        throw new Error(await parseApiError(res, 'Failed to create coupon'))
       }
       const newCoupon = await res.json()
       setCoupons([newCoupon, ...coupons])
